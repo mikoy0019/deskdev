@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Luminary â€” Online Learning Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{
+  colors:{accent:'#8b5cf6','accent-dim':'#7c3aed',warm:'#f59e0b',surface:'#fafafa','surface-dark':'#f1f5f9',card:'#ffffff',txt:'#0f172a',muted:'#64748b',border:'rgba(0,0,0,0.06)'},
+  fontFamily:{sans:['Plus Jakarta Sans','system-ui','sans-serif']}
+}}}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.reveal{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.1s}.st2{transition-delay:.2s}.st3{transition-delay:.3s}.st4{transition-delay:.4s}
+.course-card{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.course-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(139,92,246,.08)}
+.progress-bar{background:linear-gradient(90deg,#8b5cf6,#a78bfa);border-radius:999px;height:6px;transition:width 1.5s cubic-bezier(.16,1,.3,1)}
+</style>
+</head>
+<body class="bg-surface text-txt font-sans antialiased overflow-x-hidden">
+
+<!-- â•â•â• NAV â•â•â• -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-purple-400 flex items-center justify-center text-white font-bold text-sm">L</div>
+      <span class="font-bold text-lg tracking-tight">Luminary</span>
+    </div>
+    <div class="hidden md:flex gap-7 text-sm font-medium text-muted">
+      <a href="#courses" class="hover:text-txt transition-colors">Courses</a>
+      <a href="#paths" class="hover:text-txt transition-colors">Learning Paths</a>
+      <a href="#instructors" class="hover:text-txt transition-colors">Instructors</a>
+      <a href="#pricing" class="hover:text-txt transition-colors">Pricing</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="text-sm font-medium text-muted hover:text-txt transition-colors hidden md:block">Sign In</button>
+      <button class="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-dim transition-all hover:scale-[1.02]">Start Free â†’</button>
+    </div>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” Friendly, approachable, light â•â•â• -->
+<section class="py-20 md:py-28 px-6 relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]"></div>
+  <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-warm/5 rounded-full blur-[80px]"></div>
+
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+    <div>
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/15 mb-6" style="animation:fadeUp .7s .2s both">
+        <span class="text-warm">ðŸŽ“</span>
+        <span class="text-accent text-xs font-semibold">Over 1 Million Students Enrolled</span>
+      </div>
+
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-800 leading-[1.05] tracking-tight mb-6" style="animation:fadeUp .8s .3s both">
+        Learn anything.<br>
+        <span class="bg-gradient-to-r from-accent to-purple-400 bg-clip-text text-transparent">Build everything.</span>
+      </h1>
+
+      <p class="text-muted text-lg leading-relaxed max-w-lg mb-8" style="animation:fadeUp .8s .5s both">
+        World-class courses taught by industry experts. From coding to design, data science to business â€” learn at your own pace with hands-on projects.
+      </p>
+
+      <div class="flex gap-3 flex-wrap mb-8" style="animation:fadeUp .8s .7s both">
+        <button class="bg-accent text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-accent-dim transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-accent/20">
+          Browse Courses â†’
+        </button>
+        <button class="border border-border text-txt px-8 py-4 rounded-xl font-medium text-sm hover:border-accent hover:text-accent transition-all">
+          View Learning Paths
+        </button>
+      </div>
+
+      <!-- Trust -->
+      <div class="flex items-center gap-6 flex-wrap" style="animation:fadeUp .8s .9s both">
+        <div class="flex -space-x-2">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-pink-600 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">A</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">M</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">K</div>
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 border-2 border-white flex items-center justify-center text-white text-[10px] font-bold">+</div>
+        </div>
+        <div class="text-sm">
+          <span class="font-semibold">1M+ students</span>
+          <span class="text-muted"> Â· </span>
+          <span class="text-warm">â˜…â˜…â˜…â˜…â˜…</span>
+          <span class="text-muted text-xs ml-1">4.8/5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Course card preview -->
+    <div class="relative" style="animation:fadeUp 1s .4s both">
+      <div class="bg-white rounded-2xl border border-border shadow-xl shadow-black/5 overflow-hidden">
+        <!-- Video placeholder -->
+        <div class="aspect-video bg-gradient-to-br from-accent/10 to-purple-100 relative flex items-center justify-center">
+          <div class="w-16 h-16 rounded-full bg-white shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
+            <div class="w-0 h-0 border-t-[10px] border-b-[10px] border-l-[16px] border-transparent border-l-accent ml-1"></div>
+          </div>
+          <div class="absolute top-4 left-4 bg-accent text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">BESTSELLER</div>
+          <div class="absolute top-4 right-4 bg-white/90 text-txt text-[10px] font-bold px-2.5 py-1 rounded-lg">12h 30min</div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-warm text-sm">â˜…â˜…â˜…â˜…â˜…</span>
+            <span class="text-xs text-muted">4.9 (12,847 ratings)</span>
+          </div>
+          <h3 class="font-bold text-lg mb-2">The Complete Web Development Bootcamp 2026</h3>
+          <p class="text-muted text-sm mb-4">Master HTML, CSS, JavaScript, React, Node.js, and more. Build 25+ real projects.</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-xs">JD</div>
+              <span class="text-sm font-medium">Dr. Jane Davis</span>
+            </div>
+            <div>
+              <span class="text-accent font-bold text-lg">$49.99</span>
+              <span class="text-muted line-through text-sm ml-1">$199.99</span>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div class="mt-4 bg-accent/10 rounded-full h-1.5 overflow-hidden">
+            <div class="progress-bar" style="width:0" id="progressBar"></div>
+          </div>
+          <div class="text-xs text-muted mt-2">75% complete Â· 8 sections remaining</div>
+        </div>
+      </div>
+      <!-- Floating completion badge -->
+      <div class="absolute -bottom-4 -left-4 bg-white border border-border rounded-xl px-4 py-3 shadow-lg" style="animation:float 4s ease-in-out infinite">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 text-sm">âœ“</div>
+          <div>
+            <div class="text-xs font-semibold">Certificate Earned!</div>
+            <div class="text-[10px] text-muted">Web Development</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• STATS â•â•â• -->
+<section class="py-14 px-6 bg-accent/5 border-y border-accent/10">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div class="reveal"><div class="text-3xl font-800 text-accent">1,200+</div><div class="text-sm text-muted mt-1">Courses</div></div>
+    <div class="reveal st1"><div class="text-3xl font-800 text-accent">1M+</div><div class="text-sm text-muted mt-1">Students</div></div>
+    <div class="reveal st2"><div class="text-3xl font-800 text-accent">4.8â˜…</div><div class="text-sm text-muted mt-1">Avg Rating</div></div>
+    <div class="reveal st3"><div class="text-3xl font-800 text-accent">95%</div><div class="text-sm text-muted mt-1">Completion Rate</div></div>
+  </div>
+</section>
+
+<!-- â•â•â• COURSES â•â•â• -->
+<section id="courses" class="py-28 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-end mb-12">
+      <div>
+        <div class="reveal text-accent text-xs font-semibold tracking-[0.2em] uppercase mb-2">Popular Courses</div>
+        <h2 class="reveal st1 text-3xl font-800 tracking-tight">Trending This <span class="text-accent">Week</span></h2>
+      </div>
+      <button class="reveal st2 text-accent text-sm font-semibold hover:underline hidden md:block">View All â†’</button>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal course-card bg-white rounded-2xl border border-border overflow-hidden cursor-pointer">
+        <div class="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-3xl">ðŸ’»</div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2"><span class="text-warm text-xs">â˜…â˜…â˜…â˜…â˜…</span><span class="text-[10px] text-muted">4.9</span></div>
+          <h3 class="font-bold text-sm mb-1">React & Next.js Masterclass</h3>
+          <p class="text-muted text-xs mb-3 leading-relaxed">Build production apps with the latest React 19 features.</p>
+          <div class="flex justify-between items-center">
+            <span class="text-accent font-bold">$39.99</span>
+            <span class="text-[10px] text-muted">42 hours</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal st1 course-card bg-white rounded-2xl border border-border overflow-hidden cursor-pointer">
+        <div class="aspect-video bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center text-3xl">ðŸ“Š</div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2"><span class="text-warm text-xs">â˜…â˜…â˜…â˜…â˜…</span><span class="text-[10px] text-muted">4.8</span></div>
+          <h3 class="font-bold text-sm mb-1">Data Science with Python</h3>
+          <p class="text-muted text-xs mb-3 leading-relaxed">From pandas to machine learning. Complete data pipeline.</p>
+          <div class="flex justify-between items-center">
+            <span class="text-accent font-bold">$49.99</span>
+            <span class="text-[10px] text-muted">56 hours</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal st2 course-card bg-white rounded-2xl border border-border overflow-hidden cursor-pointer">
+        <div class="aspect-video bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center text-3xl">ðŸŽ¨</div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2"><span class="text-warm text-xs">â˜…â˜…â˜…â˜…â˜…</span><span class="text-[10px] text-muted">4.9</span></div>
+          <h3 class="font-bold text-sm mb-1">UI/UX Design System</h3>
+          <p class="text-muted text-xs mb-3 leading-relaxed">Figma, design tokens, component libraries, and handoff.</p>
+          <div class="flex justify-between items-center">
+            <span class="text-accent font-bold">$34.99</span>
+            <span class="text-[10px] text-muted">28 hours</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal st3 course-card bg-white rounded-2xl border border-border overflow-hidden cursor-pointer">
+        <div class="aspect-video bg-gradient-to-br from-amber-50 to-amber-100 flex items-center justify-center text-3xl">ðŸ¤–</div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2"><span class="text-warm text-xs">â˜…â˜…â˜…â˜…â˜…</span><span class="text-[10px] text-muted">4.7</span></div>
+          <h3 class="font-bold text-sm mb-1">AI & Prompt Engineering</h3>
+          <p class="text-muted text-xs mb-3 leading-relaxed">Build AI-powered apps with LLMs, RAG, and agents.</p>
+          <div class="flex justify-between items-center">
+            <span class="text-accent font-bold">$59.99</span>
+            <span class="text-[10px] text-muted">38 hours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â•â•â• -->
+<section class="py-28 px-6 text-center bg-gradient-to-b from-surface to-accent/5">
+  <div class="max-w-2xl mx-auto">
+    <div class="reveal text-accent text-xs font-semibold tracking-[0.2em] uppercase mb-3">Start Learning Today</div>
+    <h2 class="reveal st1 text-3xl md:text-4xl font-800 tracking-tight mb-4">Your future self will<br><span class="text-accent">thank you</span></h2>
+    <p class="reveal st2 text-muted mb-8">Join 1M+ learners. Get unlimited access to 1,200+ courses for one simple price.</p>
+    <div class="reveal st3 flex gap-3 justify-center flex-wrap">
+      <button class="bg-accent text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-accent-dim transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-accent/20">Start Free Trial â†’</button>
+      <button class="border border-border text-txt px-10 py-4 rounded-xl font-medium text-sm hover:border-accent transition-all">View Plans</button>
+    </div>
+    <div class="reveal st4 mt-4 text-xs text-muted">No credit card required Â· Cancel anytime</div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-12 px-6 bg-white">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-purple-400 flex items-center justify-center text-white font-bold text-xs">L</div>
+        <span class="font-bold text-lg">Luminary</span>
+      </div>
+      <p class="text-muted text-sm max-w-xs">World-class online education. Learn from the best, build what matters.</p>
+    </div>
+    <div class="grid grid-cols-3 gap-10 text-sm">
+      <div><div class="font-semibold mb-3">Learn</div><div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">Courses</a><a href="#" class="hover:text-accent transition-colors">Paths</a><a href="#" class="hover:text-accent transition-colors">Certificates</a></div></div>
+      <div><div class="font-semibold mb-3">Teach</div><div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">Become Instructor</a><a href="#" class="hover:text-accent transition-colors">Resources</a><a href="#" class="hover:text-accent transition-colors">Community</a></div></div>
+      <div><div class="font-semibold mb-3">Company</div><div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">About</a><a href="#" class="hover:text-accent transition-colors">Blog</a><a href="#" class="hover:text-accent transition-colors">Careers</a></div></div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-border flex justify-between text-xs text-muted">
+    <span>Â© 2026 Luminary. All rights reserved.</span>
+    <div class="flex gap-4"><a href="#" class="hover:text-accent transition-colors">Privacy</a><a href="#" class="hover:text-accent transition-colors">Terms</a></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal,.gold-line').forEach(el=>obs.observe(el));
+// Animate progress bar when hero visible
+setTimeout(()=>{const pb=document.getElementById('progressBar');if(pb)pb.style.width='75%';},1500);
+document.body.style.opacity='0';document.body.style.transition='opacity .4s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

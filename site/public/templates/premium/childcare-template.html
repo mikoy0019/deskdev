@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sproutling &mdash; Where Little Hearts Grow | Preschool &amp; Daycare</title>
+<meta name="description" content="Sproutling is a warm, play-based preschool and daycare where curious little ones learn, laugh and grow. Book a tour today." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: rounded friendly display (Baloo 2) + clean body (Nunito) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Baloo 2"', 'cursive'],
+          body: ['Nunito', 'sans-serif'],
+        },
+        colors: {
+          cream: '#FFF9F0',
+          milk:  '#FFFDF8',
+          berry: '#FF7AA2',   // primary playful pink-coral
+          sky:   '#5EC8E5',   // friendly sky blue
+          sun:   '#FFC94D',   // sunshine yellow
+          leaf:  '#7DD181',   // grass green
+          grape: '#9D7BE0',   // soft purple
+          ink:   '#3A3550',   // soft deep navy for text
+        },
+        boxShadow: {
+          soft:   '0 18px 40px -18px rgba(58,53,80,0.25)',
+          puff:   '0 10px 0 0 rgba(58,53,80,0.08)',
+          float:  '0 30px 60px -28px rgba(255,122,162,0.45)',
+        },
+        borderRadius: {
+          blob: '42% 58% 56% 44% / 48% 42% 58% 52%',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FFF9F0;
+    color: #3A3550;
+    font-family: 'Nunito', sans-serif;
+  }
+  ::selection { background: #FFC94D; color: #3A3550; }
+
+  /* Friendly chunky scrollbar */
+  ::-webkit-scrollbar { width: 12px; }
+  ::-webkit-scrollbar-track { background: #FFF3E2; }
+  ::-webkit-scrollbar-thumb { background: #FF7AA2; border-radius: 999px; border: 3px solid #FFF3E2; }
+
+  .font-display { font-family: 'Baloo 2', cursive; }
+
+  /* Dotted craft-paper texture */
+  .dots {
+    background-image: radial-gradient(rgba(58,53,80,0.06) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+  }
+
+  /* Marquee */
+  .marquee-track { display: inline-flex; white-space: nowrap; will-change: transform; }
+  .marquee-anim  { animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Floating blobs */
+  .floaty { will-change: transform; }
+
+  /* Wavy section divider */
+  .wave-top { display:block; width:100%; height:auto; }
+
+  /* Program card flip-ish lift */
+  .prog-card { transition: transform .45s cubic-bezier(.34,1.56,.64,1), box-shadow .45s ease; will-change: transform; }
+  .prog-card:hover { transform: translateY(-12px) rotate(-1deg); }
+
+  /* FAQ accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(135deg); }
+  .faq-plus { transition: transform .4s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Gradient text */
+  .grad-text {
+    background: linear-gradient(100deg,#FF7AA2 0%,#9D7BE0 45%,#5EC8E5 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Magnetic CTA wrap */
+  .magnetic { will-change: transform; }
+
+  /* Wobble on hover for nav logo */
+  @keyframes wobble { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-8deg)} 75%{transform:rotate(8deg)} }
+  .logo-mark:hover { animation: wobble .6s ease; }
+
+  /* Bouncing arrow */
+  @keyframes bounceY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(10px)} }
+  .bounce { animation: bounceY 1.6s ease-in-out infinite; }
+
+  /* Reveal base state (JS adds animation; fallback shows everything) */
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .is-visible .reveal, .reveal.is-in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-anim { animation: none; }
+    .bounce, .floaty { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased selection:bg-sun">
+
+<!-- ============ DECORATIVE FLOATING SHAPES (global parallax) ============ -->
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+  <div data-depth="0.25" class="floaty absolute top-[12%] left-[6%] h-24 w-32 rounded-[60%] bg-sky/30 blur-[1px]"></div>
+  <div data-depth="0.4"  class="floaty absolute top-[30%] right-[8%] h-16 w-24 rounded-[60%] bg-berry/25"></div>
+  <div data-depth="0.18" class="floaty absolute top-[64%] left-[12%] h-20 w-20 rounded-full bg-sun/30"></div>
+  <div data-depth="0.5"  class="floaty absolute top-[80%] right-[14%] h-28 w-28 rounded-blob bg-leaf/25"></div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="mt-3 flex items-center justify-between rounded-full border border-white/70 bg-white/80 px-3 py-2.5 shadow-soft backdrop-blur-md sm:px-5">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="logo-mark grid h-10 w-10 place-items-center rounded-2xl bg-berry text-white shadow-puff">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c0-5 3-7 3-11a3 3 0 0 0-6 0c0 4 3 6 3 11Z"/><path d="M5 13c-1.5-.5-2-2-1.5-3.5C5 11 7 11 8 12"/><path d="M19 13c1.5-.5 2-2 1.5-3.5C19 11 17 11 16 12"/></svg>
+        </span>
+        <span class="font-display text-2xl font-800 leading-none text-ink">Sprout<span class="text-berry">ling</span></span>
+      </a>
+
+      <ul class="hidden items-center gap-7 font-600 text-ink/80 lg:flex">
+        <li><a href="#programs" class="transition hover:text-berry">Programs</a></li>
+        <li><a href="#why" class="transition hover:text-berry">Why Us</a></li>
+        <li><a href="#schedule" class="transition hover:text-berry">A Day Here</a></li>
+        <li><a href="#tuition" class="transition hover:text-berry">Tuition</a></li>
+        <li><a href="#faq" class="transition hover:text-berry">FAQ</a></li>
+      </ul>
+
+      <div class="flex items-center gap-2">
+        <a href="#tour" class="hidden rounded-full px-4 py-2 font-700 text-ink/70 transition hover:text-berry sm:inline-block">Book a Tour</a>
+        <a href="#enroll" id="enroll-magnetic" class="magnetic relative rounded-full bg-sun px-5 py-2.5 font-800 text-ink shadow-puff transition hover:shadow-float">
+          Enroll Now
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative overflow-hidden pt-32 pb-24 sm:pt-40">
+  <!-- soft gradient wash -->
+  <div aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-b from-cream via-milk to-cream"></div>
+  <div aria-hidden="true" class="absolute -top-24 left-1/2 -z-10 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-sky/20 blur-3xl"></div>
+
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
+    <!-- copy -->
+    <div class="text-center lg:text-left">
+      <span class="inline-flex items-center gap-2 rounded-full bg-leaf/20 px-4 py-1.5 font-700 text-leaf">
+        <span class="h-2 w-2 rounded-full bg-leaf"></span> Now enrolling ages 6 mo &ndash; 5 yrs
+      </span>
+      <h1 class="mt-5 font-display text-5xl font-800 leading-[1.05] text-ink sm:text-6xl lg:text-7xl">
+        <span class="hero-line inline-block">Where little</span><br/>
+        <span class="hero-line inline-block">hearts <span class="grad-text">grow</span></span><br/>
+        <span class="hero-line inline-block">big &amp; brave.</span>
+      </h1>
+      <p class="mx-auto mt-6 max-w-md text-lg text-ink/70 lg:mx-0">
+        A sunny, play-based preschool &amp; daycare where curiosity leads, friendships bloom, and every giggle is part of the lesson.
+      </p>
+      <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row lg:items-start lg:justify-start">
+        <a href="#tour" class="w-full rounded-full bg-berry px-7 py-4 text-center font-800 text-white shadow-float transition hover:-translate-y-0.5 hover:bg-[#ff6593] sm:w-auto">
+          Book a Free Tour
+        </a>
+        <a href="#programs" class="w-full rounded-full border-2 border-ink/15 bg-white px-7 py-4 text-center font-800 text-ink transition hover:border-berry hover:text-berry sm:w-auto">
+          See Programs
+        </a>
+      </div>
+      <div class="mt-7 flex items-center justify-center gap-3 lg:justify-start">
+        <div class="flex -space-x-3">
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-sun"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-sky"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-leaf"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-grape"></span>
+        </div>
+        <p class="text-sm font-600 text-ink/60">Loved by <span class="font-800 text-ink">640+</span> happy families</p>
+      </div>
+    </div>
+
+    <!-- image -->
+    <div class="relative">
+      <div class="hero-img relative mx-auto max-w-md overflow-hidden rounded-[2.5rem] border-8 border-white bg-gradient-to-br from-sky/40 via-sun/30 to-berry/30 shadow-float">
+        <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Happy children playing and learning at Sproutling preschool"
+             class="aspect-[4/5] w-full object-cover" loading="eager" />
+      </div>
+      <!-- sticker badges -->
+      <div class="floaty absolute -left-3 top-10 rotate-[-8deg] rounded-2xl bg-white px-4 py-3 shadow-soft sm:-left-8">
+        <p class="font-display text-sm font-800 text-ink">🌈 Play-Based</p>
+      </div>
+      <div class="floaty absolute -right-2 bottom-12 rotate-[7deg] rounded-2xl bg-white px-4 py-3 shadow-soft sm:-right-6">
+        <p class="font-display text-sm font-800 text-ink">⭐ 1:4 Ratio</p>
+      </div>
+    </div>
+  </div>
+
+  <a href="#stats" aria-label="Scroll down" class="bounce mx-auto mt-14 grid h-11 w-11 place-items-center rounded-full border-2 border-ink/15 bg-white text-ink/50">
+    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+  </a>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="relative -rotate-1 border-y-4 border-ink/10 bg-sun py-3">
+  <div class="marquee-track marquee-anim">
+    <span class="flex items-center font-display text-xl font-800 text-ink">
+      <!-- repeated twice for seamless loop -->
+      <span class="mx-6">🎨 Creative Play</span><span class="text-berry">✿</span>
+      <span class="mx-6">📚 Early Literacy</span><span class="text-berry">✿</span>
+      <span class="mx-6">🌱 Outdoor Learning</span><span class="text-berry">✿</span>
+      <span class="mx-6">🧩 Problem Solvers</span><span class="text-berry">✿</span>
+      <span class="mx-6">🍎 Healthy Meals</span><span class="text-berry">✿</span>
+      <span class="mx-6">🤝 Kindness First</span><span class="text-berry">✿</span>
+    </span>
+    <span class="flex items-center font-display text-xl font-800 text-ink" aria-hidden="true">
+      <span class="mx-6">🎨 Creative Play</span><span class="text-berry">✿</span>
+      <span class="mx-6">📚 Early Literacy</span><span class="text-berry">✿</span>
+      <span class="mx-6">🌱 Outdoor Learning</span><span class="text-berry">✿</span>
+      <span class="mx-6">🧩 Problem Solvers</span><span class="text-berry">✿</span>
+      <span class="mx-6">🍎 Healthy Meals</span><span class="text-berry">✿</span>
+      <span class="mx-6">🤝 Kindness First</span><span class="text-berry">✿</span>
+    </span>
+  </div>
+</div>
+
+<!-- ============ STATS STRIP ============ -->
+<section id="stats" class="dots py-16 sm:py-20">
+  <div class="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-4 sm:px-6 lg:grid-cols-4">
+    <div class="reveal rounded-3xl bg-white p-7 text-center shadow-soft">
+      <p class="font-display text-5xl font-800 text-berry"><span class="count" data-target="640">0</span>+</p>
+      <p class="mt-1 font-700 text-ink/70">Happy Kids</p>
+    </div>
+    <div class="reveal rounded-3xl bg-white p-7 text-center shadow-soft">
+      <p class="font-display text-5xl font-800 text-sky"><span class="count" data-target="14">0</span></p>
+      <p class="mt-1 font-700 text-ink/70">Years Caring</p>
+    </div>
+    <div class="reveal rounded-3xl bg-white p-7 text-center shadow-soft">
+      <p class="font-display text-5xl font-800 text-leaf"><span class="count" data-target="38">0</span></p>
+      <p class="mt-1 font-700 text-ink/70">Loving Staff</p>
+    </div>
+    <div class="reveal rounded-3xl bg-white p-7 text-center shadow-soft">
+      <p class="font-display text-5xl font-800 text-grape"><span class="count" data-target="100">0</span>%</p>
+      <p class="mt-1 font-700 text-ink/70">Parent Approval</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROGRAMS / AGE GROUPS ============ -->
+<section id="programs" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <span class="font-display font-700 text-berry">Programs by Age</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">A nest for every little stage</h2>
+      <p class="mt-4 text-lg text-ink/70">From wobbly first steps to confident kindergarten-ready explorers &mdash; we meet your child exactly where they are.</p>
+    </div>
+
+    <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <!-- card -->
+      <article class="prog-card reveal rounded-[2rem] border-2 border-sky/30 bg-white p-7 shadow-soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-sky/15 text-3xl">🍼</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Sprouts</h3>
+        <p class="font-700 text-sky">6 &ndash; 18 months</p>
+        <p class="mt-3 text-ink/70">Gentle routines, cozy cuddles, and sensory play in a calm infant haven.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-600 text-ink/70">
+          <li>• 1:3 caregiver ratio</li>
+          <li>• Daily nap &amp; feeding logs</li>
+          <li>• Tummy-time adventures</li>
+        </ul>
+      </article>
+
+      <article class="prog-card reveal rounded-[2rem] border-2 border-leaf/30 bg-white p-7 shadow-soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-leaf/15 text-3xl">🧸</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Saplings</h3>
+        <p class="font-700 text-leaf">18 mo &ndash; 3 yrs</p>
+        <p class="mt-3 text-ink/70">Toddlers explore, climb, and discover words through joyful guided play.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-600 text-ink/70">
+          <li>• Potty-training support</li>
+          <li>• Music &amp; movement</li>
+          <li>• First friendships</li>
+        </ul>
+      </article>
+
+      <article class="prog-card reveal rounded-[2rem] border-2 border-sun/40 bg-white p-7 shadow-soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-sun/20 text-3xl">🎨</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Bloomers</h3>
+        <p class="font-700 text-[#E0A800]">3 &ndash; 4 yrs</p>
+        <p class="mt-3 text-ink/70">Curiosity blossoms with art, stories, counting, and big-kid projects.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-600 text-ink/70">
+          <li>• Pre-literacy &amp; numbers</li>
+          <li>• STEM discovery bins</li>
+          <li>• Show-and-tell days</li>
+        </ul>
+      </article>
+
+      <article class="prog-card reveal rounded-[2rem] border-2 border-berry/30 bg-white p-7 shadow-soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-berry/15 text-3xl">🚀</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Trailblazers</h3>
+        <p class="font-700 text-berry">4 &ndash; 5 yrs</p>
+        <p class="mt-3 text-ink/70">Kindergarten-ready confidence through reading, writing, and teamwork.</p>
+        <ul class="mt-4 space-y-1.5 text-sm font-600 text-ink/70">
+          <li>• Reading-readiness</li>
+          <li>• Social-emotional skills</li>
+          <li>• Field-trip explorers</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section id="why" class="relative overflow-hidden bg-grape/10 py-20 sm:py-28">
+  <svg class="wave-top absolute -top-1 left-0" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true"><path fill="#FFF9F0" d="M0,32 C240,80 480,0 720,24 C960,48 1200,80 1440,40 L1440,0 L0,0 Z"></path></svg>
+  <div class="mx-auto max-w-7xl px-4 pt-10 sm:px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <span class="font-display font-700 text-grape">The Sproutling Difference</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Safe. Caring. Always learning.</h2>
+    </div>
+
+    <div class="mt-14 grid gap-6 md:grid-cols-3">
+      <div class="reveal rounded-[2rem] bg-white p-8 text-center shadow-soft">
+        <span class="mx-auto grid h-16 w-16 place-items-center rounded-blob bg-sky/20 text-3xl">🛡️</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Safe &amp; Secure</h3>
+        <p class="mt-3 text-ink/70">Keypad entry, CCTV, daily health checks, and CPR-certified staff. Your peace of mind comes first, always.</p>
+      </div>
+      <div class="reveal rounded-[2rem] bg-white p-8 text-center shadow-soft">
+        <span class="mx-auto grid h-16 w-16 place-items-center rounded-blob bg-berry/15 text-3xl">💗</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Warm &amp; Caring</h3>
+        <p class="mt-3 text-ink/70">Low ratios mean real bonds. Every teacher knows your child&rsquo;s name, mood, and favorite bedtime story.</p>
+      </div>
+      <div class="reveal rounded-[2rem] bg-white p-8 text-center shadow-soft">
+        <span class="mx-auto grid h-16 w-16 place-items-center rounded-blob bg-leaf/20 text-3xl">🌟</span>
+        <h3 class="mt-5 font-display text-2xl font-800 text-ink">Always Learning</h3>
+        <p class="mt-3 text-ink/70">A play-based, Reggio-inspired curriculum that grows curiosity, kindness, and confidence every single day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DAILY SCHEDULE ============ -->
+<section id="schedule" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <span class="font-display font-700 text-sky">A Day at Sproutling</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Big days, made of little moments</h2>
+    </div>
+
+    <div class="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sun/30 font-display text-lg font-800 text-ink">7:30</span>
+        <div><p class="font-800 text-ink">Sunny Welcome</p><p class="text-sm text-ink/65">Drop-off, free play &amp; breakfast</p></div>
+      </div>
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sky/25 font-display text-lg font-800 text-ink">9:00</span>
+        <div><p class="font-800 text-ink">Circle Time</p><p class="text-sm text-ink/65">Songs, stories &amp; calendar</p></div>
+      </div>
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-leaf/25 font-display text-lg font-800 text-ink">10:00</span>
+        <div><p class="font-800 text-ink">Discovery Stations</p><p class="text-sm text-ink/65">Art, blocks &amp; sensory bins</p></div>
+      </div>
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-berry/20 font-display text-lg font-800 text-ink">11:30</span>
+        <div><p class="font-800 text-ink">Garden &amp; Play</p><p class="text-sm text-ink/65">Outdoor adventures</p></div>
+      </div>
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-grape/20 font-display text-lg font-800 text-ink">12:30</span>
+        <div><p class="font-800 text-ink">Lunch &amp; Rest</p><p class="text-sm text-ink/65">Healthy meal then quiet nap</p></div>
+      </div>
+      <div class="reveal flex items-center gap-4 rounded-2xl bg-cream p-5 shadow-soft ring-1 ring-ink/5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-sun/30 font-display text-lg font-800 text-ink">3:00</span>
+        <div><p class="font-800 text-ink">Snack &amp; Goodbye</p><p class="text-sm text-ink/65">Stories, snack &amp; pick-up</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STAFF ============ -->
+<section id="about" class="relative overflow-hidden bg-sky/10 py-20 sm:py-28">
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
+    <div class="relative">
+      <div class="reveal relative overflow-hidden rounded-[2.5rem] border-8 border-white bg-gradient-to-br from-leaf/40 via-sun/30 to-sky/40 shadow-float">
+        <img src="https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Caring Sproutling teacher reading with children"
+             class="aspect-[5/4] w-full object-cover" loading="lazy" />
+      </div>
+      <div class="floaty absolute -bottom-5 -right-3 rotate-3 rounded-2xl bg-berry px-5 py-3 text-white shadow-float sm:-right-6">
+        <p class="font-display text-sm font-800">👩‍🏫 38 certified teachers</p>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <span class="font-display font-700 text-sky">Our Story</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Growing curious, kind, confident kids since 2012</h2>
+      <p class="mt-5 text-lg text-ink/70">Sproutling began as one sunlit room and a simple belief: children learn best when they feel safe, seen, and free to play. Today our team of early-childhood educators nurtures hundreds of little ones across four bright, purpose-built rooms.</p>
+      <div class="mt-7 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-2xl bg-white p-5 shadow-soft">
+          <p class="font-display text-lg font-800 text-ink">🎓 Certified educators</p>
+          <p class="mt-1 text-sm text-ink/65">Every teacher holds early-childhood credentials &amp; ongoing training.</p>
+        </div>
+        <div class="rounded-2xl bg-white p-5 shadow-soft">
+          <p class="font-display text-lg font-800 text-ink">🍎 Nutritionist meals</p>
+          <p class="mt-1 text-sm text-ink/65">Fresh, allergy-aware meals cooked on-site daily.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="parents" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <span class="font-display font-700 text-berry">Happy Parents</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Words from our families</h2>
+    </div>
+
+    <div class="mt-14 grid gap-6 md:grid-cols-3">
+      <figure class="reveal rounded-[2rem] bg-gradient-to-br from-white to-cream p-8 shadow-soft ring-1 ring-ink/5">
+        <div class="text-2xl text-sun">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">&ldquo;My daughter literally runs to the door every morning. The teachers feel like family and the daily photos melt my heart.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-berry/20 font-800 text-berry">MJ</span>
+          <div><p class="font-800 text-ink">Mara J.</p><p class="text-sm text-ink/55">Parent of Ivy, Bloomers</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-[2rem] bg-gradient-to-br from-white to-cream p-8 shadow-soft ring-1 ring-ink/5">
+        <div class="text-2xl text-sun">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">&ldquo;As a first-time dad I was nervous. Sproutling&rsquo;s open communication and tiny class sizes won me over instantly.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-sky/25 font-800 text-sky">DT</span>
+          <div><p class="font-800 text-ink">Devon T.</p><p class="text-sm text-ink/55">Parent of Theo, Saplings</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-[2rem] bg-gradient-to-br from-white to-cream p-8 shadow-soft ring-1 ring-ink/5">
+        <div class="text-2xl text-sun">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">&ldquo;He started barely talking and now narrates his whole day. The growth we&rsquo;ve seen in one year is incredible.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-leaf/25 font-800 text-leaf">AP</span>
+          <div><p class="font-800 text-ink">Aisha P.</p><p class="text-sm text-ink/55">Parent of Kai, Trailblazers</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TUITION / ENROLL ============ -->
+<section id="tuition" class="relative overflow-hidden bg-leaf/10 py-20 sm:py-28">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <span class="font-display font-700 text-leaf">Simple Tuition</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Honest pricing, no surprises</h2>
+      <p class="mt-4 text-lg text-ink/70">Choose the schedule that fits your family. Meals, supplies &amp; daily app updates always included.</p>
+    </div>
+
+    <div class="mt-14 grid items-start gap-6 lg:grid-cols-3">
+      <div class="reveal rounded-[2rem] border-2 border-ink/10 bg-white p-8 shadow-soft">
+        <p class="font-display text-xl font-800 text-ink">Half Days</p>
+        <p class="mt-3 font-display text-4xl font-800 text-ink">$640<span class="text-base font-700 text-ink/50">/mo</span></p>
+        <p class="mt-1 text-sm text-ink/60">7:30am &ndash; 12:30pm</p>
+        <ul class="mt-6 space-y-3 text-ink/75">
+          <li class="flex gap-2">✅ Mornings &amp; lunch</li>
+          <li class="flex gap-2">✅ Daily activities</li>
+          <li class="flex gap-2">✅ Parent app updates</li>
+        </ul>
+        <a href="#enroll" class="mt-7 block rounded-full border-2 border-ink/15 py-3 text-center font-800 text-ink transition hover:border-leaf hover:text-leaf">Choose Half Days</a>
+      </div>
+
+      <div class="reveal relative rounded-[2rem] border-4 border-berry bg-white p-8 shadow-float lg:-translate-y-4">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-berry px-4 py-1 text-sm font-800 text-white">Most Popular</span>
+        <p class="font-display text-xl font-800 text-ink">Full Days</p>
+        <p class="mt-3 font-display text-4xl font-800 text-ink">$1,090<span class="text-base font-700 text-ink/50">/mo</span></p>
+        <p class="mt-1 text-sm text-ink/60">7:30am &ndash; 5:30pm</p>
+        <ul class="mt-6 space-y-3 text-ink/75">
+          <li class="flex gap-2">✅ Everything in Half Days</li>
+          <li class="flex gap-2">✅ Lunch, snacks &amp; nap</li>
+          <li class="flex gap-2">✅ Afternoon enrichment</li>
+          <li class="flex gap-2">✅ Priority enrollment</li>
+        </ul>
+        <a href="#enroll" class="mt-7 block rounded-full bg-berry py-3 text-center font-800 text-white shadow-puff transition hover:-translate-y-0.5 hover:bg-[#ff6593]">Choose Full Days</a>
+      </div>
+
+      <div class="reveal rounded-[2rem] border-2 border-ink/10 bg-white p-8 shadow-soft">
+        <p class="font-display text-xl font-800 text-ink">Flex Plan</p>
+        <p class="mt-3 font-display text-4xl font-800 text-ink">$72<span class="text-base font-700 text-ink/50">/day</span></p>
+        <p class="mt-1 text-sm text-ink/60">Pick your days</p>
+        <ul class="mt-6 space-y-3 text-ink/75">
+          <li class="flex gap-2">✅ 2&ndash;4 days per week</li>
+          <li class="flex gap-2">✅ Great for part-time</li>
+          <li class="flex gap-2">✅ Same loving care</li>
+        </ul>
+        <a href="#enroll" class="mt-7 block rounded-full border-2 border-ink/15 py-3 text-center font-800 text-ink transition hover:border-leaf hover:text-leaf">Choose Flex</a>
+      </div>
+    </div>
+    <p class="reveal mt-8 text-center text-sm text-ink/55">Sibling discount of 15% on second child. Financial aid available &mdash; ask us how.</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6">
+    <div class="reveal text-center">
+      <span class="font-display font-700 text-grape">Good Questions</span>
+      <h2 class="mt-2 font-display text-4xl font-800 text-ink sm:text-5xl">Parents often ask&hellip;</h2>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faq-list">
+      <div class="faq-item reveal overflow-hidden rounded-2xl border-2 border-ink/10 bg-white shadow-soft">
+        <button class="faq-trigger flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-800 text-ink">What are your opening hours?</span>
+          <span class="faq-plus grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sun/30 text-xl font-800 text-ink">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/70">We&rsquo;re open Monday to Friday, 7:30am to 5:30pm, year-round. We close only for major public holidays and two staff-training days each year (always announced well in advance).</p></div>
+      </div>
+
+      <div class="faq-item reveal overflow-hidden rounded-2xl border-2 border-ink/10 bg-white shadow-soft">
+        <button class="faq-trigger flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-800 text-ink">How do you keep my child safe?</span>
+          <span class="faq-plus grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sun/30 text-xl font-800 text-ink">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/70">Secure keypad entry, full CCTV coverage, daily health screenings, allergy-aware kitchen, and CPR/First-Aid-certified staff. Only verified pick-up contacts can collect a child.</p></div>
+      </div>
+
+      <div class="faq-item reveal overflow-hidden rounded-2xl border-2 border-ink/10 bg-white shadow-soft">
+        <button class="faq-trigger flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-800 text-ink">Do you provide meals and snacks?</span>
+          <span class="faq-plus grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sun/30 text-xl font-800 text-ink">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/70">Yes! A nutritionist-designed breakfast, hot lunch, and two snacks are freshly prepared on-site every day, with dairy-free, gluten-free, and allergy-safe options.</p></div>
+      </div>
+
+      <div class="faq-item reveal overflow-hidden rounded-2xl border-2 border-ink/10 bg-white shadow-soft">
+        <button class="faq-trigger flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-800 text-ink">How will I know how my child&rsquo;s day went?</span>
+          <span class="faq-plus grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sun/30 text-xl font-800 text-ink">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/70">Our parent app sends real-time photos, meal and nap logs, and learning notes throughout the day, plus a friendly summary at pick-up from your child&rsquo;s lead teacher.</p></div>
+      </div>
+
+      <div class="faq-item reveal overflow-hidden rounded-2xl border-2 border-ink/10 bg-white shadow-soft">
+        <button class="faq-trigger flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-800 text-ink">Is there a waitlist?</span>
+          <span class="faq-plus grid h-8 w-8 shrink-0 place-items-center rounded-full bg-sun/30 text-xl font-800 text-ink">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/70">Some age groups fill quickly, so we keep a short waitlist. Booking a tour is the best first step &mdash; we&rsquo;ll walk you through current openings for your child&rsquo;s age.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA / TOUR ============ -->
+<section id="tour" class="relative overflow-hidden py-24">
+  <div aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-br from-berry via-grape to-sky"></div>
+  <div aria-hidden="true" class="floaty absolute -top-10 left-10 h-40 w-40 rounded-blob bg-white/15"></div>
+  <div aria-hidden="true" class="floaty absolute bottom-0 right-8 h-52 w-52 rounded-full bg-sun/20 blur-xl"></div>
+
+  <div id="enroll" class="reveal mx-auto max-w-3xl px-4 text-center sm:px-6">
+    <span class="inline-block rounded-full bg-white/20 px-4 py-1.5 font-700 text-white">Come say hello 👋</span>
+    <h2 class="mt-5 font-display text-4xl font-800 leading-tight text-white sm:text-6xl">Book a free tour &amp; see the smiles for yourself</h2>
+    <p class="mx-auto mt-5 max-w-xl text-lg text-white/85">Walk our sunny rooms, meet our teachers, and feel the Sproutling warmth. Tours take 30 minutes &mdash; little ones welcome.</p>
+
+    <form class="mx-auto mt-8 flex max-w-lg flex-col gap-3 sm:flex-row" onsubmit="return false;">
+      <input type="email" required placeholder="Your email address"
+             class="w-full rounded-full border-0 px-6 py-4 font-600 text-ink shadow-soft outline-none ring-2 ring-transparent focus:ring-sun" />
+      <button class="rounded-full bg-sun px-7 py-4 font-800 text-ink shadow-puff transition hover:-translate-y-0.5">Book My Tour</button>
+    </form>
+    <p class="mt-4 text-sm text-white/70">Or call us at <span class="font-800 text-white">(555) 240-7780</span> &middot; Mon&ndash;Fri 8am&ndash;6pm</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink py-16 text-white/80">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-1">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-10 w-10 place-items-center rounded-2xl bg-berry text-white">
+            <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c0-5 3-7 3-11a3 3 0 0 0-6 0c0 4 3 6 3 11Z"/><path d="M5 13c-1.5-.5-2-2-1.5-3.5C5 11 7 11 8 12"/><path d="M19 13c1.5-.5 2-2 1.5-3.5C19 11 17 11 16 12"/></svg>
+          </span>
+          <span class="font-display text-2xl font-800 text-white">Sproutling</span>
+        </a>
+        <p class="mt-4 text-sm text-white/60">Where little hearts grow big &amp; brave. A play-based preschool &amp; daycare for curious kids.</p>
+      </div>
+
+      <div>
+        <p class="font-display text-lg font-800 text-white">Explore</p>
+        <ul class="mt-4 space-y-2 text-sm">
+          <li><a href="#programs" class="transition hover:text-sun">Programs</a></li>
+          <li><a href="#why" class="transition hover:text-sun">Why Us</a></li>
+          <li><a href="#schedule" class="transition hover:text-sun">A Day Here</a></li>
+          <li><a href="#tuition" class="transition hover:text-sun">Tuition</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="font-display text-lg font-800 text-white">Visit Us</p>
+        <ul class="mt-4 space-y-2 text-sm text-white/60">
+          <li>14 Meadowlark Lane</li>
+          <li>Brightwater, CA 90210</li>
+          <li>(555) 240-7780</li>
+          <li>hello@sproutling.care</li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="font-display text-lg font-800 text-white">Stay in touch</p>
+        <p class="mt-4 text-sm text-white/60">Little updates, big smiles &mdash; in your inbox.</p>
+        <form class="mt-3 flex gap-2" onsubmit="return false;">
+          <input type="email" placeholder="Email" class="w-full rounded-full bg-white/10 px-4 py-2.5 text-sm text-white placeholder-white/40 outline-none ring-1 ring-white/15 focus:ring-sun" />
+          <button class="rounded-full bg-sun px-4 py-2.5 text-sm font-800 text-ink">Go</button>
+        </form>
+        <div class="mt-5 flex gap-3">
+          <a href="#" aria-label="Instagram" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition hover:bg-berry">★</a>
+          <a href="#" aria-label="Facebook" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition hover:bg-sky">✦</a>
+          <a href="#" aria-label="Newsletter" class="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition hover:bg-leaf">✿</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-sm text-white/50 sm:flex-row">
+      <p>&copy; 2026 Sproutling Childcare. Made with 💛 for little ones.</p>
+      <div class="flex gap-5">
+        <a href="#" class="transition hover:text-white">Privacy</a>
+        <a href="#" class="transition hover:text-white">Safeguarding</a>
+        <a href="#" class="transition hover:text-white">Careers</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGSAP = typeof gsap !== 'undefined';
+
+  /* ---------- FAQ accordion (always works) ---------- */
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Nav shadow on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.querySelector('div > div').classList.add('shadow-float');
+    else nav.querySelector('div > div').classList.remove('shadow-float');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Reduced motion: reveal everything, stop here ---------- */
+  if (reduce || !hasGSAP) {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-in'));
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Hero headline springy reveal ---------- */
+  gsap.from('.hero-line', {
+    y: 60, opacity: 0, rotateX: -40, duration: 1, ease: 'back.out(1.7)', stagger: 0.12, delay: 0.15
+  });
+  gsap.from('.hero-img', { scale: 0.9, opacity: 0, duration: 1.1, ease: 'back.out(1.4)', delay: 0.35 });
+
+  /* ---------- Section reveals ---------- */
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.85, ease: 'back.out(1.4)',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  /* ---------- Count-ups ---------- */
+  gsap.utils.toArray('.count').forEach((el) => {
+    const target = +el.dataset.target;
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: target, duration: 1.6, ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(obj.v); }
+      })
+    });
+  });
+
+  /* ---------- Floating shapes parallax ---------- */
+  gsap.utils.toArray('.floaty').forEach((el, i) => {
+    const depth = parseFloat(el.dataset.depth) || (0.2 + (i % 4) * 0.1);
+    gsap.to(el, {
+      yPercent: -18 * (depth * 4),
+      ease: 'none',
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 }
+    });
+    // gentle idle float
+    gsap.to(el, { y: '+=14', duration: 2.4 + i * 0.3, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  });
+
+  /* ---------- Magnetic Enroll CTA ---------- */
+  const mag = document.getElementById('enroll-magnetic');
+  if (mag) {
+    const strength = 0.35;
+    mag.addEventListener('mousemove', (e) => {
+      const r = mag.getBoundingClientRect();
+      const x = e.clientX - (r.left + r.width / 2);
+      const y = e.clientY - (r.top + r.height / 2);
+      gsap.to(mag, { x: x * strength, y: y * strength, duration: 0.4, ease: 'power3.out' });
+    });
+    mag.addEventListener('mouseleave', () => {
+      gsap.to(mag, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.4)' });
+    });
+  }
+
+  /* ---------- Program card bounce on hover (extra spring) ---------- */
+  document.querySelectorAll('.prog-card').forEach((card) => {
+    card.addEventListener('mouseenter', () => {
+      gsap.fromTo(card.querySelector('span'),
+        { scale: 1 }, { scale: 1.18, duration: 0.5, ease: 'back.out(3)', yoyo: true, repeat: 1 });
+    });
+  });
+
+  ScrollTrigger.refresh();
+})();
+</script>
+</body>
+</html>

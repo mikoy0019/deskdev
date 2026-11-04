@@ -1,0 +1,777 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Kiln & Stone â€” a handmade ceramics studio and shop. Wheel-thrown stoneware, hand-glazed tableware, and small-batch collections made by hand in Oregon." />
+<title>Kiln &amp; Clay â€” Handmade Ceramics Studio &amp; Shop</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['"Fraunces"', 'serif'],
+          sans: ['"Hanken Grotesk"', 'sans-serif'],
+        },
+        colors: {
+          clay:    '#b9633f',   // terracotta
+          clay2:   '#8f4a2e',   // deep clay
+          cream:   '#f4ece1',   // warm cream / paper
+          sand:    '#e6d8c5',   // sand
+          ink:     '#2c241d',   // warm ink
+          moss:    '#6f7355',   // muted glaze green
+          ash:     '#9a8c79',   // muted taupe
+        },
+        keyframes: {
+          spin360: { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } },
+          floaty:  { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-14px)' } },
+        },
+        animation: {
+          'wheel': 'spin360 7s linear infinite',
+          'floaty': 'floaty 6s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #f4ece1; color: #2c241d; overflow-x: hidden; cursor: none; }
+  ::selection { background: #b9633f; color: #f4ece1; }
+
+  /* Grain / paper texture */
+  .grain::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring { position: fixed; top: 0; left: 0; border-radius: 9999px; pointer-events: none; z-index: 70; mix-blend-mode: multiply; }
+  .cursor-dot { width: 7px; height: 7px; background: #8f4a2e; transform: translate(-50%, -50%); }
+  .cursor-ring { width: 38px; height: 38px; border: 1.5px solid #b9633f; transform: translate(-50%, -50%); transition: width .25s, height .25s, background .25s, border-color .25s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(185,99,63,.12); border-color: #8f4a2e; }
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  /* Organic clip reveal */
+  .clip-reveal { clip-path: inset(0 100% 0 0); }
+
+  /* Marquee */
+  .marquee-track { display: inline-flex; white-space: nowrap; will-change: transform; animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Organic blob radius */
+  .blob { border-radius: 56% 44% 60% 40% / 48% 56% 44% 52%; }
+  .blob2 { border-radius: 42% 58% 47% 53% / 60% 40% 60% 40%; }
+
+  .lift { transition: transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s; }
+  .lift:hover { transform: translateY(-8px); box-shadow: 0 30px 60px -28px rgba(44,36,29,.45); }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .clip-reveal { clip-path: none !important; }
+    .marquee-track { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="grain font-sans antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-dot" id="cDot"></div>
+<div class="cursor-ring" id="cRing"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group" data-hover>
+      <span class="relative w-9 h-9 grid place-items-center">
+        <span class="absolute inset-0 rounded-full bg-clay/15"></span>
+        <span class="block w-5 h-5 rounded-full border-2 border-clay2 animate-wheel"></span>
+        <span class="absolute w-1.5 h-1.5 rounded-full bg-clay2"></span>
+      </span>
+      <span class="font-serif text-xl tracking-tight text-ink">Kiln <span class="text-clay">&amp;</span> Clay</span>
+    </a>
+
+    <ul class="hidden md:flex items-center gap-8 text-sm font-medium text-ink/80">
+      <li><a href="#shop" class="hover:text-clay transition-colors" data-hover>Shop</a></li>
+      <li><a href="#collections" class="hover:text-clay transition-colors" data-hover>Collections</a></li>
+      <li><a href="#studio" class="hover:text-clay transition-colors" data-hover>The Studio</a></li>
+      <li><a href="#workshops" class="hover:text-clay transition-colors" data-hover>Workshops</a></li>
+      <li><a href="#about" class="hover:text-clay transition-colors" data-hover>Maker</a></li>
+    </ul>
+
+    <div class="flex items-center gap-4">
+      <button class="relative w-10 h-10 grid place-items-center rounded-full border border-ink/15 hover:border-clay hover:bg-clay/5 transition" data-hover aria-label="Cart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="text-ink"><path d="M6 7h13l-1.2 9.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 4H3"/><circle cx="9" cy="21" r="1"/><circle cx="17" cy="21" r="1"/></svg>
+        <span class="absolute -top-1 -right-1 w-5 h-5 text-[10px] font-bold grid place-items-center rounded-full bg-clay text-cream" id="cartCount">3</span>
+      </button>
+      <a href="#cta" class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ink text-cream text-sm font-semibold hover:bg-clay2 transition-colors" data-hover>Shop now</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- soft earthy backdrop -->
+  <div class="absolute inset-0 -z-10" style="background:radial-gradient(1100px 700px at 78% 20%, rgba(185,99,63,.14), transparent 60%), radial-gradient(900px 600px at 10% 90%, rgba(111,115,85,.12), transparent 60%);"></div>
+  <div class="absolute -z-10 top-24 right-[-6rem] w-[34rem] h-[34rem] blob bg-sand/60 animate-floaty"></div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center w-full">
+    <!-- Copy -->
+    <div class="lg:col-span-6">
+      <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cream border border-clay/25 text-clay2 text-xs font-semibold tracking-widest uppercase" data-reveal>
+        <span class="w-2 h-2 rounded-full bg-clay animate-pulse"></span> Small-batch Â· Made by hand
+      </span>
+
+      <h1 class="mt-6 font-serif font-500 leading-[0.95] tracking-tight text-ink text-[15vw] sm:text-7xl lg:text-[5.6rem]">
+        <span class="block overflow-hidden"><span class="hl inline-block">Clay shaped</span></span>
+        <span class="block overflow-hidden"><span class="hl inline-block">slowly, by</span></span>
+        <span class="block overflow-hidden"><span class="hl inline-block italic text-clay">warm hands.</span></span>
+      </h1>
+
+      <p class="mt-6 max-w-md text-lg text-ink/70" data-reveal>
+        Kiln &amp; Clay is a one-potter studio throwing stoneware tableware in small, honest batches â€” glazed in ash, oat, and ember. No two pieces are alike, and that's the point.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4" data-reveal>
+        <a href="#shop" id="magnetShop" class="relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-clay text-cream font-semibold overflow-hidden group" data-hover>
+          <span class="relative z-10">Shop the studio</span>
+          <svg class="relative z-10" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="absolute inset-0 bg-clay2 translate-y-full group-hover:translate-y-0 transition-transform duration-400"></span>
+        </a>
+        <a href="#process" class="inline-flex items-center gap-2 text-ink font-semibold underline-offset-4 hover:underline" data-hover>See how it's made</a>
+      </div>
+
+      <!-- count-ups -->
+      <div class="mt-12 grid grid-cols-3 gap-6 max-w-md" data-reveal>
+        <div>
+          <div class="font-serif text-4xl text-clay2"><span class="count" data-to="2400">0</span>+</div>
+          <div class="text-xs uppercase tracking-wider text-ink/55 mt-1">Pieces thrown</div>
+        </div>
+        <div>
+          <div class="font-serif text-4xl text-clay2"><span class="count" data-to="9">0</span></div>
+          <div class="text-xs uppercase tracking-wider text-ink/55 mt-1">Glaze recipes</div>
+        </div>
+        <div>
+          <div class="font-serif text-4xl text-clay2"><span class="count" data-to="100">0</span>%</div>
+          <div class="text-xs uppercase tracking-wider text-ink/55 mt-1">Wheel-thrown</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ceramic image + spinning wheel accent -->
+    <div class="lg:col-span-6 relative">
+      <div class="relative mx-auto max-w-md" data-parallax>
+        <div class="blob overflow-hidden shadow-2xl shadow-ink/30 bg-gradient-to-br from-clay/40 via-sand to-moss/30">
+          <img src="https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?auto=format&fit=crop&w=1600&q=80"
+               alt="Hands shaping clay on a pottery wheel"
+               class="w-full h-[30rem] object-cover" onerror="this.style.display='none'">
+        </div>
+
+        <!-- spinning wheel badge -->
+        <div class="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-cream shadow-xl grid place-items-center">
+          <svg viewBox="0 0 100 100" class="w-24 h-24 animate-wheel text-ink/70">
+            <defs><path id="circlePath" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0"/></defs>
+            <text font-size="8.3" letter-spacing="2.6" fill="currentColor" font-family="Hanken Grotesk">
+              <textPath href="#circlePath">KILN &amp; CLAY Â· WHEEL-THROWN Â· OREGON Â· </textPath>
+            </text>
+          </svg>
+          <span class="absolute w-4 h-4 rounded-full border-2 border-clay2"></span>
+        </div>
+
+        <!-- floating price chip -->
+        <div class="absolute top-6 -right-4 sm:-right-8 bg-cream/95 backdrop-blur rounded-2xl px-4 py-3 shadow-lg border border-sand animate-floaty">
+          <div class="text-[10px] uppercase tracking-wider text-ink/50">Ember Mug</div>
+          <div class="font-serif text-xl text-clay2">$42</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-ink/40 text-xs tracking-widest uppercase flex flex-col items-center gap-2">
+    <span>Scroll</span>
+    <span class="w-px h-8 bg-ink/30"></span>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="py-5 bg-ink text-cream overflow-hidden select-none">
+  <div class="marquee-track text-2xl sm:text-3xl font-serif">
+    <span class="mx-6">Stoneware</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Hand-glazed</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Wheel-thrown</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Small batches</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Made in Oregon</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Stoneware</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Hand-glazed</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Wheel-thrown</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Small batches</span><span class="mx-6 text-clay">âœº</span>
+    <span class="mx-6">Made in Oregon</span><span class="mx-6 text-clay">âœº</span>
+  </div>
+</section>
+
+<!-- ===================== BESTSELLERS ===================== -->
+<section id="shop" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>The shop</span>
+        <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink" data-reveal>Quietly loved bestsellers</h2>
+      </div>
+      <p class="max-w-xs text-ink/60" data-reveal>Each piece is thrown, trimmed, and glazed by one pair of hands. Stock is limited and restocks are slow.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card template -->
+      <article class="product group" data-reveal>
+        <div class="lift relative overflow-hidden rounded-3xl bg-gradient-to-br from-sand to-clay/25 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1600&q=80" alt="Ember stoneware mug" class="prod-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.style.display='none'">
+          <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-cream/90 text-[11px] font-semibold text-clay2">Bestseller</span>
+          <button class="add-info absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400 py-3 rounded-full bg-ink text-cream text-sm font-semibold" data-hover>Add to cart â€” $42</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl text-ink">Ember Mug</h3>
+          <span class="text-ink/70">$42</span>
+        </div>
+        <p class="text-sm text-ink/55 mt-1">Ash-glazed Â· 10oz Â· holds heat</p>
+      </article>
+
+      <article class="product group" data-reveal>
+        <div class="lift relative overflow-hidden rounded-3xl bg-gradient-to-br from-moss/25 to-sand aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1600&q=80" alt="Oat dinner plate set" class="prod-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.style.display='none'">
+          <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-cream/90 text-[11px] font-semibold text-clay2">New</span>
+          <button class="add-info absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400 py-3 rounded-full bg-ink text-cream text-sm font-semibold" data-hover>Add to cart â€” $68</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl text-ink">Oat Dinner Plate</h3>
+          <span class="text-ink/70">$68</span>
+        </div>
+        <p class="text-sm text-ink/55 mt-1">Matte oat Â· 10in Â· set of 2</p>
+      </article>
+
+      <article class="product group" data-reveal>
+        <div class="lift relative overflow-hidden rounded-3xl bg-gradient-to-br from-clay/30 to-sand aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1600&q=80" alt="Stoneware pour-over vessel" class="prod-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.style.display='none'">
+          <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-cream/90 text-[11px] font-semibold text-clay2">Limited</span>
+          <button class="add-info absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400 py-3 rounded-full bg-ink text-cream text-sm font-semibold" data-hover>Add to cart â€” $96</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl text-ink">Pour-over Carafe</h3>
+          <span class="text-ink/70">$96</span>
+        </div>
+        <p class="text-sm text-ink/55 mt-1">Ember drip Â· 18oz Â· cone filter</p>
+      </article>
+
+      <article class="product group" data-reveal>
+        <div class="lift relative overflow-hidden rounded-3xl bg-gradient-to-br from-sand to-moss/30 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?auto=format&fit=crop&w=1600&q=80" alt="Ash speckled bowl" class="prod-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onerror="this.style.display='none'">
+          <span class="absolute top-3 left-3 px-3 py-1 rounded-full bg-cream/90 text-[11px] font-semibold text-clay2">Restocked</span>
+          <button class="add-info absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-400 py-3 rounded-full bg-ink text-cream text-sm font-semibold" data-hover>Add to cart â€” $54</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl text-ink">Speckle Bowl</h3>
+          <span class="text-ink/70">$54</span>
+        </div>
+        <p class="text-sm text-ink/55 mt-1">Ash speckle Â· 6in Â· nesting</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COLLECTIONS ===================== -->
+<section id="collections" class="py-24 sm:py-32 bg-ink text-cream relative overflow-hidden">
+  <div class="absolute -top-24 -right-24 w-[30rem] h-[30rem] blob2 bg-clay/15"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-clay text-xs font-bold uppercase tracking-[0.25em]" data-reveal>Collections</span>
+      <h2 class="mt-3 font-serif text-4xl sm:text-5xl" data-reveal>Glazed in seasons</h2>
+      <p class="mt-4 text-cream/60" data-reveal>We release three small collections a year, each built around a single glaze story and fired in a single kiln load.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <a href="#shop" class="col-card group relative overflow-hidden rounded-3xl aspect-[3/4]" data-hover data-reveal>
+        <img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=1600&q=80" alt="Ash Hours collection" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <div class="text-clay text-xs uppercase tracking-widest mb-1">12 pieces</div>
+          <h3 class="font-serif text-2xl">Ash Hours</h3>
+          <p class="text-cream/60 text-sm mt-1 max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-500">Cool, smoke-grey glazes for slow mornings and quieter tables.</p>
+        </div>
+      </a>
+
+      <a href="#shop" class="col-card group relative overflow-hidden rounded-3xl aspect-[3/4]" data-hover data-reveal>
+        <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1600&q=80" alt="Oat Field collection" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <div class="text-clay text-xs uppercase tracking-widest mb-1">9 pieces</div>
+          <h3 class="font-serif text-2xl">Oat Field</h3>
+          <p class="text-cream/60 text-sm mt-1 max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-500">Warm matte oats and creams â€” everyday tableware that ages well.</p>
+        </div>
+      </a>
+
+      <a href="#shop" class="col-card group relative overflow-hidden rounded-3xl aspect-[3/4]" data-hover data-reveal>
+        <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1600&q=80" alt="Ember Run collection" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <div class="text-clay text-xs uppercase tracking-widest mb-1">7 pieces</div>
+          <h3 class="font-serif text-2xl">Ember Run</h3>
+          <p class="text-cream/60 text-sm mt-1 max-h-0 overflow-hidden group-hover:max-h-20 transition-all duration-500">Rust and amber drip glazes â€” bold pieces fired hot and fast.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== THE STUDIO / PROCESS ===================== -->
+<section id="studio" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative" data-parallax>
+      <div class="blob2 overflow-hidden shadow-2xl shadow-ink/20 bg-gradient-to-br from-moss/30 via-sand to-clay/30">
+        <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1600&q=80" alt="Inside the ceramics studio" class="w-full h-[34rem] object-cover" onerror="this.style.display='none'">
+      </div>
+      <div class="absolute -bottom-5 right-6 bg-cream rounded-2xl px-5 py-4 shadow-xl border border-sand">
+        <div class="font-serif text-3xl text-clay2"><span class="count" data-to="3">0</span></div>
+        <div class="text-xs uppercase tracking-wider text-ink/55">Kiln firings / week</div>
+      </div>
+    </div>
+
+    <div id="process">
+      <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>The studio</span>
+      <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink" data-reveal>From wet clay to your table</h2>
+      <p class="mt-4 text-ink/65 max-w-md" data-reveal>Nothing here is rushed. A single mug passes through these hands six times before it's ready to ship.</p>
+
+      <ol class="mt-10 space-y-7">
+        <li class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-11 h-11 rounded-full border border-clay/40 grid place-items-center font-serif text-clay2">01</span>
+          <div><h3 class="font-serif text-xl text-ink">Wedge &amp; centre</h3><p class="text-ink/60 text-sm mt-1">Reclaimed stoneware is wedged by hand to remove air, then centred on the wheel.</p></div>
+        </li>
+        <li class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-11 h-11 rounded-full border border-clay/40 grid place-items-center font-serif text-clay2">02</span>
+          <div><h3 class="font-serif text-xl text-ink">Throw &amp; trim</h3><p class="text-ink/60 text-sm mt-1">Pulled to form on the wheel, then trimmed leather-hard the next day for a clean foot.</p></div>
+        </li>
+        <li class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-11 h-11 rounded-full border border-clay/40 grid place-items-center font-serif text-clay2">03</span>
+          <div><h3 class="font-serif text-xl text-ink">Bisque, glaze &amp; fire</h3><p class="text-ink/60 text-sm mt-1">Bisque-fired, hand-dipped in studio-mixed glaze, then fired to cone 6 â€” about 2,200Â°F.</p></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WORKSHOPS ===================== -->
+<section id="workshops" class="py-24 sm:py-32 bg-sand/50">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>Workshops &amp; classes</span>
+        <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink" data-reveal>Put your hands in clay</h2>
+      </div>
+      <p class="max-w-xs text-ink/60" data-reveal>Small classes of six at the studio bench. All clay, tools, glazing and firing included.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="lift bg-cream rounded-3xl p-7 border border-sand" data-reveal>
+        <div class="flex justify-between items-start">
+          <h3 class="font-serif text-2xl text-ink">Wheel Intro</h3>
+          <span class="font-serif text-2xl text-clay2">$95</span>
+        </div>
+        <p class="text-ink/60 text-sm mt-3">A 3-hour first-timer's class. Centre, pull, and throw your first two mugs.</p>
+        <ul class="mt-5 space-y-2 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-clay">âœº</span> 3 hours Â· evenings</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> Take home 2 pieces</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> No experience needed</li>
+        </ul>
+        <a href="#cta" class="mt-6 inline-flex w-full justify-center py-3 rounded-full border border-ink/20 font-semibold hover:bg-ink hover:text-cream transition" data-hover>Reserve a seat</a>
+      </div>
+
+      <div class="lift bg-ink text-cream rounded-3xl p-7 relative overflow-hidden" data-reveal>
+        <span class="absolute top-4 right-4 px-3 py-1 rounded-full bg-clay text-[11px] font-semibold">Most loved</span>
+        <div class="flex justify-between items-start">
+          <h3 class="font-serif text-2xl">Six-Week Studio</h3>
+          <span class="font-serif text-2xl text-clay">$420</span>
+        </div>
+        <p class="text-cream/60 text-sm mt-3">A full cycle from beginner to a finished set of tableware you've glazed yourself.</p>
+        <ul class="mt-5 space-y-2 text-sm text-cream/80">
+          <li class="flex gap-2"><span class="text-clay">âœº</span> 6 weekly sessions</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> Open studio access</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> Glaze library included</li>
+        </ul>
+        <a href="#cta" class="mt-6 inline-flex w-full justify-center py-3 rounded-full bg-clay text-cream font-semibold hover:bg-clay2 transition" data-hover>Reserve a seat</a>
+      </div>
+
+      <div class="lift bg-cream rounded-3xl p-7 border border-sand" data-reveal>
+        <div class="flex justify-between items-start">
+          <h3 class="font-serif text-2xl text-ink">Private &amp; Groups</h3>
+          <span class="font-serif text-2xl text-clay2">$60<span class="text-base">/pp</span></span>
+        </div>
+        <p class="text-ink/60 text-sm mt-3">Book the bench for a birthday, team day, or date night. Up to eight makers.</p>
+        <ul class="mt-5 space-y-2 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-clay">âœº</span> 2.5 hours Â· flexible</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> Hand-build or wheel</li>
+          <li class="flex gap-2"><span class="text-clay">âœº</span> BYO drinks welcome</li>
+        </ul>
+        <a href="#cta" class="mt-6 inline-flex w-full justify-center py-3 rounded-full border border-ink/20 font-semibold hover:bg-ink hover:text-cream transition" data-hover>Enquire</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT / MAKER ===================== -->
+<section id="about" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-14 items-center">
+    <div class="lg:col-span-5 relative" data-parallax>
+      <div class="blob overflow-hidden shadow-2xl shadow-ink/20 bg-gradient-to-br from-clay/40 to-sand">
+        <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=1600&q=80" alt="Portrait of the maker at the wheel" class="w-full h-[32rem] object-cover" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>The maker</span>
+      <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink leading-tight" data-reveal>Hi, I'm Iris â€” one potter, one wheel, a lot of clay.</h2>
+      <p class="mt-6 text-ink/70 max-w-xl" data-reveal>I started Kiln &amp; Clay in a leaky garage in 2017 with a second-hand wheel and a kiln I couldn't quite afford. Eight years later it's a real studio in Bend, Oregon â€” but it's still just me, throwing every piece you'll ever buy here.</p>
+      <p class="mt-4 text-ink/70 max-w-xl" data-reveal>I believe the things you use every day should be made by someone, not something. A little wonky. A little warm. Yours.</p>
+      <div class="mt-8 flex items-center gap-6" data-reveal>
+        <svg width="120" height="44" viewBox="0 0 120 44" class="text-ink/80"><text x="0" y="34" font-family="Fraunces" font-style="italic" font-size="30" fill="currentColor">Iris M.</text></svg>
+        <span class="text-ink/50 text-sm">Founder &amp; potter</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMMISSIONS ===================== -->
+<section id="commissions" class="py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="rounded-[2.5rem] bg-clay text-cream overflow-hidden relative">
+      <div class="absolute -bottom-16 -left-10 w-72 h-72 blob bg-cream/10"></div>
+      <div class="grid lg:grid-cols-2 gap-10 p-9 sm:p-14 relative">
+        <div>
+          <span class="text-cream/70 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>Commissions</span>
+          <h2 class="mt-3 font-serif text-4xl sm:text-5xl" data-reveal>Need a set that's truly yours?</h2>
+          <p class="mt-5 text-cream/80 max-w-md" data-reveal>I take a handful of custom commissions each season â€” wedding registries, cafÃ© dinnerware, gallery editions. Tell me the glaze, the count, and the table it's for.</p>
+          <a href="#cta" class="mt-8 inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-cream text-clay2 font-semibold hover:bg-ink hover:text-cream transition" data-hover>Start a commission
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+        <ul class="grid sm:grid-cols-2 gap-4 self-center">
+          <li class="bg-cream/10 rounded-2xl p-5" data-reveal><div class="font-serif text-2xl">Tableware</div><p class="text-cream/70 text-sm mt-1">Full dinner sets, glazed to match.</p></li>
+          <li class="bg-cream/10 rounded-2xl p-5" data-reveal><div class="font-serif text-2xl">CafÃ© &amp; bar</div><p class="text-cream/70 text-sm mt-1">Cups and plates built for daily service.</p></li>
+          <li class="bg-cream/10 rounded-2xl p-5" data-reveal><div class="font-serif text-2xl">Registry</div><p class="text-cream/70 text-sm mt-1">A handmade set for the new table.</p></li>
+          <li class="bg-cream/10 rounded-2xl p-5" data-reveal><div class="font-serif text-2xl">Editions</div><p class="text-cream/70 text-sm mt-1">Limited gallery runs and one-offs.</p></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-24 sm:py-32 bg-sand/50">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>Kind words</span>
+      <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink" data-reveal>Living with the work</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="lift bg-cream rounded-3xl p-7 border border-sand" data-reveal>
+        <div class="text-clay text-2xl">âœºâœºâœºâœºâœº</div>
+        <blockquote class="mt-4 text-ink/80 font-serif text-lg leading-relaxed">"My Ember mug is the first thing I reach for every morning. It's been chipped, loved, and it's still my favourite."</blockquote>
+        <figcaption class="mt-5 text-sm text-ink/55">â€” Dana R., Portland</figcaption>
+      </figure>
+      <figure class="lift bg-cream rounded-3xl p-7 border border-sand" data-reveal>
+        <div class="text-clay text-2xl">âœºâœºâœºâœºâœº</div>
+        <blockquote class="mt-4 text-ink/80 font-serif text-lg leading-relaxed">"We commissioned our whole wedding dinner set. Guests still ask about the plates two years on."</blockquote>
+        <figcaption class="mt-5 text-sm text-ink/55">â€” Theo &amp; Mara, Bend</figcaption>
+      </figure>
+      <figure class="lift bg-cream rounded-3xl p-7 border border-sand" data-reveal>
+        <div class="text-clay text-2xl">âœºâœºâœºâœºâœº</div>
+        <blockquote class="mt-4 text-ink/80 font-serif text-lg leading-relaxed">"The six-week class changed how I see everyday objects. Iris is a patient, generous teacher."</blockquote>
+        <figcaption class="mt-5 text-sm text-ink/55">â€” Priya S., Eugene</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-24 sm:py-32">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="text-clay2 text-xs font-bold uppercase tracking-[0.25em]" data-reveal>Good to know</span>
+      <h2 class="mt-3 font-serif text-4xl sm:text-5xl text-ink" data-reveal>Frequently asked</h2>
+    </div>
+
+    <div class="divide-y divide-ink/10 border-y border-ink/10">
+      <div class="acc" data-reveal>
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-lg sm:text-xl text-ink">Is everything really made by hand?</span>
+          <span class="acc-icon shrink-0 text-clay2 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="pb-6 text-ink/65">Yes â€” every piece is thrown on the wheel by Iris, then trimmed, glazed and fired in the studio. No moulds, no factory, no second pair of hands.</p></div>
+      </div>
+      <div class="acc" data-reveal>
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-lg sm:text-xl text-ink">Are the pieces food and dishwasher safe?</span>
+          <span class="acc-icon shrink-0 text-clay2 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="pb-6 text-ink/65">All glazes are food-safe and tested. Pieces are dishwasher and microwave safe, though a gentle hand-wash will keep the glaze brightest over the years.</p></div>
+      </div>
+      <div class="acc" data-reveal>
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-lg sm:text-xl text-ink">Why do pieces look slightly different from the photos?</span>
+          <span class="acc-icon shrink-0 text-clay2 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="pb-6 text-ink/65">Because they are. Glaze pools and breaks differently on every piece, so colour and speckle vary. The one you receive is genuinely one of a kind.</p></div>
+      </div>
+      <div class="acc" data-reveal>
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-lg sm:text-xl text-ink">How long does shipping take?</span>
+          <span class="acc-icon shrink-0 text-clay2 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="pb-6 text-ink/65">In-stock pieces ship within 3â€“5 business days, wrapped carefully for the kiln-to-table journey. Commissions are quoted per project, usually 4â€“8 weeks.</p></div>
+      </div>
+      <div class="acc" data-reveal>
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-lg sm:text-xl text-ink">Do you restock sold-out pieces?</span>
+          <span class="acc-icon shrink-0 text-clay2 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="pb-6 text-ink/65">Slowly. Bestsellers return every few weeks; collection pieces are usually one-time runs. Join the studio list to hear about restocks first.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="cta" class="py-24 sm:py-32 bg-ink text-cream relative overflow-hidden">
+  <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] blob bg-clay/15 animate-floaty"></div>
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 text-center relative">
+    <span class="text-clay text-xs font-bold uppercase tracking-[0.25em]" data-reveal>The studio list</span>
+    <h2 class="mt-4 font-serif text-4xl sm:text-6xl leading-tight" data-reveal>Be first to the kiln.</h2>
+    <p class="mt-5 text-cream/65 max-w-md mx-auto" data-reveal>One quiet email when a new collection opens or a bestseller restocks. No noise, just clay.</p>
+    <form class="mt-9 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false;" data-reveal>
+      <input type="email" required placeholder="your@email.com" class="flex-1 px-5 py-4 rounded-full bg-cream/10 border border-cream/20 text-cream placeholder-cream/40 focus:outline-none focus:border-clay" />
+      <button class="px-7 py-4 rounded-full bg-clay text-cream font-semibold hover:bg-clay2 transition" data-hover>Join the list</button>
+    </form>
+    <p class="mt-4 text-cream/40 text-xs" data-reveal>Made in Bend, Oregon Â· Unsubscribe anytime</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-cream pt-16 pb-10 border-t border-sand">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <a href="#top" class="flex items-center gap-3 mb-4" data-hover>
+          <span class="block w-5 h-5 rounded-full border-2 border-clay2 animate-wheel"></span>
+          <span class="font-serif text-xl text-ink">Kiln <span class="text-clay">&amp;</span> Clay</span>
+        </a>
+        <p class="text-ink/55 text-sm max-w-xs">Handmade stoneware, thrown one piece at a time in Bend, Oregon.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-ink mb-4 text-sm uppercase tracking-wider">Shop</h4>
+        <ul class="space-y-2 text-ink/60 text-sm">
+          <li><a href="#shop" class="hover:text-clay" data-hover>Bestsellers</a></li>
+          <li><a href="#collections" class="hover:text-clay" data-hover>Collections</a></li>
+          <li><a href="#commissions" class="hover:text-clay" data-hover>Commissions</a></li>
+          <li><a href="#shop" class="hover:text-clay" data-hover>Gift cards</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-ink mb-4 text-sm uppercase tracking-wider">Studio</h4>
+        <ul class="space-y-2 text-ink/60 text-sm">
+          <li><a href="#workshops" class="hover:text-clay" data-hover>Workshops</a></li>
+          <li><a href="#studio" class="hover:text-clay" data-hover>The process</a></li>
+          <li><a href="#about" class="hover:text-clay" data-hover>The maker</a></li>
+          <li><a href="#faq" class="hover:text-clay" data-hover>FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-ink mb-4 text-sm uppercase tracking-wider">Visit</h4>
+        <ul class="space-y-2 text-ink/60 text-sm">
+          <li>114 Kiln Row</li>
+          <li>Bend, Oregon</li>
+          <li>Open Thuâ€“Sun, 10â€“5</li>
+          <li><a href="#cta" class="hover:text-clay" data-hover>hello@kilnclay.studio</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-sand flex flex-col sm:flex-row items-center justify-between gap-4 text-ink/45 text-xs">
+      <span>Â© 2026 Kiln &amp; Clay Ceramics. All pieces made by hand.</span>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-clay" data-hover>Instagram</a>
+        <a href="#" class="hover:text-clay" data-hover>Pinterest</a>
+        <a href="#" class="hover:text-clay" data-hover>Journal</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  const dot = document.getElementById('cDot');
+  const ring = document.getElementById('cRing');
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    let rx = 0, ry = 0, mx = 0, my = 0;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    const ring_loop = () => {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(ring_loop);
+    };
+    ring_loop();
+    document.querySelectorAll('[data-hover]').forEach((el) => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('bg-cream/85', 'backdrop-blur', 'shadow-sm');
+    } else {
+      nav.classList.remove('bg-cream/85', 'backdrop-blur', 'shadow-sm');
+    }
+  };
+  window.addEventListener('scroll', onScroll); onScroll();
+
+  /* ---------- Accordion ---------- */
+  document.querySelectorAll('.acc-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.acc-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach((b) => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.acc-icon').forEach((i) => { i.style.transform = 'rotate(0deg)'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  /* ---------- Cart counter ---------- */
+  const cartCount = document.getElementById('cartCount');
+  document.querySelectorAll('.add-info').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.preventDefault();
+      cartCount.textContent = parseInt(cartCount.textContent, 10) + 1;
+      b.textContent = 'Added âœ“';
+      setTimeout(() => { b.textContent = b.getAttribute('data-label') || 'Add to cart'; }, 1200);
+    });
+    b.setAttribute('data-label', b.textContent);
+  });
+
+  /* ---------- Product tilt-3D ---------- */
+  if (!reduce) {
+    document.querySelectorAll('.product').forEach((card) => {
+      const img = card.querySelector('.prod-img');
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateY(${px * 7}deg) rotateX(${-py * 7}deg)`;
+        if (img) img.style.transform = `scale(1.08) translate(${px * 10}px, ${py * 10}px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        if (img) img.style.transform = '';
+      });
+      card.style.transition = 'transform .4s ease';
+    });
+
+    /* ---------- Magnetic Shop CTA ---------- */
+    const mag = document.getElementById('magnetShop');
+    if (mag) {
+      mag.addEventListener('mousemove', (e) => {
+        const r = mag.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        mag.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      mag.addEventListener('mouseleave', () => { mag.style.transform = ''; });
+      mag.style.transition = 'transform .3s ease';
+    }
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Animated headline */
+    gsap.set('.hl', { yPercent: 110 });
+    gsap.to('.hl', { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.12, delay: 0.15 });
+
+    /* Reveal on scroll */
+    gsap.utils.toArray('[data-reveal]').forEach((el) => {
+      gsap.fromTo(el, { y: 36, autoAlpha: 0 }, {
+        y: 0, autoAlpha: 1, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    /* Organic clip reveal on images */
+    document.querySelectorAll('[data-parallax] img, .col-card img').forEach((el) => {
+      el.classList.add('clip-reveal');
+      gsap.to(el, {
+        clipPath: 'inset(0 0% 0 0)', duration: 1.2, ease: 'power3.inOut',
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    /* Container parallax on ceramic imagery */
+    gsap.utils.toArray('[data-parallax]').forEach((box) => {
+      const img = box.querySelector('img');
+      if (!img) return;
+      gsap.fromTo(img, { yPercent: -8 }, {
+        yPercent: 8, ease: 'none',
+        scrollTrigger: { trigger: box, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach((el) => {
+      const to = parseInt(el.getAttribute('data-to'), 10);
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); }
+        })
+      });
+    });
+  } else {
+    /* Reduced motion: ensure everything is visible */
+    document.querySelectorAll('[data-reveal]').forEach((el) => { el.style.opacity = 1; });
+    document.querySelectorAll('.count').forEach((el) => { el.textContent = el.getAttribute('data-to'); });
+    document.querySelectorAll('.hl').forEach((el) => { el.style.transform = 'none'; });
+  }
+})();
+</script>
+</body>
+</html>
+

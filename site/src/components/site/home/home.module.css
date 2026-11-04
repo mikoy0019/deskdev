@@ -1,0 +1,453 @@
+/* Home page: CSS-only motion and the surfaces Tailwind can't express.
+   Curves and durations are the motion kit's tokens (nx.css: --ease-out,
+   --ease-in-out, --dur-*). Every loop is paused off-screen (LoopRegion) and
+   removed under prefers-reduced-motion; every hover that moves something is
+   gated to a mouse/trackpad. */
+
+/* ───────── Double-bezel surface: a machined tray holding an inner plate ───────── */
+.bezel {
+  --bezel-r: 2rem;
+  --bezel-pad: 0.375rem;
+  position: relative;
+  padding: var(--bezel-pad);
+  border-radius: var(--bezel-r);
+  background: color-mix(in oklab, var(--fg) 3.5%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    0 30px 60px -36px color-mix(in oklab, var(--bg) 70%, #02040a);
+}
+.bezelCore {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: calc(var(--bezel-r) - var(--bezel-pad));
+  background: var(--surface);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--fg) 7%, transparent),
+    0 0 0 1px var(--line);
+}
+/* Featured variant: the accent lives in the tray's hairline, not in a glow. */
+.bezelAccent {
+  background: color-mix(in oklab, var(--accent) 9%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--accent) 38%, var(--line)),
+    0 30px 60px -36px color-mix(in oklab, var(--bg) 70%, #02040a);
+}
+.bezelAccent .bezelCore {
+  background:
+    radial-gradient(120% 70% at 100% 0%, var(--accent-soft), transparent 60%),
+    var(--surface);
+}
+:global(html[data-theme='light']) .bezel {
+  background: color-mix(in oklab, var(--fg) 4.5%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    0 30px 60px -40px rgba(12, 16, 28, 0.22);
+}
+:global(html[data-theme='light']) .bezelCore {
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 0 1px var(--line),
+    0 1px 2px rgba(12, 16, 28, 0.05);
+}
+:global(html[data-theme='light']) .bezelAccent {
+  background: color-mix(in oklab, var(--accent) 7%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--accent) 30%, var(--line)),
+    0 30px 60px -40px rgba(12, 16, 28, 0.22);
+}
+
+/* Lift on hover (mouse only): the tray darkens its hairline; nothing moves.
+   The hover shadow is painted once on a pseudo-element and only its opacity
+   changes, so the large blur never repaints per frame. */
+@media (hover: hover) and (pointer: fine) {
+  .bezelHover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 0 1px var(--line-2),
+      0 34px 70px -36px color-mix(in oklab, var(--bg) 60%, #02040a);
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .bezelHover:hover::after {
+    opacity: 1;
+  }
+}
+
+/* ───────── Hero intro: a fixed CSS sequence that starts on first paint ─────────
+   No JavaScript: the copy is in the server HTML and never waits for hydration,
+   and the reduced-motion rule below applies from the first frame. `--d` is each
+   piece's delay (eyebrow, headline words 50ms apart, then lede, CTAs, wall).
+   The headline words are visible from the first frame and only settle: the
+   headline is the page's largest paint, and a word that starts hidden makes
+   phones wait for it (Lighthouse's LCP counted from when it appeared). */
+.intro {
+  animation: introRise var(--dur-reveal) var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+.introWord {
+  display: inline-block;
+  animation: introWord var(--dur-reveal-long) var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+.introFade {
+  animation: introFade var(--dur-reveal-long) var(--ease-out) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes introRise {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes introWord {
+  /* Inside the mask's 0.16em bottom padding, so no glyph is ever clipped. */
+  from { transform: translate3d(0, 0.14em, 0); }
+  to { transform: none; }
+}
+@keyframes introFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media print {
+  .intro,
+  .introWord,
+  .introFade {
+    animation: none;
+  }
+}
+
+/* ───────── Outlined display type (numerals) ─────────
+   The stroke is painted under an opaque fill in the colour of the surface
+   behind the numeral. The variable display face has overlapping contours (the
+   stem and foot of "1", the bar of "4") and a bare text stroke draws every one
+   of them inside the glyph. The fill covers the inner half of the stroke, so
+   2px leaves the same 1px hairline. `--outline-fill` names the surface
+   (the page background unless set). */
+.outline {
+  color: var(--outline-fill, var(--bg));
+  -webkit-text-stroke: 2px var(--numeral-stroke);
+  paint-order: stroke fill;
+}
+
+/* ───────── Services list: the index numeral fills on row hover ─────────
+   Outlined like .outline above; the list sits on the band (--bg-2). */
+.rowNum {
+  color: var(--bg-2);
+  -webkit-text-stroke: 2px var(--numeral-stroke);
+  paint-order: stroke fill;
+}
+.rowWash {
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .rowNum {
+    transition: color 200ms ease, -webkit-text-stroke-color 200ms ease;
+  }
+  .rowWash {
+    transition: opacity 200ms ease;
+  }
+  .row:hover .rowNum {
+    color: var(--accent-text);
+    -webkit-text-stroke-color: transparent;
+  }
+  .row:hover .rowWash {
+    opacity: 1;
+  }
+}
+
+/* ───────── Field work: a screenshot settles closer under a mouse ───────── */
+@media (hover: hover) and (pointer: fine) {
+  .shot img,
+  .fallbackMark {
+    transition: transform 250ms var(--ease-out);
+  }
+  :global(.group):hover .shot img {
+    transform: scale(1.03);
+  }
+  :global(.group):hover .fallbackMark {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+/* ───────── Hero image wall (desktop): vertical columns drifting ───────── */
+.wall {
+  /* Clear under the fixed nav, then fade in; fade out into the next section. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent 5rem, #000 13rem, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 5rem, #000 13rem, #000 78%, transparent 100%);
+}
+.track {
+  display: flex;
+  flex-direction: column;
+  animation: wallUp var(--dur, 60s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+.trackDown {
+  animation-name: wallDown;
+}
+@keyframes wallUp {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, -50%, 0); }
+}
+@keyframes wallDown {
+  from { transform: translate3d(0, -50%, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+
+/* Hero strip (phones/tablets): one row drifting left */
+.strip {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.stripTrack {
+  display: flex;
+  width: max-content;
+  animation: stripLeft 55s linear infinite;
+}
+@keyframes stripLeft {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Tiles: the studio's own captures under one muted treatment, so twenty
+   different palettes read as a single wall; a mouse can stop the wall and
+   bring one into colour (instantly: no filter transition on a moving layer). */
+.tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 0 0;
+  filter: grayscale(1) contrast(1.04) brightness(0.96);
+}
+@media (hover: hover) and (pointer: fine) {
+  .wall:hover .track,
+  .strip:hover .stripTrack {
+    animation-play-state: paused;
+  }
+  /* The same settle as every .nx-media frame (the <img> sits inside a
+     <picture> here, out of reach of that rule's child selector). */
+  .tile img {
+    transition: transform 0.25s var(--ease-out);
+  }
+  .tile:hover img {
+    filter: none;
+    transform: scale(1.04);
+  }
+}
+
+/* Pause button for the wall and the strip (PausableLoop; WCAG 2.2.2). It is
+   the kit's marquee toggle: shown on keyboard focus with a mouse or trackpad,
+   always there on touch, where the strip ends short of it as the marquee
+   below does. On the wall it sits in the page gutter at the foot of the hero,
+   where the tiles have already faded out. */
+.pausable[data-paused] .track,
+.pausable[data-paused] .stripTrack {
+  animation-play-state: paused;
+}
+.wallToggle {
+  top: auto;
+  bottom: 1.5rem;
+  inset-inline-end: var(--nx-gutter);
+  translate: none;
+}
+@media (pointer: coarse) {
+  .pausable:has(> :global(.nx-kit-marquee-toggle)) > .strip {
+    margin-inline-end: 3.25rem;
+  }
+}
+
+/* "Scroll" cue: a light sweeping along a hairline (on-screen movement: ease-in-out) */
+.cue {
+  position: relative;
+  overflow: hidden;
+}
+.cue::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--accent-text), transparent);
+  transform: translate3d(-100%, 0, 0);
+  animation: cue 2.4s var(--ease-in-out) infinite;
+}
+@keyframes cue {
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+/* ───────── Industries tabs ───────── */
+/* One indicator glides between tabs (on-screen move: ease-in-out, under 300ms).
+   Keyboard switches land instantly (data-instant): never animate what the
+   keyboard drives. */
+.tabIndicator {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.tabIndicator[data-ready] {
+  opacity: 1;
+  transition: transform 260ms var(--ease-in-out);
+}
+.tabIndicator[data-instant] {
+  transition-duration: 0ms;
+}
+.tabArrow {
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+.tabs[data-instant] .tabArrow {
+  transition-duration: 0ms;
+}
+/* Panel swap after a click: a short rise + fade. Keyboard: no animation. */
+.panelIn {
+  animation: panelIn 240ms var(--ease-out) both;
+}
+.panels[data-instant] .panelIn {
+  animation: none;
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ───────── Method: the progress hairline fills as the timeline scrolls in ───────── */
+.progressFill {
+  transform-origin: 0 50%;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .progressFill {
+      animation: fill linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 45%;
+    }
+  }
+}
+@keyframes fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* ───────── Why NixGen bento: explanatory loops ───────── */
+
+/* Senior: a signal travelling the direct line between client and team. The
+   track spans the line, so translating it by 100% of its own width carries the
+   dot from one end to the other at any size. */
+.signal {
+  position: absolute;
+  inset: 0;
+  animation: signal 3.2s var(--ease-in-out) infinite;
+}
+.signal::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: -0.25rem 0 0 -0.25rem;
+  border-radius: 999px;
+  background: var(--accent-text);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 18%, transparent);
+}
+@keyframes signal {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12%, 88% { opacity: 1; }
+  100% { transform: translate3d(100%, 0, 0); opacity: 0; }
+}
+
+/* 14 days: the days fill in sequence, hold at launch, then reset. */
+.day {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.25rem;
+  background: color-mix(in oklab, var(--fg) 7%, transparent);
+}
+.day::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: 0 50%;
+  transform: scaleX(1);
+  /* backwards: a day waiting for its turn holds the empty first keyframe
+     instead of flashing its filled base style. */
+  animation: dayFill 6s var(--ease-out) infinite backwards;
+  animation-delay: calc(var(--i) * 140ms);
+}
+/* The fill is the point of this plate, so it starts when the reader arrives:
+   LoopRegion arms the strip while it is still below the fold (days held
+   empty, no animation) and marks it live on first sight, which starts the
+   sequence from day 01. Without JavaScript it simply loops from page load. */
+:global([data-loop-armed]:not([data-loop-live])) .day::after {
+  animation: none;
+  transform: scaleX(0);
+}
+.dayLast::after {
+  background: var(--nx-kit-live);
+}
+@keyframes dayFill {
+  0% { transform: scaleX(0); opacity: 1; }
+  6% { transform: scaleX(1); opacity: 1; }
+  78% { transform: scaleX(1); opacity: 1; }
+  90%, 100% { transform: scaleX(1); opacity: 0; }
+}
+
+/* ROI: bar heights come from --h; the Stagger lifts them in once. */
+.bar {
+  height: var(--h);
+  border-radius: 0.375rem 0.375rem 0.125rem 0.125rem;
+  background: color-mix(in oklab, var(--accent) 34%, transparent);
+}
+.barPeak {
+  background: var(--accent);
+}
+
+/* Off-screen pause (LoopRegion sets data-nx-offscreen). Restated here because
+   the `animation` shorthands above outrank the kit's layered pause rule. */
+:global([data-nx-offscreen]) .track,
+:global([data-nx-offscreen]) .stripTrack,
+:global([data-nx-offscreen]) .signal,
+:global([data-nx-offscreen]) .cue::after,
+:global([data-nx-offscreen]) .day::after {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Hero intro: keep the fade, drop the movement, land together. The headline
+     words only ever moved, so they stay still. */
+  .intro {
+    animation-name: introFade;
+  }
+  .introWord {
+    animation: none;
+  }
+  .intro,
+  .introFade {
+    animation-delay: 0ms;
+  }
+  :global([data-loop-armed]:not([data-loop-live])) .day::after {
+    transform: scaleX(1);
+  }
+  .track,
+  .stripTrack,
+  .cue::after,
+  .panelIn,
+  .signal,
+  .day::after {
+    animation: none;
+  }
+  .signal {
+    display: none;
+  }
+  .tabIndicator[data-ready],
+  .tabArrow {
+    transition-property: opacity;
+  }
+  :global(.group):hover .shot img,
+  :global(.group):hover .fallbackMark,
+  .tile:hover img {
+    transform: none;
+  }
+}

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AETHERWERK · Haute Horlogerie — Fine Mechanical Timepieces</title>
+<meta name="description" content="AETHERWERK — independent maison of fine mechanical timepieces. Hand-finished in-house movements, obsessive precision, measured in lifetimes." />
+
+<!-- Fonts: refined serif + precise sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#070708',
+          coal:   '#0d0e10',
+          steel:  '#9aa0a6',
+          silver: '#cfd3d8',
+          gold:   '#c8a55c',
+          goldlt: '#e6cf9a',
+          bronze: '#7a6234',
+          glass:  'rgba(255,255,255,0.04)',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          sans:  ['Inter', 'system-ui', 'sans-serif'],
+          mono:  ['"JetBrains Mono"', 'monospace'],
+        },
+        letterSpacing: {
+          ultra: '0.42em',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root{
+    --gold:#c8a55c; --gold-lt:#e6cf9a; --steel:#9aa0a6; --ink:#070708;
+  }
+  html,body{ background:#070708; color:#cfd3d8; }
+  body{ font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+
+  ::selection{ background:rgba(200,165,92,.28); color:#fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{ width:9px; }
+  ::-webkit-scrollbar-track{ background:#070708; }
+  ::-webkit-scrollbar-thumb{ background:linear-gradient(#7a6234,#c8a55c); border-radius:9px; }
+
+  .font-disp{ font-family:'Cormorant Garamond',serif; }
+
+  /* Grain / vignette overlay */
+  .grain::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.5;
+    background:
+      radial-gradient(120% 120% at 50% 0%, transparent 55%, rgba(0,0,0,.55) 100%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+
+  .gold-text{
+    background:linear-gradient(180deg,#f0dca8 0%,#c8a55c 48%,#8a6f38 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hairline{ height:1px; background:linear-gradient(90deg,transparent,rgba(200,165,92,.55),transparent); }
+
+  /* Masked text reveal */
+  .reveal-mask{ overflow:hidden; display:inline-block; }
+  .reveal-mask > span{ display:inline-block; transform:translateY(110%); }
+
+  /* clip reveal */
+  .clip-reveal{ clip-path:inset(0 0 100% 0); }
+
+  /* ===== CSS WATCH ===== */
+  .watch{ --size:clamp(280px,42vw,460px); width:var(--size); height:var(--size); position:relative; }
+  .watch-case{
+    position:absolute; inset:0; border-radius:50%;
+    background:
+      conic-gradient(from 0deg, #2a2c30, #54565b, #1c1d20, #6a6c72, #232427, #4a4c50, #2a2c30);
+    box-shadow:
+      0 40px 90px -20px rgba(0,0,0,.85),
+      inset 0 2px 4px rgba(255,255,255,.15),
+      inset 0 -8px 22px rgba(0,0,0,.7);
+    padding:5%;
+  }
+  .watch-bezel{
+    position:absolute; inset:4%; border-radius:50%;
+    background:
+      conic-gradient(from 0deg,#1d1e21,#3b3d41,#161718,#46484c,#1d1e21);
+    box-shadow:inset 0 0 0 2px rgba(200,165,92,.25), inset 0 6px 14px rgba(0,0,0,.6);
+    padding:4%;
+  }
+  .watch-dial{
+    position:absolute; inset:8%; border-radius:50%;
+    background:
+      radial-gradient(120% 120% at 30% 22%, #16181c 0%, #0c0d10 55%, #060607 100%);
+    box-shadow:inset 0 0 40px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.04);
+    overflow:hidden;
+  }
+  .watch-sun{ position:absolute; inset:0; border-radius:50%;
+    background:conic-gradient(from 0deg, rgba(255,255,255,.045) 0deg, transparent 8deg, rgba(255,255,255,.045) 16deg, transparent 24deg);
+    background-size:cover; opacity:.5; }
+
+  /* hour markers + minute ticks via pseudo */
+  .ticks{ position:absolute; inset:0; }
+  .tick{ position:absolute; left:50%; top:50%; transform-origin:0 0; }
+  .tick i{ display:block; width:2px; height:7px; background:rgba(200,165,92,.5);
+    transform:translate(-50%, calc(-50% - var(--r))) ; border-radius:1px; }
+  .tick.major i{ height:14px; width:2.5px; background:linear-gradient(#e6cf9a,#c8a55c); }
+
+  /* center brand wordmark on dial */
+  .dial-brand{ position:absolute; left:50%; top:34%; transform:translateX(-50%); text-align:center; }
+
+  /* subdial (small seconds) */
+  .subdial{ position:absolute; left:50%; top:66%; transform:translate(-50%,-50%);
+    width:24%; height:24%; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#101216,#08090b);
+    box-shadow:inset 0 0 0 1px rgba(200,165,92,.22), inset 0 4px 10px rgba(0,0,0,.7); }
+  .subdial::after{ content:""; position:absolute; left:50%; top:50%; width:5px; height:5px;
+    background:#c8a55c; border-radius:50%; transform:translate(-50%,-50%); }
+
+  /* hands */
+  .hand{ position:absolute; left:50%; top:50%; transform-origin:50% 100%; border-radius:6px; }
+  .hand.hour{ width:6px; height:24%; margin-left:-3px; margin-top:-24%;
+    background:linear-gradient(#e6cf9a,#9c7e3f); box-shadow:0 2px 6px rgba(0,0,0,.6); }
+  .hand.minute{ width:4px; height:34%; margin-left:-2px; margin-top:-34%;
+    background:linear-gradient(#f2e6c4,#b9985a); box-shadow:0 2px 8px rgba(0,0,0,.55); }
+  .hand.second{ width:2px; height:38%; margin-left:-1px; margin-top:-30%;
+    background:linear-gradient(#d96b4a,#9a3f29); box-shadow:0 0 8px rgba(217,107,74,.4); }
+  .hand-cap{ position:absolute; left:50%; top:50%; width:12px; height:12px; transform:translate(-50%,-50%);
+    border-radius:50%; background:radial-gradient(circle at 35% 30%,#f0dca8,#8a6f38);
+    box-shadow:0 0 0 2px rgba(0,0,0,.5); z-index:5; }
+
+  /* small seconds hand inside subdial */
+  .sub-hand{ position:absolute; left:50%; top:100%; width:1.5px; height:42%; margin-left:-.75px;
+    transform-origin:50% 0%; background:#c8a55c; }
+
+  /* crown */
+  .crown{ position:absolute; right:-3.5%; top:50%; transform:translateY(-50%);
+    width:7%; height:14%; border-radius:3px;
+    background:repeating-linear-gradient(90deg,#3a3c40 0 2px,#54565b 2px 4px);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.5); }
+
+  .glass-glare{ position:absolute; inset:8%; border-radius:50%; pointer-events:none;
+    background:linear-gradient(135deg, rgba(255,255,255,.14) 0%, transparent 38%, transparent 70%, rgba(255,255,255,.05) 100%); }
+
+  /* gear accent */
+  .gear{ animation:spin 28s linear infinite; transform-origin:50% 50%; }
+  .gear.rev{ animation-direction:reverse; animation-duration:22s; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* nav link underline */
+  .nav-link{ position:relative; }
+  .nav-link::after{ content:""; position:absolute; left:0; bottom:-4px; width:0; height:1px;
+    background:var(--gold); transition:width .4s cubic-bezier(.2,.7,.2,1); }
+  .nav-link:hover::after{ width:100%; }
+
+  /* product card */
+  .piece{ transition:transform .7s cubic-bezier(.16,1,.3,1); }
+  .piece:hover{ transform:translateY(-8px); }
+  .piece-img{ transition:transform 1.2s cubic-bezier(.16,1,.3,1), filter .8s; }
+  .piece:hover .piece-img{ transform:scale(1.07); filter:brightness(1.12) contrast(1.05); }
+
+  /* magnetic cta */
+  .magnetic{ will-change:transform; }
+  .btn-gold{ position:relative; overflow:hidden; }
+  .btn-gold::before{ content:""; position:absolute; inset:0;
+    background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);
+    transform:translateX(-130%); transition:transform .8s; }
+  .btn-gold:hover::before{ transform:translateX(130%); }
+
+  /* accordion */
+  .faq-body{ max-height:0; overflow:hidden; transition:max-height .55s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-body{ max-height:320px; }
+  .faq-item.open .faq-icon{ transform:rotate(45deg); }
+  .faq-icon{ transition:transform .45s; }
+
+  .tilt-wrap{ perspective:1200px; }
+  .vline{ width:1px; background:linear-gradient(transparent,rgba(200,165,92,.4),transparent); }
+
+  @media (prefers-reduced-motion: reduce){
+    .gear, .hand{ animation:none !important; }
+    *{ scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="grain bg-ink text-silver antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="text-xl tracking-[0.3em] font-light text-silver group-hover:text-white transition">AETHERWERK</span>
+    </a>
+    <nav class="hidden lg:flex items-center gap-9 text-[12px] uppercase tracking-[0.22em] text-steel">
+      <a href="#collection" class="nav-link hover:text-silver transition">Collection</a>
+      <a href="#movement" class="nav-link hover:text-silver transition">Movement</a>
+      <a href="#materials" class="nav-link hover:text-silver transition">Materials</a>
+      <a href="#maison" class="nav-link hover:text-silver transition">Maison</a>
+      <a href="#bespoke" class="nav-link hover:text-silver transition">Bespoke</a>
+    </nav>
+    <a href="#bespoke" class="hidden sm:inline-flex magnetic btn-gold items-center gap-2 px-5 py-2.5 rounded-full border border-gold/40 text-[11px] uppercase tracking-[0.22em] text-goldlt hover:border-gold transition">
+      Book Appointment
+    </a>
+    <button id="burger" class="lg:hidden text-silver text-2xl">≡</button>
+  </div>
+  <div class="hairline opacity-60"></div>
+</header>
+
+<!-- mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-40 bg-ink/97 backdrop-blur-xl flex-col items-center justify-center gap-8 text-lg uppercase tracking-[0.25em] text-steel hidden">
+  <a href="#collection" class="mob-link hover:text-gold">Collection</a>
+  <a href="#movement" class="mob-link hover:text-gold">Movement</a>
+  <a href="#materials" class="mob-link hover:text-gold">Materials</a>
+  <a href="#maison" class="mob-link hover:text-gold">Maison</a>
+  <a href="#bespoke" class="mob-link hover:text-gold">Bespoke</a>
+</div>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center pt-24 overflow-hidden">
+  <!-- ambient gradient -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-[radial-gradient(120%_90%_at_72%_30%,rgba(200,165,92,.10),transparent_55%)]"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(100%_100%_at_20%_80%,rgba(40,46,52,.5),transparent_60%)]"></div>
+  </div>
+
+  <!-- faint gear accents -->
+  <svg class="gear absolute -left-24 top-20 w-72 h-72 opacity-[0.06] text-gold" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+    <path d="M50 8l4 9 10-3 1 10 10 2-4 10 8 6-8 6 4 10-10 2-1 10-10-3-4 9-4-9-10 3-1-10-10-2 4-10-8-6 8-6-4-10 10-2 1-10 10 3z"/>
+    <circle cx="50" cy="50" r="14" fill="#070708"/>
+  </svg>
+  <svg class="gear rev absolute right-10 bottom-16 w-44 h-44 opacity-[0.05] text-steel" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+    <path d="M50 8l4 9 10-3 1 10 10 2-4 10 8 6-8 6 4 10-10 2-1 10-10-3-4 9-4-9-10 3-1-10-10-2 4-10-8-6 8-6-4-10 10-2 1-10 10 3z"/>
+    <circle cx="50" cy="50" r="14" fill="#070708"/>
+  </svg>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center w-full">
+    <!-- copy -->
+    <div>
+      <div class="flex items-center gap-3 mb-7" data-hero="1">
+        <span class="hairline w-12"></span>
+        <span class="text-[11px] uppercase tracking-ultra text-gold font-mono">Est. Manufacture — Glashütte Tradition</span>
+      </div>
+      <h1 class="font-disp text-[clamp(3rem,8vw,6.6rem)] leading-[0.92] text-silver font-light">
+        <span class="reveal-mask"><span data-hero-line>Time,</span></span><br/>
+        <span class="reveal-mask"><span data-hero-line class="gold-text italic">measured</span></span><br/>
+        <span class="reveal-mask"><span data-hero-line>in lifetimes.</span></span>
+      </h1>
+      <p class="mt-8 max-w-md text-steel leading-relaxed text-[15px]" data-hero="2">
+        An independent maison of fine mechanical timepieces. Every movement is conceived, finished and regulated by hand — a quiet rebellion against the disposable.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center gap-5" data-hero="3">
+        <a href="#collection" class="magnetic btn-gold inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-b from-goldlt to-gold text-ink text-[12px] uppercase tracking-[0.2em] font-medium hover:from-gold hover:to-bronze transition">
+          Explore the Collection
+        </a>
+        <a href="#movement" class="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] text-steel hover:text-gold transition">
+          <span class="w-9 h-9 rounded-full border border-steel/40 grid place-items-center">▾</span>
+          The Movement
+        </a>
+      </div>
+
+      <!-- count-up stats -->
+      <div class="mt-14 grid grid-cols-3 gap-6 max-w-md" data-hero="4">
+        <div>
+          <div class="font-disp text-4xl text-silver"><span class="count" data-to="38">0</span></div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">In-house calibres</div>
+        </div>
+        <div class="border-x border-white/5 px-5">
+          <div class="font-disp text-4xl text-silver"><span class="count" data-to="72">0</span></div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Hours reserve</div>
+        </div>
+        <div>
+          <div class="font-disp text-4xl text-silver"><span class="count" data-to="1894">0</span></div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Founding year</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSS WATCH -->
+    <div class="flex justify-center lg:justify-end tilt-wrap" data-hero="5">
+      <div id="watch3d" class="watch" aria-label="AETHERWERK timepiece">
+        <div class="watch-case">
+          <div class="watch-bezel">
+            <div class="watch-dial">
+              <div class="watch-sun"></div>
+              <div class="ticks" id="ticks"></div>
+              <div class="dial-brand">
+                <div class="font-disp text-[13px] tracking-[0.3em] text-goldlt">AETHERWERK</div>
+                <div class="text-[7px] tracking-[0.35em] text-steel mt-1 font-mono">GENÈVE · AUTOMATIC</div>
+              </div>
+              <div class="subdial">
+                <div class="sub-hand" id="subSecond"></div>
+              </div>
+              <!-- hands -->
+              <div class="hand hour" id="hHour"></div>
+              <div class="hand minute" id="hMin"></div>
+              <div class="hand second" id="hSec"></div>
+              <div class="hand-cap"></div>
+              <div class="glass-glare"></div>
+            </div>
+          </div>
+        </div>
+        <div class="crown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- live clock readout -->
+  <div class="absolute bottom-6 left-6 lg:left-10 font-mono text-[11px] tracking-[0.25em] text-steel/70 flex items-center gap-3">
+    <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span>
+    <span id="liveClock">00:00:00</span> · GENÈVE
+  </div>
+</section>
+
+<!-- ============ HERITAGE / INTRO ============ -->
+<section class="relative py-32 border-t border-white/5">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-[11px] uppercase tracking-ultra text-gold mb-8 reveal-fade font-mono">— Our Conviction —</p>
+    <h2 class="font-disp text-[clamp(1.9rem,4.4vw,3.6rem)] leading-snug text-silver font-light reveal-fade">
+      We do not make watches that keep time.<br/>
+      We make instruments that <span class="gold-text italic">honour</span> it —
+      each escapement a small argument that
+      <span class="text-silver">patience still has a price worth paying.</span>
+    </h2>
+    <div class="mt-12 flex justify-center reveal-fade">
+      <div class="hairline w-40"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COLLECTION GRID ============ -->
+<section id="collection" class="relative py-28">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+      <div>
+        <p class="text-[11px] uppercase tracking-ultra text-gold mb-4 font-mono reveal-fade">— The Collection —</p>
+        <h2 class="font-disp text-[clamp(2.2rem,5vw,4rem)] text-silver font-light reveal-fade">Four references. <span class="gold-text italic">One obsession.</span></h2>
+      </div>
+      <p class="max-w-sm text-steel text-[14px] leading-relaxed reveal-fade">
+        Produced in strictly limited series. Each piece carries an individually engraved number and the signature of its master regulator.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="grid">
+      <!-- piece template repeated -->
+      <article class="piece group reveal-fade">
+        <div class="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-coal to-ink aspect-[3/4]">
+          <img class="piece-img absolute inset-0 w-full h-full object-cover opacity-70"
+               src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1000&q=80"
+               alt="Aurora Réserve timepiece" loading="lazy"
+               onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono tracking-[0.2em] text-gold/80 border border-gold/30 rounded-full px-3 py-1">Ref. 01</span>
+          <div class="absolute bottom-5 left-5 right-5">
+            <h3 class="font-disp text-2xl text-silver">Aurora Réserve</h3>
+            <p class="text-[12px] text-steel mt-1">72h power reserve · rose gold</p>
+            <p class="font-mono text-gold text-sm mt-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">€ 24,800</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="piece group reveal-fade">
+        <div class="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-coal to-ink aspect-[3/4]">
+          <img class="piece-img absolute inset-0 w-full h-full object-cover opacity-70"
+               src="https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1000&q=80"
+               alt="Tourbillon Noir timepiece" loading="lazy"
+               onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono tracking-[0.2em] text-gold/80 border border-gold/30 rounded-full px-3 py-1">Ref. 02</span>
+          <div class="absolute bottom-5 left-5 right-5">
+            <h3 class="font-disp text-2xl text-silver">Tourbillon Noir</h3>
+            <p class="text-[12px] text-steel mt-1">flying tourbillon · DLC steel</p>
+            <p class="font-mono text-gold text-sm mt-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">€ 118,000</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="piece group reveal-fade">
+        <div class="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-coal to-ink aspect-[3/4]">
+          <img class="piece-img absolute inset-0 w-full h-full object-cover opacity-70"
+               src="https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?auto=format&fit=crop&w=1000&q=80"
+               alt="Méridien Perpetual timepiece" loading="lazy"
+               onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono tracking-[0.2em] text-gold/80 border border-gold/30 rounded-full px-3 py-1">Ref. 03</span>
+          <div class="absolute bottom-5 left-5 right-5">
+            <h3 class="font-disp text-2xl text-silver">Méridien Perpetual</h3>
+            <p class="text-[12px] text-steel mt-1">perpetual calendar · platinum</p>
+            <p class="font-mono text-gold text-sm mt-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">€ 96,500</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="piece group reveal-fade">
+        <div class="relative overflow-hidden rounded-2xl border border-white/8 bg-gradient-to-b from-coal to-ink aspect-[3/4]">
+          <img class="piece-img absolute inset-0 w-full h-full object-cover opacity-70"
+               src="https://images.unsplash.com/photo-1495856458515-0637185db551?auto=format&fit=crop&w=1000&q=80"
+               alt="Aether Skeleton timepiece" loading="lazy"
+               onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono tracking-[0.2em] text-gold/80 border border-gold/30 rounded-full px-3 py-1">Ref. 04</span>
+          <div class="absolute bottom-5 left-5 right-5">
+            <h3 class="font-disp text-2xl text-silver">Aether Skeleton</h3>
+            <p class="text-[12px] text-steel mt-1">openworked · sapphire bridge</p>
+            <p class="font-mono text-gold text-sm mt-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">€ 64,200</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CRAFTSMANSHIP / MOVEMENT ============ -->
+<section id="movement" class="relative py-32 overflow-hidden border-t border-white/5">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(90%_70%_at_50%_0%,rgba(200,165,92,.07),transparent_60%)]"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-20 items-center">
+    <!-- movement visual: gears -->
+    <div class="relative flex justify-center reveal-fade">
+      <div class="relative w-[min(80vw,440px)] aspect-square rounded-full border border-white/8 bg-gradient-to-b from-coal to-ink grid place-items-center overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_40%_30%,rgba(255,255,255,.05),transparent_50%)]"></div>
+        <svg class="gear w-2/3 h-2/3 text-gold/30" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+          <path d="M50 6l3.5 8 9-2.5 1 9 9 2-3.5 9 7 5.5-7 5.5 3.5 9-9 2-1 9-9-2.5-3.5 8-3.5-8-9 2.5-1-9-9-2 3.5-9-7-5.5 7-5.5-3.5-9 9-2 1-9 9 2.5z"/>
+          <circle cx="50" cy="50" r="20" fill="#0b0c0e"/>
+          <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(200,165,92,.4)" stroke-width="1"/>
+        </svg>
+        <svg class="gear rev absolute w-1/3 h-1/3 right-[14%] top-[18%] text-steel/25" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+          <path d="M50 6l3.5 8 9-2.5 1 9 9 2-3.5 9 7 5.5-7 5.5 3.5 9-9 2-1 9-9-2.5-3.5 8-3.5-8-9 2.5-1-9-9-2 3.5-9-7-5.5 7-5.5-3.5-9 9-2 1-9 9 2.5z"/>
+          <circle cx="50" cy="50" r="20" fill="#0b0c0e"/>
+        </svg>
+        <svg class="gear absolute w-1/4 h-1/4 left-[16%] bottom-[18%] text-gold/20" viewBox="0 0 100 100" fill="currentColor" style="animation-duration:18s" aria-hidden="true">
+          <path d="M50 6l3.5 8 9-2.5 1 9 9 2-3.5 9 7 5.5-7 5.5 3.5 9-9 2-1 9-9-2.5-3.5 8-3.5-8-9 2.5-1-9-9-2 3.5-9-7-5.5 7-5.5-3.5-9 9-2 1-9 9 2.5z"/>
+          <circle cx="50" cy="50" r="20" fill="#0b0c0e"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- copy -->
+    <div>
+      <p class="text-[11px] uppercase tracking-ultra text-gold mb-6 font-mono reveal-fade">— The Calibre AW-37 —</p>
+      <h2 class="font-disp text-[clamp(2rem,4.6vw,3.6rem)] text-silver font-light leading-tight reveal-fade">
+        Two hundred and ninety parts, <span class="gold-text italic">assembled twice.</span>
+      </h2>
+      <p class="mt-7 text-steel leading-relaxed max-w-lg reveal-fade text-[15px]">
+        Each movement is built, regulated, then entirely disassembled for final hand-finishing before its second and definitive assembly. Anglage by burnisher. Black-polished steel that reads jet at every angle but one.
+      </p>
+
+      <div class="mt-12 space-y-6 reveal-fade">
+        <div class="flex items-start gap-5">
+          <span class="font-disp text-3xl gold-text w-12">01</span>
+          <div class="border-l border-white/8 pl-5">
+            <h4 class="text-silver text-[15px]">Hand-bevelled bridges</h4>
+            <p class="text-steel text-[13px] mt-1">Forty-two inner angles, each cut by hand — impossible to machine, impossible to fake.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-5">
+          <span class="font-disp text-3xl gold-text w-12">02</span>
+          <div class="border-l border-white/8 pl-5">
+            <h4 class="text-silver text-[15px]">Free-sprung balance</h4>
+            <p class="text-steel text-[13px] mt-1">Adjusted to ±2 seconds a day across five positions, certified at our own observatory.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-5">
+          <span class="font-disp text-3xl gold-text w-12">03</span>
+          <div class="border-l border-white/8 pl-5">
+            <h4 class="text-silver text-[15px]">Côtes & perlage</h4>
+            <p class="text-steel text-[13px] mt-1">Geneva stripes laid by a single artisan; the rotor engraved with the maison's crest.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- precision count-up -->
+      <div class="mt-12 flex gap-10 reveal-fade">
+        <div>
+          <div class="font-disp text-5xl gold-text"><span class="count" data-to="290">0</span></div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Components</div>
+        </div>
+        <div class="vline self-stretch"></div>
+        <div>
+          <div class="font-disp text-5xl gold-text">±<span class="count" data-to="2">0</span>s</div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Per day</div>
+        </div>
+        <div class="vline self-stretch"></div>
+        <div>
+          <div class="font-disp text-5xl gold-text"><span class="count" data-to="64">0</span>h</div>
+          <div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Assembly</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATERIALS ============ -->
+<section id="materials" class="relative py-28 border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-[11px] uppercase tracking-ultra text-gold mb-4 font-mono reveal-fade">— Matter & Metal —</p>
+      <h2 class="font-disp text-[clamp(2rem,4.6vw,3.6rem)] text-silver font-light reveal-fade">Chosen for the next <span class="gold-text italic">hundred years.</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal-fade group p-8 rounded-2xl border border-white/8 bg-gradient-to-b from-coal/60 to-ink hover:border-gold/30 transition">
+        <div class="w-14 h-14 rounded-full mb-6 bg-gradient-to-br from-[#e6cf9a] via-[#c8a55c] to-[#7a6234] shadow-lg group-hover:scale-110 transition"></div>
+        <h3 class="font-disp text-2xl text-silver">5N Rose Gold</h3>
+        <p class="text-steel text-[13px] mt-3 leading-relaxed">Cast in-house to a proprietary alloy that resists the dulling of decades. Warm, dense, eternal.</p>
+      </div>
+      <div class="reveal-fade group p-8 rounded-2xl border border-white/8 bg-gradient-to-b from-coal/60 to-ink hover:border-gold/30 transition">
+        <div class="w-14 h-14 rounded-full mb-6 bg-gradient-to-br from-[#cfd3d8] via-[#9aa0a6] to-[#3a3c40] shadow-lg group-hover:scale-110 transition"></div>
+        <h3 class="font-disp text-2xl text-silver">Grade-5 Titanium</h3>
+        <p class="text-steel text-[13px] mt-3 leading-relaxed">Forty percent lighter than steel, satin-blasted to a matte storm-grey. Quietly indestructible.</p>
+      </div>
+      <div class="reveal-fade group p-8 rounded-2xl border border-white/8 bg-gradient-to-b from-coal/60 to-ink hover:border-gold/30 transition">
+        <div class="w-14 h-14 rounded-full mb-6 bg-gradient-to-br from-[#1a1c20] via-[#0d0e10] to-[#000] ring-1 ring-gold/20 shadow-lg group-hover:scale-110 transition"></div>
+        <h3 class="font-disp text-2xl text-silver">Sapphire Crystal</h3>
+        <p class="text-steel text-[13px] mt-3 leading-relaxed">Domed and double anti-reflective — so clear the dial appears to float untouched by glass.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / MAISON ============ -->
+<section id="maison" class="relative py-32 overflow-hidden border-t border-white/5">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_30%_50%,rgba(40,46,52,.45),transparent_60%)]"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-16 items-center">
+    <div class="lg:col-span-5 reveal-fade">
+      <div class="relative rounded-2xl overflow-hidden border border-white/8 aspect-[4/5] bg-gradient-to-b from-coal to-ink">
+        <img class="absolute inset-0 w-full h-full object-cover opacity-65"
+             src="https://images.unsplash.com/photo-1509048191080-d2984bad6ae5?auto=format&fit=crop&w=1000&q=80"
+             alt="Atelier interior" loading="lazy" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40"></div>
+        <div class="absolute bottom-6 left-6 font-mono text-[11px] tracking-[0.2em] text-gold/80">L'ATELIER · GENÈVE</div>
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <p class="text-[11px] uppercase tracking-ultra text-gold mb-6 font-mono reveal-fade">— The Maison —</p>
+      <h2 class="font-disp text-[clamp(2rem,4.6vw,3.6rem)] text-silver font-light leading-tight reveal-fade">
+        Founded in <span class="gold-text">1894.</span> Independent ever since.
+      </h2>
+      <p class="mt-7 text-steel leading-relaxed max-w-xl reveal-fade text-[15px]">
+        AETHERWERK was born in a single workshop above a Geneva clocktower, where a master and one apprentice resolved to build no more than a hundred watches a year. Five generations later, we still don't. We answer to no shareholder, no quarterly forecast — only to the next escapement.
+      </p>
+      <p class="mt-5 text-steel leading-relaxed max-w-xl reveal-fade text-[15px]">
+        Twenty-seven hands. One observatory. A patience that has outlasted three empires and every fashion in between.
+      </p>
+      <div class="mt-10 flex flex-wrap gap-10 reveal-fade">
+        <div><div class="font-disp text-4xl text-silver"><span class="count" data-to="131">0</span></div><div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Years independent</div></div>
+        <div><div class="font-disp text-4xl text-silver"><span class="count" data-to="100">0</span></div><div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Watches a year</div></div>
+        <div><div class="font-disp text-4xl text-silver"><span class="count" data-to="27">0</span></div><div class="text-[10px] uppercase tracking-[0.2em] text-steel mt-1">Master hands</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / PRESS ============ -->
+<section class="relative py-28 border-t border-white/5">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <p class="text-[11px] uppercase tracking-ultra text-gold mb-4 font-mono text-center reveal-fade">— In Their Words —</p>
+    <h2 class="font-disp text-[clamp(2rem,4.4vw,3.4rem)] text-silver font-light text-center mb-16 reveal-fade">Worn quietly. <span class="gold-text italic">Spoken of loudly.</span></h2>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal-fade p-8 rounded-2xl border border-white/8 bg-coal/40">
+        <div class="text-gold font-disp text-5xl leading-none mb-4">"</div>
+        <blockquote class="text-silver/90 font-disp text-xl leading-relaxed italic">The finishing under loupe is the most honest I have seen this decade — nothing hidden, everything earned.</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[0.18em] text-steel">— Revue Horlogère, Editor's Choice</figcaption>
+      </figure>
+      <figure class="reveal-fade p-8 rounded-2xl border border-white/8 bg-coal/40">
+        <div class="text-gold font-disp text-5xl leading-none mb-4">"</div>
+        <blockquote class="text-silver/90 font-disp text-xl leading-relaxed italic">I have collected for thirty years. The Aurora Réserve is the first watch I have refused to insure — I simply wear it.</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[0.18em] text-steel">— Private Collector, Singapore</figcaption>
+      </figure>
+      <figure class="reveal-fade p-8 rounded-2xl border border-white/8 bg-coal/40">
+        <div class="text-gold font-disp text-5xl leading-none mb-4">"</div>
+        <blockquote class="text-silver/90 font-disp text-xl leading-relaxed italic">A maison that refuses to scale, and is all the more precious for it. Demand will always exceed the hundred.</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[0.18em] text-steel">— The Quiet Hours, Watch Annual</figcaption>
+      </figure>
+    </div>
+
+    <!-- press logos -->
+    <div class="mt-16 flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50 text-steel font-disp text-xl tracking-[0.15em] reveal-fade">
+      <span>REVUE HORLOGÈRE</span><span class="text-gold/40">·</span>
+      <span>THE QUIET HOURS</span><span class="text-gold/40">·</span>
+      <span>MÉCANIQUE</span><span class="text-gold/40">·</span>
+      <span>ATELIER &amp; CO.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BESPOKE / APPOINTMENTS ============ -->
+<section id="bespoke" class="relative py-32 overflow-hidden border-t border-white/5">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(100%_80%_at_70%_40%,rgba(200,165,92,.10),transparent_55%)]"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="text-[11px] uppercase tracking-ultra text-gold mb-6 font-mono reveal-fade">— Bespoke & Private Salon —</p>
+      <h2 class="font-disp text-[clamp(2rem,4.6vw,3.8rem)] text-silver font-light leading-tight reveal-fade">
+        A timepiece <span class="gold-text italic">conceived</span> for one wrist.
+      </h2>
+      <p class="mt-7 text-steel leading-relaxed max-w-md reveal-fade text-[15px]">
+        Commission a unique piece, or visit our salon to handle the collection in person. Appointments are private, unhurried, and by introduction.
+      </p>
+      <ul class="mt-9 space-y-3 reveal-fade">
+        <li class="flex items-center gap-3 text-silver/90 text-[14px]"><span class="text-gold">◆</span> Personal dial, engraving &amp; complication selection</li>
+        <li class="flex items-center gap-3 text-silver/90 text-[14px]"><span class="text-gold">◆</span> Workshop visit with your master regulator</li>
+        <li class="flex items-center gap-3 text-silver/90 text-[14px]"><span class="text-gold">◆</span> Lifetime servicing &amp; provenance archive</li>
+      </ul>
+    </div>
+
+    <!-- appointment form -->
+    <div class="reveal-fade rounded-2xl border border-white/10 bg-coal/50 backdrop-blur p-8 lg:p-10">
+      <h3 class="font-disp text-2xl text-silver mb-6">Request an appointment</h3>
+      <form class="space-y-5" onsubmit="event.preventDefault(); this.reset(); document.getElementById('formOk').classList.remove('hidden');">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <input required placeholder="First name" class="w-full bg-ink/60 border border-white/10 rounded-lg px-4 py-3 text-sm text-silver placeholder:text-steel/60 focus:border-gold/50 focus:outline-none transition" />
+          <input required placeholder="Last name" class="w-full bg-ink/60 border border-white/10 rounded-lg px-4 py-3 text-sm text-silver placeholder:text-steel/60 focus:border-gold/50 focus:outline-none transition" />
+        </div>
+        <input required type="email" placeholder="Email" class="w-full bg-ink/60 border border-white/10 rounded-lg px-4 py-3 text-sm text-silver placeholder:text-steel/60 focus:border-gold/50 focus:outline-none transition" />
+        <select class="w-full bg-ink/60 border border-white/10 rounded-lg px-4 py-3 text-sm text-steel focus:border-gold/50 focus:outline-none transition">
+          <option>Interest — Collection viewing</option>
+          <option>Interest — Bespoke commission</option>
+          <option>Interest — Servicing &amp; restoration</option>
+        </select>
+        <textarea rows="3" placeholder="A note (optional)" class="w-full bg-ink/60 border border-white/10 rounded-lg px-4 py-3 text-sm text-silver placeholder:text-steel/60 focus:border-gold/50 focus:outline-none transition resize-none"></textarea>
+        <button class="magnetic btn-gold w-full py-4 rounded-full bg-gradient-to-b from-goldlt to-gold text-ink text-[12px] uppercase tracking-[0.2em] font-medium hover:from-gold hover:to-bronze transition">
+          Request Appointment
+        </button>
+        <p id="formOk" class="hidden text-center text-gold text-[13px] font-mono">✓ Received — our salon will write to you within two days.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="relative py-28 border-t border-white/5">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <p class="text-[11px] uppercase tracking-ultra text-gold mb-4 font-mono text-center reveal-fade">— Considered Questions —</p>
+    <h2 class="font-disp text-[clamp(2rem,4.4vw,3.4rem)] text-silver font-light text-center mb-14 reveal-fade">Before you commit.</h2>
+
+    <div class="space-y-3" id="faq">
+      <div class="faq-item reveal-fade border border-white/8 rounded-xl overflow-hidden bg-coal/30">
+        <button class="faq-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="text-silver text-[15px]">How long is the wait for a new piece?</span>
+          <span class="faq-icon text-gold text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel text-[14px] leading-relaxed">Because we cap production at one hundred watches per year, current references carry a wait of 9 to 18 months. Bespoke commissions are quoted individually.</p></div>
+      </div>
+      <div class="faq-item reveal-fade border border-white/8 rounded-xl overflow-hidden bg-coal/30">
+        <button class="faq-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="text-silver text-[15px]">Are the movements truly made in-house?</span>
+          <span class="faq-icon text-gold text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel text-[14px] leading-relaxed">Every calibre is designed, machined, finished, assembled and regulated under our own roof in Geneva. Only the sapphire crystal and strap leather are sourced from long-standing partners.</p></div>
+      </div>
+      <div class="faq-item reveal-fade border border-white/8 rounded-xl overflow-hidden bg-coal/30">
+        <button class="faq-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="text-silver text-[15px]">What does servicing involve?</span>
+          <span class="faq-icon text-gold text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel text-[14px] leading-relaxed">A full service every five to seven years, carried out by the original maison. Each watch is returned with a renewed certificate and an updated provenance archive — for life.</p></div>
+      </div>
+      <div class="faq-item reveal-fade border border-white/8 rounded-xl overflow-hidden bg-coal/30">
+        <button class="faq-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="text-silver text-[15px]">Do you sell online?</span>
+          <span class="faq-icon text-gold text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel text-[14px] leading-relaxed">No piece leaves the maison without a conversation. We invite collectors to our salon or arrange a private viewing in your city. The watch deserves an introduction.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 overflow-hidden border-t border-white/5">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(100%_100%_at_50%_0%,rgba(200,165,92,.12),transparent_60%)]"></div>
+  <svg class="gear absolute left-1/2 -translate-x-1/2 top-0 w-[480px] h-[480px] opacity-[0.04] text-gold" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+    <path d="M50 8l4 9 10-3 1 10 10 2-4 10 8 6-8 6 4 10-10 2-1 10-10-3-4 9-4-9-10 3-1-10-10-2 4-10-8-6 8-6-4-10 10-2 1-10 10 3z"/>
+    <circle cx="50" cy="50" r="14" fill="#070708"/>
+  </svg>
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-[11px] uppercase tracking-ultra text-gold mb-7 font-mono reveal-fade">— The Invitation —</p>
+    <h2 class="font-disp text-[clamp(2.4rem,6vw,5rem)] text-silver font-light leading-[0.96] reveal-fade">
+      Some things are worth<br/><span class="gold-text italic">the whole of your patience.</span>
+    </h2>
+    <p class="mt-8 text-steel max-w-lg mx-auto reveal-fade text-[15px]">
+      Begin the conversation. The next hundred years start with an introduction.
+    </p>
+    <div class="mt-11 flex flex-wrap items-center justify-center gap-5 reveal-fade">
+      <a href="#bespoke" class="magnetic btn-gold inline-flex items-center gap-3 px-9 py-4 rounded-full bg-gradient-to-b from-goldlt to-gold text-ink text-[12px] uppercase tracking-[0.2em] font-medium hover:from-gold hover:to-bronze transition">
+        Book a Private Salon
+      </a>
+      <a href="#collection" class="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] text-steel hover:text-gold transition">View the Collection →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative border-t border-white/8 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-10 mb-14">
+      <div class="md:col-span-1">
+        <div class="text-xl tracking-[0.3em] font-light text-silver mb-4">AETHERWERK</div>
+        <p class="text-steel text-[13px] leading-relaxed max-w-xs">Independent haute horlogerie. One hundred watches a year, finished entirely by hand in Geneva.</p>
+        <div class="mt-6 font-mono text-[11px] tracking-[0.2em] text-gold/70 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-gold animate-pulse"></span><span id="footClock">00:00:00</span> GENÈVE
+        </div>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-[0.2em] text-gold mb-5">Collection</h4>
+        <ul class="space-y-3 text-steel text-[13px]">
+          <li><a href="#collection" class="hover:text-silver transition">Aurora Réserve</a></li>
+          <li><a href="#collection" class="hover:text-silver transition">Tourbillon Noir</a></li>
+          <li><a href="#collection" class="hover:text-silver transition">Méridien Perpetual</a></li>
+          <li><a href="#collection" class="hover:text-silver transition">Aether Skeleton</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-[0.2em] text-gold mb-5">Maison</h4>
+        <ul class="space-y-3 text-steel text-[13px]">
+          <li><a href="#movement" class="hover:text-silver transition">The Movement</a></li>
+          <li><a href="#materials" class="hover:text-silver transition">Materials</a></li>
+          <li><a href="#maison" class="hover:text-silver transition">Our Story</a></li>
+          <li><a href="#bespoke" class="hover:text-silver transition">Bespoke</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-[0.2em] text-gold mb-5">Salon</h4>
+        <ul class="space-y-3 text-steel text-[13px]">
+          <li>Rue du Temps 14, Genève</li>
+          <li><a href="mailto:salon@aetherwerk.example" class="hover:text-silver transition">salon@aetherwerk.example</a></li>
+          <li>+41 22 000 18 94</li>
+          <li class="flex gap-4 pt-2 text-gold/70">
+            <a href="#" class="hover:text-gold transition">Instagram</a>
+            <a href="#" class="hover:text-gold transition">Journal</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="hairline opacity-50 mb-6"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-steel/70 tracking-[0.1em]">
+      <span>© 1894–2026 AETHERWERK Manufacture. All rights reserved.</span>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-gold transition">Privacy</a>
+        <a href="#" class="hover:text-gold transition">Terms</a>
+        <a href="#" class="hover:text-gold transition">Provenance</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- build watch ticks ---------- */
+  const ticksEl = document.getElementById('ticks');
+  if(ticksEl){
+    for(let i=0;i<60;i++){
+      const major = i%5===0;
+      const t = document.createElement('div');
+      t.className = 'tick'+(major?' major':'');
+      t.style.setProperty('--r', '42%');
+      t.style.transform = 'rotate('+(i*6)+'deg)';
+      t.innerHTML = '<i></i>';
+      ticksEl.appendChild(t);
+    }
+  }
+
+  /* ---------- live ticking hands ---------- */
+  const hHour=document.getElementById('hHour'),
+        hMin=document.getElementById('hMin'),
+        hSec=document.getElementById('hSec'),
+        subSec=document.getElementById('subSecond'),
+        liveClock=document.getElementById('liveClock'),
+        footClock=document.getElementById('footClock');
+  function pad(n){return n<10?'0'+n:''+n;}
+  function tickClock(){
+    const now=new Date();
+    const ms=now.getMilliseconds(), s=now.getSeconds(), m=now.getMinutes(), h=now.getHours()%12;
+    const secAngle = reduce ? s*6 : (s + ms/1000)*6;
+    const minAngle = m*6 + s*0.1;
+    const hrAngle = h*30 + m*0.5;
+    if(hSec) hSec.style.transform = 'rotate('+secAngle+'deg)';
+    if(hMin) hMin.style.transform = 'rotate('+minAngle+'deg)';
+    if(hHour) hHour.style.transform = 'rotate('+hrAngle+'deg)';
+    if(subSec) subSec.style.transform = 'translateX(-50%) rotate('+secAngle+'deg)';
+    const str = pad(now.getHours())+':'+pad(m)+':'+pad(s);
+    if(liveClock) liveClock.textContent = str;
+    if(footClock) footClock.textContent = str;
+    requestAnimationFrame(tickClock);
+  }
+  tickClock();
+
+  /* ---------- magnetic CTAs ---------- */
+  if(!reduce){
+    document.querySelectorAll('.magnetic').forEach(el=>{
+      el.addEventListener('mousemove', e=>{
+        const r=el.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+        el.style.transform='translate('+(x*0.25)+'px,'+(y*0.35)+'px)';
+      });
+      el.addEventListener('mouseleave', ()=>{ el.style.transform='translate(0,0)'; el.style.transition='transform .5s cubic-bezier(.16,1,.3,1)'; });
+      el.addEventListener('mouseenter', ()=>{ el.style.transition='transform .1s'; });
+    });
+
+    /* ---------- tilt-3D on watch ---------- */
+    const watch=document.getElementById('watch3d');
+    const wrap=watch?watch.closest('.tilt-wrap'):null;
+    if(watch && wrap){
+      wrap.addEventListener('mousemove', e=>{
+        const r=wrap.getBoundingClientRect();
+        const px=(e.clientX-r.left)/r.width-0.5, py=(e.clientY-r.top)/r.height-0.5;
+        watch.style.transform='rotateY('+(px*16)+'deg) rotateX('+(-py*16)+'deg)';
+      });
+      wrap.addEventListener('mouseleave', ()=>{ watch.style.transform='rotateY(0) rotateX(0)'; watch.style.transition='transform .8s cubic-bezier(.16,1,.3,1)'; });
+      wrap.addEventListener('mouseenter', ()=>{ watch.style.transition='transform .15s'; });
+    }
+  }
+
+  /* ---------- mobile menu ---------- */
+  const burger=document.getElementById('burger'), menu=document.getElementById('mobileMenu');
+  if(burger&&menu){
+    burger.addEventListener('click',()=>{ menu.classList.toggle('hidden'); menu.classList.toggle('flex'); });
+    menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{ menu.classList.add('hidden'); menu.classList.remove('flex'); }));
+  }
+
+  /* ---------- nav scroll bg ---------- */
+  const nav=document.getElementById('nav');
+  function onScroll(){
+    if(window.scrollY>40){ nav.classList.add('bg-ink/85','backdrop-blur-xl'); }
+    else { nav.classList.remove('bg-ink/85','backdrop-blur-xl'); }
+  }
+  window.addEventListener('scroll', onScroll); onScroll();
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-head').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const item=btn.closest('.faq-item');
+      const open=item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+      if(!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- GSAP animations ---------- */
+  if(window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if(!reduce){
+      /* hero masked lines */
+      gsap.to('[data-hero-line]', { y:0, duration:1.1, ease:'power4.out', stagger:0.14, delay:0.2 });
+      gsap.from('[data-hero="1"],[data-hero="2"],[data-hero="3"],[data-hero="4"]', {
+        opacity:0, y:24, duration:1, ease:'power3.out', stagger:0.12, delay:0.5
+      });
+      gsap.from('[data-hero="5"]', { opacity:0, scale:0.9, rotate:-6, duration:1.4, ease:'power3.out', delay:0.4 });
+
+      /* reveal-fade on scroll */
+      gsap.utils.toArray('.reveal-fade').forEach(el=>{
+        gsap.from(el, {
+          opacity:0, y:40, duration:1, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 86%' }
+        });
+      });
+
+      /* container parallax on collection imgs */
+      gsap.utils.toArray('.piece-img').forEach(img=>{
+        gsap.to(img, {
+          yPercent:-8, ease:'none',
+          scrollTrigger:{ trigger:img, start:'top bottom', end:'bottom top', scrub:true }
+        });
+      });
+    } else {
+      gsap.set('[data-hero-line]',{y:0});
+      gsap.set('.reveal-fade',{opacity:1,y:0});
+    }
+
+    /* count-ups (run regardless, instant if reduced) */
+    document.querySelectorAll('.count').forEach(el=>{
+      const to=parseFloat(el.dataset.to);
+      const obj={v:0};
+      ScrollTrigger.create({
+        trigger:el, start:'top 90%', once:true,
+        onEnter:()=>{
+          if(reduce){ el.textContent = Number.isInteger(to)?to:to.toFixed(0); return; }
+          gsap.to(obj,{ v:to, duration:1.8, ease:'power2.out',
+            onUpdate:()=>{ el.textContent = Math.round(obj.v).toLocaleString('en-US'); } });
+        }
+      });
+    });
+  } else {
+    document.querySelectorAll('.count').forEach(el=>{ el.textContent=el.dataset.to; });
+  }
+})();
+</script>
+</body>
+</html>

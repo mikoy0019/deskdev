@@ -1,0 +1,358 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ambrosia â€” Fine Dining</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#c8a97e;--s:#e8d5b5;--bg:#0a0a08;--card:rgba(200,169,126,.04);--bdr:rgba(200,169,126,.12);--txt:#f5f0e8;--m:#8a8070;--serif:'Playfair Display',Georgia,serif;--sans:'Inter',system-ui,sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--p);color:var(--bg)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-15px) rotate(1deg)}}
+@keyframes breathe{0%,100%{opacity:.06}50%{opacity:.12}}
+@keyframes lineGrow{from{width:0}to{width:80px}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes shimmer{0%{left:-100%}100%{left:100%}}
+
+.reveal{opacity:0;transform:translateY(40px);transition:all 1s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:all 1s cubic-bezier(.16,1,.3,1)}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:all 1s cubic-bezier(.16,1,.3,1)}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+.stagger-1{transition-delay:.15s}.stagger-2{transition-delay:.3s}.stagger-3{transition-delay:.45s}.stagger-4{transition-delay:.6s}
+
+.gold-line{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--p),transparent);transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.gold-line.visible{width:80px}
+
+.hover-lift{transition:all .5s cubic-bezier(.16,1,.3,1)}
+.hover-lift:hover{transform:translateY(-8px)}
+
+.btn-gold{display:inline-flex;align-items:center;gap:8px;padding:16px 40px;border:1px solid var(--p);color:var(--p);background:transparent;font-family:var(--sans);font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .4s;position:relative;overflow:hidden}
+.btn-gold::before{content:'';position:absolute;inset:0;background:var(--p);transform:translateX(-101%);transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.btn-gold:hover{color:var(--bg)}
+.btn-gold:hover::before{transform:translateX(0)}
+.btn-gold span{position:relative;z-index:1}
+
+#cursor-glow{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(200,169,126,.04) 0%,transparent 70%);pointer-events:none;z-index:0;transition:transform .4s ease-out;opacity:0}
+body:hover #cursor-glow{opacity:1}
+
+@media(max-width:768px){
+  .grid-2{grid-template-columns:1fr!important}
+  .hide-mobile{display:none!important}
+  section{padding:80px 20px!important}
+  .hero-title{font-size:48px!important}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor-glow"></div>
+
+<!-- â•â•â• NAV â•â•â• -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;transition:all .4s" id="nav">
+  <div style="font-family:var(--serif);font-size:24px;font-weight:700;letter-spacing:2px;color:var(--p)">AMBROSIA</div>
+  <div class="hide-mobile" style="display:flex;gap:40px;font-size:12px;font-weight:500;letter-spacing:3px;text-transform:uppercase">
+    <a href="#story" style="color:var(--m);text-decoration:none;transition:color .3s;position:relative" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Our Story</a>
+    <a href="#menu" style="color:var(--m);text-decoration:none;transition:color .3s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Menu</a>
+    <a href="#experience" style="color:var(--m);text-decoration:none;transition:color .3s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Experience</a>
+    <a href="#reserve" style="color:var(--m);text-decoration:none;transition:color .3s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Contact</a>
+  </div>
+  <button class="btn-gold" style="padding:10px 28px;font-size:11px;letter-spacing:2px"><span>Reserve</span></button>
+</nav>
+
+<!-- â•â•â• HERO â€” Full viewport, centered, editorial â•â•â• -->
+<section style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;padding:0 48px">
+  <!-- Background texture -->
+  <div style="position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(200,169,126,.03) 1px,transparent 0);background-size:60px 60px"></div>
+  <!-- Decorative lines -->
+  <div style="position:absolute;top:20%;left:10%;width:1px;height:200px;background:linear-gradient(180deg,transparent,var(--p),transparent);opacity:.15;animation:float 8s ease-in-out infinite"></div>
+  <div style="position:absolute;top:30%;right:12%;width:1px;height:150px;background:linear-gradient(180deg,transparent,var(--p),transparent);opacity:.1;animation:float 10s ease-in-out infinite reverse"></div>
+
+  <div style="position:relative;z-index:1;max-width:800px">
+    <!-- Overline -->
+    <div style="font-size:12px;letter-spacing:6px;text-transform:uppercase;color:var(--p);margin-bottom:32px;opacity:0;animation:fadeIn 1s .3s forwards">Est. 2018 Â· Fine Dining</div>
+
+    <!-- Decorative line -->
+    <div style="width:0;height:1px;background:var(--p);margin:0 auto 40px;animation:lineGrow 1.5s .5s cubic-bezier(.16,1,.3,1) forwards"></div>
+
+    <!-- Title -->
+    <h1 class="hero-title" style="font-family:var(--serif);font-size:clamp(48px,8vw,96px);font-weight:400;line-height:1;letter-spacing:-1px;margin-bottom:24px;opacity:0;animation:fadeUp 1.2s .4s cubic-bezier(.16,1,.3,1) forwards">
+      A Culinary<br>
+      <span style="font-style:italic;color:var(--p)">Experience</span>
+    </h1>
+
+    <!-- Subtitle -->
+    <p style="font-size:18px;color:var(--m);line-height:1.8;max-width:500px;margin:0 auto 48px;font-weight:300;opacity:0;animation:fadeUp 1.2s .6s cubic-bezier(.16,1,.3,1) forwards">
+      Where seasonal ingredients meet artistic presentation. Every dish tells a story of passion and precision.
+    </p>
+
+    <!-- CTA -->
+    <div style="opacity:0;animation:fadeUp 1.2s .8s cubic-bezier(.16,1,.3,1) forwards">
+      <button class="btn-gold"><span>Reserve Your Table</span></button>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div style="position:absolute;bottom:-120px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeIn 1s 1.5s forwards">
+      <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--m)">Scroll</div>
+      <div style="width:1px;height:40px;background:linear-gradient(180deg,var(--p),transparent)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• STORY â€” Split layout with vertical text â•â•â• -->
+<section id="story" style="padding:160px 48px;position:relative">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center">
+      <!-- Left: Image placeholder -->
+      <div class="reveal-left" style="position:relative">
+        <div style="aspect-ratio:3/4;border-radius:4px;background:linear-gradient(135deg,rgba(200,169,126,.08),rgba(200,169,126,.02));border:1px solid var(--bdr);overflow:hidden;position:relative">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+            <div style="text-align:center">
+              <div style="font-size:72px;opacity:.1;font-family:var(--serif);font-style:italic">A</div>
+              <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--m)">Chef's Portrait</div>
+            </div>
+          </div>
+          <!-- Shimmer effect -->
+          <div style="position:absolute;inset:0;overflow:hidden">
+            <div style="position:absolute;top:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(200,169,126,.03),transparent);animation:shimmer 4s infinite"></div>
+          </div>
+        </div>
+        <!-- Floating accent -->
+        <div style="position:absolute;bottom:-20px;right:-20px;width:120px;height:120px;border:1px solid var(--p);opacity:.2;animation:float 6s ease-in-out infinite"></div>
+      </div>
+
+      <!-- Right: Content -->
+      <div>
+        <div class="reveal stagger-1" style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--p);margin-bottom:16px">Our Story</div>
+        <h2 class="reveal stagger-2" style="font-family:var(--serif);font-size:clamp(32px,4vw,48px);font-weight:400;line-height:1.2;margin-bottom:24px">
+          Crafted with<br><span style="font-style:italic;color:var(--p)">passion</span> & precision
+        </h2>
+        <p class="reveal stagger-3" style="font-size:16px;color:var(--m);line-height:1.9;margin-bottom:32px;font-weight:300">
+          Born from a love of exceptional ingredients and the art of presentation, Ambrosia brings together the finest seasonal produce with techniques honed across decades. Every plate is a canvas, every meal an experience.
+        </p>
+        <div class="reveal stagger-4" style="display:flex;gap:48px">
+          <div>
+            <div style="font-family:var(--serif);font-size:36px;color:var(--p)">15+</div>
+            <div style="font-size:12px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Years</div>
+          </div>
+          <div>
+            <div style="font-family:var(--serif);font-size:36px;color:var(--p)">3</div>
+            <div style="font-size:12px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Michelin Stars</div>
+          </div>
+          <div>
+            <div style="font-family:var(--serif);font-size:36px;color:var(--p)">50K+</div>
+            <div style="font-size:12px;color:var(--m);letter-spacing:2px;text-transform:uppercase;margin-top:4px">Guests Served</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• MENU HIGHLIGHTS â€” Elegant card grid â•â•â• -->
+<section id="menu" style="padding:160px 48px;background:linear-gradient(180deg,transparent,rgba(200,169,126,.02),transparent)">
+  <div style="max-width:1200px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:80px">
+      <div class="reveal" style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--p);margin-bottom:16px">The Menu</div>
+      <div class="gold-line reveal" style="margin:0 auto 32px"></div>
+      <h2 class="reveal stagger-1" style="font-family:var(--serif);font-size:clamp(32px,4vw,48px);font-weight:400">Seasonal <span style="font-style:italic;color:var(--p)">Highlights</span></h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px">
+      <!-- Menu Item 1 -->
+      <div class="reveal hover-lift" style="padding:40px;border:1px solid var(--bdr);background:var(--card);position:relative;overflow:hidden;cursor:pointer;transition:all .5s" onmouseover="this.style.borderColor='rgba(200,169,126,.3)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--p),transparent);opacity:0;transition:opacity .4s" class="card-line"></div>
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--p);margin-bottom:20px">First Course</div>
+        <h3 style="font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:12px">Burrata & Heirloom Tomato</h3>
+        <p style="font-size:14px;color:var(--m);line-height:1.7;margin-bottom:24px;font-weight:300">Hand-pulled burrata, vine-ripened heirloom tomatoes, aged balsamic reduction, micro basil, extra virgin olive oil</p>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--serif);font-size:20px;color:var(--p)">$28</span>
+          <span style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--m)">Vegetarian</span>
+        </div>
+      </div>
+
+      <!-- Menu Item 2 -->
+      <div class="reveal stagger-1 hover-lift" style="padding:40px;border:1px solid var(--bdr);background:var(--card);position:relative;overflow:hidden;cursor:pointer;transition:all .5s" onmouseover="this.style.borderColor='rgba(200,169,126,.3)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--p);margin-bottom:20px">Main Course</div>
+        <h3 style="font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:12px">Wagyu Beef Tenderloin</h3>
+        <p style="font-size:14px;color:var(--m);line-height:1.7;margin-bottom:24px;font-weight:300">A5 Wagyu, truffle pomme purÃ©e, seasonal mushroom medley, red wine jus, edible flowers</p>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--serif);font-size:20px;color:var(--p)">$95</span>
+          <span style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--m)">Signature</span>
+        </div>
+      </div>
+
+      <!-- Menu Item 3 -->
+      <div class="reveal stagger-2 hover-lift" style="padding:40px;border:1px solid var(--bdr);background:var(--card);position:relative;overflow:hidden;cursor:pointer;transition:all .5s" onmouseover="this.style.borderColor='rgba(200,169,126,.3)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--p);margin-bottom:20px">Dessert</div>
+        <h3 style="font-family:var(--serif);font-size:24px;font-weight:400;margin-bottom:12px">Dark Chocolate SoufflÃ©</h3>
+        <p style="font-size:14px;color:var(--m);line-height:1.7;margin-bottom:24px;font-weight:300">Valrhona 70% dark chocolate, crÃ¨me anglaise, candied orange zest, gold leaf garnish</p>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--serif);font-size:20px;color:var(--p)">$22</span>
+          <span style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--m)">Chef's Choice</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="text-align:center;margin-top:64px">
+      <button class="btn-gold"><span>View Full Menu</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• EXPERIENCE â€” Large quote / ambiance â•â•â• -->
+<section id="experience" style="padding:160px 48px;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(200,169,126,.04) 0%,transparent 60%)"></div>
+  <div style="max-width:900px;margin:0 auto;text-align:center;position:relative;z-index:1">
+    <div class="reveal" style="font-family:var(--serif);font-size:120px;color:var(--p);opacity:.15;line-height:1;margin-bottom:-40px">"</div>
+    <blockquote class="reveal stagger-1" style="font-family:var(--serif);font-size:clamp(24px,3.5vw,40px);font-weight:400;line-height:1.5;font-style:italic;margin-bottom:32px">
+      Dining at Ambrosia is not merely a meal â€” it is an <span style="color:var(--p)">awakening</span> of the senses, a journey through flavor, texture, and artistry.
+    </blockquote>
+    <div class="reveal stagger-2">
+      <div style="width:40px;height:1px;background:var(--p);margin:0 auto 16px"></div>
+      <div style="font-size:14px;font-weight:600;letter-spacing:2px">THE CULINARY TIMES</div>
+      <div style="font-size:12px;color:var(--m);margin-top:4px">Food & Wine Review, 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• WINE PAIRING â€” Horizontal feature strip â•â•â• -->
+<section style="padding:80px 48px;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:48px;text-align:center" class="grid-2">
+    <div class="reveal">
+      <div style="font-size:32px;margin-bottom:12px">ðŸ¥‚</div>
+      <div style="font-family:var(--serif);font-size:18px;margin-bottom:8px">Wine Pairing</div>
+      <div style="font-size:13px;color:var(--m);line-height:1.6">Expert sommelier selections for every course</div>
+    </div>
+    <div class="reveal stagger-1">
+      <div style="font-size:32px;margin-bottom:12px">ðŸŒ¿</div>
+      <div style="font-family:var(--serif);font-size:18px;margin-bottom:8px">Farm to Table</div>
+      <div style="font-size:13px;color:var(--m);line-height:1.6">Locally sourced ingredients, daily fresh</div>
+    </div>
+    <div class="reveal stagger-2">
+      <div style="font-size:32px;margin-bottom:12px">ðŸ‘¨â€ðŸ³</div>
+      <div style="font-family:var(--serif);font-size:18px;margin-bottom:8px">Tasting Menu</div>
+      <div style="font-size:13px;color:var(--m);line-height:1.6">7-course seasonal tasting experience</div>
+    </div>
+    <div class="reveal stagger-3">
+      <div style="font-size:32px;margin-bottom:12px">ðŸŽ‰</div>
+      <div style="font-family:var(--serif);font-size:18px;margin-bottom:8px">Private Events</div>
+      <div style="font-size:13px;color:var(--m);line-height:1.6">Exclusive dining for special occasions</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• RESERVATION CTA â•â•â• -->
+<section id="reserve" style="padding:160px 48px;text-align:center;position:relative">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(200,169,126,.04) 0%,transparent 50%)"></div>
+  <div style="position:relative;z-index:1;max-width:600px;margin:0 auto">
+    <div class="reveal" style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:var(--p);margin-bottom:16px">Reservations</div>
+    <div class="gold-line reveal" style="margin:0 auto 32px"></div>
+    <h2 class="reveal stagger-1" style="font-family:var(--serif);font-size:clamp(32px,4vw,48px);font-weight:400;margin-bottom:20px">
+      Your table <span style="font-style:italic;color:var(--p)">awaits</span>
+    </h2>
+    <p class="reveal stagger-2" style="font-size:16px;color:var(--m);line-height:1.8;margin-bottom:48px;font-weight:300">
+      Experience an evening of exceptional cuisine. We recommend reserving at least two weeks in advance for weekend dining.
+    </p>
+    <div class="reveal stagger-3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-gold" style="padding:18px 48px"><span>Reserve Online</span></button>
+      <a href="tel:+1234567890" style="display:inline-flex;align-items:center;gap:8px;padding:18px 48px;color:var(--m);text-decoration:none;font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;border:1px solid var(--bdr);transition:all .3s" onmouseover="this.style.borderColor='var(--p)';this.style.color='var(--p)'" onmouseout="this.style.borderColor='var(--bdr)';this.style.color='var(--m)'">Call Us</a>
+    </div>
+    <div class="reveal stagger-4" style="margin-top:32px;font-size:13px;color:var(--m)">
+      Open Tuesday â€” Sunday Â· 6:00 PM â€” 11:00 PM
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer style="padding:64px 48px 32px;border-top:1px solid var(--bdr)">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:48px;margin-bottom:64px">
+      <div>
+        <div style="font-family:var(--serif);font-size:24px;color:var(--p);letter-spacing:2px;margin-bottom:16px">AMBROSIA</div>
+        <p style="font-size:14px;color:var(--m);line-height:1.8;font-weight:300">Where seasonal ingredients meet artistic presentation. A culinary journey for the discerning palate.</p>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--p);margin-bottom:20px">Visit Us</div>
+        <p style="font-size:14px;color:var(--m);line-height:1.8">142 Culinary Avenue<br>New York, NY 10012<br>+1 (212) 555-0190</p>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--p);margin-bottom:20px">Hours</div>
+        <p style="font-size:14px;color:var(--m);line-height:1.8">Tuesday â€” Thursday: 6PM â€” 10PM<br>Friday â€” Saturday: 6PM â€” 11PM<br>Sunday: 5PM â€” 9PM</p>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--bdr);padding-top:24px;display:flex;justify-content:space-between;font-size:12px;color:var(--m);letter-spacing:1px">
+      <span>Â© 2026 Ambrosia. All rights reserved.</span>
+      <div style="display:flex;gap:24px">
+        <a href="#" style="color:var(--m);text-decoration:none;transition:color .3s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Privacy</a>
+        <a href="#" style="color:var(--m);text-decoration:none;transition:color .3s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.1,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.gold-line').forEach(el => obs.observe(el));
+
+// Nav scroll
+const nav = document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>80){
+    nav.style.background='rgba(10,10,8,.92)';
+    nav.style.backdropFilter='blur(20px)';
+    nav.style.borderBottom='1px solid var(--bdr)';
+    nav.style.padding='12px 48px';
+  } else {
+    nav.style.background='transparent';
+    nav.style.backdropFilter='none';
+    nav.style.borderBottom='none';
+    nav.style.padding='20px 48px';
+  }
+});
+
+// Cursor glow
+const glow = document.getElementById('cursor-glow');
+let mx=0,my=0,gx=0,gy=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function animate(){gx+=(mx-gx)*.06;gy+=(my-gy)*.06;glow.style.transform=`translate(${gx-150}px,${gy-150}px)`;requestAnimationFrame(animate)})();
+
+// Card line hover
+document.querySelectorAll('.hover-lift').forEach(card=>{
+  const line = card.querySelector('.card-line');
+  if(line){
+    card.addEventListener('mouseenter',()=>line.style.opacity='1');
+    card.addEventListener('mouseleave',()=>line.style.opacity='0');
+  }
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t) t.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+// Page load
+document.body.style.opacity='0';
+document.body.style.transition='opacity .6s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+
+</body>
+</html>
+

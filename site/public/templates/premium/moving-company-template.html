@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Northpoint Movers — Residential & Commercial Moving Done Right</title>
+<meta name="description" content="Northpoint Movers — confident local & long-distance moving, packing and storage. Get an instant estimate in seconds." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0E1726',
+          slate2: '#1B2436',
+          haze:   '#F4F6FB',
+          cloud:  '#E7ECF5',
+          ember:  '#FF5A1F',   // energetic accent
+          ember2: '#FF7A45',
+          steel:  '#2B6CB0',
+          mint:   '#1FB6A6',
+        },
+        fontFamily: {
+          display: ['Archivo', 'system-ui', 'sans-serif'],
+          body:    ['Sora', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          lift:  '0 24px 60px -20px rgba(14,23,38,0.35)',
+          ember: '0 18px 40px -12px rgba(255,90,31,0.5)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #F4F6FB; color: #0E1726; font-family: 'Sora', sans-serif; }
+  .font-display { font-family: 'Archivo', sans-serif; }
+
+  ::selection { background: #FF5A1F; color: #fff; }
+
+  /* Marquee */
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track { display: inline-flex; white-space: nowrap; animation: marquee 26s linear infinite; }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+
+  /* Moving truck */
+  @keyframes drive { 0% { transform: translateX(-18%); } 100% { transform: translateX(118%); } }
+  @keyframes wheelspin { to { transform: rotate(360deg); } }
+  @keyframes bounce-sm { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .truck { animation: drive 9s linear infinite; }
+  .wheel { transform-origin: center; animation: wheelspin 0.7s linear infinite; }
+  .truck-body { animation: bounce-sm 0.7s ease-in-out infinite; }
+
+  /* Road dashes */
+  @keyframes roadmove { from { background-position: 0 0; } to { background-position: -80px 0; } }
+  .road { background-image: linear-gradient(90deg, #FF5A1F 0 40px, transparent 40px 80px); background-size: 80px 4px; animation: roadmove 0.6s linear infinite; }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .grad-mask { -webkit-mask-image: linear-gradient(180deg,#000 70%,transparent); }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .magnetic { will-change: transform; }
+  .tilt { transform-style: preserve-3d; will-change: transform; }
+
+  .ribbon { background-image: repeating-linear-gradient(45deg,#FF5A1F 0 14px,#FF7A45 14px 28px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .truck, .wheel, .truck-body, .marquee-track, .road { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div id="navbar" class="mt-4 flex items-center justify-between rounded-2xl bg-white/80 backdrop-blur-md border border-cloud px-4 sm:px-6 py-3 shadow-lift">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-ink text-ember font-display font-900 text-lg shadow-sm group-hover:rotate-6 transition">N</span>
+        <span class="font-display font-800 tracking-tight text-lg">North<span class="text-ember">point</span></span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-slate2">
+        <a href="#services" class="hover:text-ember transition">Services</a>
+        <a href="#how" class="hover:text-ember transition">How it works</a>
+        <a href="#pricing" class="hover:text-ember transition">Pricing</a>
+        <a href="#areas" class="hover:text-ember transition">Service areas</a>
+        <a href="#faq" class="hover:text-ember transition">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="tel:+18005550199" class="hidden sm:inline text-sm font-semibold text-slate2 hover:text-ember transition">(800) 555-0199</a>
+        <a href="#quote" id="navQuote" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ember px-4 py-2.5 text-sm font-700 text-white shadow-ember hover:bg-ember2 transition">
+          Free quote
+          <span class="text-base leading-none">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="top" class="relative pt-32 sm:pt-40 pb-20 overflow-hidden">
+  <!-- bg layers -->
+  <div data-parallax="-40" class="pointer-events-none absolute -top-32 -right-32 h-[34rem] w-[34rem] rounded-full bg-ember/10 blur-3xl"></div>
+  <div data-parallax="40" class="pointer-events-none absolute top-40 -left-40 h-[30rem] w-[30rem] rounded-full bg-steel/10 blur-3xl"></div>
+
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center">
+    <!-- copy -->
+    <div class="lg:col-span-7">
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-ink text-white px-4 py-1.5 text-xs font-600 tracking-wide">
+        <span class="h-1.5 w-1.5 rounded-full bg-ember animate-pulse"></span>
+        Licensed &amp; insured · DOT #2847193
+      </span>
+
+      <h1 class="font-display font-900 tracking-tight text-5xl sm:text-6xl lg:text-7xl leading-[0.95] mt-6">
+        <span class="block overflow-hidden"><span class="hl block">Moving day,</span></span>
+        <span class="block overflow-hidden"><span class="hl block">made <span class="text-ember">effortless.</span></span></span>
+      </h1>
+
+      <p class="reveal mt-6 max-w-xl text-lg text-slate2/80">
+        Northpoint Movers handles your home or office relocation with muscle, care, and a flat honest price. Local across town or coast to coast &mdash; we carry the heavy stuff so you don&rsquo;t.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#quote" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ember px-6 py-3.5 font-700 text-white shadow-ember hover:bg-ember2 transition">
+          Get my instant estimate <span>&rarr;</span>
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 rounded-xl border border-ink/15 bg-white px-6 py-3.5 font-600 text-ink hover:border-ember/50 transition">
+          See how it works
+        </a>
+      </div>
+
+      <div class="reveal mt-8 flex items-center gap-6 text-sm text-slate2/70">
+        <div class="flex items-center gap-2">
+          <div class="flex -space-x-2">
+            <span class="h-8 w-8 rounded-full bg-ember/90 border-2 border-white"></span>
+            <span class="h-8 w-8 rounded-full bg-steel/90 border-2 border-white"></span>
+            <span class="h-8 w-8 rounded-full bg-mint/90 border-2 border-white"></span>
+          </div>
+          <span><b class="text-ink">12,000+</b> happy moves</span>
+        </div>
+        <div class="flex items-center gap-1 text-ember">
+          <span>&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+          <span class="text-slate2/70"><b class="text-ink">4.9</b>/5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- instant quote card -->
+    <div class="lg:col-span-5">
+      <div id="quote" class="tilt reveal relative rounded-3xl bg-white border border-cloud shadow-lift p-6 sm:p-7">
+        <div class="absolute -top-3 left-6 ribbon text-white text-[11px] font-700 tracking-wide rounded-full px-3 py-1">INSTANT ESTIMATE</div>
+        <h3 class="font-display font-800 text-2xl mt-2">What are you moving?</h3>
+        <p class="text-sm text-slate2/70 mt-1">Pick a size and distance &mdash; get a ballpark in real time.</p>
+
+        <div class="mt-5">
+          <label class="text-xs font-600 uppercase tracking-wide text-slate2/60">Home size</label>
+          <div id="sizeGroup" class="mt-2 grid grid-cols-2 gap-2">
+            <button data-size="700" data-label="Studio / 1 bed" class="q-size rounded-xl border border-cloud px-3 py-2.5 text-sm font-600 text-left hover:border-ember transition">Studio / 1 bed</button>
+            <button data-size="1100" data-label="2 bedroom" class="q-size rounded-xl border border-cloud px-3 py-2.5 text-sm font-600 text-left hover:border-ember transition">2 bedroom</button>
+            <button data-size="1700" data-label="3 bedroom" class="q-size rounded-xl border border-cloud px-3 py-2.5 text-sm font-600 text-left hover:border-ember transition">3 bedroom</button>
+            <button data-size="2600" data-label="4+ / office" class="q-size rounded-xl border border-cloud px-3 py-2.5 text-sm font-600 text-left hover:border-ember transition">4+ / office</button>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <label class="text-xs font-600 uppercase tracking-wide text-slate2/60">Distance</label>
+          <div id="distGroup" class="mt-2 grid grid-cols-3 gap-2">
+            <button data-dist="1" data-label="Local" class="q-dist rounded-xl border border-cloud px-2 py-2.5 text-sm font-600 hover:border-ember transition">Local</button>
+            <button data-dist="2.1" data-label="Regional" class="q-dist rounded-xl border border-cloud px-2 py-2.5 text-sm font-600 hover:border-ember transition">Regional</button>
+            <button data-dist="3.4" data-label="Long-haul" class="q-dist rounded-xl border border-cloud px-2 py-2.5 text-sm font-600 hover:border-ember transition">Long-haul</button>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center gap-3">
+          <button id="packToggle" class="q-toggle group flex items-center gap-2 rounded-xl border border-cloud px-3 py-2.5 text-sm font-600 hover:border-ember transition">
+            <span class="grid h-4 w-4 place-items-center rounded border border-slate2/30 group-[.on]:bg-ember group-[.on]:border-ember text-white text-[10px]">&#10003;</span>
+            Add full packing
+          </button>
+        </div>
+
+        <div class="mt-6 rounded-2xl bg-haze border border-cloud p-4 flex items-end justify-between">
+          <div>
+            <div class="text-xs font-600 uppercase tracking-wide text-slate2/60">Estimated total</div>
+            <div class="font-display font-900 text-4xl tracking-tight mt-1">$<span id="estVal">0</span></div>
+            <div id="estNote" class="text-xs text-slate2/60 mt-1">Select a size to begin</div>
+          </div>
+          <a href="#contact" class="rounded-xl bg-ink px-4 py-2.5 text-sm font-700 text-white hover:bg-slate2 transition">Lock it in</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- truck animation strip -->
+  <div class="relative mt-16 mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="relative h-28 rounded-3xl bg-ink overflow-hidden shadow-lift">
+      <div class="absolute inset-x-0 bottom-6 h-1 road"></div>
+      <div class="truck absolute bottom-7 left-0">
+        <div class="truck-body relative flex items-end">
+          <!-- cargo -->
+          <div class="h-12 w-20 rounded-md bg-white relative">
+            <div class="absolute inset-1 rounded-sm border-2 border-ember/40"></div>
+            <span class="absolute inset-0 grid place-items-center font-display font-900 text-ember text-xs">NP</span>
+          </div>
+          <!-- cab -->
+          <div class="h-9 w-10 rounded-md rounded-tr-xl bg-ember relative -ml-0.5">
+            <div class="absolute top-1 left-1 h-3 w-4 rounded-sm bg-white/80"></div>
+          </div>
+          <!-- wheels -->
+          <div class="wheel absolute -bottom-2 left-3 h-5 w-5 rounded-full bg-slate2 border-2 border-white/40"></div>
+          <div class="wheel absolute -bottom-2 left-14 h-5 w-5 rounded-full bg-slate2 border-2 border-white/40"></div>
+          <div class="wheel absolute -bottom-2 right-1 h-5 w-5 rounded-full bg-slate2 border-2 border-white/40"></div>
+        </div>
+      </div>
+      <div class="absolute top-4 right-6 text-white/40 text-xs font-600 tracking-widest uppercase hidden sm:block">On the road, every day</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<div class="marquee-wrap border-y border-cloud bg-white py-4 overflow-hidden">
+  <div class="marquee-track text-ink/80 font-display font-700 text-lg">
+    <span class="mx-6">Local moves</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Long-distance</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Full packing</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Secure storage</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Office relocation</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Piano &amp; heavy items</span><span class="text-ember mx-2">&#9670;</span>
+    <!-- duplicate for seamless loop -->
+    <span class="mx-6">Local moves</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Long-distance</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Full packing</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Secure storage</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Office relocation</span><span class="text-ember mx-2">&#9670;</span>
+    <span class="mx-6">Piano &amp; heavy items</span><span class="text-ember mx-2">&#9670;</span>
+  </div>
+</div>
+
+<!-- ================= TRUST / STATS ================= -->
+<section class="py-16 sm:py-20">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal rounded-3xl bg-white border border-cloud p-7 shadow-sm">
+        <div class="font-display font-900 text-5xl tracking-tight"><span class="count" data-to="12480">0</span></div>
+        <div class="mt-2 text-sm text-slate2/70">Moves completed</div>
+      </div>
+      <div class="reveal rounded-3xl bg-ink text-white p-7 shadow-lift">
+        <div class="font-display font-900 text-5xl tracking-tight text-ember"><span class="count" data-to="18">0</span><span class="text-ember">+</span></div>
+        <div class="mt-2 text-sm text-white/70">Years on the road</div>
+      </div>
+      <div class="reveal rounded-3xl bg-white border border-cloud p-7 shadow-sm">
+        <div class="font-display font-900 text-5xl tracking-tight"><span class="count" data-to="4.9" data-dec="1">0</span></div>
+        <div class="mt-2 text-sm text-slate2/70">Average rating</div>
+      </div>
+      <div class="reveal rounded-3xl bg-white border border-cloud p-7 shadow-sm">
+        <div class="font-display font-900 text-5xl tracking-tight"><span class="count" data-to="98">0</span>%</div>
+        <div class="mt-2 text-sm text-slate2/70">On-time arrivals</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section id="services" class="py-16 sm:py-24 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">What we do</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Services built around your move</h2>
+      <p class="reveal text-slate2/70 mt-4">From a one-room apartment to a full corporate floor, we scale the crew, the truck, and the plan to fit.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mt-12">
+      <!-- card -->
+      <article class="svc reveal group relative overflow-hidden rounded-3xl border border-cloud bg-haze p-7 hover:shadow-lift transition">
+        <div class="relative h-40 -mx-1 mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-ember/30 to-steel/20">
+          <img src="https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1600&q=80" alt="Local move" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover group-hover:scale-105 transition duration-700" />
+        </div>
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-ember text-white text-xl shadow-ember">&#127968;</span>
+        <h3 class="font-display font-800 text-xl mt-4">Local moving</h3>
+        <p class="text-sm text-slate2/70 mt-2">Same-city and metro moves with hourly crews who show up early and hustle. No surprise fees.</p>
+        <a href="#quote" class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-ember">Estimate this &rarr;</a>
+      </article>
+
+      <article class="svc reveal group relative overflow-hidden rounded-3xl border border-cloud bg-haze p-7 hover:shadow-lift transition">
+        <div class="relative h-40 -mx-1 mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-steel/30 to-mint/20">
+          <img src="https://images.unsplash.com/photo-1530712504290-5d6c2c1f8e8e?auto=format&fit=crop&w=1600&q=80" alt="Long distance" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover group-hover:scale-105 transition duration-700" />
+        </div>
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-steel text-white text-xl">&#128666;</span>
+        <h3 class="font-display font-800 text-xl mt-4">Long-distance</h3>
+        <p class="text-sm text-slate2/70 mt-2">Cross-state and coast-to-coast hauls with GPS-tracked trucks and a guaranteed delivery window.</p>
+        <a href="#quote" class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-ember">Estimate this &rarr;</a>
+      </article>
+
+      <article class="svc reveal group relative overflow-hidden rounded-3xl border border-cloud bg-haze p-7 hover:shadow-lift transition">
+        <div class="relative h-40 -mx-1 mb-6 rounded-2xl overflow-hidden bg-gradient-to-br from-mint/30 to-ember/20">
+          <img src="https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=1600&q=80" alt="Packing" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover group-hover:scale-105 transition duration-700" />
+        </div>
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-mint text-white text-xl">&#128230;</span>
+        <h3 class="font-display font-800 text-xl mt-4">Packing &amp; storage</h3>
+        <p class="text-sm text-slate2/70 mt-2">Pro packing, custom crating, and climate-controlled storage when your timelines don&rsquo;t line up.</p>
+        <a href="#quote" class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-ember">Estimate this &rarr;</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHY US ================= -->
+<section class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal relative">
+      <div class="rounded-3xl overflow-hidden shadow-lift bg-gradient-to-br from-ink to-steel/60 grad-mask">
+        <img src="https://images.unsplash.com/photo-1581578017093-cd30fce4eeb7?auto=format&fit=crop&w=1600&q=80" alt="Northpoint crew" loading="lazy" onerror="this.style.display='none'" class="w-full h-[26rem] object-cover" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:right-6 rounded-2xl bg-white border border-cloud shadow-lift p-5 w-52">
+        <div class="font-display font-900 text-3xl text-ember">$0</div>
+        <div class="text-xs text-slate2/70 mt-1">hidden fees, ever. The quote is the price.</div>
+      </div>
+    </div>
+
+    <div>
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Why Northpoint</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Strong hands. Straight talk.</h2>
+      <div class="mt-8 space-y-5">
+        <div class="reveal flex gap-4">
+          <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ember/10 text-ember font-800">01</span>
+          <div><h4 class="font-700">Flat, upfront pricing</h4><p class="text-sm text-slate2/70 mt-1">The estimate you see is what you pay. No fuel surprises, no padded hours.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-steel/10 text-steel font-800">02</span>
+          <div><h4 class="font-700">Full-coverage protection</h4><p class="text-sm text-slate2/70 mt-1">Licensed, bonded, and insured. Every item is covered from doorstep to doorstep.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-mint/10 text-mint font-800">03</span>
+          <div><h4 class="font-700">Crews you can trust</h4><p class="text-sm text-slate2/70 mt-1">Background-checked, in-house movers &mdash; never day labor or subcontractors.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" class="py-16 sm:py-24 bg-ink text-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Three simple steps</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3 text-white">Booked in minutes. Moved in a day.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mt-12">
+      <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-7">
+        <div class="font-display font-900 text-6xl text-ember/40">1</div>
+        <h3 class="font-display font-800 text-xl mt-3">Get your estimate</h3>
+        <p class="text-sm text-white/70 mt-2">Use the instant tool or talk to a coordinator. Lock your date and price in minutes.</p>
+      </div>
+      <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-7">
+        <div class="font-display font-900 text-6xl text-ember/40">2</div>
+        <h3 class="font-display font-800 text-xl mt-3">We pack &amp; load</h3>
+        <p class="text-sm text-white/70 mt-2">Our crew arrives on time, wraps and protects everything, and loads with care.</p>
+      </div>
+      <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-7">
+        <div class="font-display font-900 text-6xl text-ember/40">3</div>
+        <h3 class="font-display font-800 text-xl mt-3">Unload &amp; settle in</h3>
+        <p class="text-sm text-white/70 mt-2">We place every box in the right room and assemble furniture. You just unpack.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section id="pricing" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Simple pricing</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Pick the crew that fits the job</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mt-12 items-stretch">
+      <div class="reveal rounded-3xl border border-cloud bg-white p-7 flex flex-col">
+        <h3 class="font-display font-800 text-xl">Starter Crew</h3>
+        <p class="text-sm text-slate2/70 mt-1">Studios &amp; 1-bed apartments</p>
+        <div class="font-display font-900 text-5xl tracking-tight mt-5">$129<span class="text-lg text-slate2/60 font-600">/hr</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-slate2/80 flex-1">
+          <li>&#10003; 2 movers + 1 truck</li>
+          <li>&#10003; Basic wrapping &amp; pads</li>
+          <li>&#10003; Local moves up to 25 mi</li>
+        </ul>
+        <a href="#quote" class="mt-7 rounded-xl border border-ink/15 px-5 py-3 text-center font-700 hover:border-ember transition">Choose Starter</a>
+      </div>
+
+      <div class="reveal relative rounded-3xl border-2 border-ember bg-white p-7 flex flex-col shadow-ember">
+        <span class="absolute -top-3 left-7 rounded-full bg-ember px-3 py-1 text-[11px] font-700 text-white">MOST POPULAR</span>
+        <h3 class="font-display font-800 text-xl">Full Service</h3>
+        <p class="text-sm text-slate2/70 mt-1">2&ndash;3 bedroom homes</p>
+        <div class="font-display font-900 text-5xl tracking-tight mt-5">$189<span class="text-lg text-slate2/60 font-600">/hr</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-slate2/80 flex-1">
+          <li>&#10003; 3&ndash;4 movers + 1 truck</li>
+          <li>&#10003; Full packing available</li>
+          <li>&#10003; Furniture disassembly/reassembly</li>
+          <li>&#10003; Priority scheduling</li>
+        </ul>
+        <a href="#quote" class="mt-7 rounded-xl bg-ember px-5 py-3 text-center font-700 text-white hover:bg-ember2 transition">Choose Full Service</a>
+      </div>
+
+      <div class="reveal rounded-3xl border border-cloud bg-white p-7 flex flex-col">
+        <h3 class="font-display font-800 text-xl">Commercial</h3>
+        <p class="text-sm text-slate2/70 mt-1">Offices &amp; large homes</p>
+        <div class="font-display font-900 text-5xl tracking-tight mt-5">Custom</div>
+        <ul class="mt-6 space-y-3 text-sm text-slate2/80 flex-1">
+          <li>&#10003; Scaled crew &amp; multiple trucks</li>
+          <li>&#10003; After-hours &amp; weekend moves</li>
+          <li>&#10003; Dedicated move manager</li>
+          <li>&#10003; Storage &amp; logistics</li>
+        </ul>
+        <a href="#contact" class="mt-7 rounded-xl border border-ink/15 px-5 py-3 text-center font-700 hover:border-ember transition">Talk to us</a>
+      </div>
+    </div>
+    <p class="reveal text-center text-xs text-slate2/50 mt-6">Rates shown are starting points. Your instant estimate above reflects size, distance, and packing.</p>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="py-16 sm:py-24 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Our story</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Family-run since 2008</h2>
+      <p class="reveal text-slate2/70 mt-5">Northpoint started with one truck, two brothers, and a simple promise: treat every customer&rsquo;s home like it&rsquo;s our own. Eighteen years later we run a fleet of fifteen trucks and a crew of sixty &mdash; but that promise hasn&rsquo;t budged an inch.</p>
+      <p class="reveal text-slate2/70 mt-4">We&rsquo;re not the cheapest movers in town, and we&rsquo;re fine with that. We&rsquo;re the ones you call when the move actually matters.</p>
+      <div class="reveal mt-8 grid grid-cols-3 gap-4">
+        <div><div class="font-display font-900 text-3xl text-ember">15</div><div class="text-xs text-slate2/60">trucks in fleet</div></div>
+        <div><div class="font-display font-900 text-3xl text-ember">60</div><div class="text-xs text-slate2/60">full-time movers</div></div>
+        <div><div class="font-display font-900 text-3xl text-ember">7</div><div class="text-xs text-slate2/60">states served</div></div>
+      </div>
+    </div>
+    <div class="reveal grid grid-cols-2 gap-4">
+      <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-ember/20 to-steel/20 h-56">
+        <img src="https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1600&q=80" alt="Crew at work" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+      </div>
+      <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-steel/20 to-mint/20 h-56 mt-8">
+        <img src="https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=1600&q=80" alt="Packing boxes" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Real customers</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">People don&rsquo;t forget a good move</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mt-12">
+      <figure class="reveal rounded-3xl border border-cloud bg-white p-7 shadow-sm">
+        <div class="text-ember">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-slate2/80">&ldquo;Three-bedroom move done before lunch. The crew wrapped everything like it was glass &mdash; not a single scratch.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-ember/80"></span>
+          <div><div class="font-700 text-sm">Marisa Cole</div><div class="text-xs text-slate2/60">Riverside &rarr; Hillcrest</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl border border-cloud bg-white p-7 shadow-sm">
+        <div class="text-ember">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-slate2/80">&ldquo;We relocated our whole office over a weekend with zero downtime Monday. These folks are pros.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-steel/80"></span>
+          <div><div class="font-700 text-sm">Devon Park</div><div class="text-xs text-slate2/60">Atlas Design Co.</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl border border-cloud bg-white p-7 shadow-sm">
+        <div class="text-ember">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-slate2/80">&ldquo;The price they quoted was the price I paid. After two bad moving experiences, that meant everything.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-mint/80"></span>
+          <div><div class="font-700 text-sm">Aliyah Romero</div><div class="text-xs text-slate2/60">Cross-state move</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SERVICE AREAS ================= -->
+<section id="areas" class="py-16 sm:py-24 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Where we move</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Service areas</h2>
+      <p class="reveal text-slate2/70 mt-4">Based in the Northpoint metro, moving families and businesses across the region and beyond.</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mt-10">
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Riverside</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Hillcrest</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Lakeshore</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Maple Ridge</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Cedar Falls</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Oakdale</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Westbrook</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Fairview</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Brighton</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Crestwood</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">Stonegate</span>
+      <span class="area reveal rounded-xl border border-cloud bg-haze px-4 py-3 text-sm font-600 hover:border-ember hover:text-ember transition">+ statewide</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="text-center">
+      <span class="reveal text-ember font-700 text-sm tracking-widest uppercase">Good to know</span>
+      <h2 class="reveal font-display font-900 text-4xl sm:text-5xl tracking-tight mt-3">Frequently asked</h2>
+    </div>
+    <div class="mt-10 space-y-3" id="faqList">
+      <div class="faq reveal rounded-2xl border border-cloud bg-white overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-700">
+          <span>How accurate is the instant estimate?</span>
+          <span class="faq-ico text-ember text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-sm text-slate2/70">It&rsquo;s a strong ballpark based on home size, distance, and packing. A 2-minute call with a coordinator locks in your exact flat rate.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-cloud bg-white overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-700">
+          <span>Do you handle pianos and heavy items?</span>
+          <span class="faq-ico text-ember text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-sm text-slate2/70">Yes. Upright pianos, gun safes, treadmills, and oversized furniture are all in a day&rsquo;s work for our specialty crews.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-cloud bg-white overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-700">
+          <span>What if my move date changes?</span>
+          <span class="faq-ico text-ember text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-sm text-slate2/70">Reschedule free up to 48 hours before your move. Life happens &mdash; we keep it flexible.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-cloud bg-white overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-700">
+          <span>Are my belongings insured?</span>
+          <span class="faq-ico text-ember text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-sm text-slate2/70">Every move includes standard valuation coverage, with full-value protection available as an add-on. We&rsquo;re fully licensed and insured.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section id="contact" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="relative overflow-hidden rounded-[2rem] bg-ink text-white p-10 sm:p-16 shadow-lift">
+      <div class="pointer-events-none absolute -top-20 -right-20 h-72 w-72 rounded-full bg-ember/30 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-steel/30 blur-3xl"></div>
+      <div class="relative max-w-2xl">
+        <h2 class="reveal font-display font-900 text-4xl sm:text-6xl tracking-tight leading-[0.95]">Ready to move<br><span class="text-ember">without the stress?</span></h2>
+        <p class="reveal text-white/70 mt-5 text-lg">Get your instant estimate now, or call and we&rsquo;ll build your plan in five minutes flat.</p>
+        <div class="reveal mt-8 flex flex-wrap gap-4">
+          <a href="#quote" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ember px-7 py-4 font-700 text-white shadow-ember hover:bg-ember2 transition">Get my free quote <span>&rarr;</span></a>
+          <a href="tel:+18005550199" class="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-4 font-700 hover:border-ember transition">(800) 555-0199</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-cloud bg-white py-14">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-ink text-ember font-display font-900 text-lg">N</span>
+        <span class="font-display font-800 tracking-tight text-lg">North<span class="text-ember">point</span></span>
+      </a>
+      <p class="text-sm text-slate2/70 mt-4 max-w-sm">Residential &amp; commercial moving, packing, and storage. Licensed, insured, and family-run since 2008.</p>
+      <p class="text-xs text-slate2/50 mt-4">DOT #2847193 &middot; MC #984217</p>
+    </div>
+    <div>
+      <div class="font-700 text-sm">Services</div>
+      <ul class="mt-3 space-y-2 text-sm text-slate2/70">
+        <li><a href="#services" class="hover:text-ember">Local moving</a></li>
+        <li><a href="#services" class="hover:text-ember">Long-distance</a></li>
+        <li><a href="#services" class="hover:text-ember">Packing &amp; storage</a></li>
+        <li><a href="#pricing" class="hover:text-ember">Pricing</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="font-700 text-sm">Get in touch</div>
+      <ul class="mt-3 space-y-2 text-sm text-slate2/70">
+        <li><a href="tel:+18005550199" class="hover:text-ember">(800) 555-0199</a></li>
+        <li><a href="mailto:hello@northpointmovers.co" class="hover:text-ember">hello@northpointmovers.co</a></li>
+        <li>114 Depot Ave, Riverside</li>
+        <li><a href="#quote" class="text-ember font-700">Free quote &rarr;</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 mt-10 pt-6 border-t border-cloud flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate2/50">
+    <span>&copy; 2026 Northpoint Movers. All rights reserved.</span>
+    <span>Built for people who&rsquo;d rather not lift a finger.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav shrink on scroll ---------- */
+  const navbar = document.getElementById('navbar');
+  const onScroll = () => {
+    if (window.scrollY > 20) navbar.classList.add('py-2','shadow-ember');
+    else navbar.classList.remove('py-2','shadow-ember');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Instant quote ---------- */
+  const state = { size: 0, sizeLabel: '', dist: 1, distLabel: 'Local', pack: false };
+  const estVal = document.getElementById('estVal');
+  const estNote = document.getElementById('estNote');
+
+  function fmt(n){ return n.toLocaleString('en-US'); }
+  function animateTo(target){
+    if (reduce){ estVal.textContent = fmt(target); return; }
+    const start = parseInt(estVal.textContent.replace(/,/g,'')) || 0;
+    const t0 = performance.now(), dur = 600;
+    function step(now){
+      const p = Math.min(1,(now-t0)/dur);
+      const e = 1 - Math.pow(1-p,3);
+      estVal.textContent = fmt(Math.round(start + (target-start)*e));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function recompute(){
+    if (!state.size){ estVal.textContent = '0'; estNote.textContent = 'Select a size to begin'; return; }
+    let base = state.size * 0.42;            // size factor
+    base = base * state.dist;                 // distance multiplier
+    if (state.pack) base += state.size * 0.18; // packing add-on
+    const total = Math.round(base / 5) * 5;
+    animateTo(total);
+    const bits = [state.sizeLabel, state.distLabel + ' move'];
+    if (state.pack) bits.push('with packing');
+    estNote.textContent = bits.join(' · ');
+  }
+
+  function bindGroup(sel, attr, key, labelKey){
+    document.querySelectorAll(sel).forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll(sel).forEach(b => b.classList.remove('border-ember','bg-ember','text-white'));
+        btn.classList.add('border-ember','bg-ember','text-white');
+        state[key] = parseFloat(btn.dataset[attr]);
+        state[labelKey] = btn.dataset.label;
+        recompute();
+      });
+    });
+  }
+  bindGroup('.q-size','size','size','sizeLabel');
+  bindGroup('.q-dist','dist','dist','distLabel');
+
+  const packBtn = document.getElementById('packToggle');
+  packBtn.addEventListener('click', () => {
+    state.pack = !state.pack;
+    packBtn.classList.toggle('on', state.pack);
+    packBtn.classList.toggle('border-ember', state.pack);
+    recompute();
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const body = q.nextElementSibling;
+      const ico = q.querySelector('.faq-ico');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-ico').forEach(i => { i.textContent = '+'; i.style.transform = 'rotate(0deg)'; });
+      if (!open){
+        body.style.maxHeight = body.scrollHeight + 'px';
+        ico.textContent = '−';
+        ico.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce){
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${x*0.25}px, ${y*0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+
+    /* Tilt on quote card */
+    document.querySelectorAll('.tilt').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - 0.5;
+        const py = (e.clientY - r.top)/r.height - 0.5;
+        el.style.transform = `perspective(900px) rotateY(${px*6}deg) rotateX(${-py*6}deg)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  /* ---------- GSAP reveals + parallax + counts ---------- */
+  if (window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce){
+      /* animated headline lines */
+      gsap.set('.hl', { yPercent: 110 });
+      gsap.to('.hl', { yPercent: 0, duration: 1, ease: 'power4.out', stagger: 0.12, delay: 0.15 });
+
+      /* generic reveals */
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      /* container parallax */
+      gsap.utils.toArray('[data-parallax]').forEach(el => {
+        gsap.to(el, {
+          y: () => parseFloat(el.dataset.parallax),
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      /* service card stagger */
+      gsap.from('.svc', {
+        opacity: 0, y: 40, duration: 0.8, ease: 'power3.out', stagger: 0.12,
+        scrollTrigger: { trigger: '#services', start: 'top 70%' }
+      });
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+      document.querySelectorAll('.hl').forEach(el => { el.style.transform = 'none'; });
+    }
+
+    /* count-ups */
+    document.querySelectorAll('.count').forEach(el => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.dec || '0');
+      const obj = { v: 0 };
+      const run = () => {
+        if (reduce){ el.textContent = dec ? to.toFixed(dec) : Math.round(to).toLocaleString('en-US'); return; }
+        gsap.to(obj, {
+          v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: () => { el.textContent = dec ? obj.v.toFixed(dec) : Math.round(obj.v).toLocaleString('en-US'); }
+        });
+      };
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: run });
+    });
+  }
+})();
+</script>
+</body>
+</html>

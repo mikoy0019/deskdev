@@ -1,0 +1,70 @@
+name: Repo CI
+
+# Repo-wide guards that belong to no single app: the migration ledger
+# (scripts/check-migrations.mjs), the tests of the repo tooling
+# (scripts/lib/env.mjs, the checker itself) and the migrations applied to a
+# throwaway database (supabase/tests). The first two are dependency-free, so
+# they have no install step; the third installs PGlite from its own
+# package.json and never talks to a Supabase project.
+
+on:
+  push:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      # supabase/tests imports the create helper of this function.
+      - 'supabase/functions/admin-users/**'
+      - 'supabase/README.md'
+      - 'scripts/**'
+      - '.node-version'
+      - '.github/workflows/repo-ci.yml'
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - 'supabase/functions/admin-users/**'
+      - 'supabase/README.md'
+      - 'scripts/**'
+      - '.node-version'
+      - '.github/workflows/repo-ci.yml'
+
+jobs:
+  migrations:
+    name: Migration ledger (numbering, ledger, RLS, revokes, FKs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Check supabase/migrations
+        run: node scripts/check-migrations.mjs
+
+  tooling-tests:
+    name: Repo tooling tests (node --test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: node --test
+        run: node --test 'scripts/**/*.test.mjs'
+
+  database-tests:
+    name: Migrations on a throwaway database (PGlite, node --test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supabase/tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: supabase/tests/package-lock.json
+      - name: Install PGlite
+        run: npm ci
+      - name: Apply 001..N and run the tests
+        run: npm test

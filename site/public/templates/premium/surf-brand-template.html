@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saltwave &mdash; Surfboards & Coastal Apparel</title>
+<meta name="description" content="Saltwave — hand-shaped surfboards and breezy coastal apparel built for the endless summer. Chase the line, live the salt." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ocean: '#0892c8',
+          deep:  '#054a6b',
+          teal:  '#1ec8b0',
+          sand:  '#f6e7cf',
+          coral: '#ff6b5e',
+          sun:   '#ffc857',
+          foam:  '#eaf8fb',
+          night: '#062231',
+        },
+        fontFamily: {
+          display: ['"Clash Display"', '"Poppins"', 'sans-serif'],
+          body: ['"Poppins"', 'system-ui', 'sans-serif'],
+        },
+        keyframes: {
+          floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-14px)' } },
+          sway: { '0%,100%': { transform: 'rotate(-3deg)' }, '50%': { transform: 'rotate(3deg)' } },
+          shimmer: { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } },
+        },
+        animation: {
+          floaty: 'floaty 6s ease-in-out infinite',
+          sway: 'sway 5s ease-in-out infinite',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link href="https://fonts.cdnfonts.com/css/clash-display" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --cursor-size: 22px; }
+  * { -webkit-tap-highlight-color: transparent; }
+  body { background: #062231; color: #062231; }
+  ::selection { background: #ff6b5e; color: #fff; }
+
+  /* Custom cursor */
+  .cursor-dot {
+    position: fixed; top: 0; left: 0; width: var(--cursor-size); height: var(--cursor-size);
+    border: 2px solid #1ec8b0; border-radius: 50%; pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%); transition: width .25s, height .25s, background .25s, border-color .25s;
+    mix-blend-mode: difference; will-change: transform;
+  }
+  .cursor-dot.grow { width: 60px; height: 60px; background: rgba(30,200,176,.15); border-color: #ffc857; }
+
+  /* Animated CSS waves */
+  .wave-wrap { position: absolute; left: 0; width: 100%; line-height: 0; overflow: hidden; }
+  .wave-wrap svg { display: block; width: 200%; height: 100%; }
+  .wave-anim { animation: waveMove 12s linear infinite; }
+  .wave-anim.slow { animation-duration: 20s; opacity: .55; }
+  @keyframes waveMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Marquee */
+  .marquee { display: flex; gap: 3rem; white-space: nowrap; animation: scrollX 22s linear infinite; }
+  @keyframes scrollX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  /* Product rail */
+  .rail { scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+
+  /* Tilt board */
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; }
+
+  /* Gradient text */
+  .grad-text {
+    background: linear-gradient(100deg, #1ec8b0, #0892c8 40%, #ffc857 90%);
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .glass { background: rgba(255,255,255,.08); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.14); }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .cursor-dot { display: none; }
+  }
+  @media (hover: none) { .cursor-dot { display: none; } }
+</style>
+</head>
+
+<body class="font-body overflow-x-hidden antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-dot" id="cursor"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#hero" class="flex items-center gap-2 group" data-cursor>
+      <span class="text-2xl animate-sway inline-block">&#127940;</span>
+      <span class="font-display font-bold text-xl tracking-tight text-white">Salt<span class="text-teal">wave</span></span>
+    </a>
+    <ul class="hidden md:flex items-center gap-8 text-sm font-medium text-white/90">
+      <li><a href="#boards" class="hover:text-sun transition" data-cursor>Boards</a></li>
+      <li><a href="#apparel" class="hover:text-sun transition" data-cursor>Apparel</a></li>
+      <li><a href="#story" class="hover:text-sun transition" data-cursor>Our Story</a></li>
+      <li><a href="#report" class="hover:text-sun transition" data-cursor>Surf Report</a></li>
+      <li><a href="#community" class="hover:text-sun transition" data-cursor>Crew</a></li>
+    </ul>
+    <div class="flex items-center gap-3">
+      <button id="cartBtn" class="relative glass text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 hover:bg-white/20 transition" data-cursor>
+        <span>&#128722;</span> Cart
+        <span id="cartCount" class="absolute -top-2 -right-2 bg-coral text-white text-xs w-5 h-5 grid place-items-center rounded-full">0</span>
+      </button>
+      <button id="menuBtn" class="md:hidden glass text-white w-10 h-10 rounded-full grid place-items-center" data-cursor>&#9776;</button>
+    </div>
+  </nav>
+  <!-- mobile menu -->
+  <div id="mobileMenu" class="md:hidden hidden bg-deep/95 backdrop-blur-lg border-t border-white/10">
+    <ul class="flex flex-col px-6 py-4 gap-4 text-white font-medium">
+      <li><a href="#boards" class="mobile-link block">Boards</a></li>
+      <li><a href="#apparel" class="mobile-link block">Apparel</a></li>
+      <li><a href="#story" class="mobile-link block">Our Story</a></li>
+      <li><a href="#report" class="mobile-link block">Surf Report</a></li>
+      <li><a href="#community" class="mobile-link block">Crew</a></li>
+    </ul>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden">
+  <!-- bg image in ocean gradient container -->
+  <div class="absolute inset-0 bg-gradient-to-br from-deep via-ocean to-teal">
+    <img src="https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1600&q=80"
+         alt="Surfer riding a wave at sunset" class="w-full h-full object-cover opacity-50"
+         id="heroImg" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-gradient-to-t from-night via-night/30 to-transparent"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 pt-28 pb-32 w-full">
+    <p class="reveal text-sun font-semibold tracking-[0.25em] uppercase text-sm mb-5">Endless Summer Co. &middot; Est. 2014</p>
+    <h1 class="font-display font-bold text-white leading-[0.95] text-5xl sm:text-7xl lg:text-8xl max-w-4xl">
+      <span class="hero-word inline-block">Chase</span>
+      <span class="hero-word inline-block">the</span>
+      <span class="hero-word inline-block grad-text">line.</span><br/>
+      <span class="hero-word inline-block">Live</span>
+      <span class="hero-word inline-block">the</span>
+      <span class="hero-word inline-block grad-text">salt.</span>
+    </h1>
+    <p class="reveal mt-7 text-foam/90 text-lg max-w-xl">
+      Hand-shaped boards and sun-bleached apparel for everyone who measures life in swells, not schedules. Built on the coast. Made to roam.
+    </p>
+    <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+      <a href="#bestsellers" id="shopCta" class="magnetic relative bg-coral text-white font-bold px-9 py-4 rounded-full text-lg shadow-2xl shadow-coral/30 hover:bg-sun hover:text-night transition-colors" data-cursor>
+        <span class="pointer-events-none">Shop the Drop</span>
+      </a>
+      <a href="#story" class="glass text-white font-semibold px-7 py-4 rounded-full hover:bg-white/20 transition" data-cursor>Our Story &rarr;</a>
+    </div>
+
+    <!-- count-ups -->
+    <div class="reveal mt-16 grid grid-cols-3 max-w-lg gap-6">
+      <div><div class="font-display text-3xl sm:text-4xl font-bold text-white"><span class="count" data-target="48">0</span>k</div><div class="text-foam/70 text-xs sm:text-sm mt-1">Waves Ridden</div></div>
+      <div><div class="font-display text-3xl sm:text-4xl font-bold text-white"><span class="count" data-target="1200">0</span>+</div><div class="text-foam/70 text-xs sm:text-sm mt-1">Boards Shaped</div></div>
+      <div><div class="font-display text-3xl sm:text-4xl font-bold text-white"><span class="count" data-target="32">0</span></div><div class="text-foam/70 text-xs sm:text-sm mt-1">Coastlines</div></div>
+    </div>
+  </div>
+
+  <!-- animated wave bottom -->
+  <div class="wave-wrap bottom-0 h-24 sm:h-32 z-10">
+    <svg class="wave-anim slow" viewBox="0 0 2880 100" preserveAspectRatio="none">
+      <path fill="#0892c8" fill-opacity="0.5" d="M0,40 C360,90 720,0 1440,40 C2160,80 2520,10 2880,40 L2880,100 L0,100 Z"></path>
+    </svg>
+    <svg class="wave-anim absolute inset-0" viewBox="0 0 2880 100" preserveAspectRatio="none">
+      <path fill="#eaf8fb" d="M0,55 C360,100 720,20 1440,55 C2160,90 2520,25 2880,55 L2880,100 L0,100 Z"></path>
+    </svg>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="bg-foam py-4 marquee-wrap overflow-hidden border-y border-ocean/10">
+  <div class="marquee text-deep font-display font-semibold text-xl uppercase tracking-wide">
+    <span>Free shipping over $120 &middot;</span><span>Hand-shaped in the salt &middot;</span><span>30-day stoke guarantee &middot;</span><span>Recycled foam cores &middot;</span><span>Ride more, scroll less &middot;</span>
+    <span>Free shipping over $120 &middot;</span><span>Hand-shaped in the salt &middot;</span><span>30-day stoke guarantee &middot;</span><span>Recycled foam cores &middot;</span><span>Ride more, scroll less &middot;</span>
+  </div>
+</div>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="bestsellers" class="bg-foam py-24 px-5 sm:px-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="reveal flex flex-wrap items-end justify-between gap-4 mb-12">
+      <div>
+        <p class="text-ocean font-semibold tracking-[0.2em] uppercase text-sm">Crowd Favorites</p>
+        <h2 class="font-display font-bold text-4xl sm:text-5xl text-night mt-2">This Week's Bestsellers</h2>
+      </div>
+      <a href="#boards" class="text-ocean font-semibold hover:text-coral transition" data-cursor>View all &rarr;</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="bestGrid">
+      <!-- cards injected -->
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOARDS COLLECTION (horizontal rail) ============ -->
+<section id="boards" class="relative bg-night py-24 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="reveal mb-10">
+      <p class="text-teal font-semibold tracking-[0.2em] uppercase text-sm">The Quiver</p>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl text-white mt-2">Boards, Shaped by Hand</h2>
+      <p class="text-foam/70 mt-3 max-w-xl">Drag, swipe, or scroll the rail. Every blank is hand-glassed in our coastal shaping bay.</p>
+    </div>
+  </div>
+
+  <!-- horizontal rail -->
+  <div class="rail flex gap-6 overflow-x-auto px-5 sm:px-8 pb-6 snap-x snap-mandatory" id="boardRail">
+    <!-- board cards injected -->
+  </div>
+
+  <!-- featured tilt-3D board -->
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mt-16 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal" id="tiltStage">
+      <div class="tilt relative rounded-3xl overflow-hidden bg-gradient-to-br from-ocean to-teal aspect-[4/3] shadow-2xl">
+        <img src="https://images.unsplash.com/photo-1530870110042-98b2cb110834?auto=format&fit=crop&w=1600&q=80"
+             alt="Surfboard on the sand" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        <div class="absolute top-5 left-5 glass text-white px-4 py-2 rounded-full text-sm font-semibold">Editor's Pick</div>
+      </div>
+    </div>
+    <div class="reveal text-white">
+      <h3 class="font-display font-bold text-3xl sm:text-4xl">The <span class="grad-text">Driftline</span> 6'2"</h3>
+      <p class="text-foam/80 mt-4 text-lg">A do-it-all performance shortboard with extra paddle. Flat-ish rocker for small days, enough curve to stay loose when it jacks. Our most-ridden shape, three seasons running.</p>
+      <ul class="mt-6 space-y-2 text-foam/70">
+        <li>&#10003; Recycled EPS core, bio-resin glassing</li>
+        <li>&#10003; FCS II five-fin convertible setup</li>
+        <li>&#10003; Volume 31.4L &middot; weighs in at 2.9kg</li>
+      </ul>
+      <div class="mt-8 flex items-center gap-5">
+        <span class="font-display font-bold text-3xl text-sun">$640</span>
+        <button class="add-cart magnetic bg-coral text-white font-bold px-7 py-3 rounded-full hover:bg-white hover:text-night transition" data-name="The Driftline 6'2&quot;" data-price="640" data-cursor>Add to Cart</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APPAREL ============ -->
+<section id="apparel" class="relative bg-gradient-to-b from-sand to-foam py-24 px-5 sm:px-8 overflow-hidden">
+  <div class="max-w-7xl mx-auto">
+    <div class="reveal text-center mb-14">
+      <p class="text-coral font-semibold tracking-[0.2em] uppercase text-sm">Salt-Worn Threads</p>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl text-night mt-2">Apparel for the Endless Summer</h2>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="apparelGrid"></div>
+  </div>
+</section>
+
+<!-- ============ BRAND / STORY (parallax) ============ -->
+<section id="story" class="relative py-32 overflow-hidden bg-night">
+  <div class="absolute inset-0 bg-gradient-to-br from-deep to-ocean overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1455729552865-3658a5d39692?auto=format&fit=crop&w=1600&q=80"
+         alt="Ocean coastline" class="parallax-img w-full h-[130%] object-cover opacity-40" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-night/50"></div>
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto px-5 sm:px-8 text-center text-white">
+    <p class="reveal text-sun font-semibold tracking-[0.25em] uppercase text-sm mb-5">The Saltwave Story</p>
+    <h2 class="reveal font-display font-bold text-4xl sm:text-6xl leading-tight">
+      It started with one busted longboard and a stubborn refusal to leave the water.
+    </h2>
+    <p class="reveal mt-8 text-foam/85 text-lg">
+      In 2014, two friends started shaping boards in a borrowed garage three streets back from the break. No investors, no marketing plan &mdash; just sawdust, salt, and the belief that a board should feel like an extension of you. A decade later we still glass every board by hand, and we still surf before we ship.
+    </p>
+    <a href="#about" class="reveal inline-block mt-10 glass text-white font-semibold px-8 py-4 rounded-full hover:bg-white/20 transition" data-cursor>Meet the Shapers &rarr;</a>
+  </div>
+</section>
+
+<!-- ============ SURF REPORT WIDGET ============ -->
+<section id="report" class="bg-foam py-24 px-5 sm:px-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal text-center mb-12">
+      <p class="text-ocean font-semibold tracking-[0.2em] uppercase text-sm">Live-ish Conditions</p>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl text-night mt-2">Today's Surf Report</h2>
+      <p class="text-deep/60 mt-3">Saltwave Point &middot; updated this morning, swell looking friendly</p>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5" id="reportGrid"></div>
+    <div class="reveal mt-8 glass-card bg-gradient-to-r from-ocean to-teal text-white rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+      <div>
+        <div class="font-display font-bold text-2xl">Stoke Level: Off the charts &#127754;</div>
+        <p class="text-foam/90 mt-1">Clean lines, light offshore wind. Get out there before the crowd wakes up.</p>
+      </div>
+      <a href="#bestsellers" class="bg-white text-night font-bold px-7 py-3 rounded-full hover:bg-sun transition whitespace-nowrap" data-cursor>Grab a Board</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY ============ -->
+<section id="community" class="bg-night py-24 px-5 sm:px-8 overflow-hidden">
+  <div class="max-w-7xl mx-auto">
+    <div class="reveal flex flex-wrap items-end justify-between gap-4 mb-10">
+      <div>
+        <p class="text-teal font-semibold tracking-[0.2em] uppercase text-sm">#SaltwaveCrew</p>
+        <h2 class="font-display font-bold text-4xl sm:text-5xl text-white mt-2">Tag Us, Get Reposted</h2>
+      </div>
+      <p class="text-foam/60 max-w-sm">Riders from 32 coastlines and counting. Share your session with #SaltwaveCrew for a shot at the wall.</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="reveal col-span-2 row-span-2 rounded-2xl overflow-hidden bg-gradient-to-br from-ocean to-deep aspect-square md:aspect-auto">
+        <img src="https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1600&q=80" alt="Surfer paddling out" class="w-full h-full object-cover hover:scale-105 transition duration-700" onerror="this.style.display='none'" />
+      </div>
+      <div class="reveal rounded-2xl overflow-hidden bg-gradient-to-br from-teal to-ocean aspect-square">
+        <img src="https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=800&q=80" alt="Wave" class="w-full h-full object-cover hover:scale-105 transition duration-700" onerror="this.style.display='none'" />
+      </div>
+      <div class="reveal rounded-2xl overflow-hidden bg-gradient-to-br from-coral to-sun aspect-square grid place-items-center text-white text-center p-4">
+        <div><div class="font-display font-bold text-3xl">48k+</div><div class="text-sm">crew members</div></div>
+      </div>
+      <div class="reveal rounded-2xl overflow-hidden bg-gradient-to-br from-deep to-ocean aspect-square">
+        <img src="https://images.unsplash.com/photo-1530870110042-98b2cb110834?auto=format&fit=crop&w=800&q=80" alt="Board on sand" class="w-full h-full object-cover hover:scale-105 transition duration-700" onerror="this.style.display='none'" />
+      </div>
+      <div class="reveal rounded-2xl overflow-hidden bg-gradient-to-br from-sun to-coral aspect-square">
+        <img src="https://images.unsplash.com/photo-1455729552865-3658a5d39692?auto=format&fit=crop&w=800&q=80" alt="Coast" class="w-full h-full object-cover hover:scale-105 transition duration-700" onerror="this.style.display='none'" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / SHAPERS ============ -->
+<section id="about" class="bg-foam py-24 px-5 sm:px-8">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-ocean to-teal aspect-[4/5] shadow-xl">
+        <img src="https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1200&q=80" alt="Shaper at work" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -bottom-6 -right-3 sm:-right-6 glass bg-night/80 text-white rounded-2xl p-5 w-44 animate-floaty">
+        <div class="font-display font-bold text-2xl text-sun">10 yrs</div>
+        <div class="text-foam/80 text-sm">of salty obsession</div>
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-coral font-semibold tracking-[0.2em] uppercase text-sm">Who We Are</p>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl text-night mt-2">A small crew with one big rule: <span class="grad-text">surf first.</span></h2>
+      <p class="reveal text-deep/75 mt-6 text-lg">We're shapers, not a factory. Every order is logged, named, and glassed by a person whose feet were sandy that morning. We use recycled foam, plant-based resins, and packaging you can compost.</p>
+      <div class="reveal mt-8 grid grid-cols-2 gap-6">
+        <div><div class="font-display font-bold text-3xl text-ocean">100%</div><div class="text-deep/60 text-sm mt-1">Hand-glassed boards</div></div>
+        <div><div class="font-display font-bold text-3xl text-ocean">1%</div><div class="text-deep/60 text-sm mt-1">Of sales to ocean cleanups</div></div>
+        <div><div class="font-display font-bold text-3xl text-ocean">0</div><div class="text-deep/60 text-sm mt-1">Plastic in our packaging</div></div>
+        <div><div class="font-display font-bold text-3xl text-ocean">32</div><div class="text-deep/60 text-sm mt-1">Coastlines shipped to</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="bg-gradient-to-b from-ocean to-deep py-24 px-5 sm:px-8 overflow-hidden">
+  <div class="max-w-7xl mx-auto">
+    <div class="reveal text-center mb-14">
+      <p class="text-sun font-semibold tracking-[0.2em] uppercase text-sm">Word From the Lineup</p>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl text-white mt-2">Riders Who Get It</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6" id="testGrid"></div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="bg-foam py-24 px-5 sm:px-8">
+  <div class="max-w-3xl mx-auto">
+    <div class="reveal text-center mb-12">
+      <p class="text-ocean font-semibold tracking-[0.2em] uppercase text-sm">Before You Paddle Out</p>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl text-night mt-2">Frequently Asked</h2>
+    </div>
+    <div id="faqList" class="space-y-4"></div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 px-5 sm:px-8 overflow-hidden bg-night">
+  <div class="absolute inset-0 bg-gradient-to-br from-coral via-ocean to-teal opacity-90"></div>
+  <div class="wave-wrap top-0 h-20 rotate-180">
+    <svg class="wave-anim" viewBox="0 0 2880 100" preserveAspectRatio="none"><path fill="#062231" d="M0,50 C360,100 720,10 1440,50 C2160,90 2520,15 2880,50 L2880,100 L0,100 Z"></path></svg>
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto text-center text-white">
+    <h2 class="reveal font-display font-bold text-4xl sm:text-6xl leading-tight">The next swell isn't waiting. Neither should you.</h2>
+    <p class="reveal text-foam/90 mt-6 text-lg">Join the crew for first dibs on drops, surf reports, and 10% off your first board.</p>
+    <form class="reveal mt-9 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false">
+      <input type="email" required placeholder="you@thecoast.com" class="flex-1 px-6 py-4 rounded-full text-night placeholder-deep/50 outline-none focus:ring-4 ring-sun/50" />
+      <button class="magnetic bg-night text-white font-bold px-8 py-4 rounded-full hover:bg-sun hover:text-night transition" data-cursor>Join the Crew</button>
+    </form>
+    <p class="reveal text-foam/70 text-sm mt-4">No spam, just stoke. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-night text-foam/70 pt-16 pb-8 px-5 sm:px-8">
+  <div class="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">&#127940;</span>
+        <span class="font-display font-bold text-xl text-white">Salt<span class="text-teal">wave</span></span>
+      </div>
+      <p class="text-sm">Hand-shaped surfboards and coastal apparel for the endless summer. Made by the salt, for the salt.</p>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-4">Shop</h4>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#boards" class="hover:text-sun transition" data-cursor>Surfboards</a></li>
+        <li><a href="#apparel" class="hover:text-sun transition" data-cursor>Apparel</a></li>
+        <li><a href="#bestsellers" class="hover:text-sun transition" data-cursor>Bestsellers</a></li>
+        <li><a href="#report" class="hover:text-sun transition" data-cursor>Gift Cards</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-4">Company</h4>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#story" class="hover:text-sun transition" data-cursor>Our Story</a></li>
+        <li><a href="#about" class="hover:text-sun transition" data-cursor>The Shapers</a></li>
+        <li><a href="#community" class="hover:text-sun transition" data-cursor>Community</a></li>
+        <li><a href="#" class="hover:text-sun transition" data-cursor>Sustainability</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-semibold mb-4">Catch the Wave</h4>
+      <div class="flex gap-3 mb-4">
+        <a href="#" class="glass w-10 h-10 rounded-full grid place-items-center text-white hover:bg-coral transition" data-cursor>&#128247;</a>
+        <a href="#" class="glass w-10 h-10 rounded-full grid place-items-center text-white hover:bg-coral transition" data-cursor>&#127909;</a>
+        <a href="#" class="glass w-10 h-10 rounded-full grid place-items-center text-white hover:bg-coral transition" data-cursor>&#128172;</a>
+      </div>
+      <p class="text-sm">Saltwave Point, Coastal Hwy 1</p>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
+    <p>&copy; 2026 Saltwave Surf Co. All rights reserved. A fictional brand.</p>
+    <div class="flex gap-5"><a href="#" class="hover:text-sun" data-cursor>Privacy</a><a href="#" class="hover:text-sun" data-cursor>Terms</a><a href="#" class="hover:text-sun" data-cursor>Returns</a></div>
+  </div>
+</footer>
+
+<!-- ============ CART DRAWER ============ -->
+<div id="cartDrawer" class="fixed inset-0 z-[60] invisible">
+  <div class="absolute inset-0 bg-night/60 opacity-0 transition-opacity duration-300" id="cartOverlay"></div>
+  <aside class="absolute top-0 right-0 h-full w-full max-w-md bg-foam shadow-2xl translate-x-full transition-transform duration-300 flex flex-col" id="cartPanel">
+    <div class="flex items-center justify-between p-6 border-b border-deep/10">
+      <h3 class="font-display font-bold text-2xl text-night">Your Bag</h3>
+      <button id="cartClose" class="w-9 h-9 rounded-full bg-night/5 hover:bg-coral hover:text-white grid place-items-center transition" data-cursor>&times;</button>
+    </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-4">
+      <p class="text-deep/50 text-center mt-12" id="cartEmpty">Your bag's emptier than a flat day. Add some stoke.</p>
+    </div>
+    <div class="p-6 border-t border-deep/10">
+      <div class="flex justify-between font-display font-bold text-xl text-night mb-4"><span>Total</span><span id="cartTotal">$0</span></div>
+      <button class="w-full bg-coral text-white font-bold py-4 rounded-full hover:bg-ocean transition" data-cursor>Checkout &rarr;</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- DATA ---------- */
+  const bestsellers = [
+    { name: "Sunbleach Tee", price: 38, tag: "Apparel", img: "1455729552865-3658a5d39692", c: "from-sun to-coral" },
+    { name: "The Driftline 6'2\"", price: 640, tag: "Shortboard", img: "1530870110042-98b2cb110834", c: "from-ocean to-teal" },
+    { name: "Reef Walker Boardshort", price: 56, tag: "Apparel", img: "1502680390469-be75c86b636f", c: "from-teal to-ocean" },
+    { name: "Lowtide Cruiser 5'8\"", price: 580, tag: "Fish", img: "1493558103817-58b2924bce98", c: "from-coral to-sun" },
+  ];
+  const boards = [
+    { name: "The Driftline 6'2\"", price: 640, spec: "Performance shortboard", img: "1530870110042-98b2cb110834" },
+    { name: "Lowtide Cruiser 5'8\"", price: 580, spec: "Twin-fin fish", img: "1493558103817-58b2924bce98" },
+    { name: "Glasshouse 9'1\"", price: 890, spec: "Classic longboard", img: "1455729552865-3658a5d39692" },
+    { name: "The Wanderer 7'4\"", price: 720, spec: "Mid-length cruiser", img: "1502680390469-be75c86b636f" },
+    { name: "Reefbreak 5'10\"", price: 660, spec: "Step-up shortboard", img: "1530870110042-98b2cb110834" },
+  ];
+  const apparel = [
+    { name: "Sunbleach Tee", price: 38, sub: "100% organic cotton, salt-washed", img: "1455729552865-3658a5d39692", c: "from-sun to-coral" },
+    { name: "Reef Walker Boardshort", price: 56, sub: "Recycled-fiber, 4-way stretch", img: "1502680390469-be75c86b636f", c: "from-ocean to-teal" },
+    { name: "Offshore Hoodie", price: 74, sub: "Heavyweight loopback fleece", img: "1493558103817-58b2924bce98", c: "from-deep to-ocean" },
+  ];
+  const report = [
+    { label: "Swell", value: "1.2m", sub: "WSW @ 11s", icon: "&#127754;" },
+    { label: "Wind", value: "8kt", sub: "Light offshore", icon: "&#128168;" },
+    { label: "Water", value: "21&deg;C", sub: "Boardies weather", icon: "&#127777;" },
+    { label: "Tide", value: "Rising", sub: "High at 2:40pm", icon: "&#127769;" },
+  ];
+  const testimonials = [
+    { q: "My Driftline paddles like a board a foot longer. I haven't ridden anything else in six months.", n: "Mara V.", r: "Byron Bay, AU" },
+    { q: "You can feel the hand-shaping. It's not a product, it's somebody's craft. The hoodie's a bonus.", n: "Diego R.", r: "Ericeira, PT" },
+    { q: "Ordered, got a handwritten note with the board's name on it. That's the whole vibe right there.", n: "Tess K.", r: "Tofino, CA" },
+  ];
+  const faqs = [
+    { q: "How long until my board ships?", a: "Stock shapes ship in 3-5 days. Custom orders are hand-glassed to order and take 2-3 weeks &mdash; we'll keep you posted with photos along the way." },
+    { q: "Do you ship internationally?", a: "Yes. We currently ship boards and apparel to 32 coastlines worldwide. Boards travel in a padded board-coffin; duties are calculated at checkout." },
+    { q: "What's your return policy?", a: "Apparel: 30 days, unworn, full refund. Boards: 14-day stoke guarantee on stock shapes &mdash; if it's not your wave, send it back. Customs are final sale." },
+    { q: "Are the boards really hand-shaped?", a: "Every single one. We don't run a CNC line for the final glassing. Recycled EPS cores, plant-based bio-resin, and a real person's name on the stringer." },
+    { q: "Can I order a fully custom board?", a: "Absolutely. Hit the 'custom' link at checkout, tell us your height, weight, and home break, and a shaper will dial in dims and volume with you over email." },
+  ];
+
+  const uns = (id, w=800) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+
+  /* ---------- RENDER PRODUCTS ---------- */
+  const card = (p) => `
+    <article class="product-card group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300" data-cursor>
+      <div class="relative aspect-square bg-gradient-to-br ${p.c} overflow-hidden">
+        <img src="${uns(p.img)}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 bg-night/80 text-white text-xs font-semibold px-3 py-1 rounded-full">${p.tag}</span>
+        <button class="add-cart absolute bottom-3 right-3 translate-y-12 group-hover:translate-y-0 transition bg-coral text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-night" data-name="${p.name}" data-price="${p.price}">+ Add</button>
+      </div>
+      <div class="p-5">
+        <h3 class="font-display font-semibold text-night text-lg">${p.name}</h3>
+        <div class="flex items-center justify-between mt-2">
+          <span class="font-bold text-ocean text-lg">$${p.price}</span>
+          <span class="text-sun text-sm">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        </div>
+      </div>
+    </article>`;
+  document.getElementById('bestGrid').innerHTML = bestsellers.map(card).join('');
+
+  document.getElementById('apparelGrid').innerHTML = apparel.map(p => `
+    <article class="group reveal bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300" data-cursor>
+      <div class="relative aspect-[4/5] bg-gradient-to-br ${p.c} overflow-hidden">
+        <img src="${uns(p.img,1000)}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" onerror="this.style.display='none'" />
+      </div>
+      <div class="p-6">
+        <h3 class="font-display font-semibold text-night text-xl">${p.name}</h3>
+        <p class="text-deep/60 text-sm mt-1">${p.sub}</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="font-bold text-ocean text-xl">$${p.price}</span>
+          <button class="add-cart bg-night text-white text-sm font-bold px-5 py-2 rounded-full hover:bg-coral transition" data-name="${p.name}" data-price="${p.price}">Add to Cart</button>
+        </div>
+      </div>
+    </article>`).join('');
+
+  document.getElementById('boardRail').innerHTML = boards.map((b,i) => `
+    <article class="snap-start shrink-0 w-72 sm:w-80 group" data-cursor>
+      <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-ocean to-deep aspect-[3/4]">
+        <img src="${uns(b.img,900)}" alt="${b.name}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-night via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 p-6 text-white w-full">
+          <p class="text-teal text-sm font-semibold">${b.spec}</p>
+          <h3 class="font-display font-bold text-2xl mt-1">${b.name}</h3>
+          <div class="flex items-center justify-between mt-3">
+            <span class="font-bold text-sun text-xl">$${b.price}</span>
+            <button class="add-cart bg-white/15 backdrop-blur border border-white/20 text-white text-sm font-bold px-4 py-2 rounded-full hover:bg-coral transition" data-name="${b.name}" data-price="${b.price}">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </article>`).join('');
+
+  document.getElementById('reportGrid').innerHTML = report.map(r => `
+    <div class="reveal bg-white rounded-3xl p-6 text-center shadow-sm">
+      <div class="text-4xl mb-2">${r.icon}</div>
+      <div class="font-display font-bold text-3xl text-night">${r.value}</div>
+      <div class="text-ocean font-semibold text-sm mt-1">${r.label}</div>
+      <div class="text-deep/50 text-xs mt-1">${r.sub}</div>
+    </div>`).join('');
+
+  document.getElementById('testGrid').innerHTML = testimonials.map(t => `
+    <div class="reveal glass rounded-3xl p-7 text-white">
+      <div class="text-sun text-xl mb-3">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <p class="text-foam/95 text-lg leading-relaxed">&ldquo;${t.q}&rdquo;</p>
+      <div class="mt-5 pt-5 border-t border-white/15">
+        <div class="font-semibold">${t.n}</div>
+        <div class="text-foam/60 text-sm">${t.r}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('faqList').innerHTML = faqs.map((f,i) => `
+    <div class="reveal faq-item bg-white rounded-2xl border border-deep/5 overflow-hidden">
+      <button class="faq-q w-full flex items-center justify-between gap-4 text-left p-6" data-cursor>
+        <span class="font-display font-semibold text-night text-lg">${f.q}</span>
+        <span class="faq-icon text-ocean text-2xl transition-transform shrink-0">+</span>
+      </button>
+      <div class="accordion-body px-6"><p class="text-deep/70 pb-6">${f.a}</p></div>
+    </div>`).join('');
+
+  /* ---------- CART ---------- */
+  const cart = [];
+  const cartCount = document.getElementById('cartCount');
+  const cartItems = document.getElementById('cartItems');
+  const cartEmpty = document.getElementById('cartEmpty');
+  const cartTotal = document.getElementById('cartTotal');
+  const drawer = document.getElementById('cartDrawer');
+  const panel = document.getElementById('cartPanel');
+  const overlay = document.getElementById('cartOverlay');
+
+  function renderCart() {
+    cartCount.textContent = cart.reduce((n,i)=>n+i.qty,0);
+    if (!cart.length) {
+      cartEmpty.style.display = 'block';
+      cartItems.querySelectorAll('.cart-row').forEach(e=>e.remove());
+    } else {
+      cartEmpty.style.display = 'none';
+      cartItems.querySelectorAll('.cart-row').forEach(e=>e.remove());
+      cart.forEach((it,idx) => {
+        const row = document.createElement('div');
+        row.className = 'cart-row flex items-center justify-between gap-3 bg-white rounded-2xl p-4 shadow-sm';
+        row.innerHTML = `
+          <div class="min-w-0"><div class="font-semibold text-night truncate">${it.name}</div><div class="text-deep/50 text-sm">$${it.price} &times; ${it.qty}</div></div>
+          <div class="flex items-center gap-2">
+            <button class="qty-dec w-7 h-7 rounded-full bg-night/5 hover:bg-coral hover:text-white transition" data-i="${idx}">&minus;</button>
+            <span class="w-5 text-center">${it.qty}</span>
+            <button class="qty-inc w-7 h-7 rounded-full bg-night/5 hover:bg-teal hover:text-white transition" data-i="${idx}">+</button>
+          </div>`;
+        cartItems.appendChild(row);
+      });
+    }
+    cartTotal.textContent = '$' + cart.reduce((n,i)=>n+i.price*i.qty,0);
+  }
+  function addToCart(name, price) {
+    const ex = cart.find(i=>i.name===name);
+    if (ex) ex.qty++; else cart.push({ name, price:+price, qty:1 });
+    renderCart(); bumpCart();
+  }
+  function bumpCart() {
+    if (reduce) return;
+    gsap.fromTo('#cartCount', { scale: 1.6 }, { scale: 1, duration: .4, ease: 'back.out(3)' });
+  }
+  function openCart() { drawer.classList.remove('invisible'); requestAnimationFrame(()=>{ overlay.style.opacity=1; panel.style.transform='translateX(0)'; }); }
+  function closeCart() { overlay.style.opacity=0; panel.style.transform='translateX(100%)'; setTimeout(()=>drawer.classList.add('invisible'),300); }
+
+  document.addEventListener('click', (e) => {
+    const add = e.target.closest('.add-cart');
+    if (add) { addToCart(add.dataset.name, add.dataset.price); openCart(); }
+    if (e.target.closest('.qty-inc')) { cart[+e.target.closest('.qty-inc').dataset.i].qty++; renderCart(); }
+    if (e.target.closest('.qty-dec')) { const i=+e.target.closest('.qty-dec').dataset.i; cart[i].qty--; if(cart[i].qty<=0) cart.splice(i,1); renderCart(); }
+  });
+  document.getElementById('cartBtn').addEventListener('click', openCart);
+  document.getElementById('cartClose').addEventListener('click', closeCart);
+  overlay.addEventListener('click', closeCart);
+
+  /* ---------- FAQ ACCORDION ---------- */
+  document.getElementById('faqList').addEventListener('click', (e) => {
+    const btn = e.target.closest('.faq-q'); if (!btn) return;
+    const body = btn.nextElementSibling;
+    const icon = btn.querySelector('.faq-icon');
+    const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+    document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight='0px'; });
+    document.querySelectorAll('.faq-icon').forEach(ic => { ic.textContent='+'; ic.style.transform='rotate(0)'; });
+    if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.textContent='+'; icon.style.transform='rotate(45deg)'; }
+  });
+
+  /* ---------- MOBILE MENU ---------- */
+  const mm = document.getElementById('mobileMenu');
+  document.getElementById('menuBtn').addEventListener('click', ()=> mm.classList.toggle('hidden'));
+  document.querySelectorAll('.mobile-link').forEach(a=>a.addEventListener('click', ()=>mm.classList.add('hidden')));
+
+  /* ---------- NAV SCROLL ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-night/80','backdrop-blur-lg','shadow-lg');
+    else nav.classList.remove('bg-night/80','backdrop-blur-lg','shadow-lg');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- CUSTOM CURSOR + MAGNETIC + TILT ---------- */
+  if (!reduce && window.matchMedia('(hover: hover)').matches) {
+    const cursor = document.getElementById('cursor');
+    let cx=0, cy=0, tx=0, ty=0;
+    window.addEventListener('mousemove', e => { tx=e.clientX; ty=e.clientY; });
+    const loop = () => { cx += (tx-cx)*0.2; cy += (ty-cy)*0.2; cursor.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`; requestAnimationFrame(loop); };
+    loop();
+    document.addEventListener('mouseover', e => { if (e.target.closest('[data-cursor]')) cursor.classList.add('grow'); });
+    document.addEventListener('mouseout', e => { if (e.target.closest('[data-cursor]')) cursor.classList.remove('grow'); });
+
+    // magnetic
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width/2;
+        const my = e.clientY - r.top - r.height/2;
+        gsap.to(el, { x: mx*0.35, y: my*0.45, duration: .4, ease: 'power3.out' });
+      });
+      el.addEventListener('mouseleave', () => gsap.to(el, { x:0, y:0, duration:.6, ease:'elastic.out(1,0.4)' }));
+    });
+
+    // tilt-3D board
+    const stage = document.getElementById('tiltStage');
+    const tilt = stage.querySelector('.tilt');
+    stage.addEventListener('mousemove', e => {
+      const r = stage.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      tilt.style.transform = `perspective(900px) rotateY(${px*14}deg) rotateX(${-py*14}deg) scale(1.02)`;
+    });
+    stage.addEventListener('mouseleave', () => tilt.style.transform = 'perspective(900px) rotateY(0) rotateX(0)');
+  }
+
+  /* ---------- GSAP ANIMATIONS ---------- */
+  if (!reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // hero words
+    gsap.from('.hero-word', { y: 60, opacity: 0, duration: .9, ease: 'power3.out', stagger: .08, delay: .2 });
+    gsap.utils.toArray('#hero .reveal').forEach((el,i)=> gsap.to(el, { opacity:1, y:0, duration:.8, delay:.6 + i*0.12, ease:'power2.out' }));
+
+    // generic reveals
+    gsap.utils.toArray('.reveal').forEach(el => {
+      if (el.closest('#hero')) return;
+      gsap.to(el, { opacity:1, y:0, duration:.9, ease:'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' } });
+    });
+
+    // product cards stagger
+    gsap.from('#bestGrid .product-card', {
+      opacity:0, y:50, duration:.7, stagger:.1, ease:'power2.out',
+      scrollTrigger:{ trigger:'#bestGrid', start:'top 85%' }
+    });
+
+    // count-ups
+    document.querySelectorAll('.count').forEach(el => {
+      const target = +el.dataset.target;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to({ v: 0 }, { v: target, duration: 2, ease: 'power2.out',
+          onUpdate: function(){ el.textContent = Math.round(this.targets()[0].v).toLocaleString(); } })
+      });
+    });
+
+    // parallax surf image
+    gsap.to('.parallax-img', { yPercent: 18, ease: 'none',
+      scrollTrigger: { trigger: '#story', start: 'top bottom', end: 'bottom top', scrub: true } });
+
+    // hero image gentle parallax
+    gsap.to('#heroImg', { yPercent: 12, scale: 1.08, ease:'none',
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true } });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.target).toLocaleString());
+  }
+
+  renderCart();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="DeskDev Studio">
+  <!-- Editorial Ink: ink-900 page, one brand accent, generous margin. No gradients. -->
+  <rect width="1200" height="630" fill="#0a0c12"/>
+
+  <!-- Hairline rule, like a print masthead -->
+  <rect x="80" y="140" width="1040" height="1" fill="#1e2430"/>
+
+  <g transform="translate(80 220)">
+    <rect width="72" height="72" rx="16" fill="#2563eb"/>
+    <path d="M22 18h13.9c10.4 0 17.6 7.2 17.6 18s-7.2 18-17.6 18H22V18Zm9.7 8.1v19.8h3.8c5.6 0 9-3.8 9-9.9s-3.4-9.9-9-9.9h-3.8Z" fill="#ffffff"/>
+  </g>
+
+  <text x="80" y="400" font-family="Schibsted Grotesk, Inter, system-ui, sans-serif" font-size="76" font-weight="600" fill="#f8fafc">
+    DeskDev Studio
+  </text>
+  <text x="80" y="452" font-family="Inter, system-ui, sans-serif" font-size="26" fill="#94a3b8">
+    Client projects, tasks, meetings and CRM — in one calm workspace.
+  </text>
+
+  <rect x="80" y="510" width="56" height="3" rx="1.5" fill="#2563eb"/>
+</svg>

@@ -1,0 +1,740 @@
+{
+  "name": "[deskdev] email-send",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-email-send",
+        "responseMode": "onReceived",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-email-send",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      },
+      "notes": "Fired by migration 049: n8n_post('deskdev-email-send', { email_id }) when DeskDev queues an email, and again by email_retry for a failed one. The app never calls n8n."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Called by the database, never by the app: migration 049's trigger runs\n// n8n_post('deskdev-email-send', { email_id }) when DeskDev queues an email\n// (email_retry posts the same for a failed one). Only the id travels; the row\n// is read back with the service role, so a forged body can at most name an\n// email that is already queued.\nconst body = $input.first().json.body || {};\nconst emailId = String(body.email_id || '').trim().toLowerCase();\nif (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(emailId)) {\n  throw new Error('deskdev-email-send: body.email_id must be a uuid');\n}\nreturn [{ json: { email_id: emailId } }];\n"
+      },
+      "id": "parse",
+      "name": "Parse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/emails?id=eq.{{ $json.email_id }}&direction=eq.out&status=eq.queued&select=*",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'sending' }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "claim",
+      "name": "Claim",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "notes": "Conditional claim: only a row still queued flips to sending and comes back. A retried webhook or a second run gets nothing and stops at Plan, so an email is never sent twice."
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/emails?select=id,direction,from_email,gmail_message_id&id=eq.{{ ($('Claim').all().map(i => i.json).flat().find(r => r && r.id === $('Parse').first().json.email_id) || {}).in_reply_to || '00000000-0000-0000-0000-000000000000' }}&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "original",
+      "name": "Original",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/workspace_settings?select=*&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "settings",
+      "name": "Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decide everything once, so every later node reads the same facts.\r\n// Claim flipped the row queued → sending only if it was still queued: a\r\n// retried webhook, or a second run racing this one, finds nothing to claim\r\n// and stops here without sending. From a claim on, every path ends in 'sent'\r\n// or 'failed', never stuck in 'sending'.\r\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\r\n\r\nconst rows = (name) => $(name).all().map(i => i.json).flat().filter(r => r && typeof r === 'object');\r\nconst emailId = $('Parse').first().json.email_id;\r\nconst email = rows('Claim').find(r => r.id === emailId);\r\n// workspace_settings is a singleton keyed by id = true (migration 033).\r\nconst settings = rows('Settings').find(r => r.id === true) || {};\r\n\r\nif (!email) return [{ json: { action: 'skip', email_id: emailId, reason: 'not_queued' } }];\r\nconst fail = (reason) => [{ json: { action: 'fail', email_id: emailId, reason } }];\r\nif (email.direction !== 'out') return fail('not_outbound');\r\n\r\n// Every value below is teammate-typed text: escaped once, where it enters HTML.\r\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\r\nconst oneLine = (s, max) => String(s ?? '').replace(/[\\r\\n\\t]+/g, ' ').replace(/\\s{2,}/g, ' ').trim().slice(0, max);\r\nconst lower = (a) => String(a || '').trim().toLowerCase();\r\n// Valid, at most 10, and each address once whatever its case (first spelling kept).\r\nconst addresses = (list) => {\r\n  const seen = new Map();\r\n  for (const a of (Array.isArray(list) ? list : []).map(x => String(x || '').trim())) {\r\n    if (EMAIL_RE.test(a) && !seen.has(lower(a))) seen.set(lower(a), a);\r\n  }\r\n  return [...seen.values()].slice(0, 10);\r\n};\r\n\r\nlet to = addresses(email.to_emails);\r\nlet cc = addresses(email.cc_emails).filter(a => !to.map(lower).includes(lower(a)));\r\nif (!to.length) return fail('no_valid_recipient');\r\n\r\n// Plain text in, simple HTML out: blank lines make paragraphs, single line\r\n// breaks stay line breaks. The signature (Settings → email) sits under a rule.\r\nconst paragraphs = (text) => String(text || '')\r\n  .replace(/\\r\\n?/g, '\\n')\r\n  .split(/\\n{2,}/)\r\n  .map(p => p.trim())\r\n  .filter(Boolean)\r\n  .map(p => `<p style=\"margin:0 0 14px\">${esc(p).replace(/\\n/g, '<br>')}</p>`)\r\n  .join('\\n');\r\nconst signature = String(settings.email_signature || '').trim().slice(0, 1000);\r\nconst html = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;line-height:1.55;max-width:640px\">\r\n${paragraphs(String(email.body_text || '').slice(0, 50000))}\r\n${signature ? `<div style=\"margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;color:#555;font-size:14px\">${esc(signature).replace(/\\r?\\n/g, '<br>')}</div>` : ''}\r\n</div>`;\r\n\r\n// A reply to a message the customer sent us goes back into their Gmail thread\r\n// (Gmail's reply operation, which answers the sender). Anyone else the\r\n// teammate addressed is copied. Follow-ups to our own mail, or replies whose\r\n// recipients no longer include the original sender, go out as new messages.\r\nconst original = rows('Original').find(r => r.id && r.id === email.in_reply_to);\r\nconst sender = original ? lower(original.from_email) : '';\r\nconst replyable = Boolean(original && original.direction === 'in' && original.gmail_message_id\r\n  && sender && to.map(lower).includes(sender));\r\nif (replyable) {\r\n  cc = [...new Set([...to.filter(a => lower(a) !== sender), ...cc])].slice(0, 10);\r\n  to = to.filter(a => lower(a) === sender);\r\n}\r\n\r\nconst fromAddress = String(settings.email_from_address || '').trim();\r\nreturn [{ json: {\r\n  action: 'send',\r\n  mode: replyable ? 'reply' : 'send',\r\n  email_id: emailId,\r\n  to: to.join(','),\r\n  cc: cc.join(','),\r\n  subject: oneLine(email.subject, 300) || '(no subject)',\r\n  html,\r\n  sender_name: oneLine(settings.email_from_name || 'NixGen Solutions', 80) || 'NixGen Solutions',\r\n  reply_to_gmail_id: replyable ? String(original.gmail_message_id) : null,\r\n  from_email: EMAIL_RE.test(fromAddress) ? fromAddress : null,\r\n} }];\r\n"
+      },
+      "id": "plan",
+      "name": "Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "send",
+              "leftValue": "={{ $json.action === 'send' ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "send",
+      "name": "Send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "reply",
+              "leftValue": "={{ $json.mode === 'reply' ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "reply",
+      "name": "Reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "reply",
+        "messageId": "={{ $('Plan').first().json.reply_to_gmail_id }}",
+        "emailType": "html",
+        "message": "={{ $('Plan').first().json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $('Plan').first().json.cc }}",
+          "replyToSenderOnly": true,
+          "senderName": "={{ $('Plan').first().json.sender_name }}"
+        }
+      },
+      "id": "reply-in-thread",
+      "name": "Reply in thread",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        -240
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "c2b4a826-bb11-454a-8dcd-0d482d5760f5",
+      "onError": "continueRegularOutput",
+      "notes": "Answers the customer's own message, so it lands in their Gmail thread."
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Plan').first().json.to }}",
+        "subject": "={{ $('Plan').first().json.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Plan').first().json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "ccList": "={{ $('Plan').first().json.cc }}",
+          "senderName": "={{ $('Plan').first().json.sender_name }}"
+        }
+      },
+      "id": "send-new",
+      "name": "Send new",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        -60
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "825b199c-2795-4322-a784-506d72312213",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "sent",
+              "leftValue": "={{ $json.id && !$json.error ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "sent",
+      "name": "Sent?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -150
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/emails?id=eq.{{ $('Plan').first().json.email_id }}&status=eq.sending",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ status: 'sent', gmail_message_id: $json.id || null, gmail_thread_id: $json.threadId || null, sent_at: new Date().toISOString(), error: null }, $('Plan').first().json.from_email ? { from_email: $('Plan').first().json.from_email } : {})) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "mark-sent",
+      "name": "Mark sent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        2200,
+        -240
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'email-send', workflow: $workflow.name, status: 'ok', execution_id: String($execution.id), detail: { email_id: $('Plan').first().json.email_id, mode: $('Plan').first().json.mode } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        2420,
+        -240
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reached when Plan refused the email (no valid recipient) or Gmail did not\n// take it (the Gmail step continues on error, so its item carries `error`).\n// The row becomes 'failed' with a short reason the sender sees in DeskDev,\n// where Retry re-queues it (email_retry). Addresses never leave in the reason.\nconst plan = $('Plan').first().json;\nconst item = $input.first().json || {};\nconst raw = typeof item.error === 'string'\n  ? item.error\n  : (item.error && (item.error.message || item.error.description)) || (plan.action === 'fail' ? plan.reason : '') || 'Gmail did not accept the message';\nconst reason = String(raw)\n  .replace(/[^\\s@<>\"',;]+@[^\\s@<>\"',;]+/g, '[address]')\n  .replace(/[\\r\\n\\t]+/g, ' ')\n  .replace(/\\s{2,}/g, ' ')\n  .trim()\n  .slice(0, 500) || 'Gmail did not accept the message';\nreturn [{ json: { email_id: plan.email_id, error: reason } }];\n"
+      },
+      "id": "failure",
+      "name": "Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/emails?id=eq.{{ $json.email_id }}&status=eq.sending",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'failed', error: $json.error }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "mark-failed",
+      "name": "Mark failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        2420,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'email-send', workflow: $workflow.name, status: 'error', execution_id: String($execution.id), detail: { email_id: $('Failure').first().json.email_id, error: $('Failure').first().json.error } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-failed",
+      "name": "Log failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        2640,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "fail",
+              "leftValue": "={{ $json.action === 'fail' ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fail",
+      "name": "Fail?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'email-send', workflow: $workflow.name, status: 'skipped', execution_id: String($execution.id), detail: { email_id: $json.email_id, reason: $json.reason } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-skipped",
+      "name": "Log skipped",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        1760,
+        240
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Claim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim": {
+      "main": [
+        [
+          {
+            "node": "Original",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Original": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan": {
+      "main": [
+        [
+          {
+            "node": "Send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send?": {
+      "main": [
+        [
+          {
+            "node": "Reply?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply?": {
+      "main": [
+        [
+          {
+            "node": "Reply in thread",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send new",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply in thread": {
+      "main": [
+        [
+          {
+            "node": "Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send new": {
+      "main": [
+        [
+          {
+            "node": "Sent?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sent?": {
+      "main": [
+        [
+          {
+            "node": "Mark sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark sent": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail?": {
+      "main": [
+        [
+          {
+            "node": "Failure",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failure": {
+      "main": [
+        [
+          {
+            "node": "Mark failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark failed": {
+      "main": [
+        [
+          {
+            "node": "Log failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

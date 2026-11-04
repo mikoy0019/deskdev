@@ -1,0 +1,3504 @@
+{
+  "started": "2026-10-06T18:42:24.404Z",
+  "updated": "2026-10-06T18:49:55.052Z",
+  "finished": true,
+  "checks": [
+    {
+      "name": "TypeScript",
+      "cwd": "site",
+      "command": "npx tsc --noEmit -p tsconfig.json",
+      "id": 1,
+      "status": "passed",
+      "output": "",
+      "exitCode": 0
+    },
+    {
+      "name": "Unit tests",
+      "cwd": "site",
+      "command": "npm test",
+      "id": 2,
+      "status": "failed",
+      "output": "\n> nixgen-site@0.1.0 test\n> vitest run\n\n\n RUN  v4.1.11 D:/Development/Nixgen Solutions Development/Development - Nixgen/deskdev-studio/site\n\n ❯ src/deskdev/store/growthLeads.test.ts (18 tests | 1 failed) 350ms\n     × needs growth:edit and clients:edit 78ms\n ❯ src/deskdev/store/lifecycle.test.ts (12 tests | 1 failed) 60ms\n     × a deactivated admin no longer receives admin notifications 12ms\n ❯ src/app/errorPages.test.ts (6 tests | 6 failed) 97070ms\n     × reports a page crash: one post, from the site, as a boundary error, under the digest the page shows 96820ms\n     × reports an error thrown in the browser too, which has no framework digest 159ms\n     × \"Try again\" asks the framework to render the page again 14ms\n     × reports a crashed root layout on the site as coming from the site 64ms\n     × reports a crash under /workspace as DeskDev's: this page stands in for both root layouts 5ms\n     × a path that only starts with the letters \"workspace\" is still the site 4ms\n ❯ src/deskdev/errorReporting.test.ts (4 tests | 1 failed) 98051ms\n     × reports a render crash caught by AppErrorBoundary: one post, from the workspace, as a boundary error 96839ms\n\n⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯\n\n FAIL  src/app/errorPages.test.ts > (site)/error.tsx > reports a page crash: one post, from the site, as a boundary error, under the digest the page shows\nError: Test timed out in 30000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n ❯ src/app/errorPages.test.ts:120:3\n    118|   });\n    119|\n    120|   it('reports a page crash: one post, from the site, as a boundary err…\n       |   ^\n    121|     const { default: SiteError } = await import('./(site)/error');\n    122|\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯\n\n FAIL  src/app/errorPages.test.ts > (site)/error.tsx > reports an error thrown in the browser too, which has no framework digest\nAssertionError: expected [ { …(3) }, { …(3) } ] to have a length of 1 but got 2\n\n- Expected\n+ Received\n\n- 1\n+ 2\n\n ❯ src/app/errorPages.test.ts:156:18\n    154|     expect(container.textContent).not.toContain('Reference:');\n    155|     const sent = posts();\n    156|     expect(sent).toHaveLength(1);\n       |                  ^\n    157|     expect(sent[0].body).toMatchObject({ app: 'site', kind: 'boundary'…\n    158|     // The reporter's own digest stands in, so the line can still be f…\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯\n\n FAIL  src/app/errorPages.test.ts > (site)/error.tsx > \"Try again\" asks the framework to render the page again\nTypeError: Cannot read properties of null (reading 'click')\n ❯ src/app/errorPages.test.ts:171:40\n    169|\n    170|     await act(async () => {\n    171|       container.querySelector('button')!.click();\n       |                                        ^\n    172|     });\n    173|\n ❯ Proxy.process.env.NODE_ENV.exports.act node_modules/react/cjs/react.development.js:890:22\n ❯ src/app/errorPages.test.ts:170:11\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯\n\n FAIL  src/app/errorPages.test.ts > global-error.tsx > reports a crashed root layout on the site as coming from the site\nAssertionError: expected '' to contain 'Something went wrong'\n\n- Expected\n+ Received\n\n- Something went wrong\n\n ❯ src/app/errorPages.test.ts:190:39\n    188|     await crash(GlobalError, thrown('The root layout failed', 'f00dfee…\n    189|\n    190|     expect(document.body.textContent).toContain('Something went wrong'…\n       |                                       ^\n    191|     expect(document.body.textContent).toContain('Reference: f00dfeed');\n    192|     expect(windowErrors).toBe(0);\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯\n\n FAIL  src/app/errorPages.test.ts > global-error.tsx > reports a crash under /workspace as DeskDev's: this page stands in for both root layouts\nAssertionError: expected [] to have a length of 1 but got +0\n\n- Expected\n+ Received\n\n- 1\n+ 0\n\n ❯ src/app/errorPages.test.ts:214:18\n    212|\n    213|     const sent = posts();\n    214|     expect(sent).toHaveLength(1);\n       |                  ^\n    215|     expect(sent[0].body).toMatchObject({ app: 'workspace', kind: 'boun…\n    216|   });\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯\n\n FAIL  src/app/errorPages.test.ts > global-error.tsx > a path that only starts with the letters \"workspace\" is still the site\nTypeError: Cannot read properties of undefined (reading 'body')\n ❯ src/app/errorPages.test.ts:224:22\n    222|     await crash(GlobalError, thrown('Not the workspace'), document);\n    223|\n    224|     expect(posts()[0].body).toMatchObject({ app: 'site', kind: 'bounda…\n       |                      ^\n    225|   });\n    226| });\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯\n\n FAIL  src/deskdev/errorReporting.test.ts > reportBoundaryErrors > reports a render crash caught by AppErrorBoundary: one post, from the workspace, as a boundary error\nError: Test timed out in 30000ms.\nIf this is a long-running test, pass a timeout value as the last argument or configure it globally with \"testTimeout\".\n ❯ src/deskdev/errorReporting.test.ts:78:3\n     76|\n     77| describe('reportBoundaryErrors', () => {\n     78|   it('reports a render crash caught by AppErrorBoundary: one post, fro…\n       |   ^\n     79|     const { reportBoundaryErrors } = await import('./errorReporting')\n     80|     reportBoundaryErrors()\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯\n\n FAIL  src/deskdev/store/growthLeads.test.ts > convertLead — local fallback (036 mirrored) > needs growth:edit and clients:edit\nError: You do not have permission to create projects.\n ❯ Object.addProject src/deskdev/store/useStore.ts:1427:43\n    1425|\n    1426|         addProject: (input) => {\n    1427|           if (!allowed('projects')) throw new Error('You do not have p…\n       |                                           ^\n    1428|           validateProject(input, get())\n    1429|           const now = nowIso()\n ❯ convertHere src/deskdev/store/useStore.ts:2814:37\n ❯ Object.convertLead src/deskdev/store/useStore.ts:2845:61\n ❯ src/deskdev/store/growthLeads.test.ts:185:23\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯\n\n FAIL  src/deskdev/store/lifecycle.test.ts > adminDeactivateUser / adminReactivateUser > a deactivated admin no longer receives admin notifications\nError: You do not have permission to create clients.\n\n ❯ Object.addClient src/deskdev/store/useStore.ts:1307:42\n    1305|\n    1306|         addClient: (input) => {\n    1307|           if (!allowed('clients')) throw new Error('You do not have pe…\n       |                                          ^\n    1308|           validateClient(input, get())\n    1309|           const now = nowIso()\n ❯ src/deskdev/store/lifecycle.test.ts:67:9\n\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯\n\n Test Files  4 failed | 97 passed (101)\n      Tests  9 failed | 1413 passed | 4 skipped (1426)\n   Start at  02:43:38\n   Duration  139.05s (transform 17.45s, setup 0ms, import 365.31s, tests 219.01s, environment 543.14s)\n\n",
+      "exitCode": 1
+    },
+    {
+      "name": "Migration guard",
+      "cwd": ".",
+      "command": "node scripts/check-migrations.mjs",
+      "id": 3,
+      "status": "passed",
+      "output": "anon can execute (from 32 on, by explicit GRANT): intake_site_lead (034), intake_subscriber (039), calendar_feed (040)\ncheck-migrations: 46 files, 001_profiles_roles.sql .. 045_profile_pictures.sql: ok\n",
+      "exitCode": 0
+    },
+    {
+      "name": "Repository script tests",
+      "cwd": ".",
+      "command": "node --test \"scripts/**/*.test.mjs\"",
+      "id": 4,
+      "status": "passed",
+      "output": "ℹ tests 0\nℹ suites 0\nℹ pass 0\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 8.8493\n",
+      "exitCode": 0
+    },
+    {
+      "name": "Clean database / RLS tests",
+      "cwd": "supabase/tests",
+      "command": "npm test",
+      "id": 5,
+      "status": "failed",
+      "output": "\n> test\n> node --test\n\n✔ an admin-created account passes the guard and leaves nothing on the allow-list (9680.8435ms)\n✔ the entry names the admin and exists only while GoTrue is being called (19.4563ms)\n✔ \"already registered\" (the insert fails after the guard) leaves nothing behind (32.6838ms)\n✔ a create that throws is rethrown, after the cleanup (18.3318ms)\n✔ without the helper the same call is refused: an older admin-users cannot create users once 042 is applied (14.5982ms)\n✔ when the allow-list write fails, the guard still decides: nothing is created (15.6472ms)\n✔ a failing cleanup does not replace the result (6.0023ms)\n✔ deployed before 042: there is no table yet and creating works as before (3509.4724ms)\n✔ only active admins can read and save; direct writes and anon calls are denied (9734.8803ms)\n✔ stale saves are rejected and saved acceptance is immutable (28.5316ms)\n✔ kickoff, receipts and completion are checked by the database (81.6698ms)\n✔ a deactivated admin cannot read or save with an existing token (18.6279ms)\n✔ every migration applies in ledger order (9442.878ms)\n✔ every table in public has row level security on (7.3863ms)\n✔ the newest migration runs twice (26.5565ms)\n✔ tryAs is the switch the policies read: role, auth.uid(), auth.jwt() and aal (10399.2729ms)\n✔ the seed: the people are who the header says they are (4.02ms)\n✔ every table and view in public has a line in READS (4.4641ms)\n✔ reads: clients (39.9119ms)\n✔ reads: client_categories (34.7265ms)\n✔ reads: project_engagements (35.2975ms)\n✔ reads: projects (36.8025ms)\n✔ reads: project_categories (29.9802ms)\n✔ reads: tasks (45.6495ms)\n✔ reads: task_activity (33.9954ms)\n✔ reads: time_entries (35.6515ms)\n✔ reads: eod_reports (30.232ms)\n✔ reads: crm_tables (36.0962ms)\n✔ reads: crm_columns (35.5234ms)\n✔ reads: crm_rows (30.4771ms)\n✔ reads: courses (41.9888ms)\n✔ reads: course_modules (31.109ms)\n✔ reads: course_topics (37.1934ms)\n✔ reads: campaigns (32.8757ms)\n✔ reads: job_postings (33.491ms)\n✔ reads: leads (30.5484ms)\n✔ reads: lead_activity (33.5004ms)\n✔ reads: site_subscribers (28.7106ms)\n✔ reads: showcase_link_checks (31.1444ms)\n✔ reads: events (40.7334ms)\n✔ reads: event_attendees (38.1261ms)\n✔ reads: showcase_items (35.6106ms)\n✔ reads: audit_log (45.8105ms)\n✔ reads: automation_jobs (33.9156ms)\n✔ reads: automation_runs (28.8857ms)\n✔ reads: automation_health (44.26ms)\n✔ reads: lead_intake_attempts (32.0314ms)\n✔ reads: vault_settings (40.1002ms)\n✔ reads: vault_meta (36.8437ms)\n✔ reads: vault_folders (48.7644ms)\n✔ reads: vault_items (44.0116ms)\n✔ reads: notifications (32.3414ms)\n✔ reads: push_subscriptions (37.4392ms)\n✔ reads: channel_reads (32.578ms)\n✔ reads: conversations (28.9559ms)\n✔ reads: messages (27.9544ms)\n✔ reads: conversation_reads (40.5888ms)\n✔ reads: profiles (34.092ms)\n✔ reads: workspace_settings (36.6524ms)\n✔ reads: channel_categories (40.3993ms)\n✔ reads: channels (31.91ms)\n✔ reads: channel_messages (31.3244ms)\n✔ reads: channel_reactions (36.0366ms)\n✔ reads: calendar_feed_tokens (32.0112ms)\n✔ reads: google_connections (22.4012ms)\n✔ reads: google_sync_outbox (21.3123ms)\n✔ reads: google_workspace_link (25.2834ms)\n✔ reads: signup_allowlist (23.3872ms)\n✔ reads: site_subscriber_attempts (27.9959ms)\n✔ reads: vault_reset_codes (24.8887ms)\n✔ the public site reads showcase_items by column grant: never the private columns, never the real url (28.6521ms)\n✔ anon cannot insert, update or delete in any table (534.4421ms)\n✔ nobody changes no row it cannot read (579.3118ms)\n✔ gone changes no row it cannot read (469.1596ms)\n✔ B changes no row it cannot read (491.0809ms)\n✔ A changes no row it cannot read (273.6662ms)\n✔ admin changes no row it cannot read (203.2245ms)\n✔ adminTotp changes no row it cannot read (160.6326ms)\n✖ the checks above fail when there is a hole (909.7167ms)\n✔ the write helpers can tell a write that goes through (10.3609ms)\n✔ notifications: only your own; none forged in someone else's name (33.0133ms)\n✔ push_subscriptions: only your own, and only through the two functions (30.8376ms)\n✔ conversations and messages: a non-participant changes nothing, a participant only what is theirs (87.6452ms)\n✔ channels: a private or client-space channel is closed to B, and B cannot touch A's messages (49.0081ms)\n✔ the Vault: nothing without an admin role and nothing without the second factor (181.9562ms)\n✔ profiles: nobody raises their own role or permissions, or edits someone else (73.935ms)\n✔ an account without a profile writes nothing, and it is the policy that says so (27.0705ms)\n✔ feature tables: view does not write, and edit stops at the admin-only actions (145.6076ms)\n✔ anon is named in exactly one policy (8.9847ms)\n✖ table grants: anon holds showcase_items' columns and nothing else; nobody but the service role truncates (45.9172ms)\n✔ functions: anon may call the three doors and nothing else (51.8476ms)\n✔ functions: trigger functions are nobody's to call, and the triggers still fire (38.8093ms)\n✔ the doors: a wrong secret or token gets nothing and writes nothing (126.7595ms)\n✔ the doors fail closed when the Vault holds no secret (95.0228ms)\n✖ is_active(): a profile that exists and is not deactivated (54.2245ms)\n✔ every table a signed-in account can reach carries the active_account_only policy (16.6097ms)\n✔ a deactivated account is locked out of everything, with its token still valid (59.5343ms)\n✔ push: an account that is not active registers no device (48.5652ms)\n✔ 043 applied again on a database in use: it removes the devices of deactivated accounts and changes nothing else (190.1763ms)\n✔ 043 fails, and says where, when a grant it cannot take away is left (240.0651ms)\n✔ channels: the creator of a private channel does not manage it after being taken out of it (105.4632ms)\n✔ GoTrue: an address that is not on the allow-list is refused (9758.0804ms)\n✔ GoTrue: the refusal does not repeat the address (it lands in logs) (7.9413ms)\n✔ GoTrue: an allow-listed address passes, the entry is used up, and the profile is a member (17.7047ms)\n✔ GoTrue: an entry admits one account, and only for its own address (18.7055ms)\n✔ GoTrue: an expired entry is refused (13.972ms)\n✔ GoTrue: letter case and outer spaces do not matter, in either direction (26.0543ms)\n✔ GoTrue: an account without an email is refused (phone-only, anonymous) (17.7295ms)\n✔ GoTrue: when the insert fails after the guard, the entry comes back with the rollback (8.5903ms)\n✔ GoTrue: a successful insert sweeps expired leftovers (10.672ms)\n✔ operator: an insert passes without an entry, and the profile trigger still runs (10.258ms)\n✔ the guard reads the session, so a SECURITY DEFINER function owned by postgres does not get past it (38.3622ms)\n✔ allow-list: nothing for anon or a signed-in user, even an admin (48.4603ms)\n✔ allow-list: the service role adds and removes entries and cannot edit them (35.3953ms)\n✔ allow-list: no standing invitations, and no blank address (7.5336ms)\n✔ allow-list: deleting the admin who invited keeps the entry (ON DELETE SET NULL) (93.3845ms)\n✔ emergency off and back on, as a role that does not own auth.users (66.5912ms)\nℹ tests 117\nℹ suites 0\nℹ pass 114\nℹ fail 3\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 18284.6567\n\n✖ failing tests:\n\ntest at rls.test.mjs:649:1\n✖ the checks above fail when there is a hole (909.7167ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n  + []\n  - [\n  -   'INSERT INTO job_postings DEFAULT VALUES',\n  -   'UPDATE public.job_postings SET \"description\" = DEFAULT',\n  -   'DELETE FROM public.job_postings'\n  - ]\n  \n      at file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/rls.test.mjs:677:14\n      at async withHole (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/rls.test.mjs:655:7)\n      at async TestContext.<anonymous> (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/rls.test.mjs:672:3)\n      at async Test.run (node:internal/test_runner/test:1313:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: [],\n    expected: [ 'INSERT INTO job_postings DEFAULT VALUES', 'UPDATE public.job_postings SET \"description\" = DEFAULT', 'DELETE FROM public.job_postings' ],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n\ntest at rls.test.mjs:957:1\n✖ table grants: anon holds showcase_items' columns and nothing else; nobody but the service role truncates (45.9172ms)\n  error: \"users\" is not a sequence\n      at pe.Ue (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:17959)\n      at pe.tt (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:15347)\n      at pe.parse (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:14021)\n      at N.qe (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/index.js:5:1762)\n      at file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/index.js:5:1155\n      at wasm://wasm/0267bb86:wasm-function[10930]:0x5a5ccf\n      at wasm://wasm/0267bb86:wasm-function[3585]:0x27eaeb\n      at wasm://wasm/0267bb86:wasm-function[3627]:0x2869d1\n      at wasm://wasm/0267bb86:wasm-function[3637]:0x286c2d\n      at wasm://wasm/0267bb86:wasm-function[9914]:0x54fd4d {\n    length: 98,\n    severity: 'ERROR',\n    code: '42809',\n    detail: undefined,\n    hint: undefined,\n    position: undefined,\n    internalPosition: undefined,\n    internalQuery: undefined,\n    where: undefined,\n    schema: undefined,\n    table: undefined,\n    column: undefined,\n    dataType: undefined,\n    constraint: undefined,\n    file: 'acl.c',\n    line: '2186',\n    routine: 'has_sequence_privilege_name_id',\n    query: \"\\n    SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace\\n     WHERE n.nspname = 'public' AND c.relkind = 'S' AND has_sequence_privilege('anon', c.oid, 'USAGE, SELECT, UPDATE') ORDER BY 1\",\n    params: [],\n    queryOptions: undefined\n  }\n\ntest at rls.test.mjs:1175:1\n✖ is_active(): a profile that exists and is not deactivated (54.2245ms)\n  error: messages cannot be moved, re-attributed or re-dated\n      at pe.Ue (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:17959)\n      at pe.tt (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:15347)\n      at pe.parse (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/chunk-2BOC2OMW.js:1:14021)\n      at N.qe (file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/index.js:5:1762)\n      at file:///D:/Development/Nixgen%20Solutions%20Development/Development%20-%20Nixgen/deskdev-studio/supabase/tests/node_modules/@electric-sql/pglite/dist/index.js:5:1155\n      at wasm://wasm/0267bb86:wasm-function[10930]:0x5a5ccf\n      at wasm://wasm/0267bb86:wasm-function[3585]:0x27eaeb\n      at wasm://wasm/0267bb86:wasm-function[3627]:0x2869d1\n      at wasm://wasm/0267bb86:wasm-function[3637]:0x286c2d\n      at wasm://wasm/0267bb86:wasm-function[9914]:0x54fd4d {\n    length: 286,\n    severity: 'ERROR',\n    code: 'P0001',\n    detail: undefined,\n    hint: undefined,\n    position: undefined,\n    internalPosition: undefined,\n    internalQuery: undefined,\n    where: 'PL/pgSQL function guard_message_update() line 6 at RAISE\\nSQL statement \"UPDATE ONLY \"public\".\"messages\" SET \"sender_id\" = NULL WHERE $1 OPERATOR(pg_catalog.=) \"sender_id\"\"',\n    schema: undefined,\n    table: undefined,\n    column: undefined,\n    dataType: undefined,\n    constraint: undefined,\n    file: 'pl_exec.c',\n    line: '3923',\n    routine: 'exec_stmt_raise',\n    query: 'DELETE FROM public.profiles WHERE id = $1',\n    params: [ '00000000-0000-4000-8000-00000000000b' ],\n    queryOptions: undefined\n  }\n",
+      "exitCode": 1
+    },
+    {
+      "name": "Shared library drift",
+      "cwd": ".",
+      "command": "node scripts/check-shared-drift.mjs",
+      "id": 6,
+      "status": "failed",
+      "output": "Shared-lib drift check FAILED:\n\n  DRIFT    types.ts — site/src/deskdev/lib/types.ts != mobile/src/lib/types.ts\n  DRIFT    db.ts — site/src/deskdev/lib/db.ts != mobile/src/lib/db.ts\n\nsite/src/deskdev/lib is the source of truth — make the change there first, then\ncopy the file to mobile/src/lib in the same PR. Genuinely platform-\nspecific code goes inside // PLATFORM-SPECIFIC:START ... :END regions\n(allowlist the file in scripts/check-shared-drift.mjs).\n",
+      "exitCode": 1
+    },
+    {
+      "name": "Automation validation",
+      "cwd": ".",
+      "command": "node scripts/n8n.mjs check",
+      "id": 7,
+      "status": "passed",
+      "output": "n8n check: 12 workflows OK (6 signed webhooks, 5 logged schedules)\n",
+      "exitCode": 0
+    },
+    {
+      "name": "Browser E2E and local production build",
+      "cwd": "site",
+      "command": "npm run test:e2e",
+      "id": 8,
+      "status": "failed",
+      "output": "\n> nixgen-site@0.1.0 test:e2e\n> playwright test\n\n[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 7.5s of this 8.2s build (91%).\n[WebServer] 6 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:\n[WebServer]   - plugin rsc:virtual-client-package resolveId (9475 calls)\n[WebServer]   - plugin vinext:og-inline-fetch-assets resolveId (12430 calls)\n[WebServer]   - plugin alias resolveId (18762 calls)\n[WebServer]   … and 3 more\n[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.\n[WebServer] \n[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 9.1s of this 9.8s build (94%).\n[WebServer] 3 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:\n[WebServer]   - plugin vinext:og-inline-fetch-assets resolveId (17124 calls)\n[WebServer]   - plugin alias resolveId (22409 calls)\n[WebServer]   - plugin vinext:optimize-imports transform (5237 calls)\n[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.\n[WebServer] \n[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 8.0s of this 8.7s build (92%).\n[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):\n[WebServer]   - plugin vinext:dynamic-preload-metadata transform (20%, 1.7s, 1 call)\n[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.\n[WebServer] 7 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:\n[WebServer]   - plugin rsc:virtual-client-package resolveId (9424 calls)\n[WebServer]   - plugin vinext:og-inline-fetch-assets resolveId (12380 calls)\n[WebServer]   - plugin alias resolveId (18722 calls)\n[WebServer]   … and 4 more\n[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.\n[WebServer] \n[WebServer] `output.codeSplitting.groups[0].name` is a function. Set `output.codeSplitting.groups[0].debugName` so the bundler timing report can identify this group.\n[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] node_modules/vinext/dist/shims/default-global-error.js is dynamically imported by \\0virtual:vite-rsc/client-references but also statically imported by node_modules/vinext/dist/server/app-ssr-entry.js, node_modules/vinext/dist/shims/error-boundary.js, dynamic import will not move module into another chunk.\n[WebServer] \n[WebServer] [INEFFECTIVE_DYNAMIC_IMPORT] node_modules/vinext/dist/shims/slot.js is dynamically imported by \\0virtual:vite-rsc/client-references but also statically imported by node_modules/vinext/dist/server/app-ssr-entry.js, node_modules/vinext/dist/shims/client-page-root.js, dynamic import will not move module into another chunk.\n[WebServer] \n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n\nRunning 56 tests using 3 workers\n\n(node:35572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  ok  1 [setup] › tests\\e2e\\auth.setup.ts:8:1 › sign in with the admin demo account (2.2s)\n(node:27988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:25364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:38892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  ok  2 [chromium] › tests\\e2e\\auth.spec.ts:8:3 › authentication › rejects invalid credentials without navigating away (3.8s)\n  ok  5 [chromium] › tests\\e2e\\auth.spec.ts:20:3 › authentication › gates a protected route behind sign-in (3.8s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok  6 [chromium] › tests\\e2e\\portfolio.spec.ts:8:3 › portfolio case studies › a featured item renders its case study (3.9s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok  7 [chromium] › tests\\e2e\\portfolio.spec.ts:19:3 › portfolio case studies › a private app shows the demo note instead of a live link (4.4s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok  4 [chromium] › tests\\e2e\\engagement.spec.ts:3:1 › agreement, deposit, approvals and later collection persist through reload (17.1s)\n  ok  3 [chromium] › tests\\e2e\\chat.spec.ts:14:1 › two people hold a conversation in the inbox (17.3s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok  8 [chromium] › tests\\e2e\\portfolio.spec.ts:25:3 › portfolio case studies › an item without a case study is a 404 (1.8s)\n  ok 10 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders dashboard (/) (3.6s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 11 [chromium] › tests\\e2e\\site-contact.spec.ts:46:3 › project brief form › an empty brief is explained field by field and nothing is sent (4.0s)\n  ok 12 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders projects (/projects) (2.4s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 14 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders tasks (/tasks) (1.6s)\n  ok 13 [chromium] › tests\\e2e\\site-contact.spec.ts:65:3 › project brief form › a mistyped email is caught before sending (3.7s)\n  ok 15 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders clients (/clients) (2.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 17 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders crm (/crm) (1.7s)\n  ok  9 [chromium] › tests\\e2e\\engagement.spec.ts:59:1 › members cannot see the engagement finance panel (12.6s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] {\"route\":\"contact\",\"event\":\"intake_not_configured\",\"secret\":true,\"url\":false,\"anonKey\":false,\"ipSalt\":true,\"request_id\":\"35df1bd9-79ff-4f04-a4d2-5ba252f2e41c\"}\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 16 [chromium] › tests\\e2e\\site-contact.spec.ts:76:3 › project brief form › a brief the database cannot take is emailed instead of lost (5.4s)\n  ok 18 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders calendar (/calendar) (2.5s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] {\"route\":\"client-errors\",\"event\":\"client_error\",\"kind\":\"error\",\"app\":\"site\",\"name\":\"Error\",\"message\":\"E2E probe: site error\",\"stack\":\"Error: E2E probe: site error\\n    at eval (eval at evaluate (:311:30), <anonymous>:3:11)\",\"digest\":\"8c2340c2\",\"path\":\"/services\",\"release\":\"d06e974c-d75e-436e-b93f-d20118025b31\",\"request_id\":\"8219ee58-dd53-424f-8543-ffa1a34cc5a4\"}\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 21 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders meetings (/meetings) (1.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 22 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders growth-hub (/growth) (1.3s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 19 [chromium] › tests\\e2e\\site-error-reporting.spec.ts:40:3 › browser error reporting › an uncaught error on the site is reported once, without the query string (6.0s)\n  ok 20 [chromium] › tests\\e2e\\site-contact.spec.ts:98:3 › project brief form › a recorded brief ends on the confirmation and sends no email (4.7s)\n  ok 23 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders growth-leads (/growth/leads) (3.0s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] {\"route\":\"client-errors\",\"event\":\"client_error\",\"kind\":\"unhandledrejection\",\"app\":\"workspace\",\"name\":\"TypeError\",\"message\":\"E2E probe: workspace rejection\",\"stack\":\"TypeError: E2E probe: workspace rejection\\n    at eval (eval at evaluate (:311:30), <anonymous>:2:27)\\n    at UtilityScript.evaluate (<anonymous>:313:16)\\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\",\"digest\":\"40ef5aff\",\"path\":\"/workspace/tasks\",\"release\":\"d06e974c-d75e-436e-b93f-d20118025b31\",\"request_id\":\"4c70bfa8-763e-4194-a058-8b9c4786b986\"}\n  ok 26 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders growth-outbound (/growth/outbound) (3.2s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 25 [chromium] › tests\\e2e\\site-contact.spec.ts:120:3 › project brief form › a refusal the visitor can act on is shown, and the brief is not emailed (5.9s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 27 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders courses (/courses) (1.7s)\n  ok 29 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders messages (/messages) (1.8s)\n  ok 28 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders home (/) (3.8s)\n  ok 24 [chromium] › tests\\e2e\\site-error-reporting.spec.ts:64:3 › browser error reporting › a failed promise in DeskDev is reported as coming from the workspace (11.8s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 30 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders notifications (/notifications) (3.6s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 31 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders services (/services) (3.8s)\n  ok 33 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders showcase (/showcase) (2.5s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 34 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders about (/about) (3.4s)\n  ok 35 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders vault (/vault) (3.1s)\n  ok 32 [chromium] › tests\\e2e\\site-subscribe.spec.ts:22:3 › footer sign-up › explains an empty address, a mistyped one and a missing tick (6.4s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 37 [chromium] › tests\\e2e\\routes.spec.ts:28:5 › route smoke › renders settings (/settings) (2.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 36 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders portfolio (/portfolio) (4.5s)\n  ok 39 [chromium] › tests\\e2e\\routes.spec.ts:60:3 › route smoke › unknown route renders NotFound, not a crash (1.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] {\"route\":\"subscribe\",\"event\":\"intake_not_configured\",\"secret\":true,\"url\":false,\"anonKey\":false,\"ipSalt\":true,\"request_id\":\"8310bc1a-8ae7-4dee-b8a9-5b6611d679e4\"}\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 38 [chromium] › tests\\e2e\\site-subscribe.spec.ts:44:3 › footer sign-up › says so when the server cannot take the address, instead of pretending (6.1s)\n  ok 40 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders process (/process) (2.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 43 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders contact (/contact) (2.6s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 44 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders templates (/templates) (2.9s)\n  ok 42 [chromium] › tests\\e2e\\site-subscribe.spec.ts:59:3 › footer sign-up › confirms a sign-up the server accepted (6.1s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 45 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders privacy (/privacy) (3.0s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 41 [chromium] › tests\\e2e\\task-create.spec.ts:12:1 › quick-add creates a task that persists across reload (11.5s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 46 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders terms (/terms) (1.9s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 48 [chromium] › tests\\e2e\\site-routes.spec.ts:22:5 › site route smoke › renders team-login (/login) (2.7s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 47 [chromium] › tests\\e2e\\task-create.spec.ts:50:1 › quick-add explains itself instead of failing silently (5.1s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 49 [chromium] › tests\\e2e\\site-routes.spec.ts:59:3 › site route smoke › an unknown page is a designed 404 with a way home (2.3s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  x  50 [chromium] › tests\\e2e\\site-routes.spec.ts:72:3 › site route smoke › the header takes a visitor to each main page (51.3s)\n(node:38504) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 51 [chromium] › tests\\e2e\\site-routes.spec.ts:89:3 › site route smoke › the team login page hands over to DeskDev sign-in (3.0s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 52 [chromium] › tests\\e2e\\site-routes.spec.ts:113:3 › what crawlers and monitors read › a build that is not on the production domain tells search engines to stay out (2.1s)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 53 [chromium] › tests\\e2e\\site-routes.spec.ts:126:3 › what crawlers and monitors read › pages carry the security headers (1.7s)\n  ok 54 [chromium] › tests\\e2e\\site-routes.spec.ts:136:3 › what crawlers and monitors read › the health endpoint answers, with and without the database check (417ms)\n  ok 55 [chromium] › tests\\e2e\\site-routes.spec.ts:153:3 › what crawlers and monitors read › an /api answer no route handler writes still carries a request id (548ms)\n[WebServer] [showcase] serving the committed fallback: Supabase env not set\n  ok 56 [chromium] › tests\\e2e\\site-routes.spec.ts:188:3 › what crawlers and monitors read › the sitemap lists the public pages and nothing from the workspace (449ms)\n\n\n  1) [chromium] › tests\\e2e\\site-routes.spec.ts:72:3 › site route smoke › the header takes a visitor to each main page \n\n    Test timeout of 45000ms exceeded.\n\n    Error: locator.click: Test timeout of 45000ms exceeded.\n    Call log:\n      - waiting for getByRole('navigation', { name: 'Primary' }).first().getByRole('link', { name: 'Templates', exact: true })\n\n\n      81 |       // The bar tucks away on scroll; start each hop from the top.\n      82 |       await page.evaluate(() => window.scrollTo(0, 0))\n    > 83 |       await nav.getByRole('link', { name, exact: true }).click()\n         |                                                          ^\n      84 |       await expect(page).toHaveURL(url)\n      85 |       await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible()\n      86 |     }\n        at D:\\Development\\Nixgen Solutions Development\\Development - Nixgen\\deskdev-studio\\site\\tests\\e2e\\site-routes.spec.ts:83:58\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    e2e-artifacts\\prelaunch\\site-routes-site-route-smo-d7d60-a-visitor-to-each-main-page-chromium\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────\n    e2e-artifacts\\prelaunch\\site-routes-site-route-smo-d7d60-a-visitor-to-each-main-page-chromium\\video.webm\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: e2e-artifacts\\prelaunch\\site-routes-site-route-smo-d7d60-a-visitor-to-each-main-page-chromium\\error-context.md\n\n    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────\n    e2e-artifacts\\prelaunch\\site-routes-site-route-smo-d7d60-a-visitor-to-each-main-page-chromium\\trace.zip\n    Usage:\n\n        npx playwright show-trace e2e-artifacts\\prelaunch\\site-routes-site-route-smo-d7d60-a-visitor-to-each-main-page-chromium\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [chromium] › tests\\e2e\\site-routes.spec.ts:72:3 › site route smoke › the header takes a visitor to each main page \n  55 passed (3.6m)\n",
+      "exitCode": 1
+    }
+  ],
+  "items": [
+    {
+      "project": "Nixgen + DeskDev Pre-Launch Checklist",
+      "section": "",
+      "label": "Not started",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen + DeskDev Pre-Launch Checklist",
+      "section": "",
+      "label": "Done",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check every page manually from top to bottom.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check desktop, tablet, and mobile.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Test Chrome, Edge, Safari, and Firefox where practical.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check navigation menu.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check mobile navigation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check sticky header behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check logo links back to homepage.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Test every CTA button.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Test every internal link.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Test every external link.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check footer links.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check social media links.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check hover states.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check animations.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check accordions/tabs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check popups/modals.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check text wrapping.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check section spacing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check images for stretching or blurriness.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check icons.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check broken images.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check for horizontal scrolling on mobile.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check browser back/forward navigation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Check 404 page.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Homepage",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Services",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Web Design / Development",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "SEO",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Automation / AI services",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Portfolio",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "About",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Pricing / Packages",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Contact",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Privacy Policy",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Terms & Conditions",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "1. Sitewide Frontend QA — P0",
+      "label": "Landing pages",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Homepage → Services → Portfolio/Case Study → Pricing → Book a Call/Contact works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Book a Call works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Get Started works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Contact Us works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Pricing CTA works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Portfolio CTA works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Booking integration works if used.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Form entries reach the correct destination.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Email notifications work.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Auto-response works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Leads are stored somewhere, not just emailed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Spam submissions are controlled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Thank-you page works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "2. Nixgen Conversion Flow — P0",
+      "label": "Conversion tracking fires.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Required fields work.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Invalid email addresses are rejected.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Phone validation works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Long messages do not break layout/database.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Form cannot submit repeatedly by accident.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Spam protection enabled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "reCAPTCHA/Turnstile enabled if appropriate.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Success state displayed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Error state displayed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Submission reaches correct email.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Submission saved to CRM/database if applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Mobile form works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Test using Gmail.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "3. Forms — P0",
+      "label": "Test another email provider.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "Correct package prices.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "Correct monthly maintenance prices.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "Correct page limits.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "Correct inclusions.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "Correct exclusions.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "No old pricing anywhere.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "No contradictory package information.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "CTA under every package works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "4. Nixgen Packages & Pricing — P0",
+      "label": "One-time vs recurring fees are clearly explained.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Every portfolio item opens.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Correct screenshots.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Images optimized.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Correct project descriptions.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Correct services listed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "No confidential client data visible.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Links to live projects work.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Case studies added where possible.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Before/after examples display properly.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "5. Portfolio",
+      "label": "Portfolio works well on mobile.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Unique title tag per indexable page.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Unique meta description.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "One primary H1.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Logical H2/H3 hierarchy.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Descriptive URLs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Canonical URLs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Image alt text.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Open Graph title.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Open Graph description.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Social sharing image.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Twitter/X metadata if needed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Organization schema.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "LocalBusiness schema if appropriate.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Service schema.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Breadcrumb schema if applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "FAQ schema only where appropriate.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "robots.txt configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "sitemap.xml configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Sitemap submitted to Google Search Console.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Google Search Console verified.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "No staging URLs indexed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "No accidental noindex.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Canonicals do not point to development domain.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "6. SEO — P0",
+      "label": "Search site/repository for old development URLs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "GA4 installed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Google Tag Manager installed if used.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Search Console connected.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Contact submissions tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Book-call clicks tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Phone clicks tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Email clicks tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Pricing CTA clicks tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Thank-you page conversion tracked.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "7. Analytics",
+      "label": "Analytics do not fire twice.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Professional domain email active.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "SPF configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "DKIM configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "DMARC configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Website sender address uses the domain.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "SMTP/API mail provider configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Contact emails are not going to spam.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Reply-to address correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Test form notifications.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "8. Email Deliverability — P0",
+      "label": "Test booking notifications.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Compress hero images.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Use WebP/AVIF where appropriate.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Lazy-load below-the-fold images.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Avoid huge background videos.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Minimize unnecessary scripts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check Core Web Vitals.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check mobile Lighthouse.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check desktop Lighthouse.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Remove unused tracking scripts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Optimize fonts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Prevent layout shifts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check LCP.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check CLS.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "9. Performance",
+      "label": "Check INP.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "HTTPS works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "HTTP redirects to HTTPS.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Security headers configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Forms protected from spam/bots.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "API keys are not exposed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "No .env files publicly accessible.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Development/debug mode removed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Test accounts removed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Dependencies/plugins updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Administrator access limited.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "10. Security",
+      "label": "Backup configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Production build ready.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Backup created.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "DNS records documented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Production environment variables configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "SSL configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Email DNS records preserved.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Staging deployment remains available.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Production URLs configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Analytics configured with real domain.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "OAuth callbacks updated if applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Homepage opens after DNS switch.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "www/non-www behavior correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "HTTPS valid.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Forms work after launch.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Email works after launch.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Booking works after launch.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Analytics works after launch.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Search Console works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "Sitemap accessible.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Nixgen Marketing Solutions",
+      "section": "11. Nixgen Domain Launch — P0",
+      "label": "No mixed-content warnings.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Open every page.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Scroll every page completely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Click every button.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test every menu.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test dropdowns.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test modals.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test filters.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test search.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test tables.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test pagination.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test sorting.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test upload/download.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test drag/drop if available.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check loading states.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check skeleton states.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check error states.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check empty states.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check success messages.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check confirmation dialogs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check tooltips.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check mobile responsiveness.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check tablet layout.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Check large desktop layout.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test browser refresh from important routes.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test direct links.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "1. Frontend — P0",
+      "label": "Test browser back/forward navigation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Sign-up.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Login.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Logout.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Forgot password.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Reset password.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Email verification.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Expired verification link.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Expired session.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Session refresh.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Remember-me behavior if used.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Incorrect password.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Nonexistent account.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Duplicate registration.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Disabled account.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Unauthorized route access.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "2. Authentication — P0",
+      "label": "Backend enforces permissions, not just frontend UI.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Guest permissions verified.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Normal user permissions verified.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Admin permissions verified.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Users cannot view another user's private data.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Users cannot modify another user's private data.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "Admin routes are blocked for non-admin users.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "3. Role & Permission Testing — P0",
+      "label": "System settings are blocked for non-admin users.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Production DB separate from development.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Database schema finalized.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Migrations saved.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Migrations work on a clean database.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Foreign keys correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Unique constraints configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Required fields enforced.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Indexes configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Large queries optimized.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Pagination implemented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Duplicate records prevented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Orphaned records prevented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Timestamps correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Timezones correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Soft-delete behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Hard-delete behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Cascade deletion reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "4. Database — P0",
+      "label": "Backup active.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Authentication checked on protected endpoints.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Authorization checked on protected endpoints.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Input validation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Response validation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Rate limiting.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Error handling.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Proper HTTP status codes.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Pagination.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Timeout handling.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Retry handling.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Idempotency where needed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "Duplicate request handling.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "SQL injection protection.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "XSS handling.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "CSRF protection where applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "No stack traces exposed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "No secrets returned.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "5. API / Backend — P0",
+      "label": "No unnecessary user data returned.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Empty inputs handled safely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Huge inputs handled safely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Extremely long filenames handled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Unsupported file types rejected.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Double submissions handled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Repeated clicking does not create duplicates.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Refresh during submission is safe.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Slow network behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Offline connection behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "API timeout behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "HTML/script injection attempts handled safely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "6. Abuse / Failure Testing",
+      "label": "Path traversal attempts handled safely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Allowed extensions enforced.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "MIME validation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Max upload size.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Filename sanitization.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Unique storage IDs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Private files remain private.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Signed URLs expire where applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Users cannot alter URLs to access another user's files.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "File deletion works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "DB record deletion works.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Failed uploads cleaned up.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "7. File Uploads — P0 if used",
+      "label": "Malware scanning considered where necessary.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Development environment separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Staging environment separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Production environment separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Development database separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Production database separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Development API credentials separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Production API credentials separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Development OAuth callbacks configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Production OAuth callbacks configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Development storage separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Production storage separated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for localhost.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for 127.0.0.1.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for .vercel.app.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for .pages.dev.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for .workers.dev.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Search codebase for ngrok.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "8. Environment Configuration — P0",
+      "label": "Remove unintended development/staging URLs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for API_KEY.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for SECRET.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for TOKEN.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for PASSWORD.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for PRIVATE_KEY.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for SERVICE_ROLE.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Search repository for DATABASE_URL.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Secrets are not committed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Secrets are not bundled into frontend JavaScript.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Production secrets use environment configuration.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Previously exposed credentials rotated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "Database admin key stays server-side.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "9. Secrets — P0",
+      "label": "OAuth secrets stay server-side.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "SQL injection testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "XSS testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "CSRF testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "IDOR testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "SSRF testing where URL fetching exists.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Open redirect testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Path traversal testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Broken authentication testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Broken authorization testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "File upload abuse testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Brute-force protection.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Rate-limit bypass testing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Sensitive data exposure review.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "CORS configuration reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "10. Security — P0",
+      "label": "Object/record IDs cannot be changed to access unauthorized data.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Valid credentials tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Invalid credentials tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Expired credentials tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "API offline behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Rate-limit behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Timeout behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Bad response behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Missing field behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Duplicate webhook behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Failed webhook behavior tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "Reconnect flow tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "11. Third-Party Integrations",
+      "label": "One unavailable integration does not crash the entire app.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Signature verification.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Secret validation.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Duplicate events handled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Events are idempotent.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Failed webhook logs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Retry strategy.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Production webhook URLs configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Staging URLs removed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "12. Webhooks — P0 if used",
+      "label": "Webhook responses return quickly.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Signup email.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Email verification.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Password reset email.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Notification emails.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Invitation emails.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "System alert emails.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "From address correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Reply-to correct.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Links use production domain.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "HTML renders correctly.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Mobile email layout tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "SPF configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "DKIM configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "DMARC configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "13. Email System",
+      "label": "Email failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Every workflow documented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Test workflows disabled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Production workflows enabled.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Duplicate execution prevented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Retry policy configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Failed-job queue/log exists.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Long-running tasks do not block UI.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "14. Background Jobs / Automations",
+      "label": "Tasks resume safely after restart.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Dashboard query performance tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Search performance tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Filtering performance tested.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Tables tested with realistic data.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Reports tested with realistic data.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "API response time measured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Database query time measured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Memory usage reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "CPU usage reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Bundle size reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Image optimization applied.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Caching reviewed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "15. Performance",
+      "label": "Test with larger realistic datasets.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Authentication failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "API failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Database failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Integration failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Webhook failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Background-job failures logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Application exceptions logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Passwords are never logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Access tokens are never logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "API secrets are never logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "16. Logging — P0",
+      "label": "Private keys are never logged.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Uptime monitoring.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Error monitoring.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "API monitoring.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Database monitoring.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Resource monitoring.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Alerts configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Failed-job alerts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "17. Monitoring — P0",
+      "label": "Integration failure alerts.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "Automatic DB backups.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "Backup retention defined.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "File/storage backups if needed.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "Environment configuration securely backed up.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "Repository backed up remotely.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "Restore procedure documented.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "18. Backups — P0",
+      "label": "At least one backup has been restored successfully.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "400 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "401 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "403 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "404 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "429 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "500 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "502/503 behavior.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "Technical stack traces are hidden from users.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "19. Error Pages",
+      "label": "User-facing error messages are understandable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Production deployment exists.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "DNS configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "SSL issued.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "HTTPS enforced.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Cookie domain configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "CORS configured.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "OAuth redirects updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Email URLs updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Webhook URLs updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "API URLs updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Storage URLs updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Canonical URLs updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "20. Production Domain — P0",
+      "label": "Analytics updated.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Visit DeskDev as a new user.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Register.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Verify account.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Login.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Complete onboarding.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Create first item/project/workspace.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Use core DeskDev functionality.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Edit it.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Delete it.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Test integrations.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Upload files.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Check notifications.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Logout.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Login again.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Confirm everything persisted.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Repeat as normal user.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Repeat as admin.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "21. Final End-to-End QA — P0",
+      "label": "Repeat as unauthorized user.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Double-click Submit.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Refresh while saving.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Disconnect internet while saving.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Open same record in two tabs.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Edit same record from two browsers.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Delete while another session is editing.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Expire session while working.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Upload unsupported file.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Simulate API outage.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Simulate database failure.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Simulate third-party 500 response.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "22. Stress / Failure QA",
+      "label": "Confirm recovery is clean.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Privacy Policy.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Terms of Service.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Cookie disclosure where applicable.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Data processing information.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Contact information.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Account deletion process.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Data deletion process.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "DeskDev",
+      "section": "23. Legal",
+      "label": "Third-party service disclosure where appropriate.",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Frontend",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Forms",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Email",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "SEO",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Analytics",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Security",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "Nixgen",
+      "label": "Domain",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Frontend",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Authentication",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Authorization",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Database",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Backend/API",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Security",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Integrations",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Monitoring",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Backups",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    },
+    {
+      "project": "Final Go / No-Go Rule",
+      "section": "DeskDev",
+      "label": "Domain",
+      "status": "unverified",
+      "evidence": "Requires focused verification; source checkmarks are not evidence for this run."
+    }
+  ]
+}

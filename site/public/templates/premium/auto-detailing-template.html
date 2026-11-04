@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OBSIDIAN AUTO ATELIER — Premium Detailing & Ceramic Coating</title>
+<meta name="description" content="Obsidian Auto Atelier — a premium car detailing & ceramic coating studio. Hand-finished perfection, mirror-deep gloss, and protection that lasts." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#05070A',
+          obsidian: '#0A0E14',
+          carbon: '#11161F',
+          steel: '#1A2230',
+          chrome: '#C7D2E0',
+          electric: '#27E0D6',
+          electric2: '#1BB8C9',
+          smoke: '#8A97A8',
+        },
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        boxShadow: {
+          glow: '0 0 40px -8px rgba(39,224,214,0.45)',
+          card: '0 30px 60px -20px rgba(0,0,0,0.8)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #05070A;
+    color: #E7ECF3;
+    font-family: 'Inter', sans-serif;
+    cursor: none;
+  }
+  @media (hover: none) { body { cursor: auto; } }
+
+  ::selection { background: #27E0D6; color: #05070A; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #27E0D6; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1px solid rgba(199,210,224,0.7);
+    transition: width .25s, height .25s, background .25s, border-color .25s;
+  }
+  .cursor-ring.grow { width: 64px; height: 64px; background: rgba(39,224,214,0.12); border-color: #27E0D6; }
+  @media (hover: none) { .cursor-dot, .cursor-ring { display: none; } }
+
+  /* Gloss / shine sweep */
+  .gloss { position: relative; overflow: hidden; }
+  .gloss::after {
+    content: ''; position: absolute; top: 0; left: -150%;
+    width: 60%; height: 100%;
+    background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.0) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.0) 70%, transparent 100%);
+    transform: skewX(-20deg);
+    animation: sweep 4.5s ease-in-out infinite;
+  }
+  @keyframes sweep { 0% { left: -150%; } 55% { left: 160%; } 100% { left: 160%; } }
+
+  .text-grad {
+    background: linear-gradient(120deg, #FFFFFF 0%, #C7D2E0 40%, #27E0D6 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .chrome-line {
+    background: linear-gradient(90deg, transparent, rgba(199,210,224,0.5), transparent);
+    height: 1px;
+  }
+
+  /* Hero parallax frame */
+  .parallax-frame { will-change: transform; }
+
+  /* Before/After slider */
+  .ba-wrap { position: relative; overflow: hidden; user-select: none; touch-action: none; }
+  .ba-after { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ba-after-clip { position: absolute; inset: 0; clip-path: inset(0 0 0 50%); }
+  .ba-handle {
+    position: absolute; top: 0; bottom: 0; left: 50%; width: 2px;
+    background: #27E0D6; transform: translateX(-50%); cursor: ew-resize; box-shadow: 0 0 20px rgba(39,224,214,0.7);
+  }
+  .ba-knob {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 48px; height: 48px; border-radius: 9999px; background: rgba(10,14,20,0.85);
+    border: 1px solid #27E0D6; display: grid; place-items: center; box-shadow: 0 0 24px rgba(39,224,214,0.6);
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track:hover .marquee { animation-play-state: paused; }
+
+  /* Tilt card */
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; will-change: transform; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .grain::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gloss::after, .marquee { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="grain antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-center justify-between h-20">
+      <a href="#top" class="flex items-center gap-3 group" data-cursor>
+        <span class="relative inline-grid place-items-center w-10 h-10 rounded-lg bg-gradient-to-br from-steel to-carbon border border-white/10 gloss">
+          <span class="font-display font-extrabold text-electric text-lg">O</span>
+        </span>
+        <span class="font-display font-extrabold tracking-tight text-lg leading-none">
+          OBSIDIAN<span class="text-electric">.</span><br class="hidden sm:block"/>
+          <span class="text-[10px] font-body font-medium tracking-[0.35em] text-smoke">AUTO ATELIER</span>
+        </span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-9 text-sm font-medium text-smoke">
+        <a href="#services" class="hover:text-white transition" data-cursor>Services</a>
+        <a href="#ceramic" class="hover:text-white transition" data-cursor>Ceramic</a>
+        <a href="#gallery" class="hover:text-white transition" data-cursor>Gallery</a>
+        <a href="#about" class="hover:text-white transition" data-cursor>Studio</a>
+        <a href="#faq" class="hover:text-white transition" data-cursor>FAQ</a>
+      </nav>
+
+      <a href="#book" id="navBook" data-cursor
+         class="magnetic relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-ink bg-electric gloss shadow-glow hover:bg-white transition-colors">
+        <span>Book Now</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="chrome-line opacity-0" id="navLine"></div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
+  <!-- bg car image -->
+  <div class="absolute inset-0 parallax-frame" id="heroParallax">
+    <div class="absolute inset-0 bg-gradient-to-b from-ink via-ink/70 to-ink"></div>
+    <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         class="w-full h-full object-cover opacity-40 mix-blend-luminosity" alt="Detailed dark sports car" />
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-tr from-electric/5 via-transparent to-transparent"></div>
+  <!-- glow orbs -->
+  <div class="absolute -top-20 -right-20 w-[480px] h-[480px] rounded-full bg-electric/10 blur-[120px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 w-full">
+    <div class="max-w-3xl">
+      <div class="reveal inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs tracking-widest text-electric uppercase mb-7">
+        <span class="w-1.5 h-1.5 rounded-full bg-electric animate-pulse"></span>
+        Ceramic Coating · Paint Correction · Detailing
+      </div>
+
+      <h1 class="font-display font-extrabold leading-[0.95] tracking-tight text-5xl sm:text-7xl lg:text-8xl mb-6">
+        <span class="block overflow-hidden"><span class="hero-line block">Mirror-deep</span></span>
+        <span class="block overflow-hidden"><span class="hero-line block text-grad">obsession.</span></span>
+      </h1>
+
+      <p class="reveal text-lg text-smoke max-w-xl mb-9 leading-relaxed">
+        We don't wash cars — we restore the soul of the paint. Hand-finished correction,
+        nano-ceramic armor, and a gloss so deep you'll see yourself smile.
+      </p>
+
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <a href="#book" data-cursor
+           class="magnetic group inline-flex items-center gap-2 rounded-full bg-electric px-7 py-4 font-semibold text-ink gloss shadow-glow hover:bg-white transition-colors">
+          Book Your Detail
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="group-hover:translate-x-1 transition-transform"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#services" data-cursor
+           class="inline-flex items-center gap-2 rounded-full border border-white/15 px-7 py-4 font-semibold text-white hover:border-electric hover:text-electric transition">
+          View Packages
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="absolute bottom-7 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-smoke text-xs tracking-widest">
+    <span>SCROLL</span>
+    <span class="w-px h-10 bg-gradient-to-b from-electric to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ STATS STRIP ============ -->
+<section class="relative border-y border-white/5 bg-obsidian/60 backdrop-blur">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-12">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+      <div class="reveal">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl text-grad"><span class="count" data-target="11240">0</span>+</div>
+        <p class="mt-2 text-sm text-smoke tracking-wide">Cars Detailed</p>
+      </div>
+      <div class="reveal">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl text-grad"><span class="count" data-target="49" data-decimals="1" data-suffix="">0</span>★</div>
+        <p class="mt-2 text-sm text-smoke tracking-wide">Average Rating</p>
+      </div>
+      <div class="reveal">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl text-grad"><span class="count" data-target="9">0</span>yr</div>
+        <p class="mt-2 text-sm text-smoke tracking-wide">Coating Warranty</p>
+      </div>
+      <div class="reveal">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl text-grad"><span class="count" data-target="100">0</span>%</div>
+        <p class="mt-2 text-sm text-smoke tracking-wide">Hand Finished</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BEFORE / AFTER ============ -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-12 reveal">
+      <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">The Transformation</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight mb-4">Drag to reveal the<br/>obsidian finish.</h2>
+      <p class="text-smoke">Swirls, oxidation, and dullness — gone. Slide to see what multi-stage paint correction really does.</p>
+    </div>
+
+    <div class="ba-wrap reveal rounded-3xl border border-white/10 shadow-card aspect-[16/10] sm:aspect-[16/8]" id="baWrap">
+      <div class="absolute inset-0 bg-gradient-to-br from-carbon to-ink"></div>
+      <!-- before -->
+      <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           class="absolute inset-0 w-full h-full object-cover grayscale brightness-75 contrast-75" alt="Before detailing" />
+      <span class="absolute top-4 left-4 z-10 rounded-full bg-ink/70 backdrop-blur px-3 py-1 text-xs tracking-widest text-smoke border border-white/10">BEFORE</span>
+      <!-- after clipped -->
+      <div class="ba-after-clip" id="baClip">
+        <div class="ba-after">
+          <div class="absolute inset-0 bg-gradient-to-br from-steel to-ink"></div>
+          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               class="absolute inset-0 w-full h-full object-cover saturate-125" alt="After detailing" />
+          <span class="absolute top-4 right-4 rounded-full bg-electric/90 px-3 py-1 text-xs tracking-widest text-ink font-semibold">AFTER</span>
+        </div>
+      </div>
+      <!-- handle -->
+      <div class="ba-handle" id="baHandle">
+        <div class="ba-knob">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5" stroke="#27E0D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES / PACKAGES ============ -->
+<section id="services" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14 reveal">
+      <div class="max-w-xl">
+        <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">Signature Packages</p>
+        <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">Tiers built for<br/>every level of care.</h2>
+      </div>
+      <p class="text-smoke max-w-sm">From a deep maintenance refresh to a full concours-grade transformation, every package is fully hand-finished in studio.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- card -->
+      <div class="tilt-card reveal group relative rounded-3xl border border-white/10 bg-carbon/60 p-8 shadow-card overflow-hidden" data-cursor>
+        <div class="tilt">
+          <div class="absolute -top-24 -right-24 w-56 h-56 rounded-full bg-electric/0 group-hover:bg-electric/10 blur-3xl transition-all duration-500"></div>
+          <span class="text-xs tracking-[0.3em] text-smoke uppercase">Maintenance</span>
+          <h3 class="font-display font-bold text-2xl mt-3 mb-1">The Refresh</h3>
+          <div class="font-display font-extrabold text-4xl text-grad mb-5">$149</div>
+          <ul class="space-y-3 text-sm text-smoke mb-7">
+            <li class="flex gap-3"><span class="text-electric">✦</span> pH-neutral hand wash & decon</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Wheel & tire deep clean</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Spray sealant gloss boost</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Interior wipe & vacuum</li>
+          </ul>
+          <a href="#book" class="inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:text-electric transition">Book this <span>→</span></a>
+        </div>
+      </div>
+
+      <!-- featured -->
+      <div class="tilt-card reveal group relative rounded-3xl border border-electric/40 bg-gradient-to-b from-steel/70 to-carbon/60 p-8 shadow-glow overflow-hidden md:-translate-y-4" data-cursor>
+        <div class="tilt">
+          <span class="absolute top-6 right-6 rounded-full bg-electric px-3 py-1 text-[10px] font-bold tracking-widest text-ink">POPULAR</span>
+          <span class="text-xs tracking-[0.3em] text-electric uppercase">Correction</span>
+          <h3 class="font-display font-bold text-2xl mt-3 mb-1">The Reflection</h3>
+          <div class="font-display font-extrabold text-4xl text-grad mb-5">$549</div>
+          <ul class="space-y-3 text-sm text-smoke mb-7">
+            <li class="flex gap-3"><span class="text-electric">✦</span> Everything in The Refresh</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Single-stage paint correction</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> 1-year ceramic sealant</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Full interior steam & condition</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Glass & trim restoration</li>
+          </ul>
+          <a href="#book" class="inline-flex items-center gap-2 text-sm font-semibold text-electric">Book this <span>→</span></a>
+        </div>
+      </div>
+
+      <!-- card -->
+      <div class="tilt-card reveal group relative rounded-3xl border border-white/10 bg-carbon/60 p-8 shadow-card overflow-hidden" data-cursor>
+        <div class="tilt">
+          <div class="absolute -top-24 -right-24 w-56 h-56 rounded-full bg-electric/0 group-hover:bg-electric/10 blur-3xl transition-all duration-500"></div>
+          <span class="text-xs tracking-[0.3em] text-smoke uppercase">Concours</span>
+          <h3 class="font-display font-bold text-2xl mt-3 mb-1">The Obsidian</h3>
+          <div class="font-display font-extrabold text-4xl text-grad mb-5">$1,290</div>
+          <ul class="space-y-3 text-sm text-smoke mb-7">
+            <li class="flex gap-3"><span class="text-electric">✦</span> Multi-stage paint correction</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> 9-year nano-ceramic coating</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Wheels-off & caliper detail</li>
+            <li class="flex gap-3"><span class="text-electric">✦</span> Leather recolor & protect</li>
+          </ul>
+          <a href="#book" class="inline-flex items-center gap-2 text-sm font-semibold text-white group-hover:text-electric transition">Book this <span>→</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PACKAGES MARQUEE ============ -->
+<section class="py-10 border-y border-white/5 bg-obsidian/40 overflow-hidden marquee-track">
+  <div class="marquee">
+    <div class="flex items-center gap-12 pr-12 text-2xl sm:text-3xl font-display font-bold text-smoke/60">
+      <span>CERAMIC COATING</span><span class="text-electric">✦</span>
+      <span>PAINT CORRECTION</span><span class="text-electric">✦</span>
+      <span>PAINT PROTECTION FILM</span><span class="text-electric">✦</span>
+      <span>INTERIOR DETAIL</span><span class="text-electric">✦</span>
+      <span>HEADLIGHT RESTORE</span><span class="text-electric">✦</span>
+    </div>
+    <div class="flex items-center gap-12 pr-12 text-2xl sm:text-3xl font-display font-bold text-smoke/60" aria-hidden="true">
+      <span>CERAMIC COATING</span><span class="text-electric">✦</span>
+      <span>PAINT CORRECTION</span><span class="text-electric">✦</span>
+      <span>PAINT PROTECTION FILM</span><span class="text-electric">✦</span>
+      <span>INTERIOR DETAIL</span><span class="text-electric">✦</span>
+      <span>HEADLIGHT RESTORE</span><span class="text-electric">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CERAMIC FEATURE ============ -->
+<section id="ceramic" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="absolute -left-32 top-1/3 w-[420px] h-[420px] rounded-full bg-electric/10 blur-[130px]"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="parallax-frame rounded-3xl overflow-hidden border border-white/10 shadow-card aspect-[4/5]" id="ceramicImg">
+        <div class="absolute inset-0 bg-gradient-to-br from-steel to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-full object-cover" alt="Ceramic coated car surface" />
+        <div class="absolute inset-0 gloss"></div>
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:right-6 rounded-2xl border border-electric/30 bg-ink/80 backdrop-blur px-6 py-4 shadow-glow">
+        <div class="font-display font-extrabold text-3xl text-electric">9H</div>
+        <div class="text-xs text-smoke tracking-wide">Surface Hardness</div>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-electric text-sm tracking-[0.3em] uppercase mb-3">Nano-Ceramic Armor</p>
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl leading-tight mb-6">Protection that<br/>refuses to fade.</h2>
+      <p class="reveal text-smoke mb-9 leading-relaxed">A liquid glass layer bonds at the molecular level — locking in a glass-like gloss, repelling water, grime, and UV for up to nine years. Less washing, more driving, permanent shine.</p>
+
+      <div class="space-y-5">
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-steel border border-white/10 grid place-items-center text-electric">💧</span>
+          <div><h4 class="font-semibold mb-1">Hydrophobic Beading</h4><p class="text-sm text-smoke">Water and contaminants sheet off instantly — self-cleaning in the rain.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-steel border border-white/10 grid place-items-center text-electric">☀️</span>
+          <div><h4 class="font-semibold mb-1">UV & Oxidation Shield</h4><p class="text-sm text-smoke">Stops sun-fade and chemical etching before they ever start.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-steel border border-white/10 grid place-items-center text-electric">✨</span>
+          <div><h4 class="font-semibold mb-1">Candy-Deep Gloss</h4><p class="text-sm text-smoke">Adds visible depth and slickness no wax can ever match.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="relative py-24 sm:py-32 bg-obsidian/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">Why Obsidian</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">Studio standards.<br/>Surgeon's patience.</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7 hover:border-electric/40 transition" data-cursor>
+        <div class="text-electric text-3xl mb-4">01</div>
+        <h3 class="font-display font-bold text-lg mb-2">Climate-Controlled Bay</h3>
+        <p class="text-sm text-smoke">Dust-filtered, temperature-stable lighting tuned to catch every imperfection.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7 hover:border-electric/40 transition" data-cursor>
+        <div class="text-electric text-3xl mb-4">02</div>
+        <h3 class="font-display font-bold text-lg mb-2">Certified Coaters</h3>
+        <p class="text-sm text-smoke">Manufacturer-trained technicians, not a rotating crew of part-timers.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7 hover:border-electric/40 transition" data-cursor>
+        <div class="text-electric text-3xl mb-4">03</div>
+        <h3 class="font-display font-bold text-lg mb-2">Documented Process</h3>
+        <p class="text-sm text-smoke">Paint-depth readings and photo proof at every stage — full transparency.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7 hover:border-electric/40 transition" data-cursor>
+        <div class="text-electric text-3xl mb-4">04</div>
+        <h3 class="font-display font-bold text-lg mb-2">Warranty Backed</h3>
+        <p class="text-sm text-smoke">Registered coatings carry up to a 9-year written guarantee.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section id="gallery" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-12 reveal">
+      <div>
+        <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">Recent Work</p>
+        <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">The gallery.</h2>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="reveal group relative rounded-2xl overflow-hidden aspect-[3/4] border border-white/10 row-span-2 lg:col-span-2 lg:row-span-2 bg-gradient-to-br from-carbon to-ink" data-cursor>
+        <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Gallery 1" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
+        <span class="absolute bottom-4 left-4 text-sm font-semibold opacity-0 group-hover:opacity-100 transition">Ceramic · Matte Coupe</span>
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden aspect-square border border-white/10 bg-gradient-to-br from-carbon to-ink" data-cursor>
+        <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Gallery 2" />
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden aspect-square border border-white/10 bg-gradient-to-br from-carbon to-ink" data-cursor>
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Gallery 3" />
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden aspect-square lg:col-span-2 border border-white/10 bg-gradient-to-br from-carbon to-ink" data-cursor>
+        <img src="https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Gallery 4" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 sm:py-32 bg-obsidian/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-electric text-sm tracking-[0.3em] uppercase mb-3">The Studio</p>
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl leading-tight mb-6">Founded on a refusal<br/>to accept "clean enough."</h2>
+      <p class="reveal text-smoke mb-5 leading-relaxed">Obsidian Auto Atelier began in a single rented bay with one obsession: making paint look better than the day it left the factory. Today we're a boutique studio trusted by collectors, enthusiasts, and anyone who treats their car like it matters.</p>
+      <p class="reveal text-smoke mb-8 leading-relaxed">We take a limited number of vehicles each week — because rushing a finish is the one thing we will never do.</p>
+      <div class="reveal flex flex-wrap gap-8">
+        <div><div class="font-display font-extrabold text-3xl text-grad">By appointment</div><p class="text-sm text-smoke">Limited weekly slots</p></div>
+        <div><div class="font-display font-extrabold text-3xl text-grad">In-house only</div><p class="text-sm text-smoke">Never outsourced</p></div>
+      </div>
+    </div>
+    <div class="reveal relative">
+      <div class="parallax-frame rounded-3xl overflow-hidden border border-white/10 shadow-card aspect-[4/3]" id="aboutImg">
+        <div class="absolute inset-0 bg-gradient-to-br from-steel to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover" alt="Detailing studio" />
+        <div class="absolute inset-0 gloss"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">Owner Words</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">People who can't stop<br/>staring at their cars.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7" data-cursor>
+        <div class="text-electric mb-4">★★★★★</div>
+        <blockquote class="text-smoke leading-relaxed mb-6">"My black GT had swirl marks I thought were permanent. They corrected it to a flawless wet-look mirror. Genuinely speechless."</blockquote>
+        <figcaption class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-electric to-electric2 grid place-items-center text-ink font-bold">M</span><div><div class="font-semibold text-sm">Marcus D.</div><div class="text-xs text-smoke">GT Coupe Owner</div></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-electric/30 bg-gradient-to-b from-steel/60 to-carbon/50 p-7 md:-translate-y-3 shadow-glow" data-cursor>
+        <div class="text-electric mb-4">★★★★★</div>
+        <blockquote class="text-smoke leading-relaxed mb-6">"The ceramic coating has held up two winters and still beads like day one. Worth every cent — and the documentation gave me total peace of mind."</blockquote>
+        <figcaption class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-electric to-electric2 grid place-items-center text-ink font-bold">S</span><div><div class="font-semibold text-sm">Sofia R.</div><div class="text-xs text-smoke">EV Sedan Owner</div></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-white/10 bg-carbon/50 p-7" data-cursor>
+        <div class="text-electric mb-4">★★★★★</div>
+        <blockquote class="text-smoke leading-relaxed mb-6">"Booked The Obsidian for my classic resto. The attention to detail on the trim and glass was on another level. This is craftsmanship."</blockquote>
+        <figcaption class="flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-gradient-to-br from-electric to-electric2 grid place-items-center text-ink font-bold">J</span><div><div class="font-semibold text-sm">Jared P.</div><div class="text-xs text-smoke">Classic Restoration</div></div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 sm:py-32 bg-obsidian/40 border-y border-white/5">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14 reveal">
+      <p class="text-electric text-sm tracking-[0.3em] uppercase mb-3">Questions</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl leading-tight">Good to know.</h2>
+    </div>
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-carbon/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold">How long does a ceramic coating actually last?</span>
+          <span class="faq-icon text-electric text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke text-sm leading-relaxed">Our top-tier nano-ceramic coatings are rated and warrantied for up to nine years with proper maintenance. Lighter sealants last 1–2 years. We'll recommend the right tier for how you drive.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-carbon/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold">Do I need paint correction before coating?</span>
+          <span class="faq-icon text-electric text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke text-sm leading-relaxed">Yes — a coating locks in whatever is underneath, so we correct swirls and defects first. That's why our coating packages always include the appropriate level of correction.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-carbon/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold">How long will my car be in the studio?</span>
+          <span class="faq-icon text-electric text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke text-sm leading-relaxed">A maintenance refresh is typically same-day. Full correction and coating packages take 2–4 days, since each layer needs proper cure time. We never rush a finish.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-carbon/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold">Do you work on EVs, classics, and exotics?</span>
+          <span class="faq-icon text-electric text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke text-sm leading-relaxed">Absolutely. From daily EVs to delicate single-stage classic paint and high-value exotics, we tailor every process to the vehicle. Just mention it when you book.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="book" class="relative py-28 sm:py-36 overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 bg-gradient-to-br from-carbon to-ink"></div>
+    <img src="https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-20 mix-blend-luminosity" alt="CTA background" />
+  </div>
+  <div class="absolute left-1/2 -translate-x-1/2 top-0 w-[600px] h-[600px] rounded-full bg-electric/10 blur-[140px]"></div>
+  <div class="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="reveal font-display font-extrabold text-4xl sm:text-6xl leading-[1.05] mb-6">Ready to see your car<br/><span class="text-grad">the way it should be?</span></h2>
+    <p class="reveal text-smoke text-lg mb-10 max-w-xl mx-auto">Limited weekly slots. Tell us your vehicle and goals — we'll build the perfect package and lock in your appointment.</p>
+    <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#" data-cursor class="magnetic inline-flex items-center gap-2 rounded-full bg-electric px-8 py-4 font-semibold text-ink gloss shadow-glow hover:bg-white transition-colors">
+        Book Your Appointment
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="tel:+10000000000" data-cursor class="inline-flex items-center gap-2 rounded-full border border-white/15 px-8 py-4 font-semibold hover:border-electric hover:text-electric transition">Call the Studio</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative border-t border-white/5 bg-ink">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <span class="inline-grid place-items-center w-9 h-9 rounded-lg bg-steel border border-white/10 font-display font-extrabold text-electric">O</span>
+          <span class="font-display font-extrabold tracking-tight">OBSIDIAN<span class="text-electric">.</span></span>
+        </div>
+        <p class="text-sm text-smoke max-w-xs">Premium detailing & ceramic coating studio. Mirror-deep finishes, hand-built one car at a time.</p>
+      </div>
+      <div>
+        <h4 class="text-xs tracking-[0.3em] text-smoke uppercase mb-4">Services</h4>
+        <ul class="space-y-2 text-sm text-smoke">
+          <li><a href="#services" class="hover:text-electric transition" data-cursor>Ceramic Coating</a></li>
+          <li><a href="#services" class="hover:text-electric transition" data-cursor>Paint Correction</a></li>
+          <li><a href="#services" class="hover:text-electric transition" data-cursor>Interior Detail</a></li>
+          <li><a href="#services" class="hover:text-electric transition" data-cursor>Maintenance Wash</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-xs tracking-[0.3em] text-smoke uppercase mb-4">Studio</h4>
+        <ul class="space-y-2 text-sm text-smoke">
+          <li><a href="#about" class="hover:text-electric transition" data-cursor>Our Story</a></li>
+          <li><a href="#gallery" class="hover:text-electric transition" data-cursor>Gallery</a></li>
+          <li><a href="#faq" class="hover:text-electric transition" data-cursor>FAQ</a></li>
+          <li><a href="#book" class="hover:text-electric transition" data-cursor>Book Now</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-xs tracking-[0.3em] text-smoke uppercase mb-4">Visit</h4>
+        <ul class="space-y-2 text-sm text-smoke">
+          <li>14 Lustre Lane, Bay 7</li>
+          <li>Open Tue–Sat · By appointment</li>
+          <li><a href="#" class="hover:text-electric transition" data-cursor>hello@obsidianatelier.co</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="chrome-line mb-8"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-smoke">
+      <p>© 2026 Obsidian Auto Atelier. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-electric transition" data-cursor>Privacy</a>
+        <a href="#" class="hover:text-electric transition" data-cursor>Terms</a>
+        <a href="#" class="hover:text-electric transition" data-cursor>Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (fine && !reduce) {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; dot.style.left = mx + 'px'; dot.style.top = my + 'px'; });
+    (function loop() {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+
+    // magnetic CTAs
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+
+    // tilt 3D cards
+    document.querySelectorAll('.tilt-card').forEach(card => {
+      const inner = card.querySelector('.tilt');
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        inner.style.transform = `rotateY(${px * 10}deg) rotateX(${-py * 10}deg)`;
+      });
+      card.addEventListener('mouseleave', () => { inner.style.transform = ''; });
+    });
+  }
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const navLine = document.getElementById('navLine');
+  const onScroll = () => {
+    if (window.scrollY > 30) {
+      nav.classList.add('bg-ink/80', 'backdrop-blur-xl');
+      navLine.style.opacity = '1';
+    } else {
+      nav.classList.remove('bg-ink/80', 'backdrop-blur-xl');
+      navLine.style.opacity = '0';
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.parentElement.querySelector('.faq-body');
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  /* ---------- Before / After slider ---------- */
+  (function () {
+    const wrap = document.getElementById('baWrap');
+    const clip = document.getElementById('baClip');
+    const handle = document.getElementById('baHandle');
+    if (!wrap) return;
+    let dragging = false;
+    const setPos = (clientX) => {
+      const r = wrap.getBoundingClientRect();
+      let pct = ((clientX - r.left) / r.width) * 100;
+      pct = Math.max(0, Math.min(100, pct));
+      clip.style.clipPath = `inset(0 0 0 ${pct}%)`;
+      handle.style.left = pct + '%';
+    };
+    const start = e => { dragging = true; setPos((e.touches ? e.touches[0] : e).clientX); };
+    const move = e => { if (dragging) setPos((e.touches ? e.touches[0] : e).clientX); };
+    const end = () => { dragging = false; };
+    wrap.addEventListener('mousedown', start);
+    wrap.addEventListener('touchstart', start, { passive: true });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: true });
+    window.addEventListener('mouseup', end);
+    window.addEventListener('touchend', end);
+  })();
+
+  /* ---------- GSAP reveals + parallax + counts ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // hero headline lines
+      gsap.from('.hero-line', { yPercent: 110, duration: 1.1, ease: 'power4.out', stagger: 0.12, delay: 0.15 });
+
+      // generic reveals
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 86%' }
+        });
+      });
+
+      // parallax frames
+      gsap.utils.toArray('.parallax-frame').forEach(frame => {
+        gsap.to(frame.querySelector('img'), {
+          yPercent: 12, ease: 'none',
+          scrollTrigger: { trigger: frame, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+      // hero deeper parallax
+      const hp = document.getElementById('heroParallax');
+      if (hp) gsap.to(hp, { yPercent: 18, ease: 'none', scrollTrigger: { trigger: hp, start: 'top top', end: 'bottom top', scrub: true } });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+      gsap.set('.hero-line', { yPercent: 0 });
+    }
+
+    // count-ups
+    document.querySelectorAll('.count').forEach(el => {
+      const target = parseFloat(el.dataset.target);
+      const dec = parseInt(el.dataset.decimals || '0', 10);
+      const obj = { v: 0 };
+      const render = () => {
+        let val = dec ? (obj.v / Math.pow(10, dec)) : obj.v;
+        el.textContent = dec ? val.toFixed(dec) : Math.round(obj.v).toLocaleString();
+      };
+      if (reduce) {
+        obj.v = target; render();
+      } else {
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => gsap.to(obj, { v: target, duration: 1.8, ease: 'power2.out', onUpdate: render })
+        });
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

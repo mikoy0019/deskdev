@@ -1,0 +1,25 @@
+@import "tailwindcss";
+/* Premium design system — tokens, themes, components. */
+@import "../styles/nx.css";
+/* DeskDev (/workspace) ships its own stylesheet — src/deskdev/index.css. */
+@source not "../deskdev";
+/* The template gallery's pages in public/ are standalone HTML with their own
+   styles. Scanned, their classes were more than half of this render-blocking
+   file's utilities, which every site page paid for. */
+@source not "../../public";
+
+/* Site-wide reduced motion: fewer and gentler, not zero.
+   - Keyframe animations collapse (CSS can't tell a fade from a slide there).
+   - Transitions keep their timing but only for properties that don't move
+     anything: colour, opacity, shadow, filter. Transform, translate, scale,
+     size and clip changes therefore land at once, while a hover tint or a
+     fading menu still eases.
+   Framer Motion honours the same preference through MotionConfig + the kit. */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, opacity, box-shadow, filter, backdrop-filter, visibility !important;
+    }
+  }
+}

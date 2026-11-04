@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hearthstone &amp; Co. — Kitchen &amp; Bath Remodeling Done Right</title>
+<meta name="description" content="Hearthstone &amp; Co. builds award-winning kitchen and bath remodels for homeowners who refuse to settle. Craftsmanship, fixed pricing, and a finish you'll love for decades." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ash:    '#14110E',
+          coal:   '#1E1A15',
+          stone:  '#2A2420',
+          linen:  '#F4EEE6',
+          parch:  '#E9E0D2',
+          ember:  '#D9633B',   // warm accent
+          emberD: '#B84E2A',
+          clay:   '#C99B6E',
+          sage:   '#6E7A5E',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans:    ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+        boxShadow: {
+          lift: '0 30px 60px -25px rgba(20,17,14,0.55)',
+          card: '0 18px 40px -20px rgba(20,17,14,0.45)',
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#F4EEE6; color:#14110E; font-family:'Plus Jakarta Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection { background:#D9633B; color:#F4EEE6; }
+
+  .font-display { font-family:'Fraunces',serif; }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollX 28s linear infinite; }
+  @keyframes scrollX { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .marquee-wrap:hover .marquee { animation-play-state:paused; }
+
+  /* Reveal base (GSAP overrides) */
+  .reveal { opacity:0; transform:translateY(34px); }
+
+  /* Before/After slider */
+  .ba { position:relative; user-select:none; touch-action:none; overflow:hidden; }
+  .ba-after { position:absolute; inset:0; overflow:hidden; width:50%; will-change:width; }
+  .ba-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .ba-after .ba-img { width:auto; }
+  .ba-handle { position:absolute; top:0; bottom:0; left:50%; width:2px; background:#F4EEE6;
+    transform:translateX(-1px); z-index:20; will-change:left; }
+  .ba-knob { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:54px; height:54px; border-radius:9999px; background:#D9633B; color:#F4EEE6;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 10px 30px -8px rgba(20,17,14,.6);
+    border:3px solid #F4EEE6; cursor:ew-resize; }
+  .ba-tag { position:absolute; bottom:14px; z-index:15; font-size:11px; letter-spacing:.18em;
+    text-transform:uppercase; font-weight:700; padding:6px 12px; border-radius:9999px;
+    background:rgba(20,17,14,.62); color:#F4EEE6; backdrop-filter:blur(4px); }
+
+  /* Magnetic / tilt helpers */
+  .magnetic { will-change:transform; }
+  .tilt { transform-style:preserve-3d; will-change:transform; transition:transform .12s ease; }
+
+  /* FAQ accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .nav-link { position:relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:#D9633B; transition:width .3s ease; }
+  .nav-link:hover::after { width:100%; }
+
+  .grain::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation:none; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body class="grain">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <nav class="mt-4 flex items-center justify-between rounded-2xl border border-ash/10 bg-linen/80 backdrop-blur-md px-5 py-3 shadow-card">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ash text-ember font-display font-black text-lg">H</span>
+        <span class="font-display font-700 text-lg tracking-tight">Hearthstone<span class="text-ember">.</span></span>
+      </a>
+      <div class="hidden lg:flex items-center gap-8 text-sm font-600 text-ash/80">
+        <a href="#work" class="nav-link">Our Work</a>
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#process" class="nav-link">Process</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="tel:+15125550148" class="hidden md:block text-sm font-700 text-ash/80 hover:text-ember transition">(512) 555-0148</a>
+        <a href="#quote" id="navQuote" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ember px-4 py-2.5 text-sm font-700 text-linen shadow-lift hover:bg-emberD transition">
+          Free Quote
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-32 md:pt-40 pb-20 md:pb-28 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-parch via-linen to-linen"></div>
+  <div class="absolute -top-20 -right-24 -z-10 w-[28rem] h-[28rem] rounded-full bg-ember/10 blur-3xl"></div>
+  <div class="absolute top-40 -left-24 -z-10 w-[24rem] h-[24rem] rounded-full bg-clay/15 blur-3xl"></div>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+    <div class="lg:col-span-6">
+      <span class="inline-flex items-center gap-2 rounded-full border border-ash/15 bg-linen px-4 py-1.5 text-xs font-700 tracking-wide uppercase text-ash/70 reveal">
+        <span class="w-2 h-2 rounded-full bg-ember"></span>
+        Austin's kitchen &amp; bath specialists
+      </span>
+
+      <h1 class="mt-6 font-display font-900 leading-[0.95] tracking-tight text-ash text-5xl sm:text-6xl lg:text-[4.6rem]">
+        <span class="hero-line block">The room you</span>
+        <span class="hero-line block">walk into and</span>
+        <span class="hero-line block">never want to <span class="text-ember italic">leave.</span></span>
+      </h1>
+
+      <p class="mt-6 max-w-lg text-lg text-ash/70 reveal">
+        We remodel kitchens and baths that get the math right the first time — honest fixed pricing,
+        master craftsmen on site, and a finish built to outlast the trend that inspired it.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4 reveal">
+        <a href="#quote" id="heroQuote" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ash px-6 py-4 text-base font-700 text-linen shadow-lift hover:bg-stone transition">
+          Get my free quote
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#work" class="inline-flex items-center gap-2 rounded-xl border border-ash/20 px-6 py-4 text-base font-700 text-ash hover:border-ember hover:text-ember transition">
+          See recent work
+        </a>
+      </div>
+
+      <div class="mt-9 flex items-center gap-5 reveal">
+        <div class="flex -space-x-3">
+          <span class="w-10 h-10 rounded-full border-2 border-linen bg-clay grid place-items-center font-700 text-ash text-sm">MR</span>
+          <span class="w-10 h-10 rounded-full border-2 border-linen bg-sage grid place-items-center font-700 text-linen text-sm">JL</span>
+          <span class="w-10 h-10 rounded-full border-2 border-linen bg-ember grid place-items-center font-700 text-linen text-sm">PD</span>
+          <span class="w-10 h-10 rounded-full border-2 border-linen bg-ash grid place-items-center font-700 text-linen text-sm">+9</span>
+        </div>
+        <div class="text-sm">
+          <div class="flex items-center gap-1 text-ember">
+            ★★★★★ <span class="ml-1 font-700 text-ash">4.9</span>
+          </div>
+          <p class="text-ash/60">from 312 Austin homeowners</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 relative">
+      <div data-parallax class="relative rounded-[2rem] overflow-hidden shadow-lift border border-ash/10 bg-gradient-to-br from-stone to-ash aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Newly remodeled kitchen"
+             class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ash/55 via-transparent to-transparent"></div>
+      </div>
+      <!-- floating credential card -->
+      <div data-parallax-soft class="absolute -bottom-6 -left-4 sm:left-6 rounded-2xl bg-linen border border-ash/10 shadow-lift px-5 py-4 flex items-center gap-4">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.4 7.2 17l.9-5.4L4.2 7.7l5.4-.8z"/></svg>
+        </div>
+        <div>
+          <p class="font-700 text-ash leading-tight">Licensed &amp; insured</p>
+          <p class="text-xs text-ash/60">TX #RB-204871 · 10-yr workmanship</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="border-y border-ash/10 bg-coal text-linen">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-12 grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl md:text-5xl text-ember"><span class="count" data-to="640">0</span>+</div>
+      <p class="mt-1 text-sm text-linen/60">Remodels completed</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl md:text-5xl text-ember"><span class="count" data-to="17">0</span></div>
+      <p class="mt-1 text-sm text-linen/60">Years building in Austin</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl md:text-5xl text-ember"><span class="count" data-to="4.9" data-dec="1">0</span></div>
+      <p class="mt-1 text-sm text-linen/60">Average client rating</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl md:text-5xl text-ember"><span class="count" data-to="98">0</span>%</div>
+      <p class="mt-1 text-sm text-linen/60">On-time, on-budget</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES MARQUEE ============ -->
+<div class="marquee-wrap overflow-hidden bg-ash text-linen py-4 border-b border-linen/10">
+  <div class="marquee items-center gap-10 text-sm md:text-base font-700 tracking-wide uppercase">
+    <span class="flex items-center gap-10">
+      <span>Kitchen Remodels</span><span class="text-ember">◆</span>
+      <span>Master Baths</span><span class="text-ember">◆</span>
+      <span>Custom Cabinetry</span><span class="text-ember">◆</span>
+      <span>Quartz &amp; Stone</span><span class="text-ember">◆</span>
+      <span>Tile &amp; Flooring</span><span class="text-ember">◆</span>
+      <span>Lighting Design</span><span class="text-ember">◆</span>
+      <span>Open-Concept Layouts</span><span class="text-ember">◆</span>
+    </span>
+    <span class="flex items-center gap-10" aria-hidden="true">
+      <span>Kitchen Remodels</span><span class="text-ember">◆</span>
+      <span>Master Baths</span><span class="text-ember">◆</span>
+      <span>Custom Cabinetry</span><span class="text-ember">◆</span>
+      <span>Quartz &amp; Stone</span><span class="text-ember">◆</span>
+      <span>Tile &amp; Flooring</span><span class="text-ember">◆</span>
+      <span>Lighting Design</span><span class="text-ember">◆</span>
+      <span>Open-Concept Layouts</span><span class="text-ember">◆</span>
+    </span>
+  </div>
+</div>
+
+<!-- ============ BEFORE / AFTER FEATURE ============ -->
+<section class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-5">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">Drag to compare</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">
+        A dated galley, reborn in <span class="text-ember italic">19 days.</span>
+      </h2>
+      <p class="mt-5 text-lg text-ash/70 reveal">
+        The Delgado kitchen on Tarrytown went from a closed-off 1980s galley to a sun-filled
+        open kitchen with a 9-foot island. Same footprint — completely different life.
+        Grab the handle and slide.
+      </p>
+      <ul class="mt-7 space-y-3 reveal">
+        <li class="flex items-start gap-3"><span class="mt-1 text-ember">✓</span><span class="text-ash/80">Wall removed, structural beam installed</span></li>
+        <li class="flex items-start gap-3"><span class="mt-1 text-ember">✓</span><span class="text-ash/80">Custom shaker cabinetry to the ceiling</span></li>
+        <li class="flex items-start gap-3"><span class="mt-1 text-ember">✓</span><span class="text-ash/80">Honed quartz waterfall island</span></li>
+      </ul>
+    </div>
+
+    <div class="lg:col-span-7 reveal">
+      <div id="ba" class="ba rounded-[1.75rem] overflow-hidden shadow-lift border border-ash/10 aspect-[16/11]">
+        <!-- BEFORE (full base) -->
+        <div class="absolute inset-0 bg-gradient-to-br from-stone to-ash">
+          <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Kitchen before remodel"
+               class="ba-img" style="filter:grayscale(.35) brightness(.82)" />
+        </div>
+        <span class="ba-tag right-4">Before</span>
+        <!-- AFTER (clipped overlay) -->
+        <div class="ba-after" id="baAfter">
+          <div class="absolute inset-0 bg-gradient-to-br from-clay to-stone" style="width:100vw;max-width:none">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Kitchen after remodel"
+                 class="ba-img" />
+          </div>
+          <span class="ba-tag left-4">After</span>
+        </div>
+        <!-- HANDLE -->
+        <div class="ba-handle" id="baHandle">
+          <div class="ba-knob">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>
+          </div>
+        </div>
+      </div>
+      <p class="mt-3 text-center text-xs text-ash/50 tracking-wide">Delgado Residence · Tarrytown, Austin TX</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES GRID ============ -->
+<section id="services" class="py-20 md:py-28 bg-parch border-y border-ash/10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">What we build</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">
+        Two rooms. Endless possibility.
+      </h2>
+      <p class="mt-4 text-lg text-ash/70 reveal">We specialize — so every detail of your kitchen and bath gets the attention a generalist can't give it.</p>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="tilt-card reveal group rounded-2xl bg-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember group-hover:bg-ember group-hover:text-linen transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M3 9V5a2 2 0 012-2h14a2 2 0 012 2v4M3 9v10a2 2 0 002 2h14a2 2 0 002-2V9M9 13h6"/></svg>
+        </div>
+        <h3 class="mt-5 font-display font-700 text-xl text-ash">Full Kitchen Remodels</h3>
+        <p class="mt-2 text-ash/65 text-[15px]">Layout, cabinetry, countertops, lighting, and appliances — managed end to end by one crew.</p>
+      </article>
+
+      <article class="tilt-card reveal group rounded-2xl bg-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember group-hover:bg-ember group-hover:text-linen transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7V5a3 3 0 016 0M4 10h16l-1 8a2 2 0 01-2 2H7a2 2 0 01-2-2z"/><path d="M9 14v2M15 14v2"/></svg>
+        </div>
+        <h3 class="mt-5 font-display font-700 text-xl text-ash">Luxury Bath Suites</h3>
+        <p class="mt-2 text-ash/65 text-[15px]">Wet rooms, freestanding tubs, curbless showers, and heated tile floors done watertight.</p>
+      </article>
+
+      <article class="tilt-card reveal group rounded-2xl bg-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember group-hover:bg-ember group-hover:text-linen transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 10h16M10 10v10M4 14h6"/></svg>
+        </div>
+        <h3 class="mt-5 font-display font-700 text-xl text-ash">Custom Cabinetry</h3>
+        <p class="mt-2 text-ash/65 text-[15px]">Built in our Austin shop to the millimeter — soft-close everything, no filler panels.</p>
+      </article>
+
+      <article class="tilt-card reveal group rounded-2xl bg-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember group-hover:bg-ember group-hover:text-linen transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l9-18 9 18z"/><path d="M3 21h18"/></svg>
+        </div>
+        <h3 class="mt-5 font-display font-700 text-xl text-ash">Stone &amp; Quartz</h3>
+        <p class="mt-2 text-ash/65 text-[15px]">Slab selection, templating, and seamless installs with waterfall and mitered edges.</p>
+      </article>
+
+      <article class="tilt-card reveal group rounded-2xl bg-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow">
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember/15 text-ember group-hover:bg-ember group-hover:text-linen transition">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2M5 5l1.5 1.5M19 5l-1.5 1.5M9 21h6M10 21v-3a4 4 0 10-1.5-7.7M14 21v-3"/></svg>
+        </div>
+        <h3 class="mt-5 font-display font-700 text-xl text-ash">Lighting &amp; Design</h3>
+        <p class="mt-2 text-ash/65 text-[15px]">In-house designer pairs you with a 3D plan before a single demo wall comes down.</p>
+      </article>
+
+      <article class="tilt-card reveal group rounded-2xl bg-ash text-linen border border-ash/10 p-7 shadow-card hover:shadow-lift transition-shadow flex flex-col justify-between">
+        <div>
+          <h3 class="font-display font-700 text-xl">Not sure where to start?</h3>
+          <p class="mt-2 text-linen/70 text-[15px]">Book a free in-home consult and we'll walk every option with you — no pressure.</p>
+        </div>
+        <a href="#quote" class="mt-5 inline-flex items-center gap-2 font-700 text-ember hover:gap-3 transition-all">
+          Book consult
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative reveal">
+      <div data-parallax-soft class="rounded-[1.75rem] overflow-hidden shadow-lift border border-ash/10 bg-gradient-to-br from-stone to-ash aspect-[5/4]">
+        <img src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Craftsman at work"
+             class="absolute inset-0 w-full h-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 right-4 sm:-right-6 rounded-2xl bg-ember text-linen px-6 py-5 shadow-lift">
+        <div class="font-display font-900 text-3xl">0</div>
+        <p class="text-xs font-600 text-linen/85 mt-1 max-w-[8rem]">hidden change-orders, guaranteed in writing</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">Why Hearthstone</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">
+        Built like it's our own home.
+      </h2>
+      <p class="mt-5 text-lg text-ash/70 reveal">
+        Most remodels go sideways for two reasons: surprise costs and crews who vanish.
+        We fixed both — fixed pricing locked before demo, and the same lead carpenter
+        on your project from day one to walkthrough.
+      </p>
+
+      <div class="mt-8 grid sm:grid-cols-2 gap-6">
+        <div class="reveal">
+          <div class="text-ember font-display font-900 text-2xl">01</div>
+          <h4 class="mt-1 font-700 text-ash">Fixed pricing</h4>
+          <p class="text-sm text-ash/65 mt-1">Your number is the number. Allowances are spelled out line by line.</p>
+        </div>
+        <div class="reveal">
+          <div class="text-ember font-display font-900 text-2xl">02</div>
+          <h4 class="mt-1 font-700 text-ash">One dedicated crew</h4>
+          <p class="text-sm text-ash/65 mt-1">No subbed-out mystery teams. You'll know everyone by name.</p>
+        </div>
+        <div class="reveal">
+          <div class="text-ember font-display font-900 text-2xl">03</div>
+          <h4 class="mt-1 font-700 text-ash">Daily progress app</h4>
+          <p class="text-sm text-ash/65 mt-1">Photos, schedule, and approvals in your pocket every evening.</p>
+        </div>
+        <div class="reveal">
+          <div class="text-ember font-display font-900 text-2xl">04</div>
+          <h4 class="mt-1 font-700 text-ash">10-year warranty</h4>
+          <p class="text-sm text-ash/65 mt-1">We stand behind the workmanship long after we hand you the keys.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="py-20 md:py-28 bg-coal text-linen">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">How it works</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight reveal">Three steps to your new room.</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-8 relative">
+      <div class="hidden md:block absolute top-8 left-[16%] right-[16%] h-px bg-linen/15"></div>
+
+      <div class="reveal relative">
+        <div class="grid place-items-center w-16 h-16 rounded-2xl bg-ember text-linen font-display font-900 text-2xl shadow-lift">1</div>
+        <h3 class="mt-6 font-display font-700 text-2xl">Design &amp; quote</h3>
+        <p class="mt-2 text-linen/65">We measure, listen, and build a 3D plan with a fixed price — usually within a week of your consult.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="grid place-items-center w-16 h-16 rounded-2xl bg-ember text-linen font-display font-900 text-2xl shadow-lift">2</div>
+        <h3 class="mt-6 font-display font-700 text-2xl">Build &amp; update</h3>
+        <p class="mt-2 text-linen/65">Your dedicated crew starts on the scheduled day. You get a photo recap every evening.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="grid place-items-center w-16 h-16 rounded-2xl bg-ember text-linen font-display font-900 text-2xl shadow-lift">3</div>
+        <h3 class="mt-6 font-display font-700 text-2xl">Reveal &amp; warranty</h3>
+        <p class="mt-2 text-linen/65">Final walkthrough, punch-list cleared, and a 10-year warranty handed over with the keys.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECENT PROJECTS ============ -->
+<section id="work" class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-xl">
+        <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">Recent work</span>
+        <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">Rooms we're proud of.</h2>
+      </div>
+      <a href="#quote" class="reveal inline-flex items-center gap-2 font-700 text-ash hover:text-ember transition">
+        Start yours
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- project card -->
+      <a href="#quote" class="proj reveal group block rounded-2xl overflow-hidden border border-ash/10 bg-gradient-to-br from-stone to-ash shadow-card hover:shadow-lift transition-shadow">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Tarrytown kitchen"
+               class="proj-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ash/80 via-ash/10 to-transparent"></div>
+          <div class="absolute bottom-0 p-5 text-linen">
+            <span class="text-xs font-700 uppercase tracking-wide text-ember">Kitchen</span>
+            <h3 class="font-display font-700 text-xl mt-1">Tarrytown Galley</h3>
+            <p class="text-sm text-linen/70">19 days · $84k</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="#quote" class="proj reveal group block rounded-2xl overflow-hidden border border-ash/10 bg-gradient-to-br from-stone to-ash shadow-card hover:shadow-lift transition-shadow">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Clarksville kitchen"
+               class="proj-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ash/80 via-ash/10 to-transparent"></div>
+          <div class="absolute bottom-0 p-5 text-linen">
+            <span class="text-xs font-700 uppercase tracking-wide text-ember">Kitchen</span>
+            <h3 class="font-display font-700 text-xl mt-1">Clarksville Open Plan</h3>
+            <p class="text-sm text-linen/70">26 days · $112k</p>
+          </div>
+        </div>
+      </a>
+
+      <a href="#quote" class="proj reveal group block rounded-2xl overflow-hidden border border-ash/10 bg-gradient-to-br from-stone to-ash shadow-card hover:shadow-lift transition-shadow">
+        <div class="relative aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1556909212-d5b604d0c90d?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Westlake master bath"
+               class="proj-img w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ash/80 via-ash/10 to-transparent"></div>
+          <div class="absolute bottom-0 p-5 text-linen">
+            <span class="text-xs font-700 uppercase tracking-wide text-ember">Bath</span>
+            <h3 class="font-display font-700 text-xl mt-1">Westlake Wet Room</h3>
+            <p class="text-sm text-linen/70">14 days · $48k</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-20 md:py-28 bg-parch border-y border-ash/10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-5 relative reveal">
+      <div class="rounded-[1.75rem] overflow-hidden shadow-lift border border-ash/10 bg-gradient-to-br from-stone to-ash aspect-square">
+        <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Hearthstone founders"
+             class="absolute inset-0 w-full h-full object-cover" />
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">Our story</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">
+        A family trade, sharpened for modern homes.
+      </h2>
+      <p class="mt-5 text-lg text-ash/70 reveal">
+        Hearthstone &amp; Co. started in 2009 when two brothers — a cabinetmaker and a project
+        manager — got tired of watching homeowners get burned by remodels that ran double the
+        quote. They built a company around one rule: the price we shake on is the price you pay.
+      </p>
+      <p class="mt-4 text-ash/70 reveal">
+        Seventeen years and 640 rooms later, that rule still holds. We're a tight team of master
+        carpenters, tile-setters, and one slightly obsessive designer who all live within
+        twenty minutes of the homes we work on.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3 reveal">
+        <span class="rounded-full bg-linen border border-ash/15 px-4 py-2 text-sm font-600 text-ash/80">EPA Lead-Safe Certified</span>
+        <span class="rounded-full bg-linen border border-ash/15 px-4 py-2 text-sm font-600 text-ash/80">NKBA Member</span>
+        <span class="rounded-full bg-linen border border-ash/15 px-4 py-2 text-sm font-600 text-ash/80">BBB A+ Rated</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">What homeowners say</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">Don't take our word for it.</h2>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl bg-linen border border-ash/10 p-7 shadow-card">
+        <div class="text-ember">★★★★★</div>
+        <blockquote class="mt-4 text-ash/80 leading-relaxed">"They quoted $84k and the final invoice was $84k. After three contractor horror stories, I almost cried. The kitchen is unreal."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-clay grid place-items-center font-700 text-ash">MD</span>
+          <div><p class="font-700 text-ash text-sm">Maria Delgado</p><p class="text-xs text-ash/55">Tarrytown</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-2xl bg-ash text-linen p-7 shadow-lift md:-translate-y-3">
+        <div class="text-ember">★★★★★</div>
+        <blockquote class="mt-4 text-linen/85 leading-relaxed">"The daily photo updates kept me sane while traveling for work. I approved finishes from a hotel in Denver. Genuinely the smoothest project I've run."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-ember grid place-items-center font-700 text-linen">JL</span>
+          <div><p class="font-700 text-sm">Jordan Lee</p><p class="text-xs text-linen/55">Clarksville</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-2xl bg-linen border border-ash/10 p-7 shadow-card">
+        <div class="text-ember">★★★★★</div>
+        <blockquote class="mt-4 text-ash/80 leading-relaxed">"Our master bath had a hidden leak nightmare. They found it, showed me photos, and still finished on the original date. Pros, top to bottom."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-sage grid place-items-center font-700 text-linen">PD</span>
+          <div><p class="font-700 text-ash text-sm">Priya &amp; Dev</p><p class="text-xs text-ash/55">Westlake Hills</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 md:py-28 bg-parch border-y border-ash/10">
+  <div class="max-w-3xl mx-auto px-5 md:px-8">
+    <div class="text-center">
+      <span class="text-sm font-800 tracking-[0.2em] uppercase text-ember reveal">Good questions</span>
+      <h2 class="mt-4 font-display font-900 text-4xl md:text-5xl leading-tight text-ash reveal">Before you book.</h2>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faqList">
+      <!-- item -->
+      <div class="faq reveal rounded-2xl bg-linen border border-ash/10 overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-700 text-ash text-lg">How accurate is the fixed quote, really?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-ember/15 text-ember transition-transform">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ash/70">Extremely. We open walls during the design phase whenever possible and spell out every allowance in writing. Barring a homeowner-requested change, your number doesn't move.</p></div>
+      </div>
+
+      <div class="faq reveal rounded-2xl bg-linen border border-ash/10 overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-700 text-ash text-lg">How long does a kitchen remodel take?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-ember/15 text-ember transition-transform">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ash/70">Most kitchens run three to five weeks on site once materials arrive. Baths typically land in two to three. We give you a day-by-day schedule before demo begins.</p></div>
+      </div>
+
+      <div class="faq reveal rounded-2xl bg-linen border border-ash/10 overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-700 text-ash text-lg">Can I live in the home during the work?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-ember/15 text-ember transition-transform">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ash/70">Almost always, yes. We set up dust barriers and a temporary kitchen station, and we clean the site every single evening before we leave.</p></div>
+      </div>
+
+      <div class="faq reveal rounded-2xl bg-linen border border-ash/10 overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-700 text-ash text-lg">Do you help with design and materials?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-ember/15 text-ember transition-transform">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ash/70">Yes — our in-house designer builds a 3D plan and walks you through finishes at our showroom. No hunting for tile across town unless you want to.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA / QUOTE ============ -->
+<section id="quote" class="py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-5 md:px-8">
+    <div class="relative rounded-[2rem] overflow-hidden bg-ash text-linen shadow-lift">
+      <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-ember/25 blur-3xl"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-clay/15 blur-3xl"></div>
+      <div class="relative grid lg:grid-cols-2 gap-10 p-8 md:p-14 items-center">
+        <div>
+          <h2 class="font-display font-900 text-4xl md:text-5xl leading-tight reveal">
+            Let's price your dream room — <span class="text-ember italic">free.</span>
+          </h2>
+          <p class="mt-5 text-linen/70 text-lg reveal">
+            Tell us about your space and we'll bring a fixed quote and 3D concept to your kitchen table. No fees, no pressure.
+          </p>
+          <ul class="mt-7 space-y-2 text-linen/80 reveal">
+            <li class="flex items-center gap-3"><span class="text-ember">✓</span> Response within one business day</li>
+            <li class="flex items-center gap-3"><span class="text-ember">✓</span> Fixed, itemized pricing</li>
+            <li class="flex items-center gap-3"><span class="text-ember">✓</span> Serving greater Austin &amp; surrounds</li>
+          </ul>
+        </div>
+
+        <form class="reveal rounded-2xl bg-linen/5 border border-linen/15 backdrop-blur p-6 space-y-4" onsubmit="event.preventDefault(); this.reset(); document.getElementById('formMsg').classList.remove('hidden');">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <input type="text" required placeholder="Full name" class="w-full rounded-xl bg-linen/10 border border-linen/20 px-4 py-3 text-linen placeholder-linen/40 focus:outline-none focus:border-ember transition" />
+            <input type="tel" required placeholder="Phone" class="w-full rounded-xl bg-linen/10 border border-linen/20 px-4 py-3 text-linen placeholder-linen/40 focus:outline-none focus:border-ember transition" />
+          </div>
+          <input type="email" required placeholder="Email address" class="w-full rounded-xl bg-linen/10 border border-linen/20 px-4 py-3 text-linen placeholder-linen/40 focus:outline-none focus:border-ember transition" />
+          <select required class="w-full rounded-xl bg-linen/10 border border-linen/20 px-4 py-3 text-linen focus:outline-none focus:border-ember transition">
+            <option value="" class="text-ash">Project type…</option>
+            <option class="text-ash">Kitchen remodel</option>
+            <option class="text-ash">Master bath</option>
+            <option class="text-ash">Both kitchen &amp; bath</option>
+            <option class="text-ash">Not sure yet</option>
+          </select>
+          <button id="formQuote" type="submit" class="magnetic w-full rounded-xl bg-ember px-6 py-4 font-700 text-linen hover:bg-emberD transition">
+            Request my free quote
+          </button>
+          <p id="formMsg" class="hidden text-center text-sm text-ember font-600">Thanks! We'll reach out within one business day.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-coal text-linen pt-16 pb-8 border-t border-linen/10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-1">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-linen text-ember font-display font-black text-lg">H</span>
+          <span class="font-display font-700 text-lg">Hearthstone<span class="text-ember">.</span></span>
+        </a>
+        <p class="mt-4 text-sm text-linen/55 max-w-xs">Kitchen &amp; bath remodeling built on fixed pricing and craftsmanship you can stand on.</p>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm uppercase tracking-wide text-linen/80">Services</h4>
+        <ul class="mt-4 space-y-2 text-sm text-linen/55">
+          <li><a href="#services" class="hover:text-ember transition">Kitchen Remodels</a></li>
+          <li><a href="#services" class="hover:text-ember transition">Bath Suites</a></li>
+          <li><a href="#services" class="hover:text-ember transition">Custom Cabinetry</a></li>
+          <li><a href="#services" class="hover:text-ember transition">Stone &amp; Quartz</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm uppercase tracking-wide text-linen/80">Company</h4>
+        <ul class="mt-4 space-y-2 text-sm text-linen/55">
+          <li><a href="#work" class="hover:text-ember transition">Our Work</a></li>
+          <li><a href="#about" class="hover:text-ember transition">About</a></li>
+          <li><a href="#process" class="hover:text-ember transition">Process</a></li>
+          <li><a href="#faq" class="hover:text-ember transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm uppercase tracking-wide text-linen/80">Get in touch</h4>
+        <ul class="mt-4 space-y-2 text-sm text-linen/55">
+          <li><a href="tel:+15125550148" class="hover:text-ember transition">(512) 555-0148</a></li>
+          <li><a href="mailto:hello@hearthstone.co" class="hover:text-ember transition">hello@hearthstone.co</a></li>
+          <li>1408 Cedar Mill Rd<br/>Austin, TX 78704</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-linen/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-linen/45">
+      <p>© 2026 Hearthstone &amp; Co. · TX License #RB-204871. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="hover:text-ember transition">Privacy</a>
+        <a href="#" class="hover:text-ember transition">Terms</a>
+        <a href="#" class="hover:text-ember transition">Warranty</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) nav.firstElementChild.firstElementChild.classList.add('shadow-lift');
+    else nav.firstElementChild.firstElementChild.classList.remove('shadow-lift');
+  };
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---------- BEFORE / AFTER slider ---------- */
+  const ba = document.getElementById('ba');
+  if (ba) {
+    const after = document.getElementById('baAfter');
+    const handle = document.getElementById('baHandle');
+    let dragging = false;
+    const setPos = (clientX) => {
+      const r = ba.getBoundingClientRect();
+      let pct = ((clientX - r.left) / r.width) * 100;
+      pct = Math.max(2, Math.min(98, pct));
+      after.style.width = pct + '%';
+      handle.style.left = pct + '%';
+    };
+    const start = (e) => { dragging = true; ba.style.cursor='ew-resize'; };
+    const move  = (e) => { if(!dragging) return; const x = e.touches ? e.touches[0].clientX : e.clientX; setPos(x); };
+    const end   = () => { dragging = false; ba.style.cursor=''; };
+
+    handle.addEventListener('mousedown', start);
+    ba.addEventListener('mousedown', (e)=>{ start(e); setPos(e.clientX); });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    handle.addEventListener('touchstart', start, {passive:true});
+    ba.addEventListener('touchstart', (e)=>{ start(e); setPos(e.touches[0].clientX); }, {passive:true});
+    window.addEventListener('touchmove', move, {passive:true});
+    window.addEventListener('touchend', end);
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-body').forEach(b=>{ b.style.maxHeight='0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i=>{ i.style.transform='rotate(0deg)'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(135deg)'; }
+    });
+  });
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(el=>{
+      el.addEventListener('mousemove', (e)=>{
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${x*0.25}px, ${y*0.35}px)`;
+      });
+      el.addEventListener('mouseleave', ()=>{ el.style.transform='translate(0,0)'; el.style.transition='transform .4s ease'; setTimeout(()=>el.style.transition='',400); });
+    });
+
+    /* ---------- Card tilt ---------- */
+    document.querySelectorAll('.tilt-card').forEach(card=>{
+      card.classList.add('tilt');
+      card.addEventListener('mousemove', (e)=>{
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - 0.5;
+        const py = (e.clientY - r.top)/r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateX(${-py*6}deg) rotateY(${px*8}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', ()=>{ card.style.transform='perspective(800px) rotateX(0) rotateY(0)'; });
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // Hero headline lines
+      gsap.set('.hero-line', {yPercent:120, opacity:0});
+      gsap.to('.hero-line', {yPercent:0, opacity:1, duration:1, ease:'power4.out', stagger:0.12, delay:0.15});
+
+      // Generic reveals
+      gsap.utils.toArray('.reveal').forEach(el=>{
+        gsap.to(el, {
+          opacity:1, y:0, duration:0.9, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 86%' }
+        });
+      });
+
+      // Parallax containers
+      gsap.utils.toArray('[data-parallax]').forEach(el=>{
+        gsap.to(el, { yPercent:-8, ease:'none',
+          scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }});
+      });
+      gsap.utils.toArray('[data-parallax-soft]').forEach(el=>{
+        gsap.to(el, { yPercent:-5, ease:'none',
+          scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }});
+      });
+    } else {
+      gsap.set('.reveal, .hero-line', {opacity:1, y:0, yPercent:0});
+    }
+
+    /* ---------- Count-ups ---------- */
+    document.querySelectorAll('.count').forEach(el=>{
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.dec || '0', 10);
+      if (reduce) { el.textContent = to.toFixed(dec); return; }
+      const obj = {v:0};
+      ScrollTrigger.create({
+        trigger: el, start:'top 90%', once:true,
+        onEnter: ()=> gsap.to(obj, {v:to, duration:1.8, ease:'power2.out',
+          onUpdate:()=>{ el.textContent = dec ? obj.v.toFixed(dec) : Math.round(obj.v); }})
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

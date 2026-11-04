@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Northvale — Insurance, Reimagined for Real Life</title>
+<meta name="description" content="Northvale is the digital insurance company that protects your home, car and life in minutes — clear pricing, instant quotes, and claims paid the same day." />
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          ink: '#0d1b2a',
+          navy: '#15324d',
+          mist: '#f3f7fb',
+          haze: '#e3eef6',
+          ocean: {
+            50: '#eef6fb',
+            100: '#d7ecf6',
+            200: '#aed8ec',
+            300: '#79bedd',
+            400: '#3f9ec9',
+            500: '#1f7fae',
+            600: '#15648e',
+            700: '#134f70',
+            800: '#15425d',
+            900: '#15324d',
+          },
+          sage: {
+            100: '#dff3ea',
+            200: '#b6e3d0',
+            300: '#84cdb0',
+            400: '#4fb18d',
+            500: '#2f9472',
+            600: '#23765b',
+          },
+        },
+        boxShadow: {
+          soft: '0 10px 40px -12px rgba(13,27,42,0.18)',
+          lift: '0 24px 60px -20px rgba(13,27,42,0.30)',
+        },
+        borderRadius: {
+          '4xl': '2rem',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { color-scheme: light; }
+  * { -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #0d1b2a;
+  }
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* Animated grain/glow backdrop */
+  .aura {
+    background:
+      radial-gradient(60% 50% at 15% 10%, rgba(63,158,201,0.18), transparent 60%),
+      radial-gradient(50% 45% at 90% 0%, rgba(79,177,141,0.16), transparent 55%),
+      radial-gradient(45% 50% at 80% 90%, rgba(31,127,174,0.10), transparent 60%);
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgba(13,27,42,0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(13,27,42,0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  /* Reveal defaults (JS-managed; CSS fallback hidden state) */
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .no-anim .reveal { opacity: 1 !important; transform: none !important; }
+
+  /* Magnetic CTA */
+  .magnetic { will-change: transform; }
+
+  /* Tilt card */
+  .tilt { transform-style: preserve-3d; transition: transform .25s ease; }
+
+  /* Slider styling */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(to right, #1f7fae var(--pct, 50%), #d7ecf6 var(--pct, 50%));
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #1f7fae;
+    box-shadow: 0 6px 16px -4px rgba(21,100,142,0.6);
+    cursor: pointer;
+    transition: transform .15s ease;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+  input[type="range"]::-moz-range-thumb {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid #1f7fae;
+    box-shadow: 0 6px 16px -4px rgba(21,100,142,0.6);
+    cursor: pointer;
+  }
+
+  /* Shield draw animation */
+  .shield-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .check-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  /* FAQ accordion */
+  .faq-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .45s cubic-bezier(.22,1,.36,1);
+  }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* Marquee */
+  @keyframes drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-track { animation: drift 26s linear infinite; }
+
+  /* Gradient text */
+  .grad-text {
+    background: linear-gradient(120deg, #15648e, #2f9472);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+
+  ::selection { background: #aed8ec; color: #0d1b2a; }
+</style>
+</head>
+
+<body class="antialiased selection:bg-ocean-200">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <nav class="mt-4 flex items-center justify-between rounded-2xl bg-white/70 backdrop-blur-xl border border-haze shadow-soft px-4 sm:px-6 py-3">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-ocean-500 to-sage-500 text-white">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="font-display font-extrabold text-lg tracking-tight text-ink">North<span class="text-ocean-500">vale</span></span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-navy/80">
+        <a href="#coverage" class="hover:text-ocean-600 transition">Coverage</a>
+        <a href="#how" class="hover:text-ocean-600 transition">How it works</a>
+        <a href="#plans" class="hover:text-ocean-600 transition">Plans</a>
+        <a href="#about" class="hover:text-ocean-600 transition">About</a>
+        <a href="#faq" class="hover:text-ocean-600 transition">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-block text-sm font-semibold text-navy hover:text-ocean-600 transition">Sign in</a>
+        <a href="#quote" data-magnetic class="magnetic inline-flex items-center gap-2 rounded-xl bg-ink text-white text-sm font-semibold px-4 sm:px-5 py-2.5 shadow-soft hover:shadow-lift transition">
+          Get a quote
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-28 sm:pt-36 pb-20 aura overflow-hidden">
+  <div class="absolute inset-0 grid-lines opacity-60 pointer-events-none"></div>
+  <div data-parallax class="absolute -top-24 right-[-6rem] w-[34rem] h-[34rem] rounded-full bg-ocean-200/40 blur-3xl pointer-events-none"></div>
+  <div data-parallax data-speed="0.4" class="absolute bottom-[-8rem] left-[-6rem] w-[28rem] h-[28rem] rounded-full bg-sage-200/40 blur-3xl pointer-events-none"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-10 items-center">
+    <!-- Left -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-white border border-haze shadow-soft px-3.5 py-1.5 text-xs font-semibold text-ocean-700">
+        <span class="w-2 h-2 rounded-full bg-sage-400 animate-pulse"></span>
+        Licensed in 48 states · A+ rated cover
+      </span>
+
+      <h1 class="reveal font-display font-extrabold text-ink leading-[1.05] mt-5 text-4xl sm:text-5xl lg:text-6xl">
+        Insurance that
+        <span class="block grad-text" id="rotator">moves with you.</span>
+      </h1>
+
+      <p class="reveal mt-5 text-lg text-navy/70 max-w-md">
+        Home, auto and life cover built for real life — transparent pricing, an instant quote in 90 seconds, and claims paid the same day. No jargon, no surprises.
+      </p>
+
+      <div class="reveal mt-7 flex flex-wrap items-center gap-3">
+        <a href="#quote" data-magnetic class="magnetic inline-flex items-center gap-2 rounded-xl bg-ocean-500 text-white font-semibold px-6 py-3.5 shadow-lift hover:bg-ocean-600 transition">
+          Get my price
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 rounded-xl bg-white border border-haze text-navy font-semibold px-6 py-3.5 shadow-soft hover:shadow-lift transition">
+          <svg class="w-5 h-5 text-ocean-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7-11-7Z" stroke-linejoin="round"/></svg>
+          See how it works
+        </a>
+      </div>
+
+      <div class="reveal mt-8 flex items-center gap-5">
+        <div class="flex -space-x-3">
+          <img onerror="this.style.display='none'" class="w-10 h-10 rounded-full border-2 border-white object-cover" src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=160&q=80" alt="member" />
+          <span class="w-10 h-10 rounded-full border-2 border-white bg-ocean-100 grid place-items-center text-xs font-bold text-ocean-700">JL</span>
+          <span class="w-10 h-10 rounded-full border-2 border-white bg-sage-100 grid place-items-center text-xs font-bold text-sage-600">MR</span>
+          <span class="w-10 h-10 rounded-full border-2 border-white bg-ink grid place-items-center text-xs font-bold text-white">+9k</span>
+        </div>
+        <p class="text-sm text-navy/70 leading-tight">
+          <span class="font-bold text-ink">4.9/5</span> from 12,400+ members<br/>
+          <span class="text-ocean-600 font-medium">Loved for fast claims</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: Quote estimator -->
+    <div class="reveal lg:justify-self-end w-full max-w-md">
+      <div data-tilt class="tilt relative rounded-4xl bg-white border border-haze shadow-lift p-6 sm:p-8">
+        <div class="absolute -top-4 -right-4 w-20 h-20 rounded-2xl bg-gradient-to-br from-ocean-500 to-sage-500 shadow-lift grid place-items-center text-white" style="transform: translateZ(40px);">
+          <!-- Animated shield/check -->
+          <svg viewBox="0 0 48 48" class="w-12 h-12" fill="none">
+            <path class="shield-path" pathLength="1" d="M24 4 8 10v12c0 9.5 6.8 16.5 16 21 9.2-4.5 16-11.5 16-21V10L24 4Z" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+            <path class="check-path" pathLength="1" d="M16.5 24.5 22 30l9.5-11" stroke="#dff3ea" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <p class="text-xs font-semibold uppercase tracking-widest text-ocean-500">Instant estimate</p>
+        <h3 class="font-display font-bold text-2xl text-ink mt-1">Your monthly price</h3>
+
+        <div class="mt-5 flex flex-wrap gap-2" id="cover-toggles">
+          <button data-cover="home" class="cover-pill active rounded-xl px-3.5 py-2 text-sm font-semibold border transition">Home</button>
+          <button data-cover="auto" class="cover-pill rounded-xl px-3.5 py-2 text-sm font-semibold border transition">Auto</button>
+          <button data-cover="life" class="cover-pill rounded-xl px-3.5 py-2 text-sm font-semibold border transition">Life</button>
+        </div>
+
+        <div class="mt-6">
+          <div class="flex items-end justify-between">
+            <span class="text-sm font-medium text-navy/70">Coverage amount</span>
+            <span id="coverLabel" class="text-sm font-bold text-ocean-700">$250,000</span>
+          </div>
+          <input id="coverSlider" type="range" min="50000" max="750000" step="10000" value="250000" class="w-full mt-3" />
+          <div class="flex justify-between text-[11px] text-navy/50 mt-1.5">
+            <span>$50k</span><span>$750k</span>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-2xl bg-mist border border-haze p-5 flex items-end justify-between">
+          <div>
+            <p class="text-xs font-medium text-navy/60">Estimated premium</p>
+            <p class="mt-0.5"><span class="font-display font-extrabold text-4xl text-ink">$<span id="priceVal">29</span></span><span class="text-navy/60 font-medium">/mo</span></p>
+          </div>
+          <span class="rounded-full bg-sage-100 text-sage-600 text-xs font-bold px-3 py-1.5">No medical exam</span>
+        </div>
+
+        <a href="#quote" data-magnetic class="magnetic mt-5 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-ink text-white font-semibold py-3.5 shadow-soft hover:shadow-lift transition">
+          Lock this rate
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <p class="text-center text-[11px] text-navy/50 mt-3">Estimate only · Final price after a 90-second quote</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative -mt-4 pb-4">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="rounded-4xl bg-ink text-white shadow-lift overflow-hidden">
+      <div class="grid grid-cols-2 lg:grid-cols-4 divide-x divide-white/10">
+        <div class="reveal p-7 sm:p-9 text-center">
+          <p class="font-display font-extrabold text-3xl sm:text-4xl" data-count="124000" data-suffix="+">0</p>
+          <p class="text-sm text-white/60 mt-1">Customers covered</p>
+        </div>
+        <div class="reveal p-7 sm:p-9 text-center">
+          <p class="font-display font-extrabold text-3xl sm:text-4xl">$<span data-count="412" data-suffix="M">0</span></p>
+          <p class="text-sm text-white/60 mt-1">Claims paid out</p>
+        </div>
+        <div class="reveal p-7 sm:p-9 text-center">
+          <p class="font-display font-extrabold text-3xl sm:text-4xl"><span data-count="49" data-suffix="/50">0</span></p>
+          <p class="text-sm text-white/60 mt-1">Customer rating index</p>
+        </div>
+        <div class="reveal p-7 sm:p-9 text-center">
+          <p class="font-display font-extrabold text-3xl sm:text-4xl"><span data-count="6" data-suffix=" hrs">0</span></p>
+          <p class="text-sm text-white/60 mt-1">Avg. claim payout time</p>
+        </div>
+      </div>
+      <!-- Marquee logos -->
+      <div class="border-t border-white/10 py-5 overflow-hidden">
+        <div class="marquee-track flex items-center gap-12 whitespace-nowrap text-white/40 font-display font-semibold text-lg w-max">
+          <span>Verity Re</span><span>·</span><span>Harborline</span><span>·</span><span>Cedar Mutual</span><span>·</span><span>Atlas Trust</span><span>·</span><span>Brightwell</span><span>·</span><span>Northpeak</span><span>·</span>
+          <span>Verity Re</span><span>·</span><span>Harborline</span><span>·</span><span>Cedar Mutual</span><span>·</span><span>Atlas Trust</span><span>·</span><span>Brightwell</span><span>·</span><span>Northpeak</span><span>·</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COVERAGE TYPES GRID ============ -->
+<section id="coverage" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">Coverage</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">One account. Every part of your life, protected.</h2>
+      <p class="reveal text-navy/70 mt-4">Bundle what you need and skip what you don't. Adjust cover anytime from the app — no calls, no paperwork.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <article class="reveal coverage-card group rounded-4xl bg-white border border-haze shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-ocean-50 text-ocean-600 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11.5 12 4l9 7.5M5 10v9h14v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Home & Renters</h3>
+        <p class="text-navy/70 mt-2 text-sm leading-relaxed">Buildings, contents and liability in one place. Live valuations keep you covered as your home grows.</p>
+        <p class="mt-5 text-sm font-semibold text-ocean-600">From $19/mo →</p>
+      </article>
+      <!-- Card 2 -->
+      <article class="reveal coverage-card group rounded-4xl bg-white border border-haze shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-sage-100 text-sage-600 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 16v-3l1.5-4.5A2 2 0 0 1 8.4 7h7.2a2 2 0 0 1 1.9 1.5L19 13v3M5 16h14M7 19v-3m10 3v-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Auto & EV</h3>
+        <p class="text-navy/70 mt-2 text-sm leading-relaxed">Smart pay-how-you-drive pricing rewards safe miles. Roadside, glass and EV battery cover included.</p>
+        <p class="mt-5 text-sm font-semibold text-ocean-600">From $34/mo →</p>
+      </article>
+      <!-- Card 3 -->
+      <article class="reveal coverage-card group rounded-4xl bg-white border border-haze shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-ocean-50 text-ocean-600 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.6-9.2-9.4A5.2 5.2 0 0 1 12 6a5.2 5.2 0 0 1 9.2 5.6C19 16.4 12 21 12 21Z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Term Life</h3>
+        <p class="text-navy/70 mt-2 text-sm leading-relaxed">Protect the people who count on you. Up to $1M cover with no medical exam for most applicants.</p>
+        <p class="mt-5 text-sm font-semibold text-ocean-600">From $12/mo →</p>
+      </article>
+      <!-- Card 4 -->
+      <article class="reveal coverage-card group rounded-4xl bg-white border border-haze shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-sage-100 text-sage-600 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Pet Health</h3>
+        <p class="text-navy/70 mt-2 text-sm leading-relaxed">Vet bills covered up to 90%. Submit a photo of the invoice and get reimbursed before you leave the clinic.</p>
+        <p class="mt-5 text-sm font-semibold text-ocean-600">From $9/mo →</p>
+      </article>
+      <!-- Card 5 -->
+      <article class="reveal coverage-card group rounded-4xl bg-white border border-haze shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-ocean-50 text-ocean-600 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3zM3 11h18M7 15h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Travel</h3>
+        <p class="text-navy/70 mt-2 text-sm leading-relaxed">Single-trip or annual cover that switches on the moment you board. Cancellations, delays and gear protected.</p>
+        <p class="mt-5 text-sm font-semibold text-ocean-600">From $6/trip →</p>
+      </article>
+      <!-- Card 6 -->
+      <article class="reveal coverage-card group rounded-4xl bg-gradient-to-br from-ocean-600 to-ocean-800 text-white shadow-soft p-7 hover:shadow-lift transition-all duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-white/15 grid place-items-center group-hover:scale-110 transition-transform">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-xl mt-5">Bundle & save</h3>
+        <p class="text-ocean-50/90 mt-2 text-sm leading-relaxed">Combine any two products and lock in up to 22% off — automatically applied at checkout.</p>
+        <a href="#plans" class="mt-5 inline-block text-sm font-semibold text-white/95 underline-offset-4 hover:underline">Explore bundles →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="py-24 bg-mist">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="relative rounded-4xl overflow-hidden shadow-lift bg-gradient-to-br from-ocean-200 to-sage-200 aspect-[4/5]">
+        <img onerror="this.style.display='none'" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80" alt="Customer reviewing insurance on a laptop" />
+      </div>
+      <!-- Floating stat card -->
+      <div data-parallax data-speed="0.25" class="absolute -bottom-6 -left-4 sm:left-6 rounded-2xl bg-white shadow-lift border border-haze p-5 max-w-[15rem]">
+        <div class="flex items-center gap-3">
+          <span class="grid place-items-center w-11 h-11 rounded-xl bg-sage-100 text-sage-600">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <p class="font-display font-bold text-ink leading-none">94% of claims</p>
+            <p class="text-xs text-navy/60 mt-1">approved in under 6 hours</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">Why Northvale</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">Built like a tech company. Backed like a bank.</h2>
+      <p class="reveal text-navy/70 mt-4 max-w-lg">We rebuilt insurance from the policy up — so you get the speed of an app with the security of a fully-reserved, A-rated insurer.</p>
+
+      <div class="mt-8 space-y-5">
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 grid place-items-center w-11 h-11 rounded-xl bg-ocean-50 text-ocean-600">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-semibold text-lg text-ink">90-second quotes</h3>
+            <p class="text-navy/70 text-sm mt-1">Answer a few questions and see a real, bindable price — no agent call, no waiting.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 grid place-items-center w-11 h-11 rounded-xl bg-sage-100 text-sage-600">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 2m6-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-semibold text-lg text-ink">Same-day payouts</h3>
+            <p class="text-navy/70 text-sm mt-1">Snap a photo, describe what happened, and our AI assessor handles most claims instantly.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 grid place-items-center w-11 h-11 rounded-xl bg-ocean-50 text-ocean-600">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5a2 2 0 0 1 2-2h2M16 3h2a2 2 0 0 1 2 2v2M20 17v2a2 2 0 0 1-2 2h-2M8 21H6a2 2 0 0 1-2-2v-2M9 12h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-semibold text-lg text-ink">Honest, flat pricing</h3>
+            <p class="text-navy/70 text-sm mt-1">We take a fixed fee and give unclaimed money to causes you choose. No incentive to deny you.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">How it works</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">Covered in three simple steps</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6 relative">
+      <!-- connecting line -->
+      <div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gradient-to-r from-ocean-200 via-sage-300 to-ocean-200"></div>
+
+      <div class="reveal relative rounded-4xl bg-white border border-haze shadow-soft p-8 text-center">
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-2xl bg-ocean-50 text-ocean-600 relative z-10">
+          <span class="font-display font-extrabold text-2xl">1</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Tell us about you</h3>
+        <p class="text-navy/70 text-sm mt-2">Pick your cover and answer a handful of questions. No documents to upload.</p>
+      </div>
+      <div class="reveal relative rounded-4xl bg-white border border-haze shadow-soft p-8 text-center">
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-2xl bg-sage-100 text-sage-600 relative z-10">
+          <span class="font-display font-extrabold text-2xl">2</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">See a real price</h3>
+        <p class="text-navy/70 text-sm mt-2">Adjust your cover with live pricing and bind your policy in seconds — fully online.</p>
+      </div>
+      <div class="reveal relative rounded-4xl bg-white border border-haze shadow-soft p-8 text-center">
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-2xl bg-ocean-50 text-ocean-600 relative z-10">
+          <span class="font-display font-extrabold text-2xl">3</span>
+        </div>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Relax — you're set</h3>
+        <p class="text-navy/70 text-sm mt-2">Manage everything from the app and file a claim in minutes whenever life happens.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-24 bg-ink text-white overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-300">Our story</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl mt-2">We started Northvale after a claim took 11 weeks.</h2>
+      <p class="reveal text-white/70 mt-5 max-w-lg">In 2021 our founder waited nearly three months for a storm claim to be paid. That experience became a question: what if insurance felt like the best apps you use every day — fast, clear, and on your side?</p>
+      <p class="reveal text-white/70 mt-4 max-w-lg">Today a team of 140 engineers, actuaries and claims specialists protects over 124,000 members across 48 states, paying the vast majority of claims the same day they're filed.</p>
+
+      <div class="reveal mt-8 grid grid-cols-3 gap-6 max-w-md">
+        <div>
+          <p class="font-display font-extrabold text-2xl text-sage-300">2021</p>
+          <p class="text-xs text-white/50 mt-1">Founded</p>
+        </div>
+        <div>
+          <p class="font-display font-extrabold text-2xl text-sage-300">140</p>
+          <p class="text-xs text-white/50 mt-1">Team members</p>
+        </div>
+        <div>
+          <p class="font-display font-extrabold text-2xl text-sage-300">48</p>
+          <p class="text-xs text-white/50 mt-1">States covered</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal relative">
+      <div class="rounded-4xl overflow-hidden shadow-lift bg-gradient-to-br from-ocean-700 to-sage-600 aspect-[5/4]">
+        <img onerror="this.style.display='none'" class="w-full h-full object-cover opacity-95" src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80" alt="Northvale team at work in a modern office" />
+      </div>
+      <div data-parallax data-speed="0.3" class="absolute -top-6 -right-3 sm:right-6 rounded-2xl bg-white text-ink shadow-lift p-4 flex items-center gap-3">
+        <span class="grid place-items-center w-10 h-10 rounded-xl bg-ocean-50 text-ocean-600">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6L12 2Z" stroke-linejoin="round"/></svg>
+        </span>
+        <div>
+          <p class="font-display font-bold text-sm leading-none">B-Corp certified</p>
+          <p class="text-xs text-navy/60 mt-1">Insurance with a conscience</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">Members</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">Quietly confident. Loudly recommended.</h2>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-4xl bg-white border border-haze shadow-soft p-7">
+        <div class="flex gap-1 text-ocean-400">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+        </div>
+        <blockquote class="mt-4 text-navy/80 leading-relaxed">"A pipe burst at 6am. I filed from my kitchen and the money landed before lunch. I genuinely didn't know insurance could work like this."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-ocean-100 grid place-items-center text-sm font-bold text-ocean-700">DC</span>
+          <div><p class="font-semibold text-ink text-sm">Dana Castellano</p><p class="text-xs text-navy/55">Home member · Austin, TX</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-4xl bg-gradient-to-br from-ocean-600 to-ocean-800 text-white shadow-soft p-7">
+        <div class="flex gap-1 text-sage-200">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+        </div>
+        <blockquote class="mt-4 text-ocean-50 leading-relaxed">"Switched all three policies in an afternoon and cut my bills by a third. The app actually tells me what I'm paying for — in plain English."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-white/15 grid place-items-center text-sm font-bold">MR</span>
+          <div><p class="font-semibold text-sm">Marcus Ruiz</p><p class="text-xs text-ocean-100/80">Bundle member · Denver, CO</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-4xl bg-white border border-haze shadow-soft p-7">
+        <div class="flex gap-1 text-ocean-400">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="m10 1 2.6 5.6L18 7.3l-4 4 1 5.7L10 14l-5 3 1-5.7-4-4 5.4-.7L10 1Z"/></svg>
+        </div>
+        <blockquote class="mt-4 text-navy/80 leading-relaxed">"Getting term life used to mean a nurse visit and weeks of waiting. Northvale approved a half-million in cover before my coffee went cold."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-sage-100 grid place-items-center text-sm font-bold text-sage-600">PA</span>
+          <div><p class="font-semibold text-ink text-sm">Priya Anand</p><p class="text-xs text-navy/55">Life member · Seattle, WA</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / PLANS ============ -->
+<section id="plans" class="py-24 bg-mist">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">Plans</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">Simple plans. No hidden small print.</h2>
+      <p class="reveal text-navy/70 mt-4">Start with what you need today and add cover anytime. Cancel in a tap — we'll never lock you in.</p>
+    </div>
+
+    <div class="mt-12 grid lg:grid-cols-3 gap-6 items-stretch">
+      <!-- Plan 1 -->
+      <div class="reveal rounded-4xl bg-white border border-haze shadow-soft p-8 flex flex-col">
+        <h3 class="font-display font-bold text-xl text-ink">Essential</h3>
+        <p class="text-navy/60 text-sm mt-1">For a single home or vehicle.</p>
+        <p class="mt-5"><span class="font-display font-extrabold text-4xl text-ink">$19</span><span class="text-navy/60">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-navy/75 flex-1">
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> One core policy (home or auto)</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> Same-day digital claims</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> In-app support, 7 days a week</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> Cancel anytime, no fees</li>
+        </ul>
+        <a href="#quote" class="mt-7 inline-flex justify-center rounded-xl border border-ocean-200 text-ocean-700 font-semibold py-3.5 hover:bg-ocean-50 transition">Choose Essential</a>
+      </div>
+
+      <!-- Plan 2 (featured) -->
+      <div class="reveal relative rounded-4xl bg-ink text-white shadow-lift p-8 flex flex-col lg:scale-[1.04]">
+        <span class="absolute top-5 right-5 rounded-full bg-sage-400 text-ink text-xs font-bold px-3 py-1">Most popular</span>
+        <h3 class="font-display font-bold text-xl">Complete</h3>
+        <p class="text-white/60 text-sm mt-1">Bundle home, auto and life.</p>
+        <p class="mt-5"><span class="font-display font-extrabold text-4xl">$48</span><span class="text-white/60">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-white/80 flex-1">
+          <li class="flex gap-2"><span class="text-sage-300">✓</span> Up to three bundled policies</li>
+          <li class="flex gap-2"><span class="text-sage-300">✓</span> 22% multi-policy discount</li>
+          <li class="flex gap-2"><span class="text-sage-300">✓</span> Priority claims + dedicated handler</li>
+          <li class="flex gap-2"><span class="text-sage-300">✓</span> Annual cover health-check</li>
+        </ul>
+        <a href="#quote" data-magnetic class="magnetic mt-7 inline-flex justify-center rounded-xl bg-ocean-500 text-white font-semibold py-3.5 hover:bg-ocean-600 transition shadow-lift">Choose Complete</a>
+      </div>
+
+      <!-- Plan 3 -->
+      <div class="reveal rounded-4xl bg-white border border-haze shadow-soft p-8 flex flex-col">
+        <h3 class="font-display font-bold text-xl text-ink">Family+</h3>
+        <p class="text-navy/60 text-sm mt-1">Everything, for the whole household.</p>
+        <p class="mt-5"><span class="font-display font-extrabold text-4xl text-ink">$79</span><span class="text-navy/60">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-navy/75 flex-1">
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> Unlimited policies & members</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> Pet, travel & gadget add-ons</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> 24/7 concierge claims line</li>
+          <li class="flex gap-2"><span class="text-sage-500">✓</span> Up to $1M life cover included</li>
+        </ul>
+        <a href="#quote" class="mt-7 inline-flex justify-center rounded-xl border border-ocean-200 text-ocean-700 font-semibold py-3.5 hover:bg-ocean-50 transition">Choose Family+</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center">
+      <p class="reveal text-sm font-semibold uppercase tracking-widest text-ocean-500">FAQ</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl text-ink mt-2">Questions, answered plainly</h2>
+    </div>
+
+    <div class="mt-10 space-y-4" id="faq-list">
+      <div class="faq-item open rounded-2xl bg-white border border-haze shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-semibold text-ink">How fast can I actually be covered?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-ocean-50 text-ocean-600 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-sm text-navy/70 leading-relaxed">Most members complete a quote in about 90 seconds and are fully covered the moment they confirm payment. There's no waiting period for home or auto policies.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl bg-white border border-haze shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-semibold text-ink">Do I need a medical exam for life cover?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-ocean-50 text-ocean-600 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-sm text-navy/70 leading-relaxed">For most applicants up to $1M in cover, no exam is needed — we use a few health questions and secure data checks. A small number of cases may require a quick follow-up.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl bg-white border border-haze shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-semibold text-ink">What happens when I file a claim?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-ocean-50 text-ocean-600 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-sm text-navy/70 leading-relaxed">Open the app, describe what happened and add a photo or two. Our assessor reviews most claims instantly and pays out to your account — 94% are approved in under six hours.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl bg-white border border-haze shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-semibold text-ink">Can I change or cancel my cover later?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-ocean-50 text-ocean-600 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-sm text-navy/70 leading-relaxed">Absolutely. Adjust your coverage amount, add products, or cancel entirely from the app at any time — with no cancellation fees and a fair refund for unused cover.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl bg-white border border-haze shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-semibold text-ink">Is Northvale a real, regulated insurer?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-lg bg-ocean-50 text-ocean-600 transition-transform">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+          </span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-sm text-navy/70 leading-relaxed">Yes. Northvale is fully licensed and regulated, A-rated for financial strength, and backed by leading global reinsurers — so your claims are always secure.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="quote" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="relative rounded-4xl overflow-hidden bg-gradient-to-br from-ocean-600 via-ocean-700 to-ink text-white shadow-lift">
+      <div class="absolute inset-0 grid-lines opacity-20"></div>
+      <div data-parallax data-speed="0.3" class="absolute -top-16 -right-10 w-72 h-72 rounded-full bg-sage-400/30 blur-3xl"></div>
+      <div class="relative px-7 sm:px-14 py-16 sm:py-20 text-center max-w-2xl mx-auto">
+        <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl leading-tight">Get your price in 90 seconds.</h2>
+        <p class="reveal text-ocean-50/85 mt-4 text-lg">No spam calls. No obligation. Just an honest number for the cover you actually need.</p>
+        <div class="reveal mt-8 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+          <input type="email" placeholder="you@email.com" class="flex-1 rounded-xl px-5 py-3.5 text-ink placeholder:text-navy/40 outline-none ring-2 ring-transparent focus:ring-sage-300 transition" />
+          <a href="#" data-magnetic class="magnetic inline-flex items-center justify-center gap-2 rounded-xl bg-white text-ink font-semibold px-6 py-3.5 shadow-lift hover:bg-mist transition whitespace-nowrap">
+            Get my quote
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+        <p class="reveal text-xs text-ocean-100/70 mt-4">Trusted by 124,000+ members · A-rated · 48 states</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-white pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-5 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-ocean-500 to-sage-500 text-white">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="font-display font-extrabold text-lg">North<span class="text-ocean-300">vale</span></span>
+        </a>
+        <p class="text-white/55 text-sm mt-4 max-w-xs">Digital insurance for home, auto and life — fast quotes, honest pricing and claims paid the same day.</p>
+        <div class="flex gap-3 mt-5">
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition" aria-label="Twitter"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.9 2H22l-7.6 8.7L23.3 22h-6.8l-5.3-7-6.1 7H2l8.1-9.3L1.5 2h7l4.8 6.4L18.9 2Z"/></svg></a>
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition" aria-label="LinkedIn"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0ZM.4 8h4.2v12H.4V8Zm7 0h4v1.7h.06c.56-1 1.9-2.06 3.94-2.06 4.2 0 5 2.76 5 6.36V20h-4.2v-5.3c0-1.26 0-2.9-1.77-2.9-1.77 0-2.04 1.38-2.04 2.8V20H7.4V8Z"/></svg></a>
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 transition" aria-label="Instagram"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.6 4.8-4.9 4.9-1.3.1-1.6.1-4.9.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 4 3.9 2.4 7.2 2.3 8.4 2.2 8.8 2.2 12 2.2Zm0 3.2A6.6 6.6 0 1 0 18.6 12 6.6 6.6 0 0 0 12 5.4Zm0 10.9A4.3 4.3 0 1 1 16.3 12 4.3 4.3 0 0 1 12 16.3Zm6.9-11.1a1.5 1.5 0 1 0 0 3.1 1.5 1.5 0 0 0 0-3.1Z"/></svg></a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-display font-semibold text-sm">Cover</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-white/55">
+          <li><a href="#coverage" class="hover:text-white transition">Home</a></li>
+          <li><a href="#coverage" class="hover:text-white transition">Auto</a></li>
+          <li><a href="#coverage" class="hover:text-white transition">Life</a></li>
+          <li><a href="#coverage" class="hover:text-white transition">Pet & Travel</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold text-sm">Company</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-white/55">
+          <li><a href="#about" class="hover:text-white transition">About</a></li>
+          <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+          <li><a href="#plans" class="hover:text-white transition">Plans</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold text-sm">Support</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-white/55">
+          <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+          <li><a href="#" class="hover:text-white transition">File a claim</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+          <li><a href="#" class="hover:text-white transition">Licensing</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/45">
+      <p>© 2026 Northvale Insurance Services. All rights reserved. A-rated · Licensed in 48 states.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-white transition">Privacy</a>
+        <a href="#" class="hover:text-white transition">Terms</a>
+        <a href="#" class="hover:text-white transition">Disclosures</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGSAP = typeof gsap !== 'undefined';
+
+  /* ---------- Cover pill styling ---------- */
+  const pills = document.querySelectorAll('.cover-pill');
+  function paintPills() {
+    pills.forEach(p => {
+      if (p.classList.contains('active')) {
+        p.classList.add('bg-ocean-500','text-white','border-ocean-500');
+        p.classList.remove('bg-white','text-navy','border-haze');
+      } else {
+        p.classList.remove('bg-ocean-500','text-white','border-ocean-500');
+        p.classList.add('bg-white','text-navy','border-haze');
+      }
+    });
+  }
+  paintPills();
+
+  /* ---------- Quote estimator ---------- */
+  const slider = document.getElementById('coverSlider');
+  const coverLabel = document.getElementById('coverLabel');
+  const priceVal = document.getElementById('priceVal');
+  // base rate per $1000 of cover, by product
+  const rates = { home: 0.116, auto: 0.168, life: 0.052 };
+  let activeCover = 'home';
+
+  function fmtMoney(n) { return '$' + Number(n).toLocaleString('en-US'); }
+  function updateEstimate() {
+    const amount = Number(slider.value);
+    const pct = ((amount - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.setProperty('--pct', pct + '%');
+    coverLabel.textContent = fmtMoney(amount);
+    const price = Math.max(6, Math.round((amount / 1000) * rates[activeCover]));
+    // animate the number
+    if (hasGSAP && !reduce) {
+      gsap.to({ v: Number(priceVal.textContent) }, {
+        v: price, duration: 0.5, ease: 'power2.out',
+        onUpdate: function () { priceVal.textContent = Math.round(this.targets()[0].v); }
+      });
+    } else {
+      priceVal.textContent = price;
+    }
+  }
+  if (slider) {
+    slider.addEventListener('input', updateEstimate);
+    pills.forEach(p => p.addEventListener('click', () => {
+      pills.forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      activeCover = p.dataset.cover;
+      paintPills();
+      updateEstimate();
+    }));
+    updateEstimate();
+  }
+
+  /* ---------- Nav shrink on scroll ---------- */
+  const nav = document.getElementById('nav');
+  let lastY = 0;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (nav) {
+      const bar = nav.querySelector('nav');
+      if (y > 20) bar.classList.add('shadow-lift'); else bar.classList.remove('shadow-lift');
+    }
+    lastY = y;
+  }, { passive: true });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Headline rotator ---------- */
+  const rotator = document.getElementById('rotator');
+  if (rotator && !reduce) {
+    const words = ['moves with you.', 'pays in hours.', 'speaks plainly.', 'just makes sense.'];
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % words.length;
+      if (hasGSAP) {
+        gsap.to(rotator, { opacity: 0, y: -12, duration: 0.3, ease: 'power2.in', onComplete: () => {
+          rotator.textContent = words[i];
+          gsap.fromTo(rotator, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+        }});
+      } else {
+        rotator.textContent = words[i];
+      }
+    }, 2600);
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+
+    /* ---------- Tilt card ---------- */
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)';
+      });
+    });
+  }
+
+  if (!hasGSAP) { document.documentElement.classList.add('no-anim'); return; }
+
+  /* ---------- GSAP scroll reveals ---------- */
+  if (!reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.querySelectorAll('.reveal').forEach(el => {
+      gsap.fromTo(el, { opacity: 0, y: 28 }, {
+        opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+      });
+    });
+
+    /* group stagger for grids */
+    ['#coverage', '#plans'].forEach(sel => {
+      const cards = document.querySelectorAll(sel + ' .reveal');
+      if (cards.length) {
+        gsap.fromTo(cards, { opacity: 0, y: 30 }, {
+          opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08,
+          scrollTrigger: { trigger: sel, start: 'top 78%' }
+        });
+      }
+    });
+
+    /* parallax containers */
+    document.querySelectorAll('[data-parallax]').forEach(el => {
+      const speed = parseFloat(el.dataset.speed || '0.5');
+      gsap.to(el, {
+        y: () => -100 * speed, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* ---------- Count-ups ---------- */
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseFloat(el.dataset.count);
+      const suffix = el.dataset.suffix || '';
+      const big = target >= 1000;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          gsap.to({ v: 0 }, {
+            v: target, duration: 1.6, ease: 'power2.out',
+            onUpdate: function () {
+              const val = this.targets()[0].v;
+              el.textContent = (big ? Math.round(val).toLocaleString('en-US') : Math.round(val)) + suffix;
+            }
+          });
+        }
+      });
+    });
+
+    /* ---------- Shield + check draw ---------- */
+    const shield = document.querySelector('.shield-path');
+    const check = document.querySelector('.check-path');
+    if (shield && check) {
+      ScrollTrigger.create({
+        trigger: shield, start: 'top 95%', once: true,
+        onEnter: () => {
+          gsap.to(shield, { strokeDashoffset: 0, duration: 1.1, ease: 'power2.inOut' });
+          gsap.to(check, { strokeDashoffset: 0, duration: 0.7, ease: 'power2.out', delay: 0.9 });
+        }
+      });
+    }
+  } else {
+    document.documentElement.classList.add('no-anim');
+    document.querySelectorAll('.shield-path,.check-path').forEach(p => p.style.strokeDashoffset = 0);
+    document.querySelectorAll('[data-count]').forEach(el => {
+      el.textContent = (parseFloat(el.dataset.count)).toLocaleString('en-US') + (el.dataset.suffix || '');
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumora — Payments Intelligence, Reimagined</title>
+<meta name="description" content="Lumora is the calm, futuristic payments &amp; analytics platform that turns every transaction into clarity. Route money, predict cash flow, and close the books in real time." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          sans: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          ink: '#070b18',
+          midnight: '#0a1030',
+          aurora: '#7c6bff',   // accent
+          mint: '#46f0c0',
+          coral: '#ff7ab8',
+          sky: '#5cc8ff',
+          glass: 'rgba(255,255,255,0.06)',
+        },
+        borderRadius: {
+          '4xl': '2rem',
+          '5xl': '2.75rem',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root {
+    --glow-x: 50%;
+    --glow-y: 30%;
+  }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #060912;
+    color: #e8ecf8;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Aurora / gradient-mesh background ---------- */
+  .aurora-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 800px at 15% -10%, rgba(124,107,255,0.18), transparent 60%),
+      radial-gradient(1000px 700px at 90% 0%, rgba(92,200,255,0.14), transparent 55%),
+      linear-gradient(180deg, #060912 0%, #070b18 40%, #060912 100%);
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .blob-1 { width: 46vw; height: 46vw; left: -8vw; top: -6vw;
+    background: radial-gradient(circle at 30% 30%, #7c6bff, transparent 70%);
+    animation: drift1 26s ease-in-out infinite; }
+  .blob-2 { width: 40vw; height: 40vw; right: -6vw; top: 8vw;
+    background: radial-gradient(circle at 60% 40%, #46f0c0, transparent 70%);
+    animation: drift2 32s ease-in-out infinite; }
+  .blob-3 { width: 38vw; height: 38vw; left: 25vw; top: 38vw;
+    background: radial-gradient(circle at 50% 50%, #ff7ab8, transparent 70%);
+    animation: drift3 38s ease-in-out infinite; }
+  .blob-4 { width: 34vw; height: 34vw; right: 10vw; bottom: -8vw;
+    background: radial-gradient(circle at 40% 60%, #5cc8ff, transparent 70%);
+    animation: drift1 30s ease-in-out infinite reverse; }
+
+  @keyframes drift1 {
+    0%,100% { transform: translate3d(0,0,0) scale(1); }
+    50%     { transform: translate3d(6vw,4vw,0) scale(1.12); }
+  }
+  @keyframes drift2 {
+    0%,100% { transform: translate3d(0,0,0) scale(1.05); }
+    50%     { transform: translate3d(-5vw,5vw,0) scale(0.95); }
+  }
+  @keyframes drift3 {
+    0%,100% { transform: translate3d(0,0,0) scale(1); }
+    50%     { transform: translate3d(4vw,-6vw,0) scale(1.15); }
+  }
+
+  /* grain / noise veil for depth */
+  .aurora-wrap::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    opacity: 0.5;
+  }
+
+  /* pointer-reactive glow layer */
+  .glow-layer {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(420px 420px at var(--glow-x) var(--glow-y), rgba(124,107,255,0.12), transparent 70%);
+    transition: background 0.2s ease;
+  }
+
+  /* ---------- Glass utilities ---------- */
+  .glass {
+    background: linear-gradient(150deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 10px 40px rgba(4,6,20,0.45), inset 0 1px 0 rgba(255,255,255,0.10);
+  }
+  .glass-soft {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  .glass-hover { transition: transform .4s cubic-bezier(.2,.8,.2,1), border-color .4s, box-shadow .4s; }
+  .glass-hover:hover {
+    transform: translateY(-6px);
+    border-color: rgba(124,107,255,0.45);
+    box-shadow: 0 24px 60px rgba(124,107,255,0.20), inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+
+  .text-gradient {
+    background: linear-gradient(100deg, #ffffff 0%, #c9c4ff 35%, #7cf0d6 70%, #5cc8ff 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .ring-grad {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#0a0f22,#0a0f22) padding-box,
+      linear-gradient(120deg, rgba(124,107,255,0.7), rgba(70,240,192,0.5), rgba(92,200,255,0.6)) border-box;
+  }
+
+  .btn-aurora {
+    background: linear-gradient(110deg, #7c6bff, #5cc8ff);
+    box-shadow: 0 8px 30px rgba(124,107,255,0.45);
+    transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+  }
+  .btn-aurora:hover { transform: translateY(-2px); filter: brightness(1.08); box-shadow: 0 14px 44px rgba(124,107,255,0.6); }
+
+  .divider-glow { height:1px; background: linear-gradient(90deg, transparent, rgba(124,107,255,0.4), transparent); }
+
+  /* animated rising bars in dashboard mock */
+  @keyframes barRise { from { transform: scaleY(0.15); } to { transform: scaleY(1); } }
+  .bar { transform-origin: bottom; animation: barRise 1.2s cubic-bezier(.2,.8,.2,1) forwards; }
+
+  /* floating */
+  @keyframes floaty { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-12px);} }
+  .floaty { animation: floaty 7s ease-in-out infinite; }
+  .floaty-slow { animation: floaty 11s ease-in-out infinite; }
+
+  /* marquee for logos */
+  @keyframes marquee { from { transform: translateX(0);} to { transform: translateX(-50%);} }
+  .marquee-track { animation: marquee 28s linear infinite; }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+
+  /* faq */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease, opacity .35s ease; opacity: 0; }
+  .faq-item.open .faq-body { opacity: 1; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .35s ease; }
+
+  /* nav scrolled */
+  #nav.scrolled { background: rgba(8,11,24,0.55); backdrop-filter: blur(16px); border-color: rgba(255,255,255,0.10); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .floaty, .floaty-slow, .marquee-track, .bar { animation: none !important; }
+    .glow-layer { display:none; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+
+<body class="font-sans selection:bg-aurora/40 selection:text-white">
+
+<!-- ===== Backgrounds ===== -->
+<div class="aurora-wrap" aria-hidden="true">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
+<div class="glow-layer" aria-hidden="true"></div>
+
+<!-- ===== NAV ===== -->
+<header class="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
+  <nav id="nav" class="max-w-7xl mx-auto flex items-center justify-between rounded-3xl px-5 py-3 border border-transparent transition-all duration-300">
+    <a href="#home" class="flex items-center gap-2.5">
+      <span class="grid place-items-center w-9 h-9 rounded-xl btn-aurora font-display font-bold text-white">L</span>
+      <span class="font-display text-lg font-semibold tracking-tight">Lumora</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-8 text-sm text-white/70">
+      <li><a href="#features" class="hover:text-white transition">Features</a></li>
+      <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+      <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+      <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+    </ul>
+    <div class="flex items-center gap-3">
+      <a href="#" class="hidden sm:inline-block text-sm text-white/75 hover:text-white transition">Sign in</a>
+      <a href="#cta" class="btn-aurora text-sm font-medium text-white px-4 py-2 rounded-xl">Start free</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section id="home" class="relative pt-36 sm:pt-44 pb-20 px-4 sm:px-6">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+    <!-- copy -->
+    <div>
+      <div class="reveal inline-flex items-center gap-2 glass-soft rounded-full px-3.5 py-1.5 text-xs text-white/75 mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse"></span>
+        New · Real-time treasury graph
+      </div>
+      <h1 class="reveal font-display text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] tracking-tight">
+        Payments intelligence,<br>
+        <span class="text-gradient">reimagined as clarity.</span>
+      </h1>
+      <p class="reveal mt-6 text-lg text-white/65 max-w-xl">
+        Lumora routes money, predicts cash flow, and closes your books in real time — all behind one calm pane of frosted glass. No spreadsheets. No surprises.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#cta" class="btn-aurora text-white font-medium px-6 py-3 rounded-2xl">Start free — no card</a>
+        <a href="#how" class="glass glass-hover px-6 py-3 rounded-2xl text-white/85 font-medium flex items-center gap-2">
+          <span class="grid place-items-center w-6 h-6 rounded-full bg-white/10">▶</span> Watch the flow
+        </a>
+      </div>
+      <div class="reveal mt-10 flex items-center gap-6 text-sm text-white/55">
+        <div><span class="text-white font-semibold count" data-target="99.99">0</span><span class="text-white">%</span> uptime</div>
+        <div class="w-px h-5 bg-white/15"></div>
+        <div>SOC 2 · PCI-DSS L1</div>
+        <div class="w-px h-5 bg-white/15"></div>
+        <div>180+ currencies</div>
+      </div>
+    </div>
+
+    <!-- glass dashboard mockup (pure divs) -->
+    <div class="reveal relative" data-parallax>
+      <!-- floating side cards -->
+      <div class="floaty glass rounded-2xl p-3.5 absolute -left-4 sm:-left-10 top-10 w-44 z-20">
+        <p class="text-[11px] text-white/50">Settled today</p>
+        <p class="font-display text-xl font-semibold mt-1">$<span class="count" data-target="412.8">0</span>K</p>
+        <div class="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full w-4/5 btn-aurora rounded-full"></div></div>
+      </div>
+      <div class="floaty-slow glass rounded-2xl p-3.5 absolute -right-3 sm:-right-8 bottom-8 w-40 z-20">
+        <div class="flex items-center justify-between">
+          <p class="text-[11px] text-white/50">Fraud blocked</p>
+          <span class="text-mint text-[11px]">●</span>
+        </div>
+        <p class="font-display text-xl font-semibold mt-1"><span class="count" data-target="1.2">0</span>K</p>
+        <p class="text-[10px] text-white/40 mt-0.5">last 24h</p>
+      </div>
+
+      <!-- main dashboard -->
+      <div class="glass rounded-4xl p-5 sm:p-6 relative z-10">
+        <div class="flex items-center justify-between mb-5">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-coral/80"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-mint/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-sky/70"></span>
+          </div>
+          <span class="text-[11px] text-white/40 font-display tracking-wide">lumora · treasury</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="glass-soft rounded-2xl p-3">
+            <p class="text-[10px] text-white/45">Volume</p>
+            <p class="font-display text-lg font-semibold mt-1">$<span class="count" data-target="8.4">0</span>M</p>
+            <p class="text-[10px] text-mint mt-0.5">▲ 12.4%</p>
+          </div>
+          <div class="glass-soft rounded-2xl p-3">
+            <p class="text-[10px] text-white/45">Net runway</p>
+            <p class="font-display text-lg font-semibold mt-1"><span class="count" data-target="19">0</span>mo</p>
+            <p class="text-[10px] text-sky mt-0.5">stable</p>
+          </div>
+          <div class="glass-soft rounded-2xl p-3">
+            <p class="text-[10px] text-white/45">Fees saved</p>
+            <p class="font-display text-lg font-semibold mt-1"><span class="count" data-target="31">0</span>%</p>
+            <p class="text-[10px] text-coral mt-0.5">smart routing</p>
+          </div>
+        </div>
+
+        <!-- chart -->
+        <div class="glass-soft rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs text-white/60">Cash flow forecast</p>
+            <p class="text-[10px] text-white/40">90 days</p>
+          </div>
+          <div class="flex items-end gap-1.5 h-28">
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-aurora/40 to-aurora" style="height:45%"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-aurora/40 to-aurora" style="height:62%; animation-delay:.08s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-sky/40 to-sky" style="height:54%; animation-delay:.16s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-sky/40 to-sky" style="height:78%; animation-delay:.24s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-mint/40 to-mint" style="height:66%; animation-delay:.32s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-mint/40 to-mint" style="height:92%; animation-delay:.4s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-coral/40 to-coral" style="height:74%; animation-delay:.48s"></div>
+            <div class="bar flex-1 rounded-t-md bg-gradient-to-t from-coral/40 to-coral" style="height:100%; animation-delay:.56s"></div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between glass-soft rounded-2xl px-4 py-3">
+          <div class="flex items-center gap-3">
+            <span class="grid place-items-center w-8 h-8 rounded-xl btn-aurora text-white text-sm">↑</span>
+            <div>
+              <p class="text-xs text-white/85">Auto-payout · Acme Ltd</p>
+              <p class="text-[10px] text-white/40">routed via cheapest rail</p>
+            </div>
+          </div>
+          <span class="text-mint text-sm font-medium">+$24,910</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST / LOGOS ===== -->
+<section class="relative py-10 px-4 sm:px-6">
+  <p class="text-center text-xs uppercase tracking-[0.25em] text-white/40 mb-6">Trusted by modern finance teams</p>
+  <div class="max-w-6xl mx-auto overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+    <div class="marquee-track flex items-center gap-14 w-max opacity-70">
+      <!-- duplicated set for seamless loop -->
+      <!-- set 1 -->
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Northwind</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Velo&middot;Pay</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Quanta</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Harbor&amp;Co</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Brightfold</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Solace</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Meridian</span>
+      <!-- set 2 (dup) -->
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Northwind</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Velo&middot;Pay</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Quanta</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Harbor&amp;Co</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Brightfold</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Solace</span>
+      <span class="font-display text-xl font-semibold tracking-tight whitespace-nowrap">Meridian</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BENTO FEATURES ===== -->
+<section id="features" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="max-w-2xl mb-12">
+      <p class="reveal text-sm font-medium text-aurora mb-3">The platform</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">One calm surface for every flow of money.</h2>
+      <p class="reveal mt-4 text-white/60">Everything from routing to reconciliation, composed into a single luminous workspace your whole team can read at a glance.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4 auto-rows-[minmax(0,1fr)]">
+      <!-- big tile -->
+      <article class="reveal glass glass-hover rounded-4xl p-7 md:col-span-2 md:row-span-2 relative overflow-hidden">
+        <div class="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-aurora/30 blur-3xl"></div>
+        <div class="relative">
+          <span class="grid place-items-center w-11 h-11 rounded-2xl glass-soft text-mint text-xl mb-5">⌁</span>
+          <h3 class="font-display text-2xl font-semibold">Smart routing engine</h3>
+          <p class="mt-3 text-white/60 max-w-md">Every transaction is scored across rails in milliseconds — picking the cheapest, fastest path automatically. Teams cut fees by up to 31% without lifting a finger.</p>
+          <div class="mt-6 grid grid-cols-3 gap-3 max-w-md">
+            <div class="glass-soft rounded-xl p-3 text-center"><p class="font-display text-lg font-semibold">38ms</p><p class="text-[10px] text-white/45">decision</p></div>
+            <div class="glass-soft rounded-xl p-3 text-center"><p class="font-display text-lg font-semibold">14</p><p class="text-[10px] text-white/45">rails</p></div>
+            <div class="glass-soft rounded-xl p-3 text-center"><p class="font-display text-lg font-semibold">99.99%</p><p class="text-[10px] text-white/45">success</p></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal glass glass-hover rounded-4xl p-6">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl glass-soft text-sky text-lg mb-4">◷</span>
+        <h3 class="font-display text-lg font-semibold">Real-time ledger</h3>
+        <p class="mt-2 text-sm text-white/60">Books that close themselves. Every entry reconciled the instant it lands.</p>
+      </article>
+
+      <article class="reveal glass glass-hover rounded-4xl p-6">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl glass-soft text-coral text-lg mb-4">⚇</span>
+        <h3 class="font-display text-lg font-semibold">Fraud shield</h3>
+        <p class="mt-2 text-sm text-white/60">Adaptive models flag anomalies before settlement — not after.</p>
+      </article>
+
+      <article class="reveal glass glass-hover rounded-4xl p-6">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl glass-soft text-mint text-lg mb-4">∿</span>
+        <h3 class="font-display text-lg font-semibold">Cash-flow forecast</h3>
+        <p class="mt-2 text-sm text-white/60">A 90-day runway projection that updates with every payment.</p>
+      </article>
+
+      <article class="reveal glass glass-hover rounded-4xl p-6">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl glass-soft text-aurora text-lg mb-4">⎈</span>
+        <h3 class="font-display text-lg font-semibold">Multi-currency vaults</h3>
+        <p class="mt-2 text-sm text-white/60">Hold, convert, and pay in 180+ currencies at interbank rates.</p>
+      </article>
+
+      <article class="reveal glass glass-hover rounded-4xl p-6 md:col-span-1">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl glass-soft text-sky text-lg mb-4">⧉</span>
+        <h3 class="font-display text-lg font-semibold">Composable API</h3>
+        <p class="mt-2 text-sm text-white/60">Ship a payment flow in one afternoon with typed SDKs and webhooks.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-sm font-medium text-aurora mb-3">How it works</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">From first transaction to closed books — in three moves.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 relative">
+      <div class="hidden md:block absolute top-12 left-[16%] right-[16%] divider-glow"></div>
+
+      <div class="reveal glass glass-hover rounded-4xl p-7 text-center relative">
+        <div class="grid place-items-center w-14 h-14 rounded-2xl btn-aurora text-white font-display text-xl mx-auto mb-5">1</div>
+        <h3 class="font-display text-lg font-semibold">Connect your money</h3>
+        <p class="mt-2 text-sm text-white/60">Link banks, processors, and wallets with read-only keys. Lumora maps your entire flow in minutes.</p>
+      </div>
+      <div class="reveal glass glass-hover rounded-4xl p-7 text-center relative">
+        <div class="grid place-items-center w-14 h-14 rounded-2xl btn-aurora text-white font-display text-xl mx-auto mb-5">2</div>
+        <h3 class="font-display text-lg font-semibold">Let routing optimize</h3>
+        <p class="mt-2 text-sm text-white/60">Our engine scores every path live, moving money the cheapest, fastest way — fully on autopilot.</p>
+      </div>
+      <div class="reveal glass glass-hover rounded-4xl p-7 text-center relative">
+        <div class="grid place-items-center w-14 h-14 rounded-2xl btn-aurora text-white font-display text-xl mx-auto mb-5">3</div>
+        <h3 class="font-display text-lg font-semibold">Watch clarity arrive</h3>
+        <p class="mt-2 text-sm text-white/60">Real-time ledgers, forecasts, and alerts — one glass pane your whole team can trust.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal relative rounded-4xl overflow-hidden glass p-2">
+      <div class="rounded-3xl overflow-hidden h-72 sm:h-96 bg-gradient-to-br from-aurora/40 via-sky/20 to-mint/30 relative">
+        <img src="https://images.unsplash.com/photo-1518186285589-2f7649de83e0?auto=format&fit=crop&w=1200&q=70"
+             alt="" loading="lazy"
+             class="w-full h-full object-cover opacity-70 mix-blend-luminosity"
+             onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+        <div class="absolute bottom-5 left-5 glass-soft rounded-2xl px-4 py-3">
+          <p class="text-xs text-white/55">Founded</p>
+          <p class="font-display text-lg font-semibold">2021 · Remote-first</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-sm font-medium text-aurora mb-3">Why Lumora</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">We believe finance should feel calm.</h2>
+      <p class="reveal mt-4 text-white/65">Most money tools are loud — dense tables, blinking alerts, dashboards that hide the truth behind the noise. We built Lumora to be the opposite: a quiet, luminous surface where the right number is always one glance away.</p>
+      <div class="reveal mt-8 grid grid-cols-3 gap-4">
+        <div class="glass rounded-2xl p-4"><p class="font-display text-2xl font-semibold">$<span class="count" data-target="9.6">0</span>B</p><p class="text-xs text-white/50 mt-1">processed</p></div>
+        <div class="glass rounded-2xl p-4"><p class="font-display text-2xl font-semibold"><span class="count" data-target="7">0</span>K+</p><p class="text-xs text-white/50 mt-1">teams</p></div>
+        <div class="glass rounded-2xl p-4"><p class="font-display text-2xl font-semibold"><span class="count" data-target="60">0</span></p><p class="text-xs text-white/50 mt-1">countries</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <p class="reveal text-sm font-medium text-aurora mb-3">Loved by operators</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">The calm is the feature.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal glass glass-hover rounded-4xl p-6">
+        <div class="flex gap-1 text-mint mb-3">★★★★★</div>
+        <blockquote class="text-white/80 text-sm leading-relaxed">"We closed our month in 40 minutes instead of four days. The forecast alone paid for the year."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full btn-aurora text-white font-display">AR</span>
+          <div><p class="text-sm font-medium">Amara Reyes</p><p class="text-xs text-white/45">CFO, Brightfold</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass glass-hover rounded-4xl p-6">
+        <div class="flex gap-1 text-mint mb-3">★★★★★</div>
+        <blockquote class="text-white/80 text-sm leading-relaxed">"Smart routing quietly trimmed a six-figure line off our processing fees. I didn't change a thing."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full btn-aurora text-white font-display">DK</span>
+          <div><p class="text-sm font-medium">Daniel Koh</p><p class="text-xs text-white/45">Head of Finance, Quanta</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass glass-hover rounded-4xl p-6">
+        <div class="flex gap-1 text-mint mb-3">★★★★★</div>
+        <blockquote class="text-white/80 text-sm leading-relaxed">"It's the first finance tool my whole team actually opens for fun. The glass UI is unreal."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full btn-aurora text-white font-display">SM</span>
+          <div><p class="text-sm font-medium">Sofia Marín</p><p class="text-xs text-white/45">COO, Velo·Pay</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-sm font-medium text-aurora mb-3">Pricing</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">Transparent plans. No hidden fees.</h2>
+      <p class="reveal mt-4 text-white/60">Start free forever. Upgrade only when money starts moving.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 items-stretch">
+      <!-- Starter -->
+      <div class="reveal glass glass-hover rounded-4xl p-7 flex flex-col">
+        <p class="font-display text-lg font-semibold">Starter</p>
+        <p class="text-sm text-white/55 mt-1">For solo founders &amp; early teams.</p>
+        <p class="mt-6 font-display text-4xl font-semibold">$0<span class="text-base text-white/45 font-sans">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-white/70 flex-1">
+          <li class="flex gap-2"><span class="text-mint">✓</span> Up to $50K volume / mo</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Real-time ledger</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> 3 team seats</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Community support</li>
+        </ul>
+        <a href="#cta" class="mt-7 glass-soft hover:bg-white/10 transition text-center py-3 rounded-2xl font-medium">Start free</a>
+      </div>
+
+      <!-- Growth (featured) -->
+      <div class="reveal ring-grad rounded-4xl p-7 flex flex-col relative scale-[1.02] shadow-[0_30px_80px_rgba(124,107,255,0.25)]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 btn-aurora text-white text-xs font-medium px-3 py-1 rounded-full">Most popular</span>
+        <p class="font-display text-lg font-semibold">Growth</p>
+        <p class="text-sm text-white/55 mt-1">For scaling finance teams.</p>
+        <p class="mt-6 font-display text-4xl font-semibold">$149<span class="text-base text-white/45 font-sans">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-white/80 flex-1">
+          <li class="flex gap-2"><span class="text-mint">✓</span> Up to $2M volume / mo</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Smart routing engine</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> 90-day cash forecast</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Unlimited seats</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Priority support</li>
+        </ul>
+        <a href="#cta" class="mt-7 btn-aurora text-white text-center py-3 rounded-2xl font-medium">Choose Growth</a>
+      </div>
+
+      <!-- Scale -->
+      <div class="reveal glass glass-hover rounded-4xl p-7 flex flex-col">
+        <p class="font-display text-lg font-semibold">Scale</p>
+        <p class="text-sm text-white/55 mt-1">For enterprises &amp; platforms.</p>
+        <p class="mt-6 font-display text-4xl font-semibold">Custom</p>
+        <ul class="mt-6 space-y-3 text-sm text-white/70 flex-1">
+          <li class="flex gap-2"><span class="text-mint">✓</span> Unlimited volume</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Dedicated rails &amp; SLAs</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> SSO &amp; audit logs</li>
+          <li class="flex gap-2"><span class="text-mint">✓</span> Named success manager</li>
+        </ul>
+        <a href="#cta" class="mt-7 glass-soft hover:bg-white/10 transition text-center py-3 rounded-2xl font-medium">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-12">
+      <p class="reveal text-sm font-medium text-aurora mb-3">FAQ</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-semibold tracking-tight">Questions, answered.</h2>
+    </div>
+
+    <div class="space-y-3">
+      <div class="faq-item reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-medium">How long does onboarding take?</span>
+          <span class="faq-icon text-aurora text-xl shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-sm text-white/60">Most teams connect their accounts and see a live ledger within 15 minutes. Smart routing activates automatically once your first transactions flow through.</p></div>
+      </div>
+      <div class="faq-item reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-medium">Is my financial data secure?</span>
+          <span class="faq-icon text-aurora text-xl shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-sm text-white/60">Yes. Lumora is SOC 2 Type II and PCI-DSS Level 1 compliant, with end-to-end encryption and read-only connections by default. We never touch your funds without explicit authorization.</p></div>
+      </div>
+      <div class="faq-item reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-medium">Can I keep my existing bank &amp; processor?</span>
+          <span class="faq-icon text-aurora text-xl shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-sm text-white/60">Absolutely. Lumora sits on top of the rails you already use and optimizes across them. There's nothing to rip out — we add intelligence, not friction.</p></div>
+      </div>
+      <div class="faq-item reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-medium">What happens after the free plan?</span>
+          <span class="faq-icon text-aurora text-xl shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-sm text-white/60">Nothing breaks. You stay on Starter as long as you like. When your monthly volume grows past the free tier, you'll get a heads-up to upgrade — never a surprise charge.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section id="cta" class="relative py-20 px-4 sm:px-6">
+  <div class="max-w-5xl mx-auto reveal glass rounded-5xl p-10 sm:p-16 text-center relative overflow-hidden">
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[28rem] h-[28rem] rounded-full bg-aurora/25 blur-3xl"></div>
+    <div class="absolute -bottom-24 right-0 w-72 h-72 rounded-full bg-mint/20 blur-3xl"></div>
+    <div class="relative">
+      <h2 class="font-display text-3xl sm:text-5xl font-semibold tracking-tight">Bring calm to your money.</h2>
+      <p class="mt-4 text-white/65 max-w-xl mx-auto">Join thousands of finance teams who replaced spreadsheets with one luminous surface. Free forever to start.</p>
+      <form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false;">
+        <input type="email" required placeholder="you@company.com"
+               class="flex-1 glass-soft rounded-2xl px-5 py-3 text-sm placeholder-white/40 outline-none focus:border-aurora/60 transition" />
+        <button class="btn-aurora text-white font-medium px-6 py-3 rounded-2xl whitespace-nowrap">Start free</button>
+      </form>
+      <p class="mt-3 text-xs text-white/40">No credit card · 2-minute setup · Cancel anytime</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="relative pt-16 pb-10 px-4 sm:px-6 border-t border-white/5 mt-10">
+  <div class="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+    <div class="lg:col-span-2">
+      <a href="#home" class="flex items-center gap-2.5 mb-4">
+        <span class="grid place-items-center w-9 h-9 rounded-xl btn-aurora font-display font-bold text-white">L</span>
+        <span class="font-display text-lg font-semibold">Lumora</span>
+      </a>
+      <p class="text-sm text-white/50 max-w-xs">Payments intelligence, reimagined as clarity. One calm pane of glass for every flow of money.</p>
+      <div class="flex gap-3 mt-5">
+        <a href="#" class="grid place-items-center w-9 h-9 rounded-xl glass-soft hover:bg-white/10 transition text-white/70">in</a>
+        <a href="#" class="grid place-items-center w-9 h-9 rounded-xl glass-soft hover:bg-white/10 transition text-white/70">𝕏</a>
+        <a href="#" class="grid place-items-center w-9 h-9 rounded-xl glass-soft hover:bg-white/10 transition text-white/70">gh</a>
+      </div>
+    </div>
+    <div>
+      <p class="font-medium text-sm mb-4">Product</p>
+      <ul class="space-y-2.5 text-sm text-white/50">
+        <li><a href="#features" class="hover:text-white transition">Features</a></li>
+        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+        <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+        <li><a href="#" class="hover:text-white transition">Changelog</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-medium text-sm mb-4">Company</p>
+      <ul class="space-y-2.5 text-sm text-white/50">
+        <li><a href="#about" class="hover:text-white transition">About</a></li>
+        <li><a href="#" class="hover:text-white transition">Careers</a></li>
+        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+        <li><a href="#" class="hover:text-white transition">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-medium text-sm mb-4">Legal</p>
+      <ul class="space-y-2.5 text-sm text-white/50">
+        <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+        <li><a href="#" class="hover:text-white transition">Terms</a></li>
+        <li><a href="#" class="hover:text-white transition">Security</a></li>
+        <li><a href="#" class="hover:text-white transition">Compliance</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
+    <p>© 2026 Lumora Financial Systems. All rights reserved.</p>
+    <p>Crafted with calm · SOC 2 · PCI-DSS L1</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav scrolled state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 24);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- Pointer-reactive glow ---- */
+  if (!reduce) {
+    window.addEventListener('pointermove', (e) => {
+      document.documentElement.style.setProperty('--glow-x', (e.clientX / window.innerWidth * 100) + '%');
+      document.documentElement.style.setProperty('--glow-y', (e.clientY / window.innerHeight * 100) + '%');
+    }, { passive: true });
+  }
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const body = item.querySelector('.faq-body');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach((o) => {
+        o.classList.remove('open');
+        o.querySelector('.faq-body').style.maxHeight = null;
+      });
+      if (!isOpen) {
+        item.classList.add('open');
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
+    });
+  });
+
+  /* ---- Count-up ---- */
+  function animateCount(el) {
+    const target = parseFloat(el.dataset.target);
+    const decimals = (el.dataset.target.split('.')[1] || '').length;
+    const dur = 1600;
+    const start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = (target * eased).toFixed(decimals);
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target.toFixed(decimals);
+    }
+    requestAnimationFrame(tick);
+  }
+  if (reduce) {
+    document.querySelectorAll('.count').forEach((el) => {
+      const t = parseFloat(el.dataset.target);
+      el.textContent = t.toFixed((el.dataset.target.split('.')[1] || '').length);
+    });
+  } else {
+    const co = new IntersectionObserver((entries, obs) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) { animateCount(en.target); obs.unobserve(en.target); }
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('.count').forEach((el) => co.observe(el));
+  }
+
+  /* ---- GSAP scroll reveals + parallax ---- */
+  if (!reduce && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // group reveals by their section for staggered entrance
+    gsap.utils.toArray('section, footer').forEach((sec) => {
+      const items = sec.querySelectorAll('.reveal');
+      if (!items.length) return;
+      gsap.to(items, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08,
+        scrollTrigger: { trigger: sec, start: 'top 82%' },
+      });
+    });
+
+    // hero dashboard parallax
+    const par = document.querySelector('[data-parallax]');
+    if (par) {
+      gsap.to(par, {
+        yPercent: -8, ease: 'none',
+        scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom top', scrub: true },
+      });
+    }
+  } else {
+    document.querySelectorAll('.reveal').forEach((el) => {
+      el.style.opacity = 1; el.style.transform = 'none';
+    });
+  }
+})();
+</script>
+</body>
+</html>

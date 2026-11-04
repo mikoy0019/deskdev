@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kuroza — Omakase by Chef Ren Asakura</title>
+<meta name="description" content="Kuroza. An intimate eight-seat omakase counter. One chef. One season. One unrepeatable evening, crafted piece by piece." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Shippori+Mincho:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0c0b0a',
+          char:   '#151311',
+          slate:  '#1d1a17',
+          ash:    '#6b655c',
+          mist:   '#a59f93',
+          paper:  '#ece6da',
+          rice:   '#f6f1e7',
+          ember:  '#c8643c',   // single warm accent
+          emberd: '#a14e2e',
+        },
+        fontFamily: {
+          serif:  ['"Cormorant Garamond"', 'serif'],
+          mincho: ['"Shippori Mincho"', 'serif'],
+          sans:   ['Inter', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          luxe: '0.42em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; background: #0c0b0a; }
+  body { cursor: none; }
+  ::selection { background: #c8643c; color: #0c0b0a; }
+
+  /* custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none;
+    z-index: 9999; border-radius: 9999px; mix-blend-mode: difference;
+  }
+  .cursor-dot  { width: 6px; height: 6px; background: #ece6da; transform: translate(-50%,-50%); }
+  .cursor-ring { width: 38px; height: 38px; border: 1px solid #ece6da;
+    transform: translate(-50%,-50%); transition: width .3s, height .3s, opacity .3s, background .3s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(200,100,60,.12); border-color: #c8643c; }
+
+  /* masked reveal */
+  .mask-line { display: block; overflow: hidden; }
+  .mask-line > * { display: block; will-change: transform; }
+
+  .ink-rule { position: relative; }
+  .ink-rule::after {
+    content: ''; position: absolute; left: 0; bottom: -1px; height: 1px;
+    width: 0; background: #c8643c; transition: width .6s cubic-bezier(.16,1,.3,1);
+  }
+  .ink-rule:hover::after { width: 100%; }
+
+  .vline { width: 1px; background: linear-gradient(to bottom, transparent, #6b655c 18%, #6b655c 82%, transparent); }
+
+  .grain::before {
+    content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .course-card { transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  .course-card:hover { transform: translateY(-6px); }
+  .course-card:hover .course-num { color: #c8643c; }
+  .course-card:hover .course-en  { color: #ece6da; }
+
+  .marquee { display: flex; width: max-content; animation: slide 42s linear infinite; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.16,1,.3,1); }
+  .acc.open .acc-body { max-height: 260px; }
+  .acc.open .acc-plus { transform: rotate(45deg); }
+  .acc-plus { transition: transform .4s ease; }
+
+  .parallax-wrap { overflow: hidden; }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal, .mask-line > * { opacity: 1 !important; transform: none !important; }
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+  @media (hover: none) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+</style>
+</head>
+
+<body class="bg-ink text-paper font-sans antialiased grain selection:bg-ember">
+
+<!-- Cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- Vertical Japanese line motifs (decorative) -->
+<div class="fixed inset-y-0 left-[8vw] vline hidden lg:block z-[2] opacity-40"></div>
+<div class="fixed inset-y-0 right-[8vw] vline hidden lg:block z-[2] opacity-40"></div>
+<div class="fixed top-1/2 left-6 -translate-y-1/2 hidden xl:block z-[2] font-mincho text-ash text-sm tracking-luxe" style="writing-mode:vertical-rl;">黒座 — 鮨</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group" data-magnet>
+      <span class="font-mincho text-2xl text-ember leading-none">黒</span>
+      <span class="font-serif text-2xl tracking-wide">Kuroza</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-9 text-[11px] uppercase tracking-[0.28em] text-mist">
+      <li><a href="#philosophy" class="ink-rule hover:text-paper transition">Philosophy</a></li>
+      <li><a href="#omakase" class="ink-rule hover:text-paper transition">Omakase</a></li>
+      <li><a href="#chef" class="ink-rule hover:text-paper transition">The Chef</a></li>
+      <li><a href="#space" class="ink-rule hover:text-paper transition">The Room</a></li>
+      <li><a href="#visit" class="ink-rule hover:text-paper transition">Visit</a></li>
+    </ul>
+    <a href="#reserve" data-magnet class="reserve-cta relative inline-flex items-center gap-2 border border-ember/60 text-paper text-[11px] uppercase tracking-[0.24em] px-6 py-3 hover:bg-ember hover:text-ink transition-colors duration-400">
+      Reserve
+      <span class="font-mincho text-ember group-hover:text-ink">予約</span>
+    </a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center pt-24 pb-16">
+  <div class="absolute inset-0 z-0 parallax-wrap">
+    <div class="parallax-img absolute inset-0 will-change-transform">
+      <img src="https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           alt="Omakase nigiri" class="w-full h-[118%] object-cover opacity-50" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-ink/85 via-ink/55 to-ink"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-ink/40"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full">
+    <p class="mask-line mb-8"><span class="hero-kicker text-[11px] uppercase tracking-luxe text-ember">Eight Seats · One Season · Tokyo–Lisbon</span></p>
+    <h1 class="font-serif font-light leading-[0.92] text-[clamp(3.2rem,11vw,9rem)]">
+      <span class="mask-line"><span class="hero-l">The counter</span></span>
+      <span class="mask-line"><span class="hero-l italic text-mist">remembers</span></span>
+      <span class="mask-line"><span class="hero-l">every guest.</span></span>
+    </h1>
+    <div class="mt-10 flex flex-col sm:flex-row sm:items-end gap-8 max-w-3xl">
+      <p class="hero-sub reveal text-mist font-light text-lg leading-relaxed max-w-md">
+        Kuroza is an intimate omakase by Chef Ren Asakura — seventeen courses guided by the morning's catch, the turning season, and the quiet space between each piece.
+      </p>
+      <a href="#reserve" data-magnet class="hero-sub reveal reserve-cta shrink-0 inline-flex items-center gap-3 bg-ember text-ink px-8 py-4 text-[11px] uppercase tracking-[0.24em] hover:bg-rice transition-colors duration-400">
+        Reserve the Counter
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-3">
+    <span class="text-[10px] uppercase tracking-luxe text-ash">Scroll</span>
+    <span class="w-px h-12 bg-gradient-to-b from-ember to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="border-y border-slate py-5 overflow-hidden bg-char">
+  <div class="marquee text-mist">
+    <div class="flex items-center gap-12 pr-12 font-mincho text-sm tracking-[0.3em] whitespace-nowrap">
+      <span>旬 · SEASONAL</span><span class="text-ember">◇</span><span>江戸前 · EDOMAE TRADITION</span><span class="text-ember">◇</span><span>八席 · EIGHT SEATS</span><span class="text-ember">◇</span><span>一期一会 · ONE MEETING, ONE LIFETIME</span><span class="text-ember">◇</span>
+    </div>
+    <div class="flex items-center gap-12 pr-12 font-mincho text-sm tracking-[0.3em] whitespace-nowrap" aria-hidden="true">
+      <span>旬 · SEASONAL</span><span class="text-ember">◇</span><span>江戸前 · EDOMAE TRADITION</span><span class="text-ember">◇</span><span>八席 · EIGHT SEATS</span><span class="text-ember">◇</span><span>一期一会 · ONE MEETING, ONE LIFETIME</span><span class="text-ember">◇</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PHILOSOPHY ============ -->
+<section id="philosophy" class="relative py-28 lg:py-40">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-12 gap-12 items-start">
+    <div class="lg:col-span-4">
+      <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-6">01 — Philosophy</p>
+      <p class="reveal font-mincho text-ash text-lg" style="writing-mode:horizontal-tb;">間 — <span class="text-mist">the eloquence of empty space</span></p>
+    </div>
+    <div class="lg:col-span-8">
+      <h2 class="reveal font-serif font-light leading-[1.05] text-[clamp(2rem,5vw,3.6rem)] mb-10">
+        We serve nothing that the sea did not decide for us this morning.
+      </h2>
+      <div class="grid sm:grid-cols-2 gap-10 text-mist font-light leading-relaxed">
+        <p class="reveal">There is no menu at Kuroza, because a menu is a promise made before the fish arrives. Instead there is a sequence — read by the chef from the day's market, the weather, and the people seated before him.</p>
+        <p class="reveal">Between each piece we leave a silence. Rice still warm at body temperature. Fish aged to its single perfect hour. Nothing rushed, nothing repeated, nothing wasted. This is omakase: <span class="text-paper italic">I leave it to you.</span></p>
+      </div>
+
+      <!-- count ups -->
+      <div class="reveal mt-16 grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate border border-slate">
+        <div class="bg-ink p-7">
+          <p class="font-serif text-4xl text-ember"><span class="count" data-to="17">0</span></p>
+          <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-ash">Courses Nightly</p>
+        </div>
+        <div class="bg-ink p-7">
+          <p class="font-serif text-4xl text-ember"><span class="count" data-to="8">0</span></p>
+          <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-ash">Seats Only</p>
+        </div>
+        <div class="bg-ink p-7">
+          <p class="font-serif text-4xl text-ember"><span class="count" data-to="11">0</span></p>
+          <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-ash">Years at the Board</p>
+        </div>
+        <div class="bg-ink p-7">
+          <p class="font-serif text-4xl text-ember"><span class="count" data-to="2">0</span></p>
+          <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-ash">Seatings Nightly</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OMAKASE COURSES ============ -->
+<section id="omakase" class="relative py-28 lg:py-40 bg-char border-y border-slate">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-16">
+      <div>
+        <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-5">02 — The Omakase</p>
+        <h2 class="reveal font-serif font-light leading-[1.02] text-[clamp(2.2rem,6vw,4.4rem)]">Tonight's Procession</h2>
+      </div>
+      <p class="reveal text-mist font-light max-w-sm">A representative arc. The true sequence is written each afternoon and revealed only at the counter.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-slate border border-slate">
+      <!-- card -->
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">壱</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Sakizuke</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">先付</h3>
+        <p class="course-en text-mist font-light transition-colors">Chilled snow crab, citrus dashi jelly, micro shiso.</p>
+      </article>
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">弐</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Tsukuri</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">造里</h3>
+        <p class="course-en text-mist font-light transition-colors">Line-caught seabream, aged three days, sea salt &amp; sudachi.</p>
+      </article>
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">参</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Nigiri</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">握り · 鮪</h3>
+        <p class="course-en text-mist font-light transition-colors">Bluefin akami, hand-pressed over warm akazu rice.</p>
+      </article>
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">肆</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Nigiri</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">握り · 中とろ</h3>
+        <p class="course-en text-mist font-light transition-colors">Chūtoro, lightly seared at the edge with binchōtan.</p>
+      </article>
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">伍</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Wan-mono</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">椀物</h3>
+        <p class="course-en text-mist font-light transition-colors">Clear clam broth, yuzu peel, a single seasonal mushroom.</p>
+      </article>
+      <article class="course-card reveal bg-char p-9 group">
+        <div class="flex items-baseline justify-between mb-5">
+          <span class="course-num font-serif text-2xl text-ash transition-colors">陸</span>
+          <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Tamago</span>
+        </div>
+        <h3 class="font-mincho text-xl mb-1">玉子</h3>
+        <p class="course-en text-mist font-light transition-colors">House tamago — folded twenty minutes, faintly sweet, the chef's signature close.</p>
+      </article>
+    </div>
+
+    <div class="reveal mt-14 flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-t border-slate pt-8">
+      <p class="text-mist font-light">Seventeen courses · <span class="text-paper">€235</span> per guest · optional sake pairing <span class="text-paper">€110</span></p>
+      <a href="#reserve" data-magnet class="reserve-cta self-start inline-flex items-center gap-3 border border-ember/60 px-7 py-3.5 text-[11px] uppercase tracking-[0.24em] hover:bg-ember hover:text-ink transition-colors">Reserve a seating →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHEF ============ -->
+<section id="chef" class="relative py-28 lg:py-40">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="parallax-wrap relative order-2 lg:order-1">
+      <div class="parallax-img will-change-transform">
+        <img src="https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Chef at the counter" class="w-full h-[60vh] object-cover" />
+      </div>
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent pointer-events-none"></div>
+      <div class="absolute bottom-6 left-6 font-mincho text-ember text-sm tracking-[0.3em]">朝倉 蓮</div>
+    </div>
+
+    <div class="order-1 lg:order-2">
+      <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-6">03 — The Chef</p>
+      <h2 class="reveal font-serif font-light leading-[1.05] text-[clamp(2rem,5vw,3.6rem)] mb-8">Ren Asakura</h2>
+      <div class="space-y-6 text-mist font-light leading-relaxed">
+        <p class="reveal">Eleven years behind the counter in Tsukiji, three more in the white silence of a two-Michelin room in Kyoto. Ren brought one rule with him to the West: <span class="text-paper italic">never let the guest watch the clock.</span></p>
+        <p class="reveal">He sources from a single trusted broker each dawn, presses every grain of rice by hand, and speaks little — because at Kuroza the fish is the conversation, and the knife is the sentence.</p>
+      </div>
+      <blockquote class="reveal mt-10 pl-6 border-l border-ember">
+        <p class="font-serif italic text-2xl text-paper leading-snug">"Perfection is not a destination. It is the hour the fish is ready — and you must be ready with it."</p>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE SPACE ============ -->
+<section id="space" class="relative py-28 lg:py-40 bg-char border-y border-slate">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <div class="grid lg:grid-cols-12 gap-12 mb-16 items-end">
+      <div class="lg:col-span-7">
+        <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-6">04 — The Room</p>
+        <h2 class="reveal font-serif font-light leading-[1.02] text-[clamp(2.2rem,6vw,4rem)]">A single hinoki counter, lit like dusk.</h2>
+      </div>
+      <p class="reveal lg:col-span-5 text-mist font-light leading-relaxed">Eight seats carved from one length of two-hundred-year-old cypress. No music. No menus on the wall. Only the warm grain of the wood, a low amber glow, and the sound of a knife finding its line.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-px bg-slate border border-slate">
+      <div class="parallax-wrap relative md:col-span-2 h-[52vh]">
+        <div class="parallax-img absolute inset-0 will-change-transform">
+          <img src="https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               alt="The dining room" class="w-full h-[115%] object-cover" />
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent"></div>
+      </div>
+      <div class="bg-ink p-9 flex flex-col justify-between">
+        <p class="reveal font-mincho text-ember text-lg">静寂</p>
+        <div class="reveal mt-10 space-y-6 text-mist font-light">
+          <p><span class="text-paper block">Phones rest in the box.</span>We ask the room to be present — the evening lasts two hours, and never returns.</p>
+          <p><span class="text-paper block">One service, undivided.</span>The chef serves all eight guests in a single quiet current.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESERVATIONS ============ -->
+<section id="reserve" class="relative py-28 lg:py-40">
+  <div class="absolute inset-0 z-0 parallax-wrap opacity-25">
+    <img src="https://images.unsplash.com/photo-1583623025817-d180a2221d0a?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="" class="parallax-img w-full h-[115%] object-cover" />
+    <div class="absolute inset-0 bg-ink/70"></div>
+  </div>
+
+  <div class="relative z-10 max-w-4xl mx-auto px-6 lg:px-12">
+    <div class="text-center mb-14">
+      <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-6">05 — Reservations</p>
+      <h2 class="reveal font-serif font-light leading-[1.02] text-[clamp(2.2rem,6vw,4.4rem)] mb-5">Take a seat at the counter</h2>
+      <p class="reveal text-mist font-light max-w-xl mx-auto">Bookings open the first of each month for the month following. A deposit secures your seat; the full omakase is settled on the evening.</p>
+    </div>
+
+    <form class="reveal grid sm:grid-cols-2 gap-px bg-slate border border-slate" onsubmit="event.preventDefault(); this.reset(); const b=document.getElementById('rsvp-done'); b.classList.remove('hidden');">
+      <label class="bg-ink p-6 block">
+        <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Name</span>
+        <input required type="text" placeholder="Your name" class="mt-2 w-full bg-transparent border-b border-slate focus:border-ember outline-none py-2 text-paper placeholder-ash/60 font-light" />
+      </label>
+      <label class="bg-ink p-6 block">
+        <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Email</span>
+        <input required type="email" placeholder="you@email.com" class="mt-2 w-full bg-transparent border-b border-slate focus:border-ember outline-none py-2 text-paper placeholder-ash/60 font-light" />
+      </label>
+      <label class="bg-ink p-6 block">
+        <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Preferred Date</span>
+        <input required type="date" class="mt-2 w-full bg-transparent border-b border-slate focus:border-ember outline-none py-2 text-paper font-light [color-scheme:dark]" />
+      </label>
+      <label class="bg-ink p-6 block">
+        <span class="text-[10px] uppercase tracking-[0.22em] text-ash">Guests</span>
+        <select class="mt-2 w-full bg-transparent border-b border-slate focus:border-ember outline-none py-2 text-paper font-light [color-scheme:dark]">
+          <option>1 guest</option><option>2 guests</option><option>3 guests</option><option>4 guests</option>
+        </select>
+      </label>
+      <div class="sm:col-span-2 bg-ink p-6 flex flex-col sm:flex-row items-center justify-between gap-5">
+        <p id="rsvp-done" class="hidden text-ember text-sm font-light">Thank you — we will confirm your seating by email within 24 hours.</p>
+        <button data-magnet class="reserve-cta ml-auto inline-flex items-center gap-3 bg-ember text-ink px-9 py-4 text-[11px] uppercase tracking-[0.24em] hover:bg-rice transition-colors">Request a Seat →</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-28 lg:py-40 bg-char border-y border-slate">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-14 text-center">From the Counter</p>
+    <div class="grid md:grid-cols-3 gap-px bg-slate border border-slate">
+      <figure class="reveal bg-char p-9">
+        <p class="font-serif italic text-xl leading-relaxed text-paper">"I have eaten omakase across three continents. Kuroza is the only one where I forgot to count the courses."</p>
+        <figcaption class="mt-6 text-[10px] uppercase tracking-[0.22em] text-ash">M. Okafor · Lisbon</figcaption>
+      </figure>
+      <figure class="reveal bg-char p-9">
+        <p class="font-serif italic text-xl leading-relaxed text-paper">"Two hours felt like ten minutes and a whole season at once. The tamago alone is worth the wait-list."</p>
+        <figcaption class="mt-6 text-[10px] uppercase tracking-[0.22em] text-ash">L. Bauer · Berlin</figcaption>
+      </figure>
+      <figure class="reveal bg-char p-9">
+        <p class="font-serif italic text-xl leading-relaxed text-paper">"Ren says almost nothing, and somehow says everything. The most articulate silence I have ever paid for."</p>
+        <figcaption class="mt-6 text-[10px] uppercase tracking-[0.22em] text-ash">S. Tanaka · Visiting</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOURS / LOCATION ============ -->
+<section id="visit" class="relative py-28 lg:py-40">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-16">
+    <div>
+      <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-8">Hours</p>
+      <ul class="divide-y divide-slate border-y border-slate">
+        <li class="reveal flex items-center justify-between py-5">
+          <span class="text-paper">Tuesday — Thursday</span>
+          <span class="text-mist font-light">Seatings 18:00 · 20:30</span>
+        </li>
+        <li class="reveal flex items-center justify-between py-5">
+          <span class="text-paper">Friday — Saturday</span>
+          <span class="text-mist font-light">Seatings 17:30 · 20:00 · 22:00</span>
+        </li>
+        <li class="reveal flex items-center justify-between py-5">
+          <span class="text-paper">Sunday</span>
+          <span class="text-mist font-light">Chef's table only — by request</span>
+        </li>
+        <li class="reveal flex items-center justify-between py-5">
+          <span class="text-ash">Monday</span>
+          <span class="text-ash font-light">Closed — market &amp; rest</span>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-8">Find Us</p>
+      <div class="reveal space-y-6 text-mist font-light leading-relaxed">
+        <p class="text-paper text-xl font-serif">14 Travessa do Sal<br/>Príncipe Real · Lisboa 1250</p>
+        <p>An unmarked black door beside the lantern. Ring once. Arrive ten minutes early — the first piece waits for no one.</p>
+        <div class="flex flex-col gap-2 pt-2">
+          <a href="tel:+351000000000" class="ink-rule self-start hover:text-paper transition">+351 21 000 0000</a>
+          <a href="mailto:counter@kuroza.example" class="ink-rule self-start hover:text-paper transition">counter@kuroza.example</a>
+        </div>
+      </div>
+      <div class="reveal mt-8 h-44 border border-slate bg-gradient-to-br from-slate to-ink flex items-center justify-center">
+        <span class="font-mincho text-ash tracking-[0.3em]">地図 — MAP</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="relative py-28 lg:py-40 bg-char border-y border-slate">
+  <div class="max-w-4xl mx-auto px-6 lg:px-12">
+    <p class="reveal text-[11px] uppercase tracking-luxe text-ember mb-12 text-center">Before You Arrive</p>
+    <div class="divide-y divide-slate border-y border-slate">
+      <div class="acc reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="font-serif text-xl text-paper">Is there a vegetarian sequence?</span>
+          <span class="acc-plus text-ember text-2xl font-light shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-6 text-mist font-light leading-relaxed">Yes. With seven days' notice the chef composes a parallel vegetable omakase — seasonal, equally considered. Please note it at the time of booking.</p></div>
+      </div>
+      <div class="acc reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="font-serif text-xl text-paper">Can I change my reservation?</span>
+          <span class="acc-plus text-ember text-2xl font-light shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-6 text-mist font-light leading-relaxed">Seats may be moved once, up to 72 hours before service. Within 72 hours the deposit secures your evening but cannot be rescheduled, as we hold only eight seats.</p></div>
+      </div>
+      <div class="acc reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="font-serif text-xl text-paper">How long is the experience?</span>
+          <span class="acc-plus text-ember text-2xl font-light shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-6 text-mist font-light leading-relaxed">Roughly two hours, served at the chef's unhurried pace. We recommend arriving with nowhere else to be.</p></div>
+      </div>
+      <div class="acc reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="font-serif text-xl text-paper">Do you accommodate allergies?</span>
+          <span class="acc-plus text-ember text-2xl font-light shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-6 text-mist font-light leading-relaxed">Most, with advance notice. As the kitchen is built around seafood, we cannot guarantee a shellfish-free environment, but we will adapt the sequence wherever the sea allows.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 lg:py-48 text-center overflow-hidden">
+  <div class="absolute inset-0 -z-0 flex items-center justify-center pointer-events-none">
+    <span class="font-mincho text-[34vw] leading-none text-slate/40 select-none">鮨</span>
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto px-6">
+    <h2 class="reveal font-serif font-light leading-[1.02] text-[clamp(2.4rem,7vw,5rem)] mb-8">
+      One evening.<br/><span class="italic text-mist">Never the same twice.</span>
+    </h2>
+    <p class="reveal text-mist font-light mb-10 max-w-lg mx-auto">Eight seats turn over twice a night. They fill quickly. The next opening is the moment to take it.</p>
+    <a href="#reserve" data-magnet class="reserve-cta inline-flex items-center gap-3 bg-ember text-ink px-10 py-5 text-[11px] uppercase tracking-[0.24em] hover:bg-rice transition-colors">
+      Reserve the Counter <span class="font-mincho">予約</span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-slate py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-12">
+    <div class="grid md:grid-cols-4 gap-10 mb-14">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="font-mincho text-2xl text-ember">黒</span>
+          <span class="font-serif text-2xl">Kuroza</span>
+        </div>
+        <p class="text-mist font-light max-w-xs">An eight-seat omakase counter. One chef, one season, one unrepeatable evening.</p>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.24em] text-ash mb-5">Explore</p>
+        <ul class="space-y-3 text-mist font-light">
+          <li><a href="#philosophy" class="ink-rule hover:text-paper transition">Philosophy</a></li>
+          <li><a href="#omakase" class="ink-rule hover:text-paper transition">The Omakase</a></li>
+          <li><a href="#chef" class="ink-rule hover:text-paper transition">The Chef</a></li>
+          <li><a href="#visit" class="ink-rule hover:text-paper transition">Visit</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[10px] uppercase tracking-[0.24em] text-ash mb-5">Follow</p>
+        <ul class="space-y-3 text-mist font-light">
+          <li><a href="#" class="ink-rule hover:text-paper transition">Instagram</a></li>
+          <li><a href="#" class="ink-rule hover:text-paper transition">Journal</a></li>
+          <li><a href="#reserve" class="ink-rule hover:text-paper transition">Reserve</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-slate text-[11px] uppercase tracking-[0.2em] text-ash">
+      <p>© 2026 Kuroza Omakase · Lisboa</p>
+      <p class="font-mincho tracking-[0.3em]">一期一会</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (fine && !reduce) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    });
+    (function loop(){
+      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a, button, [data-magnet]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+    // magnetic pull
+    document.querySelectorAll('[data-magnet]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width/2);
+        const y = e.clientY - (r.top + r.height/2);
+        el.style.transform = `translate(${x*0.25}px, ${y*0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => el.style.transform = 'translate(0,0)');
+      el.style.transition = 'transform .4s cubic-bezier(.16,1,.3,1)';
+    });
+  }
+
+  /* ---------- Nav background on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (scrollY > 40) nav.classList.add('bg-ink/85','backdrop-blur-md','border-b','border-slate');
+    else nav.classList.remove('bg-ink/85','backdrop-blur-md','border-b','border-slate');
+  };
+  onScroll(); addEventListener('scroll', onScroll, { passive: true });
+
+  if (reduce || typeof gsap === 'undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Hero masked reveals ---------- */
+  gsap.set(['.hero-l', '.hero-kicker'], { yPercent: 115 });
+  const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+  tl.to('.hero-kicker', { yPercent: 0, duration: 0.9 })
+    .to('.hero-l', { yPercent: 0, duration: 1.1, stagger: 0.12 }, '-=0.5')
+    .from('.hero-sub', { y: 28, opacity: 0, duration: 0.9, stagger: 0.15 }, '-=0.6');
+
+  /* ---------- Generic reveals ---------- */
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  /* ---------- Parallax on imagery ---------- */
+  gsap.utils.toArray('.parallax-img').forEach(img => {
+    gsap.fromTo(img, { yPercent: -8 }, {
+      yPercent: 8, ease: 'none',
+      scrollTrigger: { trigger: img.closest('.parallax-wrap') || img, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  /* ---------- Count-ups ---------- */
+  gsap.utils.toArray('.count').forEach(el => {
+    const to = +el.dataset.to;
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to({ v: 0 }, {
+        v: to, duration: 1.6, ease: 'power2.out',
+        onUpdate: function () { el.textContent = Math.round(this.targets()[0].v); }
+      })
+    });
+  });
+})();
+
+/* ---------- FAQ accordion ---------- */
+document.querySelectorAll('.acc-head').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const acc = btn.closest('.acc');
+    const open = acc.classList.contains('open');
+    document.querySelectorAll('.acc').forEach(a => a.classList.remove('open'));
+    if (!open) acc.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

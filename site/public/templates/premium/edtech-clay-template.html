@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Wobblio — a playful clay-soft learning world where kids build real skills through bouncy quests, rewards and friendly mascots." />
+<title>Wobblio — Squishy Learning for Curious Kids</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Baloo 2"', 'cursive'],
+          body: ['Nunito', 'sans-serif'],
+        },
+        colors: {
+          cream:   '#FBF4EA',
+          cloud:   '#FFFDF8',
+          grape:   '#7C5CFF',
+          grapeink:'#3A2A7A',
+          bubble:  '#FF8FB1',
+          lemon:   '#FFD66B',
+          mint:    '#7BE0C0',
+          sky:     '#7FC8FF',
+          coral:   '#FF9F6B',
+          plum:    '#5A4A8F',
+        },
+        boxShadow: {
+          clay:      '8px 8px 18px rgba(124,92,255,0.20), -8px -8px 18px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.7), inset -4px -4px 8px rgba(124,92,255,0.12)',
+          'clay-sm': '4px 4px 10px rgba(124,92,255,0.18), -4px -4px 10px rgba(255,255,255,0.9), inset 1px 1px 2px rgba(255,255,255,0.7), inset -2px -2px 5px rgba(124,92,255,0.12)',
+          'clay-press': 'inset 5px 5px 10px rgba(124,92,255,0.22), inset -5px -5px 10px rgba(255,255,255,0.85)',
+          'clay-pink': '8px 8px 18px rgba(255,143,177,0.28), -8px -8px 18px rgba(255,255,255,0.85), inset 2px 2px 4px rgba(255,255,255,0.6), inset -4px -4px 8px rgba(255,143,177,0.2)',
+        },
+        borderRadius: {
+          blob: '42% 58% 62% 38% / 45% 40% 60% 55%',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { scroll-behavior: smooth; }
+  body { background: #FBF4EA; overflow-x: hidden; }
+
+  /* Soft dotted backdrop */
+  .candy-bg {
+    background-image:
+      radial-gradient(circle at 20% 18%, rgba(255,143,177,0.16) 0, transparent 28%),
+      radial-gradient(circle at 82% 24%, rgba(127,200,255,0.16) 0, transparent 30%),
+      radial-gradient(circle at 50% 86%, rgba(123,224,192,0.16) 0, transparent 32%),
+      radial-gradient(rgba(124,92,255,0.06) 1.4px, transparent 1.4px);
+    background-size: auto, auto, auto, 26px 26px;
+  }
+
+  /* Generic clay surface */
+  .clay {
+    background: linear-gradient(145deg, #ffffff, #f3ecff);
+    box-shadow: 8px 8px 18px rgba(124,92,255,0.20), -8px -8px 18px rgba(255,255,255,0.9),
+                inset 2px 2px 4px rgba(255,255,255,0.7), inset -4px -4px 8px rgba(124,92,255,0.12);
+  }
+
+  .blob { border-radius: 42% 58% 62% 38% / 45% 40% 60% 55%; }
+  .blob2 { border-radius: 60% 40% 33% 67% / 55% 58% 42% 45%; }
+  .blob3 { border-radius: 38% 62% 55% 45% / 60% 38% 62% 40%; }
+
+  /* Floating bob */
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(0deg);} 50% { transform: translateY(-14px) rotate(2deg);} }
+  .bob   { animation: bob 5s ease-in-out infinite; }
+  .bob-s { animation: bob 4s ease-in-out infinite; }
+  .bob-l { animation: bob 6.5s ease-in-out infinite; }
+
+  @keyframes spin-slow { to { transform: rotate(360deg); } }
+  .spin-slow { animation: spin-slow 22s linear infinite; }
+
+  /* Wobble on hover */
+  @keyframes wobble {
+    0%,100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(-4deg) scale(1.05); }
+    50% { transform: rotate(3deg) scale(1.05); }
+    75% { transform: rotate(-2deg) scale(1.03); }
+  }
+  .wobble:hover { animation: wobble 0.6s ease-in-out; }
+
+  .clay-btn { transition: transform .15s ease, box-shadow .15s ease; }
+  .clay-btn:hover { transform: translateY(-3px); }
+  .clay-btn:active { transform: translateY(1px); box-shadow: inset 5px 5px 10px rgba(124,92,255,0.22), inset -5px -5px 10px rgba(255,255,255,0.85); }
+
+  /* Eyes for mascots */
+  .eye { background:#3A2A7A; border-radius:50%; position:relative; }
+  .eye::after { content:''; position:absolute; top:14%; left:22%; width:34%; height:34%; background:#fff; border-radius:50%; }
+
+  /* Accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-body { max-height:260px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  .reveal { opacity:0; }
+  .gradient-text { background: linear-gradient(100deg,#7C5CFF,#FF8FB1 55%,#FF9F6B); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bob,.bob-s,.bob-l,.spin-slow { animation: none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+
+<body class="font-body text-grapeink candy-bg">
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
+  <nav class="max-w-6xl mx-auto clay rounded-[28px] px-5 py-3 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2 group">
+      <span class="w-10 h-10 rounded-blob bg-gradient-to-br from-grape to-bubble shadow-clay-sm flex items-center justify-center text-white font-display font-extrabold text-lg wobble">w</span>
+      <span class="font-display font-extrabold text-xl tracking-tight text-grapeink">Wobbl<span class="text-grape">io</span></span>
+    </a>
+    <ul class="hidden md:flex items-center gap-7 font-semibold text-plum/90">
+      <li><a href="#features" class="hover:text-grape transition">Play</a></li>
+      <li><a href="#how" class="hover:text-grape transition">How it works</a></li>
+      <li><a href="#plans" class="hover:text-grape transition">Plans</a></li>
+      <li><a href="#faq" class="hover:text-grape transition">FAQ</a></li>
+    </ul>
+    <a href="#cta" class="clay-btn clay-sm rounded-2xl bg-gradient-to-br from-lemon to-coral text-grapeink font-display font-bold px-5 py-2.5 text-sm shadow-clay-sm">Start free</a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative pt-36 pb-24 px-4 sm:px-6 overflow-hidden">
+  <!-- floating clay decor -->
+  <div class="pointer-events-none absolute inset-0 -z-0">
+    <div class="bob absolute top-28 left-[6%] w-20 h-20 blob bg-mint clay opacity-90"></div>
+    <div class="bob-l absolute top-48 right-[8%] w-28 h-28 blob2 bg-sky clay"></div>
+    <div class="bob-s absolute bottom-24 left-[14%] w-16 h-16 blob3 bg-lemon clay"></div>
+    <div class="bob absolute bottom-40 right-[18%] w-12 h-12 rounded-full bg-bubble clay"></div>
+  </div>
+
+  <div class="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+    <!-- copy -->
+    <div>
+      <span data-reveal class="reveal inline-flex items-center gap-2 clay-sm clay rounded-full px-4 py-1.5 text-sm font-bold text-grape mb-6">
+        <span class="w-2.5 h-2.5 rounded-full bg-mint"></span> Ages 4–12 · loved by 40k families
+      </span>
+      <h1 data-reveal class="reveal font-display font-extrabold text-5xl sm:text-6xl leading-[1.05] text-grapeink mb-5">
+        Learning that feels like <span class="gradient-text">squishy play.</span>
+      </h1>
+      <p data-reveal class="reveal text-lg text-plum/80 max-w-md mb-8">
+        Wobblio turns reading, math and curiosity into bouncy quests. Your kid earns claymates, builds real skills, and asks to do "one more level."
+      </p>
+      <div data-reveal class="reveal flex flex-wrap gap-4">
+        <a href="#cta" class="clay-btn rounded-2xl bg-gradient-to-br from-grape to-bubble text-white font-display font-bold px-7 py-4 shadow-clay">Start the adventure</a>
+        <a href="#how" class="clay-btn clay rounded-2xl text-grapeink font-display font-bold px-7 py-4">See how it works</a>
+      </div>
+      <div data-reveal class="reveal flex items-center gap-3 mt-8 text-sm font-semibold text-plum/70">
+        <div class="flex -space-x-2">
+          <span class="w-8 h-8 rounded-full bg-coral clay-sm"></span>
+          <span class="w-8 h-8 rounded-full bg-mint clay-sm"></span>
+          <span class="w-8 h-8 rounded-full bg-sky clay-sm"></span>
+        </div>
+        <span>★★★★★ 4.9 on app stores</span>
+      </div>
+    </div>
+
+    <!-- clay scene -->
+    <div class="relative">
+      <div data-reveal class="reveal relative clay rounded-[44px] p-8 bob-l">
+        <!-- mascot 1 -->
+        <div class="wobble w-40 h-40 mx-auto blob bg-gradient-to-br from-bubble to-grape shadow-clay relative flex items-end justify-center pb-5">
+          <div class="absolute top-9 left-9 w-6 h-6 eye"></div>
+          <div class="absolute top-9 right-9 w-6 h-6 eye"></div>
+          <div class="w-12 h-6 rounded-b-[40px] bg-grapeink/85"></div>
+          <span class="absolute -top-4 -right-3 w-10 h-10 rounded-blob bg-lemon clay-sm flex items-center justify-center text-grapeink font-display font-extrabold spin-slow">★</span>
+        </div>
+        <!-- progress tracker -->
+        <div class="clay-sm clay rounded-3xl p-5 mt-7">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-display font-bold text-grapeink">Today's quest</span>
+            <span class="font-display font-extrabold text-grape"><span data-count="80">0</span>%</span>
+          </div>
+          <div class="h-5 rounded-full bg-cream shadow-clay-press overflow-hidden">
+            <div class="progress-bar h-full rounded-full bg-gradient-to-r from-mint via-sky to-grape" style="width:0%"></div>
+          </div>
+          <div class="flex justify-between mt-4">
+            <div class="w-11 h-11 rounded-2xl bg-mint clay-sm flex items-center justify-center text-grapeink font-bold">✓</div>
+            <div class="w-11 h-11 rounded-2xl bg-lemon clay-sm flex items-center justify-center text-grapeink font-bold">✓</div>
+            <div class="w-11 h-11 rounded-2xl bg-coral clay-sm flex items-center justify-center text-grapeink font-bold">✓</div>
+            <div class="w-11 h-11 rounded-2xl bg-cream shadow-clay-press flex items-center justify-center text-plum/40 font-bold">4</div>
+          </div>
+        </div>
+      </div>
+      <!-- little orbiting blob -->
+      <div class="bob absolute -bottom-6 -left-6 w-20 h-20 blob3 bg-coral clay flex items-center justify-center text-2xl">🎈</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST STRIP ============ -->
+<section class="px-4 sm:px-6 pb-6">
+  <div data-reveal class="reveal max-w-5xl mx-auto clay rounded-[30px] px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+    <div><div class="font-display font-extrabold text-3xl text-grape"><span data-count="40">0</span>k+</div><div class="text-sm font-semibold text-plum/70">Happy families</div></div>
+    <div><div class="font-display font-extrabold text-3xl text-bubble"><span data-count="2400">0</span></div><div class="text-sm font-semibold text-plum/70">Bouncy lessons</div></div>
+    <div><div class="font-display font-extrabold text-3xl text-coral"><span data-count="98">0</span>%</div><div class="text-sm font-semibold text-plum/70">Kids ask for more</div></div>
+    <div><div class="font-display font-extrabold text-3xl text-mint"><span data-count="15">0</span>min</div><div class="text-sm font-semibold text-plum/70">Daily sweet spot</div></div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="px-4 sm:px-6 py-20">
+  <div class="max-w-6xl mx-auto text-center mb-14">
+    <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-4">A world made of <span class="gradient-text">soft skills</span></h2>
+    <p data-reveal class="reveal text-plum/75 max-w-xl mx-auto">Every shape your child taps is a tiny lesson in disguise — designed by teachers, squished into joy.</p>
+  </div>
+
+  <div class="max-w-6xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+    <!-- card -->
+    <div data-reveal class="reveal clay rounded-[32px] p-7 group">
+      <div class="wobble w-16 h-16 blob bg-gradient-to-br from-sky to-grape shadow-clay-sm flex items-center justify-center text-3xl mb-5">📚</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Story-led reading</h3>
+      <p class="text-plum/75 text-sm">Phonics adventures where kids sound out words to rescue wobbly creatures from sticky puddles.</p>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="wobble w-16 h-16 blob2 bg-gradient-to-br from-mint to-sky shadow-clay-sm flex items-center justify-center text-3xl mb-5">🔢</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Squishy math</h3>
+      <p class="text-plum/75 text-sm">Counting, shapes and early algebra taught with stretchy clay blocks they pinch and combine.</p>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="wobble w-16 h-16 blob3 bg-gradient-to-br from-lemon to-coral shadow-clay-sm flex items-center justify-center text-3xl mb-5">🧠</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Curiosity quests</h3>
+      <p class="text-plum/75 text-sm">Open-ended science and logic puzzles that reward "what if?" over "right answer."</p>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="wobble w-16 h-16 blob bg-gradient-to-br from-bubble to-coral shadow-clay-sm flex items-center justify-center text-3xl mb-5">🏆</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Achievement claymates</h3>
+      <p class="text-plum/75 text-sm">Collectible mascots that grow as skills level up — celebration without screen-time guilt.</p>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="wobble w-16 h-16 blob2 bg-gradient-to-br from-grape to-sky shadow-clay-sm flex items-center justify-center text-3xl mb-5">👪</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Parent peek-ins</h3>
+      <p class="text-plum/75 text-sm">A calm dashboard shows real progress, gentle nudges and weekly wins — no jargon.</p>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="wobble w-16 h-16 blob3 bg-gradient-to-br from-coral to-lemon shadow-clay-sm flex items-center justify-center text-3xl mb-5">🛡️</div>
+      <h3 class="font-display font-bold text-xl text-grapeink mb-2">Safe by design</h3>
+      <p class="text-plum/75 text-sm">No ads, no chat, no surprises. Just a cozy, fenced playground built for little hands.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="px-4 sm:px-6 py-20">
+  <div class="max-w-6xl mx-auto clay rounded-[40px] p-8 sm:p-12">
+    <div class="text-center mb-12">
+      <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-3">Three squishy steps</h2>
+      <p data-reveal class="reveal text-plum/75">From "let's try" to "one more level!" in under five minutes.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div data-reveal class="reveal text-center">
+        <div class="bob w-24 h-24 mx-auto blob bg-gradient-to-br from-mint to-sky shadow-clay flex items-center justify-center font-display font-extrabold text-4xl text-white mb-5">1</div>
+        <h3 class="font-display font-bold text-xl text-grapeink mb-2">Build a buddy</h3>
+        <p class="text-plum/75 text-sm">Kids mold their first claymate and pick what makes them curious.</p>
+      </div>
+      <div data-reveal class="reveal text-center">
+        <div class="bob-s w-24 h-24 mx-auto blob2 bg-gradient-to-br from-lemon to-coral shadow-clay flex items-center justify-center font-display font-extrabold text-4xl text-white mb-5">2</div>
+        <h3 class="font-display font-bold text-xl text-grapeink mb-2">Play the path</h3>
+        <p class="text-plum/75 text-sm">Adaptive quests gently flex with skill level — never too easy, never frustrating.</p>
+      </div>
+      <div data-reveal class="reveal text-center">
+        <div class="bob-l w-24 h-24 mx-auto blob3 bg-gradient-to-br from-bubble to-grape shadow-clay flex items-center justify-center font-display font-extrabold text-4xl text-white mb-5">3</div>
+        <h3 class="font-display font-bold text-xl text-grapeink mb-2">Grow & glow</h3>
+        <p class="text-plum/75 text-sm">Skills compound, mascots evolve, and parents see real growth each week.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="px-4 sm:px-6 py-20">
+  <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+    <div data-reveal class="reveal relative">
+      <div class="clay rounded-[40px] p-6 bob-l">
+        <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=900&q=60"
+             alt="Child learning"
+             onerror="this.style.display='none'"
+             class="rounded-[30px] w-full h-72 object-cover" />
+        <div class="hidden absolute inset-6 rounded-[30px] bg-gradient-to-br from-sky to-mint items-center justify-center text-6xl">🎨</div>
+      </div>
+      <div class="bob absolute -top-6 -right-6 w-24 h-24 blob bg-lemon clay flex items-center justify-center text-3xl">🧩</div>
+    </div>
+    <div>
+      <span data-reveal class="reveal inline-block clay-sm clay rounded-full px-4 py-1.5 text-sm font-bold text-grape mb-5">Why we made Wobblio</span>
+      <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-5">Built by teachers,<br>shaped for tiny hands.</h2>
+      <p data-reveal class="reveal text-plum/80 mb-5">We were tired of "educational" apps that felt like flashcards in a costume. So our team of educators, child psychologists and playful makers built a world where learning is the play — not a reward bolted onto it.</p>
+      <ul class="space-y-3">
+        <li data-reveal class="reveal flex items-center gap-3 font-semibold text-grapeink"><span class="w-7 h-7 rounded-xl bg-mint clay-sm flex items-center justify-center text-sm">✓</span> Curriculum-aligned, screen-time conscious</li>
+        <li data-reveal class="reveal flex items-center gap-3 font-semibold text-grapeink"><span class="w-7 h-7 rounded-xl bg-lemon clay-sm flex items-center justify-center text-sm">✓</span> Adaptive difficulty, zero pressure</li>
+        <li data-reveal class="reveal flex items-center gap-3 font-semibold text-grapeink"><span class="w-7 h-7 rounded-xl bg-coral clay-sm flex items-center justify-center text-sm">✓</span> Privacy-first, no ads, ever</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="px-4 sm:px-6 py-20">
+  <div class="max-w-6xl mx-auto text-center mb-14">
+    <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-3">Squeals of <span class="gradient-text">approval</span></h2>
+    <p data-reveal class="reveal text-plum/75">From parents who relaxed, and kids who didn't want to stop.</p>
+  </div>
+  <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-7">
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-12 h-12 rounded-blob bg-gradient-to-br from-bubble to-grape shadow-clay-sm"></span>
+        <div><div class="font-display font-bold text-grapeink">Marisol P.</div><div class="text-xs font-semibold text-plum/60">parent of Theo, 6</div></div>
+      </div>
+      <p class="text-plum/80 text-sm">"First app my son begs to open <em>and</em> I feel good about. He read a whole sign at the shop yesterday."</p>
+      <div class="text-lemon mt-3">★★★★★</div>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-12 h-12 rounded-blob bg-gradient-to-br from-mint to-sky shadow-clay-sm"></span>
+        <div><div class="font-display font-bold text-grapeink">Devon K.</div><div class="text-xs font-semibold text-plum/60">parent of Ima, 9</div></div>
+      </div>
+      <p class="text-plum/80 text-sm">"The parent dashboard finally tells me something useful without a wall of charts. Calm and clear."</p>
+      <div class="text-lemon mt-3">★★★★★</div>
+    </div>
+    <div data-reveal class="reveal clay rounded-[32px] p-7">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-12 h-12 rounded-blob bg-gradient-to-br from-lemon to-coral shadow-clay-sm"></span>
+        <div><div class="font-display font-bold text-grapeink">Aria, age 7</div><div class="text-xs font-semibold text-plum/60">actual user 🫶</div></div>
+      </div>
+      <p class="text-plum/80 text-sm">"My claymate is named Boop and he can DANCE now because I did all my counting. Best ever."</p>
+      <div class="text-lemon mt-3">★★★★★</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="plans" class="px-4 sm:px-6 py-20">
+  <div class="max-w-6xl mx-auto text-center mb-14">
+    <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-3">Pick a <span class="gradient-text">play plan</span></h2>
+    <p data-reveal class="reveal text-plum/75">Cancel anytime. Every plan starts with a 14-day free wobble.</p>
+  </div>
+  <div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-7 items-stretch">
+    <!-- Sprout -->
+    <div data-reveal class="reveal clay rounded-[34px] p-8 flex flex-col">
+      <div class="w-14 h-14 blob bg-mint clay-sm flex items-center justify-center text-2xl mb-4">🌱</div>
+      <h3 class="font-display font-bold text-2xl text-grapeink">Sprout</h3>
+      <p class="text-plum/70 text-sm mb-5">For one curious explorer.</p>
+      <div class="font-display font-extrabold text-4xl text-grapeink mb-6">$0<span class="text-base font-bold text-plum/60">/mo</span></div>
+      <ul class="space-y-3 text-sm text-plum/80 flex-1">
+        <li>✓ 1 child profile</li>
+        <li>✓ Daily quest sampler</li>
+        <li>✓ 3 starter claymates</li>
+      </ul>
+      <a href="#cta" class="clay-btn clay rounded-2xl text-center font-display font-bold py-3.5 mt-7">Start free</a>
+    </div>
+    <!-- Bloom (featured) -->
+    <div data-reveal class="reveal rounded-[34px] p-8 flex flex-col relative bg-gradient-to-br from-grape to-bubble text-white shadow-clay-pink scale-[1.03]">
+      <span class="absolute -top-3 right-6 bg-lemon text-grapeink text-xs font-display font-extrabold px-4 py-1.5 rounded-full shadow-clay-sm">Most loved</span>
+      <div class="w-14 h-14 blob2 bg-white/25 backdrop-blur flex items-center justify-center text-2xl mb-4">🌸</div>
+      <h3 class="font-display font-bold text-2xl">Bloom</h3>
+      <p class="text-white/85 text-sm mb-5">Full world, full joy.</p>
+      <div class="font-display font-extrabold text-4xl mb-6">$9<span class="text-base font-bold text-white/80">/mo</span></div>
+      <ul class="space-y-3 text-sm text-white/95 flex-1">
+        <li>✓ Up to 3 children</li>
+        <li>✓ All quests & subjects</li>
+        <li>✓ Full claymate collection</li>
+        <li>✓ Parent peek-in dashboard</li>
+      </ul>
+      <a href="#cta" class="clay-btn rounded-2xl text-center font-display font-bold py-3.5 mt-7 bg-white text-grape">Choose Bloom</a>
+    </div>
+    <!-- Garden -->
+    <div data-reveal class="reveal clay rounded-[34px] p-8 flex flex-col">
+      <div class="w-14 h-14 blob3 bg-coral clay-sm flex items-center justify-center text-2xl mb-4">🌻</div>
+      <h3 class="font-display font-bold text-2xl text-grapeink">Garden</h3>
+      <p class="text-plum/70 text-sm mb-5">For big, busy families.</p>
+      <div class="font-display font-extrabold text-4xl text-grapeink mb-6">$15<span class="text-base font-bold text-plum/60">/mo</span></div>
+      <ul class="space-y-3 text-sm text-plum/80 flex-1">
+        <li>✓ Up to 6 children</li>
+        <li>✓ Everything in Bloom</li>
+        <li>✓ Offline quest packs</li>
+        <li>✓ Priority cuddle support</li>
+      </ul>
+      <a href="#cta" class="clay-btn clay rounded-2xl text-center font-display font-bold py-3.5 mt-7">Choose Garden</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="px-4 sm:px-6 py-20">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 data-reveal class="reveal font-display font-extrabold text-4xl sm:text-5xl text-grapeink mb-3">Curious questions</h2>
+      <p data-reveal class="reveal text-plum/75">The things parents ask before their first wobble.</p>
+    </div>
+    <div class="space-y-4">
+      <div data-reveal class="reveal faq-item clay rounded-[26px] px-6 py-5 cursor-pointer open">
+        <button class="faq-head w-full flex items-center justify-between text-left font-display font-bold text-lg text-grapeink">
+          What ages is Wobblio for?
+          <span class="faq-plus w-8 h-8 rounded-xl bg-grape text-white flex items-center justify-center text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-plum/75 text-sm pt-3">Wobblio is designed for kids ages 4 to 12. Content adapts to each child's level, so a 5-year-old and a 10-year-old both get a "just right" path.</p></div>
+      </div>
+      <div data-reveal class="reveal faq-item clay rounded-[26px] px-6 py-5 cursor-pointer">
+        <button class="faq-head w-full flex items-center justify-between text-left font-display font-bold text-lg text-grapeink">
+          Is there any screen-time worry?
+          <span class="faq-plus w-8 h-8 rounded-xl bg-grape text-white flex items-center justify-center text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-plum/75 text-sm pt-3">We design for a 15-minute daily sweet spot with gentle wind-downs. You can set time limits in the parent dashboard, and there's never autoplay or endless scroll.</p></div>
+      </div>
+      <div data-reveal class="reveal faq-item clay rounded-[26px] px-6 py-5 cursor-pointer">
+        <button class="faq-head w-full flex items-center justify-between text-left font-display font-bold text-lg text-grapeink">
+          How is my child's data handled?
+          <span class="faq-plus w-8 h-8 rounded-xl bg-grape text-white flex items-center justify-center text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-plum/75 text-sm pt-3">Privacy-first, always. No ads, no third-party tracking, no in-app chat. We only collect what's needed to personalize learning, and you can export or delete it anytime.</p></div>
+      </div>
+      <div data-reveal class="reveal faq-item clay rounded-[26px] px-6 py-5 cursor-pointer">
+        <button class="faq-head w-full flex items-center justify-between text-left font-display font-bold text-lg text-grapeink">
+          Can I cancel whenever?
+          <span class="faq-plus w-8 h-8 rounded-xl bg-grape text-white flex items-center justify-center text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-plum/75 text-sm pt-3">Yes — one tap, no guilt-trips, no hidden fees. Your 14-day free trial won't charge you if you cancel before it ends.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="px-4 sm:px-6 py-20">
+  <div data-reveal class="reveal max-w-5xl mx-auto rounded-[44px] p-10 sm:p-16 text-center relative overflow-hidden bg-gradient-to-br from-grape via-bubble to-coral shadow-clay-pink">
+    <div class="bob absolute top-8 left-8 w-16 h-16 blob bg-white/20"></div>
+    <div class="bob-l absolute bottom-8 right-10 w-20 h-20 blob2 bg-white/15"></div>
+    <h2 class="font-display font-extrabold text-4xl sm:text-5xl text-white mb-4 relative">Ready to start learning?</h2>
+    <p class="text-white/90 max-w-md mx-auto mb-8 relative">Join 40,000 families giving their kids a squishier, smarter playground. First 14 days are on us.</p>
+    <div class="flex flex-wrap gap-4 justify-center relative">
+      <a href="#top" class="clay-btn rounded-2xl bg-white text-grape font-display font-bold px-8 py-4 shadow-clay">Start free today</a>
+      <a href="#plans" class="clay-btn rounded-2xl bg-white/20 backdrop-blur text-white font-display font-bold px-8 py-4 border border-white/30">See plans</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="px-4 sm:px-6 pb-12">
+  <div class="max-w-6xl mx-auto clay rounded-[34px] p-9">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-9 h-9 rounded-blob bg-gradient-to-br from-grape to-bubble shadow-clay-sm flex items-center justify-center text-white font-display font-extrabold">w</span>
+          <span class="font-display font-extrabold text-lg text-grapeink">Wobblio</span>
+        </div>
+        <p class="text-sm text-plum/70">Squishy learning that grows with your child.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-grapeink mb-3">Explore</h4>
+        <ul class="space-y-2 text-sm text-plum/70">
+          <li><a href="#features" class="hover:text-grape">Play world</a></li>
+          <li><a href="#how" class="hover:text-grape">How it works</a></li>
+          <li><a href="#plans" class="hover:text-grape">Plans</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-grapeink mb-3">Company</h4>
+        <ul class="space-y-2 text-sm text-plum/70">
+          <li><a href="#about" class="hover:text-grape">Our story</a></li>
+          <li><a href="#faq" class="hover:text-grape">FAQ</a></li>
+          <li><a href="#" class="hover:text-grape">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-grapeink mb-3">Stay in the loop</h4>
+        <div class="flex gap-2">
+          <input type="email" placeholder="Parent email" class="flex-1 min-w-0 rounded-2xl px-4 py-2.5 text-sm bg-cream shadow-clay-press outline-none placeholder:text-plum/40" />
+          <button class="clay-btn rounded-2xl bg-gradient-to-br from-lemon to-coral text-grapeink font-bold px-4 shadow-clay-sm">→</button>
+        </div>
+        <div class="flex gap-3 mt-4">
+          <a href="#" class="w-10 h-10 rounded-2xl bg-cream shadow-clay-sm flex items-center justify-center text-grape wobble">f</a>
+          <a href="#" class="w-10 h-10 rounded-2xl bg-cream shadow-clay-sm flex items-center justify-center text-grape wobble">in</a>
+          <a href="#" class="w-10 h-10 rounded-2xl bg-cream shadow-clay-sm flex items-center justify-center text-grape wobble">ig</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-grape/10 mt-8 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-sm text-plum/60">
+      <p>© 2026 Wobblio Learning Co. Made with squish.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-grape">Privacy</a>
+        <a href="#" class="hover:text-grape">Terms</a>
+        <a href="#" class="hover:text-grape">Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // FAQ accordion (works regardless of motion pref)
+  document.querySelectorAll('.faq-item').forEach((item) => {
+    item.querySelector('.faq-head').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  if (reduce || !window.gsap) {
+    document.querySelectorAll('[data-count]').forEach(el => el.textContent = el.dataset.count);
+    document.querySelectorAll('.progress-bar').forEach(b => b.style.width = '80%');
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Generic scroll reveal with bounce
+  gsap.utils.toArray('[data-reveal]').forEach((el) => {
+    gsap.fromTo(el,
+      { autoAlpha: 0, y: 40, scale: 0.92 },
+      {
+        autoAlpha: 1, y: 0, scale: 1, duration: 0.9, ease: 'back.out(1.7)',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+  });
+
+  // Count-ups
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const target = +el.dataset.count;
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 92%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: target, duration: 1.6, ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); }
+      })
+    });
+  });
+
+  // Progress bar fill
+  document.querySelectorAll('.progress-bar').forEach((bar) => {
+    ScrollTrigger.create({
+      trigger: bar, start: 'top 92%', once: true,
+      onEnter: () => gsap.to(bar, { width: '80%', duration: 1.6, ease: 'elastic.out(1,0.6)' })
+    });
+  });
+
+  // Hero mascot pop on load
+  gsap.from('.candy-bg .bob, .candy-bg .bob-s, .candy-bg .bob-l', {
+    scale: 0, opacity: 0, duration: 1, ease: 'elastic.out(1,0.5)', stagger: 0.08, delay: 0.2
+  });
+})();
+</script>
+</body>
+</html>

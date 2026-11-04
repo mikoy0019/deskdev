@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Alex Chen â€” Designer & Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode:'class',
+  theme:{extend:{
+    colors:{accent:'#a3e635',dim:'#84cc16',bg:'#09090b','card':'#18181b','card-hi':'#27272a',txt:'#fafafa',muted:'#71717a',border:'rgba(255,255,255,0.06)'},
+    fontFamily:{display:['Sora','system-ui'],body:['Inter','system-ui']}
+  }}
+}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes typewriter{from{width:0}to{width:100%}}
+@keyframes blink{50%{border-color:transparent}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.reveal{opacity:0;transform:translateY(40px);transition:all .9s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.12s}.st2{transition-delay:.24s}.st3{transition-delay:.36s}.st4{transition-delay:.48s}
+.work-item{transition:all .5s cubic-bezier(.16,1,.3,1)}
+.work-item:hover{transform:scale(1.03)}
+.work-item:hover .work-overlay{opacity:1}
+.work-overlay{opacity:0;transition:opacity .4s}
+.type-effect{overflow:hidden;white-space:nowrap;border-right:3px solid;animation:typewriter 2.5s steps(30) 1s both,blink .7s step-end infinite 3.5s}
+</style>
+</head>
+<body class="bg-bg text-txt font-body antialiased overflow-x-hidden">
+
+<!-- â•â•â• NAV â€” Minimal, personal â•â•â• -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-bg/80 backdrop-blur-2xl border-b border-border">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#" class="font-display font-bold text-lg">AC<span class="text-accent">.</span></a>
+    <div class="hidden md:flex gap-8 text-sm font-medium text-muted">
+      <a href="#work" class="hover:text-txt transition-colors">Work</a>
+      <a href="#about" class="hover:text-txt transition-colors">About</a>
+      <a href="#skills" class="hover:text-txt transition-colors">Skills</a>
+      <a href="#contact" class="hover:text-txt transition-colors">Contact</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+      <span class="text-xs text-accent font-medium">Available for work</span>
+    </div>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” Personal, type-focused â•â•â• -->
+<section class="min-h-screen flex items-center pt-20 px-6 relative">
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(163,230,53,.04)_0%,transparent_50%)]"></div>
+  <div class="max-w-6xl mx-auto w-full relative z-10">
+    <!-- Intro -->
+    <div class="mb-4" style="animation:fadeUp .8s .2s both">
+      <span class="text-accent text-sm font-medium tracking-widest uppercase">Designer & Full-Stack Developer</span>
+    </div>
+
+    <!-- Name -->
+    <h1 class="font-display text-6xl md:text-8xl lg:text-[7rem] font-800 leading-[0.9] tracking-tighter mb-8" style="animation:fadeUp 1s .3s both">
+      Hi, I'm<br>
+      <span class="text-accent">Alex Chen</span>
+    </h1>
+
+    <!-- Typewriter tagline -->
+    <div class="text-xl md:text-2xl text-muted font-light mb-12" style="animation:fadeUp 1s .5s both">
+      <span class="type-effect inline-block border-accent">I design & build digital products that people love.</span>
+    </div>
+
+    <!-- CTAs -->
+    <div class="flex gap-4 flex-wrap mb-16" style="animation:fadeUp 1s .7s both">
+      <a href="#work" class="bg-accent text-bg px-8 py-4 font-display font-bold text-sm tracking-wide hover:bg-dim transition-all hover:scale-[1.02]">VIEW MY WORK â†’</a>
+      <a href="#contact" class="border border-border text-txt px-8 py-4 font-display font-medium text-sm tracking-wide hover:border-accent hover:text-accent transition-all">GET IN TOUCH</a>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="flex gap-12" style="animation:fadeUp 1s .9s both">
+      <div>
+        <div class="text-3xl font-display font-bold text-accent">8+</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-1">Years Experience</div>
+      </div>
+      <div>
+        <div class="text-3xl font-display font-bold">120+</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-1">Projects Done</div>
+      </div>
+      <div>
+        <div class="text-3xl font-display font-bold">40+</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-1">Happy Clients</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• WORK â€” Masonry-style grid â•â•â• -->
+<section id="work" class="py-32 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal mb-16">
+      <span class="text-accent text-xs font-semibold tracking-[0.3em] uppercase">Selected Work</span>
+      <h2 class="font-display text-4xl font-bold tracking-tight mt-3">Featured <span class="text-accent">Projects</span></h2>
+    </div>
+
+    <!-- Masonry grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Project 1 â€” tall -->
+      <div class="reveal work-item rounded-2xl overflow-hidden relative cursor-pointer" style="aspect-ratio:3/4">
+        <div class="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent/3 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-[120px] font-display font-bold text-accent/5">01</div>
+        <div class="work-overlay absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent flex items-end p-8">
+          <div>
+            <div class="text-accent text-xs font-semibold tracking-widest uppercase mb-2">SaaS Platform</div>
+            <div class="font-display text-2xl font-bold mb-1">Nexus Dashboard</div>
+            <div class="text-muted text-sm">React Â· TypeScript Â· Tailwind Â· Supabase</div>
+          </div>
+        </div>
+        <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent text-lg">â†—</div>
+      </div>
+
+      <!-- Project 2 + 3 stacked -->
+      <div class="flex flex-col gap-6">
+        <div class="reveal st1 work-item rounded-2xl overflow-hidden relative cursor-pointer" style="aspect-ratio:16/10">
+          <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-purple-500/3 to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-[100px] font-display font-bold text-purple-500/5">02</div>
+          <div class="work-overlay absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent flex items-end p-8">
+            <div>
+              <div class="text-purple-400 text-xs font-semibold tracking-widest uppercase mb-2">Mobile App</div>
+              <div class="font-display text-xl font-bold mb-1">HealthPulse</div>
+              <div class="text-muted text-sm">React Native Â· Node.js Â· AI</div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal st2 work-item rounded-2xl overflow-hidden relative cursor-pointer" style="aspect-ratio:16/10">
+          <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-cyan-500/3 to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-[100px] font-display font-bold text-cyan-500/5">03</div>
+          <div class="work-overlay absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent flex items-end p-8">
+            <div>
+              <div class="text-cyan-400 text-xs font-semibold tracking-widest uppercase mb-2">E-Commerce</div>
+              <div class="font-display text-xl font-bold mb-1">Artisan Market</div>
+              <div class="text-muted text-sm">Next.js Â· Stripe Â· Shopify API</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4 â€” wide -->
+      <div class="reveal st3 work-item rounded-2xl overflow-hidden relative cursor-pointer md:col-span-2" style="aspect-ratio:21/9">
+        <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/3 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-[120px] font-display font-bold text-orange-500/5">04</div>
+        <div class="work-overlay absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent flex items-end p-8">
+          <div>
+            <div class="text-orange-400 text-xs font-semibold tracking-widest uppercase mb-2">Brand & Web</div>
+            <div class="font-display text-2xl font-bold mb-1">Terra Studios â€” Complete Rebrand</div>
+            <div class="text-muted text-sm">Brand Identity Â· Website Â· Motion Design Â· Photography</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• SKILLS â€” Tech stack pills â•â•â• -->
+<section id="skills" class="py-24 px-6 border-y border-border">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal text-center mb-12">
+      <span class="text-accent text-xs font-semibold tracking-[0.3em] uppercase">Expertise</span>
+      <h2 class="font-display text-3xl font-bold tracking-tight mt-3">Tech Stack & Skills</h2>
+    </div>
+    <div class="reveal st1 flex flex-wrap justify-center gap-3">
+      <span class="px-5 py-2.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium">React</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">TypeScript</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Next.js</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Tailwind CSS</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Node.js</span>
+      <span class="px-5 py-2.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium">Figma</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">PostgreSQL</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Supabase</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Framer Motion</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Three.js</span>
+      <span class="px-5 py-2.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-sm font-medium">UI/UX Design</span>
+      <span class="px-5 py-2.5 rounded-full bg-card border border-border text-txt text-sm font-medium">Python</span>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• ABOUT â€” Brief bio â•â•â• -->
+<section id="about" class="py-32 px-6">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+    <div class="reveal">
+      <div class="aspect-square rounded-3xl bg-card border border-border overflow-hidden relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent flex items-center justify-center">
+          <div class="w-32 h-32 rounded-full bg-accent/10 border-2 border-accent/20 flex items-center justify-center font-display text-4xl font-bold text-accent">AC</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="reveal text-accent text-xs font-semibold tracking-[0.3em] uppercase mb-3">About Me</div>
+      <h2 class="reveal st1 font-display text-3xl font-bold tracking-tight mb-6">A designer who codes.<br><span class="text-accent">A developer who designs.</span></h2>
+      <p class="reveal st2 text-muted text-base leading-relaxed mb-6">
+        With 8+ years of experience at the intersection of design and engineering, I create digital products that are both beautiful and functional. I've worked with startups, agencies, and Fortune 500 companies to bring ideas to life.
+      </p>
+      <p class="reveal st3 text-muted text-base leading-relaxed mb-8">
+        Currently based in San Francisco, available for freelance projects and full-time opportunities. I believe great design is invisible â€” it just works.
+      </p>
+      <a href="#" class="reveal st4 inline-flex items-center gap-2 text-accent text-sm font-semibold hover:gap-3 transition-all">Download Resume <span>â†’</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â•â•â• -->
+<section id="contact" class="py-32 px-6 text-center relative">
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(163,230,53,.03)_0%,transparent_50%)]"></div>
+  <div class="max-w-2xl mx-auto relative z-10">
+    <div class="reveal text-accent text-xs font-semibold tracking-[0.3em] uppercase mb-4">Get in Touch</div>
+    <h2 class="reveal st1 font-display text-4xl md:text-5xl font-bold tracking-tight mb-6">
+      Let's build something<br><span class="text-accent">amazing together</span>
+    </h2>
+    <p class="reveal st2 text-muted text-base mb-10">I'm currently taking on new projects. If you have an idea you'd like to bring to life, let's talk.</p>
+    <div class="reveal st3 flex gap-4 justify-center flex-wrap">
+      <a href="mailto:hello@alexchen.dev" class="bg-accent text-bg px-10 py-4 font-display font-bold text-sm hover:bg-dim transition-all hover:scale-[1.02]">hello@alexchen.dev</a>
+      <a href="#" class="border border-border text-txt px-10 py-4 font-display font-medium text-sm hover:border-accent hover:text-accent transition-all">LinkedIn</a>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-8 px-6">
+  <div class="max-w-6xl mx-auto flex justify-between items-center text-xs text-muted">
+    <span>Â© 2026 Alex Chen. Built with Next.js & Tailwind.</span>
+    <div class="flex gap-6">
+      <a href="#" class="hover:text-accent transition-colors">GitHub</a>
+      <a href="#" class="hover:text-accent transition-colors">Dribbble</a>
+      <a href="#" class="hover:text-accent transition-colors">Twitter</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+document.body.style.opacity='0';document.body.style.transition='opacity .5s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mosswick Hollow — A Storybook Board Game of Wits &amp; Whimsy</title>
+<meta name="description" content="Mosswick Hollow: a richly illustrated tabletop adventure for 2–5 brave critters. Gather acorns, outwit the Thornwardens, and claim the Lantern Throne." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Caveat:wght@600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          moss:   { 50:'#f3f8ec', 100:'#e3f0d0', 300:'#a9d473', 400:'#86bf48', 500:'#5f9e2e', 600:'#477a22', 700:'#37601d' },
+          berry:  { 400:'#f06aa0', 500:'#e23f80', 600:'#c12463' },
+          amber:  { 300:'#ffd97a', 400:'#ffc043', 500:'#f5a623' },
+          plum:   { 700:'#3b2348', 800:'#2c1937', 900:'#1d0f25' },
+          cream:  '#fdf6e8',
+          teal:   { 400:'#3fc1c9', 500:'#1ea7ad' },
+        },
+        fontFamily: {
+          display: ['Fredoka','system-ui','sans-serif'],
+          hand:    ['Caveat','cursive'],
+          body:    ['Nunito','system-ui','sans-serif'],
+        },
+        boxShadow: {
+          card: '0 18px 40px -12px rgba(29,15,37,0.45)',
+          pop:  '0 10px 0 0 rgba(29,15,37,0.85)',
+          inset: 'inset 0 2px 0 0 rgba(255,255,255,0.35)',
+        },
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #fdf6e8;
+    color: #2c1937;
+  }
+  .font-display { font-family: 'Fredoka', sans-serif; }
+  .font-hand { font-family: 'Caveat', cursive; }
+
+  /* Paper / storybook texture */
+  .paper-grain {
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(95,158,46,0.06) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(226,63,128,0.06) 0, transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  }
+  .ink-edge {
+    --r: 14px;
+    border-radius: var(--r);
+    position: relative;
+  }
+
+  /* Wobbly hand-drawn border */
+  .doodle-border {
+    border: 3px solid #2c1937;
+    box-shadow: 0 6px 0 0 rgba(44,25,55,0.9);
+    border-radius: 22px 26px 24px 28px / 28px 22px 30px 24px;
+  }
+
+  /* Floating game pieces */
+  .floaty { will-change: transform; }
+  @keyframes bob { 0%,100% { transform: translateY(0) rotate(var(--rot,0deg)); } 50% { transform: translateY(-18px) rotate(var(--rot,0deg)); } }
+  @keyframes spinSlow { to { transform: rotate(360deg); } }
+  @keyframes twinkle { 0%,100% { opacity:.25; transform: scale(.7);} 50% { opacity:1; transform: scale(1);} }
+
+  .piece-bob { animation: bob 6s ease-in-out infinite; }
+  .piece-bob-2 { animation: bob 7.5s ease-in-out infinite; }
+  .piece-bob-3 { animation: bob 5s ease-in-out infinite; }
+  .twinkle { animation: twinkle 3s ease-in-out infinite; }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation: scrollX 28s linear infinite; }
+  @keyframes scrollX { to { transform: translateX(-50%); } }
+  .marquee:hover { animation-play-state: paused; }
+
+  /* Dice */
+  .die {
+    width: 84px; height: 84px;
+    background: linear-gradient(135deg,#fffdf7,#ffe9c4);
+    border: 3px solid #2c1937;
+    border-radius: 18px;
+    box-shadow: 0 8px 0 0 rgba(44,25,55,0.9), inset 0 3px 0 rgba(255,255,255,.6);
+    display:grid; place-items:center;
+    cursor: pointer;
+    position: relative;
+    transition: transform .15s ease;
+  }
+  .die:active { transform: translateY(4px); box-shadow: 0 4px 0 0 rgba(44,25,55,0.9), inset 0 3px 0 rgba(255,255,255,.6); }
+  .pip-grid { width:64px; height:64px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:4px; padding:4px; }
+  .pip { width:14px; height:14px; border-radius:50%; background:#2c1937; align-self:center; justify-self:center; }
+  @keyframes diceShake { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-18deg) scale(1.05)} 40%{transform:rotate(16deg)} 60%{transform:rotate(-12deg)} 80%{transform:rotate(8deg)} }
+  .dice-rolling { animation: diceShake .55s ease; }
+
+  /* Card flip */
+  .flip-card { perspective: 1200px; }
+  .flip-inner { transition: transform .7s cubic-bezier(.34,1.56,.64,1); transform-style: preserve-3d; }
+  .flip-card:hover .flip-inner { transform: rotateY(180deg); }
+  .flip-face { backface-visibility: hidden; -webkit-backface-visibility:hidden; }
+  .flip-back { transform: rotateY(180deg); }
+
+  /* Tilt box */
+  .tilt-box { transform-style: preserve-3d; transition: transform .2s ease; will-change: transform; }
+
+  /* Magnetic CTA */
+  .magnetic { transition: transform .2s cubic-bezier(.34,1.56,.64,1); }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  .blob { filter: blur(2px); }
+  .text-stroke {
+    -webkit-text-stroke: 2px #2c1937;
+    paint-order: stroke fill;
+  }
+
+  ::selection { background:#ffc043; color:#2c1937; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+  }
+</style>
+</head>
+
+<body class="paper-grain antialiased selection:bg-amber-300">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <nav class="mt-3 flex items-center justify-between rounded-full border-2 border-plum-800 bg-cream/90 backdrop-blur px-4 py-2 shadow-[0_6px_0_0_rgba(44,25,55,0.9)]">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-moss-500 border-2 border-plum-800 text-cream font-display font-bold text-lg rotate-[-6deg] group-hover:rotate-6 transition-transform">M</span>
+        <span class="font-display font-bold text-lg leading-none">Mosswick<span class="text-berry-500">·</span>Hollow</span>
+      </a>
+      <ul class="hidden lg:flex items-center gap-6 font-body font-bold text-sm text-plum-800">
+        <li><a href="#how" class="hover:text-berry-500 transition">How to Play</a></li>
+        <li><a href="#world" class="hover:text-berry-500 transition">The Hollow</a></li>
+        <li><a href="#components" class="hover:text-berry-500 transition">In the Box</a></li>
+        <li><a href="#characters" class="hover:text-berry-500 transition">Critters</a></li>
+        <li><a href="#expansions" class="hover:text-berry-500 transition">Expansions</a></li>
+        <li><a href="#faq" class="hover:text-berry-500 transition">FAQ</a></li>
+      </ul>
+      <a href="#buy" id="navBuy" class="magnetic inline-flex items-center gap-2 rounded-full bg-berry-500 border-2 border-plum-800 px-5 py-2 font-display font-semibold text-cream shadow-[0_5px_0_0_rgba(44,25,55,0.9)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-[0_2px_0_0_rgba(44,25,55,0.9)] transition">
+        <span>Buy · $54</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16">
+  <!-- gradient sky -->
+  <div class="absolute inset-0 -z-20 bg-gradient-to-b from-teal-400/30 via-moss-100 to-cream"></div>
+  <!-- parallax hills -->
+  <div data-parallax="0.25" class="absolute bottom-0 -z-10 left-0 right-0 h-64 bg-moss-300/60 blob" style="border-radius:50% 50% 0 0 / 100% 100% 0 0; transform: scaleX(1.4)"></div>
+  <div data-parallax="0.45" class="absolute bottom-0 -z-10 left-[-10%] right-[-10%] h-44 bg-moss-500/70 blob" style="border-radius:50% 50% 0 0 / 100% 100% 0 0;"></div>
+
+  <!-- floating pieces -->
+  <div class="floaty piece-bob absolute top-32 left-[6%] hidden sm:block" style="--rot:-8deg">
+    <div class="h-12 w-12 rounded-full bg-amber-400 border-[3px] border-plum-800 shadow-pop"></div>
+  </div>
+  <div class="floaty piece-bob-2 absolute top-44 right-[8%] hidden sm:block" style="--rot:12deg">
+    <div class="h-0 w-0 border-l-[22px] border-r-[22px] border-b-[38px] border-l-transparent border-r-transparent border-b-berry-500 drop-shadow-[0_5px_0_rgba(44,25,55,0.9)]"></div>
+  </div>
+  <div class="floaty piece-bob-3 absolute bottom-40 left-[12%] hidden md:block twinkle">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="#ffc043" stroke="#2c1937" stroke-width="1.5"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.7 6.6L12 16.8 6.3 20.3l1.7-6.6L2.8 9.3l6.8-.5z"/></svg>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <!-- copy -->
+    <div>
+      <span class="inline-flex items-center gap-2 rounded-full bg-cream border-2 border-plum-800 px-4 py-1.5 font-body font-extrabold text-xs uppercase tracking-widest shadow-[0_4px_0_0_rgba(44,25,55,0.9)]">
+        <span class="h-2 w-2 rounded-full bg-moss-500"></span> Award-winning · 2–5 players · Ages 8+
+      </span>
+      <h1 class="mt-6 font-display font-bold leading-[0.95] text-5xl sm:text-6xl lg:text-7xl">
+        <span class="block reveal-h text-plum-900">Gather the</span>
+        <span class="block reveal-h text-moss-600 text-stroke">Acorn Crown.</span>
+        <span class="block reveal-h font-hand text-berry-500 text-4xl sm:text-5xl lg:text-6xl mt-1">before the frost.</span>
+      </h1>
+      <p class="mt-6 max-w-md font-body text-lg text-plum-800/80">
+        A cozy-but-cutthroat tabletop adventure. Lead your band of woodland critters through
+        <strong>Mosswick Hollow</strong>, outwit the Thornwardens, and claim the Lantern Throne before winter falls.
+      </p>
+
+      <!-- count-ups -->
+      <div class="mt-8 flex flex-wrap gap-6">
+        <div class="text-center">
+          <div class="font-display font-bold text-4xl text-berry-500" data-count="240">0</div>
+          <div class="font-body text-xs font-extrabold uppercase tracking-wide text-plum-800/70">Illustrated Cards</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display font-bold text-4xl text-moss-600" data-count="5">0</div>
+          <div class="font-body text-xs font-extrabold uppercase tracking-wide text-plum-800/70">Brave Critters</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display font-bold text-4xl text-amber-500"><span data-count="45">0</span>m</div>
+          <div class="font-body text-xs font-extrabold uppercase tracking-wide text-plum-800/70">Avg. Playtime</div>
+        </div>
+      </div>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4">
+        <a href="#buy" id="heroBuy" class="magnetic inline-flex items-center gap-2 rounded-full bg-berry-500 border-[3px] border-plum-800 px-8 py-4 font-display font-semibold text-lg text-cream shadow-[0_8px_0_0_rgba(44,25,55,0.9)] hover:-translate-y-1 active:translate-y-1 active:shadow-[0_3px_0_0_rgba(44,25,55,0.9)] transition">
+          Buy the Game · $54
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 font-display font-semibold text-plum-800 hover:text-berry-500 transition">
+          <span class="grid h-11 w-11 place-items-center rounded-full border-[3px] border-plum-800 bg-cream shadow-[0_5px_0_0_rgba(44,25,55,0.9)]">▶</span>
+          How to play
+        </a>
+      </div>
+    </div>
+
+    <!-- game box -->
+    <div class="relative flex justify-center lg:justify-end" id="boxWrap">
+      <div class="tilt-box relative w-72 sm:w-80 lg:w-96" id="gameBox">
+        <div class="doodle-border bg-gradient-to-br from-plum-700 to-plum-900 p-6 pt-7 text-cream overflow-hidden">
+          <!-- optional unsplash texture -->
+          <img src="https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               alt="" class="absolute inset-0 h-full w-full object-cover opacity-15 mix-blend-luminosity pointer-events-none" />
+          <div class="relative">
+            <p class="font-hand text-amber-300 text-2xl text-center">an indie tabletop tale</p>
+            <h2 class="font-display font-bold text-center text-4xl sm:text-5xl leading-none mt-1">MOSSWICK<br/><span class="text-moss-300">HOLLOW</span></h2>
+            <!-- scene -->
+            <div class="mt-5 rounded-2xl border-2 border-cream/40 bg-plum-900/60 p-5 h-44 relative overflow-hidden">
+              <div class="absolute bottom-0 left-0 right-0 h-20 bg-moss-500/70" style="border-radius:40% 50% 0 0/100% 100% 0 0;"></div>
+              <div class="absolute bottom-3 left-6 h-10 w-7 rounded-t-full bg-amber-400 border-2 border-plum-900"></div>
+              <div class="absolute bottom-3 right-7 h-12 w-8 rounded-t-full bg-berry-400 border-2 border-plum-900"></div>
+              <div class="absolute top-3 right-4 twinkle"><svg width="22" height="22" viewBox="0 0 24 24" fill="#ffd97a"><path d="M12 2l2.6 6.3 6.8.5-5.2 4.4 1.7 6.6L12 16.8 6.3 20.3l1.7-6.6L2.8 9.3l6.8-.5z"/></svg></div>
+              <div class="absolute top-5 left-5 h-3 w-3 rounded-full bg-cream twinkle"></div>
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+              <span class="font-body font-extrabold text-xs uppercase tracking-widest text-amber-300">2–5 Players</span>
+              <span class="font-body font-extrabold text-xs uppercase tracking-widest text-amber-300">Ages 8+</span>
+            </div>
+          </div>
+        </div>
+        <!-- shadow card behind -->
+        <div class="absolute -z-10 -bottom-3 -right-3 inset-x-3 top-3 doodle-border bg-amber-400"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="border-y-[3px] border-plum-800 bg-amber-400 py-3 overflow-hidden">
+  <div class="marquee items-center font-display font-bold text-plum-900 text-xl">
+    <span class="flex shrink-0">
+      <span class="mx-6">★ GATHER ACORNS</span><span class="mx-6">★ OUTWIT THORNWARDENS</span><span class="mx-6">★ CLAIM THE LANTERN THRONE</span><span class="mx-6">★ BEAT THE FROST</span><span class="mx-6">★ COZY-BUT-CUTTHROAT</span>
+    </span>
+    <span class="flex shrink-0" aria-hidden="true">
+      <span class="mx-6">★ GATHER ACORNS</span><span class="mx-6">★ OUTWIT THORNWARDENS</span><span class="mx-6">★ CLAIM THE LANTERN THRONE</span><span class="mx-6">★ BEAT THE FROST</span><span class="mx-6">★ COZY-BUT-CUTTHROAT</span>
+    </span>
+  </div>
+</div>
+
+<!-- ============ HOW TO PLAY ============ -->
+<section id="how" class="relative py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="font-hand text-berry-500 text-3xl">three turns to glory</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">How to Play</h2>
+      <p class="reveal mt-3 font-body text-plum-800/70">Learn the loop in five minutes. Master it over a lifetime of friendly betrayals.</p>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-7">
+      <!-- step + dice -->
+      <div class="reveal doodle-border bg-cream p-7 relative">
+        <div class="absolute -top-5 -left-3 grid h-12 w-12 place-items-center rounded-full bg-moss-500 border-[3px] border-plum-800 font-display font-bold text-cream text-xl shadow-pop">1</div>
+        <h3 class="font-display font-bold text-2xl mt-3">Roll the Mossdice</h3>
+        <p class="mt-2 font-body text-plum-800/75">Each dawn, roll to set your forage paths. Spend pips to move, scout, or stash acorns in your burrow.</p>
+        <div class="mt-6 flex items-center gap-4">
+          <button id="rollDie" class="die" aria-label="Roll the die">
+            <div class="pip-grid" id="pipGrid"></div>
+          </button>
+          <div>
+            <p class="font-display font-bold text-lg" id="dieLabel">Tap to roll!</p>
+            <p class="font-body text-sm text-plum-800/60">You rolled a <span id="dieValue" class="font-bold text-berry-500">—</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal doodle-border bg-cream p-7 relative">
+        <div class="absolute -top-5 -left-3 grid h-12 w-12 place-items-center rounded-full bg-berry-500 border-[3px] border-plum-800 font-display font-bold text-cream text-xl shadow-pop">2</div>
+        <h3 class="font-display font-bold text-2xl mt-3">Play a Whim Card</h3>
+        <p class="mt-2 font-body text-plum-800/75">Whim cards bend the rules — swap burrows, summon fireflies, or sabotage a rival's harvest. Use them dearly.</p>
+        <div class="mt-6 grid grid-cols-3 gap-2">
+          <div class="aspect-[2/3] rounded-lg bg-amber-300 border-2 border-plum-800 -rotate-6 grid place-items-center font-display font-bold text-plum-900">🍂</div>
+          <div class="aspect-[2/3] rounded-lg bg-teal-400 border-2 border-plum-800 grid place-items-center font-display font-bold text-plum-900">✦</div>
+          <div class="aspect-[2/3] rounded-lg bg-berry-400 border-2 border-plum-800 rotate-6 grid place-items-center font-display font-bold text-cream">♞</div>
+        </div>
+      </div>
+
+      <div class="reveal doodle-border bg-cream p-7 relative">
+        <div class="absolute -top-5 -left-3 grid h-12 w-12 place-items-center rounded-full bg-amber-500 border-[3px] border-plum-800 font-display font-bold text-cream text-xl shadow-pop">3</div>
+        <h3 class="font-display font-bold text-2xl mt-3">Light the Lantern</h3>
+        <p class="mt-2 font-body text-plum-800/75">First critter to ferry seven acorns to the Old Lantern wins the Throne — unless the Frost arrives first.</p>
+        <div class="mt-6 relative h-24 rounded-2xl bg-plum-800 overflow-hidden">
+          <div class="absolute bottom-0 left-0 right-0 h-10 bg-moss-500" style="border-radius:40% 50% 0 0/100% 100% 0 0;"></div>
+          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 h-12 w-8 rounded-t-full bg-amber-400 border-2 border-plum-900 twinkle"></div>
+          <div class="absolute top-2 right-3 h-2 w-2 rounded-full bg-cream twinkle"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE WORLD / LORE ============ -->
+<section id="world" class="relative py-24 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-plum-800 to-plum-900"></div>
+  <div class="absolute inset-0 -z-10 opacity-40 paper-grain"></div>
+  <!-- floating stars -->
+  <div class="absolute top-16 left-[10%] twinkle"><svg width="20" height="20" viewBox="0 0 24 24" fill="#ffd97a"><circle cx="12" cy="12" r="6"/></svg></div>
+  <div class="absolute top-40 right-[14%] twinkle" style="animation-delay:1s"><svg width="14" height="14" viewBox="0 0 24 24" fill="#3fc1c9"><circle cx="12" cy="12" r="6"/></svg></div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-14 items-center text-cream">
+    <div class="reveal">
+      <span class="font-hand text-amber-300 text-3xl">a place between the roots</span>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl mt-1">The World of <span class="text-moss-300">the Hollow</span></h2>
+      <p class="mt-5 font-body text-cream/80 text-lg">
+        Long ago, the Old Lantern kept Mosswick Hollow in endless autumn — warm, golden, and forever harvest-time.
+        But the lantern's flame is dimming, and the <strong class="text-berry-400">Thornwardens</strong> stir beneath the brambles.
+      </p>
+      <p class="mt-4 font-body text-cream/70">
+        Five critter clans must set aside old grudges (mostly) and gather enough acorns to relight the flame —
+        before the First Frost creeps in and the Hollow sleeps forever.
+      </p>
+
+      <div class="mt-8 grid grid-cols-3 gap-4">
+        <div class="rounded-2xl border-2 border-cream/30 bg-plum-700/50 p-4">
+          <div class="font-display font-bold text-3xl text-amber-300" data-count="13">0</div>
+          <div class="font-body text-xs uppercase tracking-wide text-cream/60">Regions to roam</div>
+        </div>
+        <div class="rounded-2xl border-2 border-cream/30 bg-plum-700/50 p-4">
+          <div class="font-display font-bold text-3xl text-moss-300" data-count="7">0</div>
+          <div class="font-body text-xs uppercase tracking-wide text-cream/60">Thornward foes</div>
+        </div>
+        <div class="rounded-2xl border-2 border-cream/30 bg-plum-700/50 p-4">
+          <div class="font-display font-bold text-3xl text-berry-400">∞</div>
+          <div class="font-body text-xs uppercase tracking-wide text-cream/60">Tales to tell</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- map illustration -->
+    <div class="reveal relative">
+      <div class="doodle-border bg-moss-100 p-5 rotate-1 relative overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1611371805429-8b5c1b2c34ba?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="" class="absolute inset-0 h-full w-full object-cover opacity-10 pointer-events-none" />
+        <div class="relative rounded-2xl bg-gradient-to-br from-moss-300 to-amber-300 h-80 p-4 overflow-hidden">
+          <!-- path -->
+          <svg viewBox="0 0 300 260" class="absolute inset-0 h-full w-full">
+            <path d="M30 220 C 80 160, 60 120, 130 110 S 220 70, 260 40" fill="none" stroke="#2c1937" stroke-width="4" stroke-dasharray="2 12" stroke-linecap="round"/>
+          </svg>
+          <div class="absolute bottom-6 left-5 text-center"><div class="h-8 w-8 rounded-full bg-berry-500 border-2 border-plum-900 mx-auto"></div><span class="font-hand text-plum-900 text-lg">Burrow Bay</span></div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center"><div class="h-9 w-9 rounded-xl bg-teal-400 border-2 border-plum-900 mx-auto rotate-12"></div><span class="font-hand text-plum-900 text-lg">Fernfall</span></div>
+          <div class="absolute top-6 right-6 text-center"><div class="h-10 w-7 rounded-t-full bg-amber-500 border-2 border-plum-900 mx-auto twinkle"></div><span class="font-hand text-plum-900 text-lg">Old Lantern</span></div>
+        </div>
+        <p class="font-hand text-plum-900 text-2xl text-center mt-3">— Map of the Hollow —</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMPONENTS / IN THE BOX ============ -->
+<section id="components" class="relative py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="font-hand text-berry-500 text-3xl">crack open the lid</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">What's in the Box</h2>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal doodle-border bg-cream p-6 text-center hover:-translate-y-1 transition">
+        <div class="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-moss-300 border-[3px] border-plum-800 mb-4 text-3xl">🗺️</div>
+        <h3 class="font-display font-bold text-xl">Modular Board</h3>
+        <p class="mt-1 font-body text-sm text-plum-800/70">13 hex tiles that reshape the Hollow every game.</p>
+      </div>
+      <div class="reveal doodle-border bg-cream p-6 text-center hover:-translate-y-1 transition">
+        <div class="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-amber-300 border-[3px] border-plum-800 mb-4 text-3xl">🃏</div>
+        <h3 class="font-display font-bold text-xl">240 Cards</h3>
+        <p class="mt-1 font-body text-sm text-plum-800/70">Whim, Forage &amp; Thornward decks, fully illustrated.</p>
+      </div>
+      <div class="reveal doodle-border bg-cream p-6 text-center hover:-translate-y-1 transition">
+        <div class="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-berry-400 border-[3px] border-plum-800 mb-4 text-3xl">🐿️</div>
+        <h3 class="font-display font-bold text-xl">5 Critter Meeples</h3>
+        <p class="mt-1 font-body text-sm text-plum-800/70">Hand-sculpted, ink-washed wooden figures.</p>
+      </div>
+      <div class="reveal doodle-border bg-cream p-6 text-center hover:-translate-y-1 transition">
+        <div class="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-teal-400 border-[3px] border-plum-800 mb-4 text-3xl">🎲</div>
+        <h3 class="font-display font-bold text-xl">6 Mossdice</h3>
+        <p class="mt-1 font-body text-sm text-plum-800/70">Chunky custom dice with engraved acorn pips.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHARACTERS ============ -->
+<section id="characters" class="relative py-24 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-moss-100"></div>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="font-hand text-berry-500 text-3xl">choose your clan</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">Meet the Critters</h2>
+      <p class="reveal mt-3 font-body text-plum-800/70">Hover a card to reveal each critter's secret knack.</p>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-7" id="charGrid">
+      <!-- card template generated below via JS for brevity but written inline -->
+      <!-- 1 -->
+      <div class="reveal flip-card h-80">
+        <div class="flip-inner relative h-full w-full">
+          <div class="flip-face absolute inset-0 doodle-border bg-gradient-to-b from-amber-300 to-amber-400 p-6 flex flex-col">
+            <div class="mx-auto h-28 w-24 rounded-t-full bg-amber-500 border-[3px] border-plum-800 relative">
+              <div class="absolute -top-2 left-3 h-7 w-4 rounded-t-full bg-amber-500 border-[3px] border-plum-800 rotate-[-18deg]"></div>
+              <div class="absolute -top-2 right-3 h-7 w-4 rounded-t-full bg-amber-500 border-[3px] border-plum-800 rotate-[18deg]"></div>
+              <div class="absolute top-8 left-1/2 -translate-x-1/2 flex gap-3"><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span></div>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-center mt-4">Pip the Squirrel</h3>
+            <p class="font-hand text-plum-900 text-xl text-center">the Quick-Pawed Forager</p>
+            <p class="mt-auto text-center font-body text-xs font-extrabold uppercase tracking-widest text-plum-800/60">Hover to flip ↻</p>
+          </div>
+          <div class="flip-face flip-back absolute inset-0 doodle-border bg-plum-800 p-6 text-cream flex flex-col justify-center text-center">
+            <p class="font-display font-bold text-xl text-amber-300">Knack: Twin Stash</p>
+            <p class="mt-3 font-body text-cream/80">Pip may carry two acorns at once and never drops them in the rain.</p>
+            <div class="mt-4 flex justify-center gap-2"><span class="rounded-full bg-amber-400 text-plum-900 px-3 py-1 text-xs font-bold">Speed ★★★</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 2 -->
+      <div class="reveal flip-card h-80">
+        <div class="flip-inner relative h-full w-full">
+          <div class="flip-face absolute inset-0 doodle-border bg-gradient-to-b from-teal-400 to-teal-500 p-6 flex flex-col">
+            <div class="mx-auto h-28 w-24 rounded-t-[60%] bg-teal-500 border-[3px] border-plum-800 relative">
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 h-6 w-10 rounded-full bg-teal-500 border-[3px] border-plum-800"></div>
+              <div class="absolute top-8 left-1/2 -translate-x-1/2 flex gap-3"><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span></div>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-center mt-4 text-cream">Bramble the Toad</h3>
+            <p class="font-hand text-cream text-xl text-center">the Bog Schemer</p>
+            <p class="mt-auto text-center font-body text-xs font-extrabold uppercase tracking-widest text-cream/70">Hover to flip ↻</p>
+          </div>
+          <div class="flip-face flip-back absolute inset-0 doodle-border bg-plum-800 p-6 text-cream flex flex-col justify-center text-center">
+            <p class="font-display font-bold text-xl text-teal-400">Knack: Sticky Tongue</p>
+            <p class="mt-3 font-body text-cream/80">Once per turn, Bramble swipes a Whim card from any neighbor.</p>
+            <div class="mt-4 flex justify-center gap-2"><span class="rounded-full bg-teal-400 text-plum-900 px-3 py-1 text-xs font-bold">Cunning ★★★</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 3 -->
+      <div class="reveal flip-card h-80">
+        <div class="flip-inner relative h-full w-full">
+          <div class="flip-face absolute inset-0 doodle-border bg-gradient-to-b from-berry-400 to-berry-500 p-6 flex flex-col">
+            <div class="mx-auto h-28 w-24 rounded-t-full bg-berry-500 border-[3px] border-plum-800 relative">
+              <div class="absolute -top-3 left-2 h-9 w-3 rounded-t-full bg-berry-500 border-[3px] border-plum-800 rotate-[-12deg]"></div>
+              <div class="absolute -top-3 right-2 h-9 w-3 rounded-t-full bg-berry-500 border-[3px] border-plum-800 rotate-[12deg]"></div>
+              <div class="absolute top-8 left-1/2 -translate-x-1/2 flex gap-3"><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span></div>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-center mt-4 text-cream">Hazel the Hare</h3>
+            <p class="font-hand text-cream text-xl text-center">the Moonlit Runner</p>
+            <p class="mt-auto text-center font-body text-xs font-extrabold uppercase tracking-widest text-cream/70">Hover to flip ↻</p>
+          </div>
+          <div class="flip-face flip-back absolute inset-0 doodle-border bg-plum-800 p-6 text-cream flex flex-col justify-center text-center">
+            <p class="font-display font-bold text-xl text-berry-400">Knack: Moon Dash</p>
+            <p class="mt-3 font-body text-cream/80">After dusk, Hazel moves twice — but must skip the next forage.</p>
+            <div class="mt-4 flex justify-center gap-2"><span class="rounded-full bg-berry-400 text-cream px-3 py-1 text-xs font-bold">Speed ★★★★</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 4 -->
+      <div class="reveal flip-card h-80">
+        <div class="flip-inner relative h-full w-full">
+          <div class="flip-face absolute inset-0 doodle-border bg-gradient-to-b from-moss-300 to-moss-500 p-6 flex flex-col">
+            <div class="mx-auto h-28 w-24 rounded-t-full bg-moss-600 border-[3px] border-plum-800 relative">
+              <div class="absolute -top-2 left-1/2 -translate-x-1/2 h-5 w-12 rounded-full bg-moss-600 border-[3px] border-plum-800"></div>
+              <div class="absolute top-8 left-1/2 -translate-x-1/2 flex gap-3"><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span><span class="h-2.5 w-2.5 rounded-full bg-plum-900"></span></div>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-center mt-4 text-cream">Mossback the Tortoise</h3>
+            <p class="font-hand text-cream text-xl text-center">the Old Keeper</p>
+            <p class="mt-auto text-center font-body text-xs font-extrabold uppercase tracking-widest text-cream/70">Hover to flip ↻</p>
+          </div>
+          <div class="flip-face flip-back absolute inset-0 doodle-border bg-plum-800 p-6 text-cream flex flex-col justify-center text-center">
+            <p class="font-display font-bold text-xl text-moss-300">Knack: Shell Vault</p>
+            <p class="mt-3 font-body text-cream/80">Acorns in Mossback's shell can never be stolen by Thornwardens.</p>
+            <div class="mt-4 flex justify-center gap-2"><span class="rounded-full bg-moss-300 text-plum-900 px-3 py-1 text-xs font-bold">Defense ★★★★</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 5 -->
+      <div class="reveal flip-card h-80">
+        <div class="flip-inner relative h-full w-full">
+          <div class="flip-face absolute inset-0 doodle-border bg-gradient-to-b from-plum-700 to-plum-800 p-6 flex flex-col">
+            <div class="mx-auto h-28 w-24 rounded-t-full bg-plum-900 border-[3px] border-cream relative">
+              <div class="absolute -top-3 left-3 h-7 w-4 rounded-t-full bg-plum-900 border-[3px] border-cream rotate-[-18deg]"></div>
+              <div class="absolute -top-3 right-3 h-7 w-4 rounded-t-full bg-plum-900 border-[3px] border-cream rotate-[18deg]"></div>
+              <div class="absolute top-8 left-1/2 -translate-x-1/2 flex gap-3"><span class="h-2.5 w-2.5 rounded-full bg-amber-300"></span><span class="h-2.5 w-2.5 rounded-full bg-amber-300"></span></div>
+            </div>
+            <h3 class="font-display font-bold text-2xl text-center mt-4 text-cream">Vesper the Owlet</h3>
+            <p class="font-hand text-amber-300 text-xl text-center">the Star-Reader</p>
+            <p class="mt-auto text-center font-body text-xs font-extrabold uppercase tracking-widest text-cream/70">Hover to flip ↻</p>
+          </div>
+          <div class="flip-face flip-back absolute inset-0 doodle-border bg-amber-400 p-6 text-plum-900 flex flex-col justify-center text-center">
+            <p class="font-display font-bold text-xl">Knack: Foresee</p>
+            <p class="mt-3 font-body text-plum-900/80">Vesper peeks at the top three Thornward cards each round.</p>
+            <div class="mt-4 flex justify-center gap-2"><span class="rounded-full bg-plum-800 text-cream px-3 py-1 text-xs font-bold">Wisdom ★★★★★</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 6 fun callout -->
+      <div class="reveal doodle-border bg-berry-500 text-cream p-7 flex flex-col justify-center text-center h-80">
+        <p class="font-hand text-amber-300 text-3xl">...and more await</p>
+        <p class="font-display font-bold text-3xl mt-1">Pick your hero.<br/>Forge your legend.</p>
+        <a href="#buy" class="mt-6 inline-flex justify-center items-center rounded-full bg-cream text-plum-900 border-[3px] border-plum-900 px-6 py-3 font-display font-semibold shadow-[0_6px_0_0_rgba(44,25,55,0.9)] hover:-translate-y-1 active:translate-y-1 transition">Bring them home</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPANSIONS ============ -->
+<section id="expansions" class="relative py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="font-hand text-berry-500 text-3xl">the saga grows</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">Expansions</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-7">
+      <div class="reveal doodle-border bg-gradient-to-br from-teal-400 to-teal-500 text-plum-900 p-7 hover:-translate-y-1 transition">
+        <span class="inline-block rounded-full bg-plum-900 text-cream px-3 py-1 text-xs font-extrabold uppercase tracking-widest">New</span>
+        <h3 class="font-display font-bold text-3xl mt-4">Frostfall Tides</h3>
+        <p class="mt-2 font-body text-plum-900/80">Winter arrives early. Brave the frozen Fernfall, recruit the Snow-Wardens, and race the freezing river.</p>
+        <p class="mt-6 font-display font-bold text-2xl">$32</p>
+      </div>
+      <div class="reveal doodle-border bg-gradient-to-br from-amber-300 to-amber-500 text-plum-900 p-7 hover:-translate-y-1 transition">
+        <span class="inline-block rounded-full bg-plum-900 text-cream px-3 py-1 text-xs font-extrabold uppercase tracking-widest">Co-op</span>
+        <h3 class="font-display font-bold text-3xl mt-4">The Hollow Awakes</h3>
+        <p class="mt-2 font-body text-plum-900/80">Flip the game on its head — team up against an AI-driven Thornward King in a fully cooperative campaign.</p>
+        <p class="mt-6 font-display font-bold text-2xl">$38</p>
+      </div>
+      <div class="reveal doodle-border bg-gradient-to-br from-berry-400 to-berry-600 text-cream p-7 hover:-translate-y-1 transition">
+        <span class="inline-block rounded-full bg-cream text-plum-900 px-3 py-1 text-xs font-extrabold uppercase tracking-widest">Mini</span>
+        <h3 class="font-display font-bold text-3xl mt-4">Firefly Nights</h3>
+        <p class="mt-2 font-body text-cream/85">A pocket expansion of 30 glowing Whim cards and two new critters: Glim &amp; Glow, the lantern twins.</p>
+        <p class="mt-6 font-display font-bold text-2xl">$18</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REVIEWS / AWARDS ============ -->
+<section id="reviews" class="relative py-24 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-plum-900"></div>
+  <div class="absolute inset-0 -z-10 paper-grain opacity-30"></div>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 text-cream">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="font-hand text-amber-300 text-3xl">word from the woods</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">Reviews &amp; Awards</h2>
+    </div>
+
+    <!-- awards -->
+    <div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-5">
+      <div class="reveal doodle-border bg-plum-700/60 p-5 text-center">
+        <div class="text-3xl">🏆</div>
+        <p class="font-display font-bold mt-2">Golden Meeple</p>
+        <p class="font-body text-xs text-cream/60">Family Game of the Year</p>
+      </div>
+      <div class="reveal doodle-border bg-plum-700/60 p-5 text-center">
+        <div class="text-3xl">⭐</div>
+        <p class="font-display font-bold mt-2">Tabletop Choice</p>
+        <p class="font-body text-xs text-cream/60">Best Illustration</p>
+      </div>
+      <div class="reveal doodle-border bg-plum-700/60 p-5 text-center">
+        <div class="text-3xl">🎖️</div>
+        <p class="font-display font-bold mt-2">Hearth Award</p>
+        <p class="font-body text-xs text-cream/60">Most Cozy 2025</p>
+      </div>
+      <div class="reveal doodle-border bg-plum-700/60 p-5 text-center">
+        <div class="text-3xl">💎</div>
+        <p class="font-display font-bold mt-2">Indie Gem</p>
+        <p class="font-body text-xs text-cream/60">Critics' Pick</p>
+      </div>
+    </div>
+
+    <!-- testimonials -->
+    <div class="mt-10 grid md:grid-cols-3 gap-7">
+      <figure class="reveal doodle-border bg-cream text-plum-900 p-6">
+        <div class="text-amber-500 text-lg">★★★★★</div>
+        <blockquote class="mt-3 font-body">"The most charming game on our shelf. My kids ask for 'just one more round' every single night."</blockquote>
+        <figcaption class="mt-4 font-display font-bold">— Tasha R., <span class="font-body font-normal text-plum-800/60">Hearth &amp; Dice Mag</span></figcaption>
+      </figure>
+      <figure class="reveal doodle-border bg-cream text-plum-900 p-6">
+        <div class="text-amber-500 text-lg">★★★★★</div>
+        <blockquote class="mt-3 font-body">"Deceptively deep. Looks adorable, plays like a knife fight in a teddy bear factory. We love it."</blockquote>
+        <figcaption class="mt-4 font-display font-bold">— The Meeple Vault</figcaption>
+      </figure>
+      <figure class="reveal doodle-border bg-cream text-plum-900 p-6">
+        <div class="text-amber-500 text-lg">★★★★★</div>
+        <blockquote class="mt-3 font-body">"Every component is a little artwork. Mosswick Hollow is a hug you can play."</blockquote>
+        <figcaption class="mt-4 font-display font-bold">— Bramblewood Reviews</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT THE STUDIO ============ -->
+<section id="about" class="relative py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative order-2 lg:order-1">
+      <div class="doodle-border bg-gradient-to-br from-moss-300 to-teal-400 p-8 -rotate-1 relative overflow-hidden">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="aspect-square rounded-2xl bg-amber-400 border-2 border-plum-800 grid place-items-center text-3xl">🦊</div>
+          <div class="aspect-square rounded-2xl bg-berry-400 border-2 border-plum-800 grid place-items-center text-3xl">🖌️</div>
+          <div class="aspect-square rounded-2xl bg-cream border-2 border-plum-800 grid place-items-center text-3xl">🪵</div>
+          <div class="aspect-square rounded-2xl bg-teal-500 border-2 border-plum-800 grid place-items-center text-3xl">🦉</div>
+          <div class="aspect-square rounded-2xl bg-plum-800 border-2 border-plum-800 grid place-items-center text-3xl">🌙</div>
+          <div class="aspect-square rounded-2xl bg-moss-500 border-2 border-plum-800 grid place-items-center text-3xl">🍂</div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal order-1 lg:order-2">
+      <span class="font-hand text-berry-500 text-3xl">three friends &amp; a teapot</span>
+      <h2 class="font-display font-bold text-4xl sm:text-5xl mt-1">Lanternlight Studio</h2>
+      <p class="mt-5 font-body text-lg text-plum-800/80">
+        We're a tiny indie studio nestled in a converted barn, making games we'd want to play on a rainy Sunday.
+        Every illustration is hand-painted, every rule is play-tested over a hundred cups of tea.
+      </p>
+      <p class="mt-4 font-body text-plum-800/70">
+        Mosswick Hollow began as a bedtime story and grew, acorn by acorn, into the game you're holding. Thank you for being part of the tale.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <div class="flex items-center gap-3">
+          <div class="h-12 w-12 rounded-full bg-amber-400 border-2 border-plum-800 grid place-items-center font-display font-bold">EM</div>
+          <div><p class="font-display font-bold leading-none">Elspeth M.</p><p class="font-body text-sm text-plum-800/60">Art &amp; Lore</p></div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="h-12 w-12 rounded-full bg-teal-400 border-2 border-plum-800 grid place-items-center font-display font-bold">JT</div>
+          <div><p class="font-display font-bold leading-none">Jonah T.</p><p class="font-body text-sm text-plum-800/60">Game Design</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHERE TO BUY / BUY ============ -->
+<section id="buy" class="relative py-24 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-amber-300 to-amber-400"></div>
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="reveal doodle-border bg-cream p-8 sm:p-12 grid lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <span class="font-hand text-berry-500 text-3xl">bring the hollow home</span>
+        <h2 class="font-display font-bold text-4xl sm:text-5xl mt-1">Get the Game</h2>
+        <p class="mt-4 font-body text-plum-800/75">The complete Mosswick Hollow base box. Free shipping on orders over $60. Ships in a fully recyclable lantern-sealed box.</p>
+        <div class="mt-6 flex items-baseline gap-3">
+          <span class="font-display font-bold text-5xl text-berry-500">$54</span>
+          <span class="font-body text-plum-800/50 line-through">$64</span>
+          <span class="rounded-full bg-moss-500 text-cream px-3 py-1 text-xs font-extrabold uppercase tracking-widest">Launch price</span>
+        </div>
+        <a href="#" id="buyCTA" class="magnetic mt-7 inline-flex items-center justify-center gap-2 rounded-full bg-berry-500 border-[3px] border-plum-800 px-10 py-4 font-display font-semibold text-lg text-cream shadow-[0_8px_0_0_rgba(44,25,55,0.9)] hover:-translate-y-1 active:translate-y-1 active:shadow-[0_3px_0_0_rgba(44,25,55,0.9)] transition">
+          Add to Cart 🛒
+        </a>
+      </div>
+      <!-- retailers -->
+      <div>
+        <p class="font-display font-bold text-lg mb-4">Or find us at:</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="doodle-border bg-moss-100 p-4 text-center font-display font-bold hover:-translate-y-1 transition cursor-pointer">Burrow Books</div>
+          <div class="doodle-border bg-moss-100 p-4 text-center font-display font-bold hover:-translate-y-1 transition cursor-pointer">Dice &amp; Den</div>
+          <div class="doodle-border bg-moss-100 p-4 text-center font-display font-bold hover:-translate-y-1 transition cursor-pointer">Hollow Mart</div>
+          <div class="doodle-border bg-moss-100 p-4 text-center font-display font-bold hover:-translate-y-1 transition cursor-pointer">The Meeple Co.</div>
+        </div>
+        <p class="mt-5 font-body text-sm text-plum-800/60">⭐ 4.9 / 5 from 2,300+ delighted critters worldwide.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6">
+    <div class="text-center">
+      <span class="font-hand text-berry-500 text-3xl">curious critters ask</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-1">Questions?</h2>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faqList">
+      <div class="faq-item doodle-border bg-cream overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-display font-bold text-lg">
+          How long does a game take? <span class="faq-plus text-berry-500 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body px-5"><p class="pb-5 font-body text-plum-800/75">Around 45 minutes for 2–3 players, up to an hour with a full table of five. Setup takes about five minutes.</p></div>
+      </div>
+      <div class="faq-item doodle-border bg-cream overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-display font-bold text-lg">
+          Is it good for kids? <span class="faq-plus text-berry-500 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body px-5"><p class="pb-5 font-body text-plum-800/75">Absolutely — recommended for ages 8 and up. Younger players can join with the simplified "Cubling" rules included in the box.</p></div>
+      </div>
+      <div class="faq-item doodle-border bg-cream overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-display font-bold text-lg">
+          Do I need the expansions to play? <span class="faq-plus text-berry-500 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body px-5"><p class="pb-5 font-body text-plum-800/75">Not at all. The base box is a complete, self-contained game. Expansions simply add new regions, modes, and critters.</p></div>
+      </div>
+      <div class="faq-item doodle-border bg-cream overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-display font-bold text-lg">
+          Can I play it solo? <span class="faq-plus text-berry-500 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body px-5"><p class="pb-5 font-body text-plum-800/75">Yes! A dedicated solo mode pits you against the automated Thornward deck. Beat the Frost before it claims the Hollow.</p></div>
+      </div>
+      <div class="faq-item doodle-border bg-cream overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-display font-bold text-lg">
+          What's your shipping &amp; returns policy? <span class="faq-plus text-berry-500 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body px-5"><p class="pb-5 font-body text-plum-800/75">We ship worldwide, free over $60. Not enchanted? Return within 30 days for a full refund — no questions, just a friendly wave goodbye.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-plum-800 to-plum-900"></div>
+  <div class="absolute inset-0 -z-10 paper-grain opacity-30"></div>
+  <!-- floating pieces -->
+  <div class="floaty piece-bob absolute top-10 left-[8%]" style="--rot:-10deg"><div class="h-10 w-10 rounded-full bg-amber-400 border-[3px] border-cream"></div></div>
+  <div class="floaty piece-bob-2 absolute bottom-12 right-[10%]" style="--rot:14deg"><div class="h-0 w-0 border-l-[18px] border-r-[18px] border-b-[30px] border-l-transparent border-r-transparent border-b-berry-500"></div></div>
+
+  <div class="mx-auto max-w-3xl px-4 sm:px-6 text-center text-cream">
+    <span class="font-hand text-amber-300 text-4xl">the lantern is waiting</span>
+    <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-2 leading-tight">Gather your friends.<br/>Light the <span class="text-moss-300">Hollow.</span></h2>
+    <p class="reveal mt-5 font-body text-cream/75 text-lg">Adventure, mischief, and a little bit of betrayal — all in one beautiful box.</p>
+    <a href="#buy" class="magnetic mt-8 inline-flex items-center gap-2 rounded-full bg-amber-400 text-plum-900 border-[3px] border-cream px-10 py-4 font-display font-semibold text-lg shadow-[0_8px_0_0_rgba(253,246,232,0.5)] hover:-translate-y-1 active:translate-y-1 transition">
+      Buy Mosswick Hollow · $54
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-plum-900 text-cream pt-16 pb-8 border-t-[3px] border-cream/10">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-moss-500 border-2 border-cream text-cream font-display font-bold text-lg rotate-[-6deg]">M</span>
+          <span class="font-display font-bold text-xl">Mosswick·Hollow</span>
+        </a>
+        <p class="mt-4 font-body text-cream/60 max-w-sm">A storybook board game of wits and whimsy, hand-crafted with love by Lanternlight Studio.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="grid h-10 w-10 place-items-center rounded-full border-2 border-cream/30 hover:bg-amber-400 hover:text-plum-900 hover:border-amber-400 transition">𝕏</a>
+          <a href="#" class="grid h-10 w-10 place-items-center rounded-full border-2 border-cream/30 hover:bg-amber-400 hover:text-plum-900 hover:border-amber-400 transition">f</a>
+          <a href="#" class="grid h-10 w-10 place-items-center rounded-full border-2 border-cream/30 hover:bg-amber-400 hover:text-plum-900 hover:border-amber-400 transition">◎</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-3">The Game</h4>
+        <ul class="space-y-2 font-body text-cream/60 text-sm">
+          <li><a href="#how" class="hover:text-amber-300 transition">How to Play</a></li>
+          <li><a href="#world" class="hover:text-amber-300 transition">The Hollow</a></li>
+          <li><a href="#characters" class="hover:text-amber-300 transition">Critters</a></li>
+          <li><a href="#expansions" class="hover:text-amber-300 transition">Expansions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-3">Studio</h4>
+        <ul class="space-y-2 font-body text-cream/60 text-sm">
+          <li><a href="#about" class="hover:text-amber-300 transition">About Us</a></li>
+          <li><a href="#buy" class="hover:text-amber-300 transition">Where to Buy</a></li>
+          <li><a href="#faq" class="hover:text-amber-300 transition">FAQ</a></li>
+          <li><a href="#" class="hover:text-amber-300 transition">Press Kit</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-3 font-body text-sm text-cream/50">
+      <p>© 2025 Lanternlight Studio. All critters reserved.</p>
+      <p class="font-hand text-amber-300 text-lg">Made with tea &amp; acorns 🍂</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.querySelector('nav').classList.add('shadow-[0_8px_0_0_rgba(44,25,55,0.9)]');
+  };
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* ---------- DICE ---------- */
+  const pipMap = {
+    1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8]
+  };
+  const pipGrid = document.getElementById('pipGrid');
+  function renderPips(n){
+    pipGrid.innerHTML='';
+    for(let i=0;i<9;i++){
+      const cell=document.createElement('span');
+      if(pipMap[n].includes(i)) cell.className='pip';
+      pipGrid.appendChild(cell);
+    }
+  }
+  renderPips(5);
+  const rollBtn=document.getElementById('rollDie');
+  const dieValue=document.getElementById('dieValue');
+  const dieLabel=document.getElementById('dieLabel');
+  const labels={1:'Scurry!',2:'Forage!',3:'Scout!',4:'Dash!',5:'Stash!',6:'Lucky six!'};
+  rollBtn.addEventListener('click',()=>{
+    if(!reduce){ rollBtn.classList.remove('dice-rolling'); void rollBtn.offsetWidth; rollBtn.classList.add('dice-rolling'); }
+    let ticks=0;
+    const spin=setInterval(()=>{ renderPips(1+Math.floor(Math.random()*6)); if(++ticks>8){clearInterval(spin); const final=1+Math.floor(Math.random()*6); renderPips(final); dieValue.textContent=final; dieLabel.textContent=labels[final]; }}, reduce?0:55);
+    if(reduce){ clearInterval(spin); const f=1+Math.floor(Math.random()*6); renderPips(f); dieValue.textContent=f; dieLabel.textContent=labels[f]; }
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item=>{
+    item.querySelector('.faq-head').addEventListener('click',()=>{
+      const open=item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+      if(!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Magnetic CTA ---------- */
+  if(!reduce){
+    document.querySelectorAll('.magnetic').forEach(btn=>{
+      btn.addEventListener('mousemove',e=>{
+        const r=btn.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2;
+        const y=e.clientY-r.top-r.height/2;
+        btn.style.transform=`translate(${x*0.3}px, ${y*0.4}px)`;
+      });
+      btn.addEventListener('mouseleave',()=>{ btn.style.transform=''; });
+    });
+  }
+
+  /* ---------- Tilt 3D box ---------- */
+  const box=document.getElementById('gameBox');
+  const boxWrap=document.getElementById('boxWrap');
+  if(box && !reduce){
+    boxWrap.addEventListener('mousemove',e=>{
+      const r=boxWrap.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width-0.5;
+      const py=(e.clientY-r.top)/r.height-0.5;
+      box.style.transform=`rotateY(${px*16}deg) rotateX(${-py*16}deg) translateZ(10px)`;
+    });
+    boxWrap.addEventListener('mouseleave',()=>{ box.style.transform=''; });
+  }
+
+  /* ---------- GSAP ---------- */
+  if(window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if(!reduce){
+      // hero headline spring reveal
+      gsap.from('.reveal-h',{ y:60, opacity:0, rotation:-3, duration:0.9, ease:'back.out(1.7)', stagger:0.12, delay:0.15 });
+
+      // generic reveals
+      gsap.utils.toArray('.reveal').forEach(el=>{
+        gsap.to(el,{ opacity:1, y:0, duration:0.8, ease:'back.out(1.4)',
+          scrollTrigger:{ trigger:el, start:'top 85%' }});
+      });
+
+      // container parallax for hills
+      gsap.utils.toArray('[data-parallax]').forEach(el=>{
+        const speed=parseFloat(el.dataset.parallax);
+        gsap.to(el,{ yPercent:speed*40, ease:'none',
+          scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }});
+      });
+
+      // float pieces gentle parallax
+      gsap.utils.toArray('.floaty').forEach((el,i)=>{
+        gsap.to(el,{ yPercent:(i%2?-30:30), ease:'none',
+          scrollTrigger:{ trigger:el.closest('section'), start:'top bottom', end:'bottom top', scrub:true }});
+      });
+    } else {
+      gsap.set('.reveal, .reveal-h',{ opacity:1, y:0 });
+    }
+
+    /* ---------- count-ups ---------- */
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      const target=parseInt(el.dataset.count,10);
+      const obj={v:0};
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+        if(reduce){ el.textContent=target; return; }
+        gsap.to(obj,{ v:target, duration:1.6, ease:'power2.out',
+          onUpdate:()=>{ el.textContent=Math.round(obj.v); }});
+      }});
+    });
+  }
+})();
+</script>
+</body>
+</html>

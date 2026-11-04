@@ -1,0 +1,155 @@
+{
+  "name": "[deskdev] error-handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Every [deskdev] workflow names this one as settings.errorWorkflow, so any\n// failed production execution lands here exactly once. Two outputs:\n//   1. an `error` row in automation_runs (what Settings → Integrations reads)\n//   2. an email, so a failure is seen the day it happens, not the day someone\n//      notices a digest stopped arriving.\nconst ALERT_TO = 'nixgensolutions@gmail.com';\n\nconst e = $input.first().json;\nconst wf = e.workflow || {};\nconst ex = e.execution || {};\n// A failure inside the trigger itself arrives as e.trigger.error instead.\nconst err = ex.error || (e.trigger && e.trigger.error) || {};\nconst name = wf.name || 'unknown workflow';\n// \"[deskdev] overdue-tasks\" -> \"overdue-tasks\" (the automation_jobs key)\nconst job = name\n  .replace(/^\\[deskdev\\]\\s*/i, '')\n  .toLowerCase()\n  .replace(/[^a-z0-9-]+/g, '-')\n  .replace(/^-+|-+$/g, '')\n  .slice(0, 64) || 'unknown';\nconst message = String(err.message || 'Unknown error').slice(0, 500);\nconst node = ex.lastNodeExecuted || (err.node && err.node.name) || '';\nconst url = ex.url || '';\n\n// Alert at most once per job per hour. log-to-sheets runs on every task and notification\n// insert, so a broken Sheets credential would otherwise send one email per\n// insert. Every failure is still logged to automation_runs; only the email is\n// throttled. Static data persists across production executions.\nconst QUIET_MS = 60 * 60 * 1000;\nconst store = $getWorkflowStaticData('global');\nstore.lastAlertAt = store.lastAlertAt || {};\nconst now = Date.now();\nconst email = !store.lastAlertAt[job] || now - store.lastAlertAt[job] > QUIET_MS;\nif (email) store.lastAlertAt[job] = now;\n\nconst esc = (s) => String(s == null ? '' : s).replace(/[&<>\"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;' }[c]));\nconst html = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 8px;color:#b91c1c\">${esc(name)} failed</h2>\n  <p style=\"margin:0 0 4px\"><b>Node:</b> ${esc(node || 'n/a')}</p>\n  <p style=\"margin:0 0 12px\"><b>Error:</b> ${esc(message)}</p>\n  ${url ? `<p><a href=\"${esc(url)}\">Open the execution in n8n</a></p>` : ''}\n  <p style=\"margin-top:16px;color:#888;font-size:12px\">Logged to automation_runs. DeskDev shows it under Settings → Integrations.</p>\n</div>`;\n\nreturn [{ json: {\n  job,\n  workflow: name,\n  execution_id: ex.id ? String(ex.id) : null,\n  node,\n  message,\n  url,\n  to: ALERT_TO,\n  subject: `DeskDev automation failed: ${name}`,\n  html,\n  email,\n} }];\n"
+      },
+      "id": "build",
+      "name": "Build",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: $json.job, workflow: $json.workflow, status: 'error', execution_id: $json.execution_id, detail: { message: $json.message, node: $json.node, url: $json.url } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-error",
+      "name": "Log error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "onError": "continueRegularOutput",
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Build').first().json.to }}",
+        "subject": "={{ $('Build').first().json.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Build').first().json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "alert",
+      "name": "Alert",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only the first failure per job per hour gets an email (decided in Build).\nconst b = $('Build').first().json;\nreturn b.email ? [{ json: b }] : [];\n"
+      },
+      "id": "throttle",
+      "name": "Throttle",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build": {
+      "main": [
+        [
+          {
+            "node": "Log error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log error": {
+      "main": [
+        [
+          {
+            "node": "Throttle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Throttle": {
+      "main": [
+        [
+          {
+            "node": "Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila"
+  }
+}

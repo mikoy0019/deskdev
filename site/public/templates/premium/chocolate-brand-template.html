@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cacaoluna — Bean-to-Bar Craft Chocolate</title>
+<meta name="description" content="Cacaoluna is a small-batch bean-to-bar chocolate maker crafting single-origin bars from rare heirloom cacao." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cocoa: {
+            950: '#100804',
+            900: '#1c0f07',
+            800: '#2a190d',
+            700: '#3d2515',
+            600: '#5a3a23',
+            500: '#7a5234',
+            400: '#a3724a',
+          },
+          cream: '#f5ece1',
+          milk: '#ece0cf',
+          gold: '#c89b4a',
+          goldlight: '#e6c87f',
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans: ['Jost', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { background:#100804; color:#f5ece1; }
+  body { font-family:'Jost',sans-serif; overflow-x:hidden; }
+  ::selection { background:#c89b4a; color:#100804; }
+
+  .font-disp { font-family:'Fraunces',serif; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top:0; left:0; pointer-events:none; z-index:9999;
+    border-radius:9999px; transform:translate(-50%,-50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot { width:7px; height:7px; background:#e6c87f; }
+  .cursor-ring { width:38px; height:38px; border:1px solid rgba(230,200,127,.6); transition:width .25s, height .25s, background .25s; }
+  .cursor-ring.grow { width:70px; height:70px; background:rgba(200,155,74,.12); }
+  @media (max-width:768px){ .cursor-dot,.cursor-ring{ display:none; } }
+
+  /* Gold shimmer text */
+  .shimmer {
+    background: linear-gradient(100deg,#c89b4a 20%,#f3e3b8 40%,#c89b4a 60%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; animation: shimmer 5s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% center; } }
+
+  /* Masked reveal */
+  .reveal-mask { overflow:hidden; display:inline-block; }
+  .reveal-line { display:inline-block; transform:translateY(110%); }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:marquee 30s linear infinite; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+
+  .bar3d { transform-style:preserve-3d; transition:transform .15s ease-out; will-change:transform; }
+  .grain:before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .5s ease; }
+  .acc.open .acc-body { max-height:240px; }
+  .acc.open .acc-plus { transform:rotate(45deg); }
+
+  a, button, .magnetic { cursor:none; }
+  @media (max-width:768px){ a,button,.magnetic{ cursor:pointer; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee, .shimmer { animation:none !important; }
+    .reveal-line { transform:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ===== NAV ===== -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 flex items-center justify-between py-5">
+    <a href="#top" class="font-disp text-2xl tracking-tight flex items-center gap-2">
+      <span class="inline-block w-7 h-7 rounded-full border border-gold/60 relative">
+        <span class="absolute inset-1.5 rounded-full bg-gold/70"></span>
+      </span>
+      Cacao<span class="shimmer">luna</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-9 text-sm tracking-wide text-cream/80">
+      <a href="#bars" class="hover:text-gold transition">Bars</a>
+      <a href="#story" class="hover:text-gold transition">Our Craft</a>
+      <a href="#origins" class="hover:text-gold transition">Origins</a>
+      <a href="#tasting" class="hover:text-gold transition">Tasting</a>
+      <a href="#gifting" class="hover:text-gold transition">Gifting</a>
+    </nav>
+    <a href="#bars" id="shopCta" class="magnetic relative inline-flex items-center gap-2 bg-gold text-cocoa-950 font-medium text-sm px-6 py-2.5 rounded-full overflow-hidden">
+      <span class="relative z-10">Shop</span>
+      <span class="relative z-10">→</span>
+    </a>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 bg-gradient-to-b from-cocoa-950/30 via-cocoa-950/70 to-cocoa-950"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-cocoa-950 via-transparent to-cocoa-950/40"></div>
+    <div class="parallax-img absolute inset-0 -z-10 bg-cocoa-900">
+      <img src="https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=1600&q=80"
+           alt="Molten chocolate macro" class="w-full h-[120%] object-cover opacity-70"
+           onerror="this.style.display='none'" />
+    </div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 w-full grid lg:grid-cols-12 gap-10 items-center">
+    <div class="lg:col-span-7">
+      <div class="reveal-mask mb-5"><span class="reveal-line text-gold/80 tracking-[0.35em] text-xs uppercase">Bean-to-Bar · Est. Heirloom Cacao</span></div>
+      <h1 class="font-disp text-5xl sm:text-7xl lg:text-[5.5rem] leading-[0.95] font-500">
+        <span class="reveal-mask"><span class="reveal-line">Chocolate as it</span></span><br />
+        <span class="reveal-mask"><span class="reveal-line">was always</span></span>
+        <span class="reveal-mask"><span class="reveal-line shimmer italic">meant</span></span>
+        <span class="reveal-mask"><span class="reveal-line">to taste.</span></span>
+      </h1>
+      <p class="reveal-fade mt-7 max-w-md text-cream/70 leading-relaxed">
+        We roast, grind, and conche rare single-origin cacao in tiny batches — no shortcuts, no fillers. Just two ingredients and a great deal of patience.
+      </p>
+      <div class="reveal-fade mt-9 flex flex-wrap items-center gap-4">
+        <a href="#bars" class="magnetic bg-gold text-cocoa-950 font-medium px-8 py-3.5 rounded-full hover:bg-goldlight transition">Shop the bars</a>
+        <a href="#story" class="magnetic border border-cream/25 px-8 py-3.5 rounded-full hover:border-gold hover:text-gold transition">Our craft →</a>
+      </div>
+    </div>
+
+    <!-- Tilt 3D bar -->
+    <div class="lg:col-span-5 flex justify-center lg:justify-end">
+      <div class="bar3d relative w-64 h-80 rounded-2xl bg-gradient-to-br from-cocoa-600 via-cocoa-700 to-cocoa-900 shadow-2xl border border-cocoa-500/40 grid grid-cols-3 grid-rows-4 gap-1.5 p-3">
+        <div class="absolute -inset-px rounded-2xl bg-gradient-to-tr from-gold/0 via-gold/20 to-gold/0 pointer-events-none"></div>
+        <div class="absolute top-4 left-0 right-0 text-center font-disp text-goldlight/80 text-xs tracking-[0.3em] z-10">CACAOLUNA</div>
+        <!-- squares -->
+        <div class="rounded-md bg-cocoa-800/80 shadow-inner"></div><div class="rounded-md bg-cocoa-700/80 shadow-inner"></div><div class="rounded-md bg-cocoa-800/80 shadow-inner"></div>
+        <div class="rounded-md bg-cocoa-700/80 shadow-inner"></div><div class="rounded-md bg-cocoa-800/80 shadow-inner"></div><div class="rounded-md bg-cocoa-700/80 shadow-inner"></div>
+        <div class="rounded-md bg-cocoa-800/80 shadow-inner"></div><div class="rounded-md bg-cocoa-700/80 shadow-inner"></div><div class="rounded-md bg-cocoa-800/80 shadow-inner"></div>
+        <div class="rounded-md bg-cocoa-700/80 shadow-inner"></div><div class="rounded-md bg-cocoa-800/80 shadow-inner"></div><div class="rounded-md bg-cocoa-700/80 shadow-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- count-ups -->
+  <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 w-full mt-16 grid grid-cols-3 gap-6 border-t border-cream/10 pt-8">
+    <div><div class="font-disp text-4xl md:text-5xl text-gold"><span class="count" data-to="74">0</span>%</div><p class="text-cream/50 text-sm mt-1">Avg. cacao</p></div>
+    <div><div class="font-disp text-4xl md:text-5xl text-gold"><span class="count" data-to="9">0</span></div><p class="text-cream/50 text-sm mt-1">Single origins</p></div>
+    <div><div class="font-disp text-4xl md:text-5xl text-gold"><span class="count" data-to="2">0</span></div><p class="text-cream/50 text-sm mt-1">Ingredients only</p></div>
+  </div>
+</section>
+
+<!-- ===== MARQUEE ===== -->
+<div class="border-y border-cream/10 py-4 bg-cocoa-900/60 overflow-hidden">
+  <div class="marquee text-cream/40 font-disp italic text-xl">
+    <span class="flex">
+      <span class="px-8">Madagascar</span><span class="text-gold">✦</span><span class="px-8">Venezuela</span><span class="text-gold">✦</span><span class="px-8">Ecuador</span><span class="text-gold">✦</span><span class="px-8">Tanzania</span><span class="text-gold">✦</span><span class="px-8">Peru</span><span class="text-gold">✦</span><span class="px-8">Vietnam</span><span class="text-gold">✦</span>
+    </span>
+    <span class="flex" aria-hidden="true">
+      <span class="px-8">Madagascar</span><span class="text-gold">✦</span><span class="px-8">Venezuela</span><span class="text-gold">✦</span><span class="px-8">Ecuador</span><span class="text-gold">✦</span><span class="px-8">Tanzania</span><span class="text-gold">✦</span><span class="px-8">Peru</span><span class="text-gold">✦</span><span class="px-8">Vietnam</span><span class="text-gold">✦</span>
+    </span>
+  </div>
+</div>
+
+<!-- ===== BESTSELLERS ===== -->
+<section id="bars" class="max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-32">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+    <div>
+      <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">The Collection</span>
+      <h2 class="font-disp text-4xl md:text-6xl mt-3 reveal-fade">Bestselling bars</h2>
+    </div>
+    <p class="max-w-sm text-cream/60 reveal-fade">Each bar is stone-ground over 72 hours, then aged to coax out flavor notes that need no added vanilla.</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+    <!-- product card -->
+    <article class="product magnetic group rounded-2xl border border-cream/10 bg-cocoa-900/50 p-5 transition hover:border-gold/40 hover:-translate-y-1.5">
+      <div class="relative h-56 rounded-xl overflow-hidden bg-gradient-to-br from-cocoa-700 to-cocoa-900 mb-5">
+        <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?auto=format&fit=crop&w=1600&q=80" alt="Dark bar" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 text-xs bg-gold text-cocoa-950 px-2.5 py-1 rounded-full font-medium">82% Dark</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <h3 class="font-disp text-2xl">Midnight Madagascar</h3>
+        <span class="text-gold font-medium">$14</span>
+      </div>
+      <p class="text-cream/55 text-sm mt-2">Red berries, citrus zest, a whisper of molasses.</p>
+    </article>
+
+    <article class="product magnetic group rounded-2xl border border-cream/10 bg-cocoa-900/50 p-5 transition hover:border-gold/40 hover:-translate-y-1.5">
+      <div class="relative h-56 rounded-xl overflow-hidden bg-gradient-to-br from-cocoa-600 to-cocoa-800 mb-5">
+        <img src="https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=1600&q=80" alt="Milk bar" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 text-xs bg-gold text-cocoa-950 px-2.5 py-1 rounded-full font-medium">58% Milk</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <h3 class="font-disp text-2xl">Velvet Venezuela</h3>
+        <span class="text-gold font-medium">$13</span>
+      </div>
+      <p class="text-cream/55 text-sm mt-2">Toasted hazelnut, caramel, warm cream.</p>
+    </article>
+
+    <article class="product magnetic group rounded-2xl border border-cream/10 bg-cocoa-900/50 p-5 transition hover:border-gold/40 hover:-translate-y-1.5">
+      <div class="relative h-56 rounded-xl overflow-hidden bg-gradient-to-br from-cocoa-700 to-cocoa-950 mb-5">
+        <img src="https://images.unsplash.com/photo-1481391319762-47dff72954d9?auto=format&fit=crop&w=1600&q=80" alt="Origin bar" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 text-xs bg-gold text-cocoa-950 px-2.5 py-1 rounded-full font-medium">70% Dark</span>
+      </div>
+      <div class="flex items-center justify-between">
+        <h3 class="font-disp text-2xl">Ember Ecuador</h3>
+        <span class="text-gold font-medium">$14</span>
+      </div>
+      <p class="text-cream/55 text-sm mt-2">Roasted almond, dried fig, espresso finish.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ===== BEAN-TO-BAR STORY ===== -->
+<section id="story" class="relative py-24 md:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative">
+      <div class="parallax-img relative h-[28rem] rounded-3xl overflow-hidden bg-cocoa-800">
+        <img src="https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&w=1600&q=80" alt="Cacao process" class="w-full h-[120%] object-cover opacity-85" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 bg-cocoa-900 border border-gold/30 rounded-2xl px-6 py-4 shadow-xl">
+        <div class="font-disp text-3xl text-gold"><span class="count" data-to="72">0</span>h</div>
+        <p class="text-cream/50 text-xs">stone-ground</p>
+      </div>
+    </div>
+    <div>
+      <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">From bean to bar</span>
+      <h2 class="font-disp text-4xl md:text-5xl mt-3 leading-tight reveal-fade">Five steps. <span class="italic shimmer">Zero</span> compromises.</h2>
+      <div class="mt-10 space-y-7">
+        <div class="reveal-fade flex gap-5"><span class="font-disp text-gold text-xl">01</span><div><h4 class="font-disp text-xl">Source</h4><p class="text-cream/55 text-sm mt-1">Direct-trade heirloom beans, paid above fair price, sailed in small lots.</p></div></div>
+        <div class="reveal-fade flex gap-5"><span class="font-disp text-gold text-xl">02</span><div><h4 class="font-disp text-xl">Roast</h4><p class="text-cream/55 text-sm mt-1">Each origin gets its own profile — low and slow to protect delicate notes.</p></div></div>
+        <div class="reveal-fade flex gap-5"><span class="font-disp text-gold text-xl">03</span><div><h4 class="font-disp text-xl">Conche</h4><p class="text-cream/55 text-sm mt-1">72 hours of stone-grinding until the texture turns to silk.</p></div></div>
+        <div class="reveal-fade flex gap-5"><span class="font-disp text-gold text-xl">04</span><div><h4 class="font-disp text-xl">Temper & age</h4><p class="text-cream/55 text-sm mt-1">Hand-tempered for the snap, then rested to let flavor bloom.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SINGLE-ORIGIN COLLECTION ===== -->
+<section id="origins" class="bg-cocoa-900/40 border-y border-cream/10 py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">Single-Origin Library</span>
+      <h2 class="font-disp text-4xl md:text-6xl mt-3 reveal-fade">Taste the terroir</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="origin magnetic rounded-2xl border border-cream/10 p-6 bg-cocoa-950/40 hover:bg-cocoa-800/40 transition">
+        <div class="font-disp text-5xl text-gold/90"><span class="count" data-to="68">0</span>%</div>
+        <h4 class="font-disp text-xl mt-3">Tanzania</h4>
+        <p class="text-cream/55 text-sm mt-1">Lemon, brown sugar, plum.</p>
+      </div>
+      <div class="origin magnetic rounded-2xl border border-cream/10 p-6 bg-cocoa-950/40 hover:bg-cocoa-800/40 transition">
+        <div class="font-disp text-5xl text-gold/90"><span class="count" data-to="75">0</span>%</div>
+        <h4 class="font-disp text-xl mt-3">Peru</h4>
+        <p class="text-cream/55 text-sm mt-1">Banana, honey, walnut.</p>
+      </div>
+      <div class="origin magnetic rounded-2xl border border-cream/10 p-6 bg-cocoa-950/40 hover:bg-cocoa-800/40 transition">
+        <div class="font-disp text-5xl text-gold/90"><span class="count" data-to="80">0</span>%</div>
+        <h4 class="font-disp text-xl mt-3">Vietnam</h4>
+        <p class="text-cream/55 text-sm mt-1">Stone fruit, tobacco, spice.</p>
+      </div>
+      <div class="origin magnetic rounded-2xl border border-cream/10 p-6 bg-cocoa-950/40 hover:bg-cocoa-800/40 transition">
+        <div class="font-disp text-5xl text-gold/90"><span class="count" data-to="72">0</span>%</div>
+        <h4 class="font-disp text-xl mt-3">Madagascar</h4>
+        <p class="text-cream/55 text-sm mt-1">Cherry, citrus, cream.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TASTING / PAIRING ===== -->
+<section id="tasting" class="max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-32 grid lg:grid-cols-2 gap-14 items-center">
+  <div>
+    <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">The Ritual</span>
+    <h2 class="font-disp text-4xl md:text-5xl mt-3 leading-tight reveal-fade">How to taste a great bar</h2>
+    <p class="text-cream/60 mt-5 max-w-md reveal-fade">Slow down. Let the chocolate melt on the tongue rather than chewing — the flavor unfolds in waves.</p>
+    <ul class="mt-9 space-y-4">
+      <li class="reveal-fade flex items-center gap-4 border-b border-cream/10 pb-4"><span class="text-gold">✦</span><span class="text-cream/80">Listen for the snap — a sign of proper temper.</span></li>
+      <li class="reveal-fade flex items-center gap-4 border-b border-cream/10 pb-4"><span class="text-gold">✦</span><span class="text-cream/80">Warm a square between your fingers, then inhale.</span></li>
+      <li class="reveal-fade flex items-center gap-4 border-b border-cream/10 pb-4"><span class="text-gold">✦</span><span class="text-cream/80">Let it melt; note the first, middle, and finish.</span></li>
+    </ul>
+  </div>
+  <div class="grid grid-cols-2 gap-5">
+    <div class="rounded-2xl bg-cocoa-900/60 border border-cream/10 p-6"><h4 class="font-disp text-lg text-gold">Espresso</h4><p class="text-cream/55 text-sm mt-1">with 82% dark</p></div>
+    <div class="rounded-2xl bg-cocoa-900/60 border border-cream/10 p-6 mt-8"><h4 class="font-disp text-lg text-gold">Aged rum</h4><p class="text-cream/55 text-sm mt-1">with Peru 75%</p></div>
+    <div class="rounded-2xl bg-cocoa-900/60 border border-cream/10 p-6"><h4 class="font-disp text-lg text-gold">Sea salt</h4><p class="text-cream/55 text-sm mt-1">with milk bars</p></div>
+    <div class="rounded-2xl bg-cocoa-900/60 border border-cream/10 p-6 mt-8"><h4 class="font-disp text-lg text-gold">Red wine</h4><p class="text-cream/55 text-sm mt-1">with Madagascar</p></div>
+  </div>
+</section>
+
+<!-- ===== GIFTING ===== -->
+<section id="gifting" class="relative py-24 md:py-32 overflow-hidden bg-gradient-to-b from-cocoa-950 to-cocoa-900">
+  <div class="max-w-5xl mx-auto px-5 md:px-8 text-center">
+    <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">Gifting</span>
+    <h2 class="font-disp text-4xl md:text-6xl mt-3 reveal-fade">A box worth unwrapping</h2>
+    <p class="text-cream/60 mt-5 max-w-xl mx-auto reveal-fade">Curated tasting flights, hand-tied in cocoa-dyed linen with a letterpressed origin card. Add a personal note at checkout.</p>
+    <div class="grid sm:grid-cols-3 gap-6 mt-12">
+      <div class="magnetic rounded-2xl border border-gold/20 bg-cocoa-950/50 p-7 hover:border-gold/60 transition"><h4 class="font-disp text-2xl">The Trio</h4><p class="text-cream/55 text-sm mt-2">3 signature bars</p><div class="text-gold font-medium mt-4">$42</div></div>
+      <div class="magnetic rounded-2xl border border-gold/50 bg-cocoa-800/50 p-7 -mt-3 shadow-xl hover:border-gold transition"><span class="text-xs text-gold">Most loved</span><h4 class="font-disp text-2xl mt-1">Origin Flight</h4><p class="text-cream/55 text-sm mt-2">6 single origins</p><div class="text-gold font-medium mt-4">$78</div></div>
+      <div class="magnetic rounded-2xl border border-gold/20 bg-cocoa-950/50 p-7 hover:border-gold/60 transition"><h4 class="font-disp text-2xl">The Cellar</h4><p class="text-cream/55 text-sm mt-2">9 bars + tasting guide</p><div class="text-gold font-medium mt-4">$115</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section class="max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-32 grid lg:grid-cols-12 gap-12 items-center">
+  <div class="lg:col-span-5">
+    <div class="parallax-img relative h-96 rounded-3xl overflow-hidden bg-cocoa-800">
+      <img src="https://images.unsplash.com/photo-1606312619070-d48b4c652a52?auto=format&fit=crop&w=1600&q=80" alt="Maker at work" class="w-full h-[120%] object-cover opacity-85" onerror="this.style.display='none'" />
+    </div>
+  </div>
+  <div class="lg:col-span-7">
+    <span class="text-gold/80 tracking-[0.3em] text-xs uppercase reveal-fade">Our Story</span>
+    <h2 class="font-disp text-4xl md:text-5xl mt-3 leading-tight reveal-fade">Founded in a tiny workshop, by two who couldn't find a bar they loved.</h2>
+    <p class="text-cream/60 mt-6 max-w-xl reveal-fade">Cacaoluna began with a borrowed melanger and a stubborn belief that chocolate should taste of the place it came from. Today we still make every batch by hand, in the same workshop, one origin at a time.</p>
+    <div class="grid grid-cols-3 gap-6 mt-10 border-t border-cream/10 pt-8">
+      <div><div class="font-disp text-4xl text-gold"><span class="count" data-to="11">0</span></div><p class="text-cream/50 text-sm mt-1">Years making</p></div>
+      <div><div class="font-disp text-4xl text-gold"><span class="count" data-to="40">0</span>k</div><p class="text-cream/50 text-sm mt-1">Bars a year</p></div>
+      <div><div class="font-disp text-4xl text-gold"><span class="count" data-to="6">0</span></div><p class="text-cream/50 text-sm mt-1">Makers</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="bg-cocoa-900/40 border-y border-cream/10 py-24 md:py-32">
+  <div class="max-w-6xl mx-auto px-5 md:px-8">
+    <h2 class="font-disp text-4xl md:text-5xl text-center mb-14 reveal-fade">Loved, square by square</h2>
+    <div class="grid md:grid-cols-3 gap-7">
+      <blockquote class="rounded-2xl border border-cream/10 bg-cocoa-950/40 p-7"><p class="text-cream/80 leading-relaxed">"The Madagascar bar genuinely tasted of cherries. I didn't know chocolate could do that."</p><footer class="mt-5 text-gold font-disp">— Lena R.</footer></blockquote>
+      <blockquote class="rounded-2xl border border-cream/10 bg-cocoa-950/40 p-7"><p class="text-cream/80 leading-relaxed">"I sent the Origin Flight to my dad and now I get monthly requests for more."</p><footer class="mt-5 text-gold font-disp">— Marcus T.</footer></blockquote>
+      <blockquote class="rounded-2xl border border-cream/10 bg-cocoa-950/40 p-7"><p class="text-cream/80 leading-relaxed">"You can taste the patience. This is the only chocolate in my house now."</p><footer class="mt-5 text-gold font-disp">— Priya S.</footer></blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="max-w-3xl mx-auto px-5 md:px-8 py-24 md:py-32">
+  <h2 class="font-disp text-4xl md:text-5xl text-center mb-12 reveal-fade">Questions, answered</h2>
+  <div class="space-y-3">
+    <div class="acc rounded-xl border border-cream/10 bg-cocoa-900/40 px-6 magnetic">
+      <button class="acc-head w-full flex items-center justify-between py-5 text-left"><span class="font-disp text-lg">What's actually in your bars?</span><span class="acc-plus text-gold text-2xl transition-transform">+</span></button>
+      <div class="acc-body"><p class="text-cream/60 pb-5">Most dark bars are just cacao and cane sugar. Milk bars add organic milk powder. No vanilla, lecithin, or fillers — ever.</p></div>
+    </div>
+    <div class="acc rounded-xl border border-cream/10 bg-cocoa-900/40 px-6 magnetic">
+      <button class="acc-head w-full flex items-center justify-between py-5 text-left"><span class="font-disp text-lg">How do you ship in warm weather?</span><span class="acc-plus text-gold text-2xl transition-transform">+</span></button>
+      <div class="acc-body"><p class="text-cream/60 pb-5">From May to September we ship with insulated liners and ice packs, and pause delivery during heat waves so your chocolate arrives perfect.</p></div>
+    </div>
+    <div class="acc rounded-xl border border-cream/10 bg-cocoa-900/40 px-6 magnetic">
+      <button class="acc-head w-full flex items-center justify-between py-5 text-left"><span class="font-disp text-lg">Are your bars vegan?</span><span class="acc-plus text-gold text-2xl transition-transform">+</span></button>
+      <div class="acc-body"><p class="text-cream/60 pb-5">All of our dark bars are 100% plant-based. Our milk and white bars contain dairy and are clearly labeled.</p></div>
+    </div>
+    <div class="acc rounded-xl border border-cream/10 bg-cocoa-900/40 px-6 magnetic">
+      <button class="acc-head w-full flex items-center justify-between py-5 text-left"><span class="font-disp text-lg">Do you offer a subscription?</span><span class="acc-plus text-gold text-2xl transition-transform">+</span></button>
+      <div class="acc-body"><p class="text-cream/60 pb-5">Yes — our monthly Origin Club delivers two new single-origin bars and tasting notes to your door, with free shipping.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="relative py-28 md:py-40 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-cocoa-800 via-cocoa-900 to-cocoa-950"></div>
+  <div class="absolute inset-0 opacity-30">
+    <img src="https://images.unsplash.com/photo-1481391319762-47dff72954d9?auto=format&fit=crop&w=1600&q=80" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto px-5 md:px-8 text-center">
+    <h2 class="font-disp text-5xl md:text-7xl leading-tight reveal-fade">Find your <span class="shimmer italic">origin.</span></h2>
+    <p class="text-cream/70 mt-6 max-w-lg mx-auto reveal-fade">Start with the Origin Flight and let your palate choose a favorite. Free shipping over $60.</p>
+    <a href="#bars" class="magnetic inline-block mt-10 bg-gold text-cocoa-950 font-medium px-10 py-4 rounded-full hover:bg-goldlight transition">Shop the collection</a>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-cream/10 bg-cocoa-950 py-16">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <a href="#top" class="font-disp text-2xl">Cacao<span class="shimmer">luna</span></a>
+      <p class="text-cream/50 mt-4 max-w-xs text-sm">Small-batch bean-to-bar chocolate, made by hand from rare heirloom cacao.</p>
+    </div>
+    <div>
+      <h5 class="text-gold text-sm tracking-widest uppercase mb-4">Shop</h5>
+      <ul class="space-y-2 text-cream/60 text-sm">
+        <li><a href="#bars" class="hover:text-gold transition">Bars</a></li>
+        <li><a href="#origins" class="hover:text-gold transition">Single origins</a></li>
+        <li><a href="#gifting" class="hover:text-gold transition">Gift boxes</a></li>
+        <li><a href="#gifting" class="hover:text-gold transition">Origin Club</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5 class="text-gold text-sm tracking-widest uppercase mb-4">Studio</h5>
+      <ul class="space-y-2 text-cream/60 text-sm">
+        <li><a href="#story" class="hover:text-gold transition">Our craft</a></li>
+        <li><a href="#tasting" class="hover:text-gold transition">Tasting guide</a></li>
+        <li><a href="#" class="hover:text-gold transition">Instagram</a></li>
+        <li><a href="#" class="hover:text-gold transition">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 md:px-8 mt-12 pt-8 border-t border-cream/10 flex flex-col md:flex-row justify-between gap-3 text-cream/40 text-sm">
+    <span>© 2026 Cacaoluna Chocolate Co. All rights reserved.</span>
+    <span>Made in tiny batches · Sailed, never flown.</span>
+  </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ----- Custom cursor ----- */
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  if (dot && ring && !reduce) {
+    let mx=0,my=0,rx=0,ry=0;
+    window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+    (function loop(){ rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+    document.querySelectorAll('a,button,.magnetic').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+    });
+  }
+
+  /* ----- Nav scroll bg ----- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', ()=>{
+    if(window.scrollY>40){ nav.classList.add('bg-cocoa-950/85','backdrop-blur-md','border-b','border-cream/10'); }
+    else { nav.classList.remove('bg-cocoa-950/85','backdrop-blur-md','border-b','border-cream/10'); }
+  });
+
+  /* ----- Magnetic buttons ----- */
+  if(!reduce){
+    document.querySelectorAll('.magnetic').forEach(el=>{
+      el.addEventListener('mousemove', e=>{
+        const r=el.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+        el.style.transform=`translate(${x*0.25}px,${y*0.3}px)`;
+      });
+      el.addEventListener('mouseleave',()=>{ el.style.transform=''; });
+    });
+  }
+
+  /* ----- Tilt 3D bar ----- */
+  const bar = document.querySelector('.bar3d');
+  if(bar && !reduce){
+    const wrap = bar.parentElement;
+    wrap.addEventListener('mousemove', e=>{
+      const r=wrap.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width-0.5, py=(e.clientY-r.top)/r.height-0.5;
+      bar.style.transform=`rotateY(${px*22}deg) rotateX(${-py*22}deg)`;
+    });
+    wrap.addEventListener('mouseleave',()=>{ bar.style.transform='rotateY(0) rotateX(0)'; });
+  }
+
+  /* ----- Accordion ----- */
+  document.querySelectorAll('.acc-head').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const acc=btn.closest('.acc');
+      const wasOpen=acc.classList.contains('open');
+      document.querySelectorAll('.acc').forEach(a=>a.classList.remove('open'));
+      if(!wasOpen) acc.classList.add('open');
+    });
+  });
+
+  /* ----- GSAP reveals ----- */
+  if(window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if(!reduce){
+      // hero masked lines
+      gsap.to('.reveal-line',{ y:'0%', duration:1.1, ease:'power4.out', stagger:0.12, delay:0.2 });
+      gsap.fromTo('.reveal-fade',{ y:24, opacity:0 },{ y:0, opacity:1, duration:1, ease:'power3.out', stagger:0.08, delay:0.6,
+        scrollTrigger:false });
+
+      // scroll-triggered fades
+      gsap.utils.toArray('.reveal-fade').forEach(el=>{
+        if(el.closest('#top')) return;
+        gsap.fromTo(el,{ y:30, opacity:0 },{ y:0, opacity:1, duration:0.9, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 88%' } });
+      });
+
+      // parallax container macro shots
+      gsap.utils.toArray('.parallax-img img').forEach(img=>{
+        gsap.fromTo(img,{ y:'-8%' },{ y:'8%', ease:'none',
+          scrollTrigger:{ trigger:img, start:'top bottom', end:'bottom top', scrub:true } });
+      });
+    } else {
+      gsap.set('.reveal-line',{ y:'0%' });
+      gsap.set('.reveal-fade',{ opacity:1, y:0 });
+    }
+
+    /* ----- Count-ups ----- */
+    gsap.utils.toArray('.count').forEach(el=>{
+      const to=parseFloat(el.dataset.to);
+      const obj={ v:0 };
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+        if(reduce){ el.textContent=to; return; }
+        gsap.to(obj,{ v:to, duration:1.6, ease:'power2.out', onUpdate:()=>{ el.textContent=Math.round(obj.v); } });
+      }});
+    });
+  }
+})();
+</script>
+</body>
+</html>

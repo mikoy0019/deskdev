@@ -1,0 +1,134 @@
+{
+  "name": "[deskdev] ops-alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-ops-alert",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-ops-alert",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=id,email,role,deactivated_at&role=eq.admin&limit=50",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "onError": "continueRegularOutput",
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// The watchdog Worker (workers/n8n-keepalive) and the nightly backup\n// workflow post here. Recipients are the active admins from profiles; when\n// the database itself is what is down, that read fails and the company inbox\n// gets it instead, so an outage alert never depends on what is broken.\nconst FALLBACK_TO = 'nixgensolutions@gmail.com';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst people = $('Recipients').all().map(i => i.json).flat()\n  .filter(p => p && p.id && !p.deactivated_at && p.role === 'admin' && EMAIL_RE.test(String(p.email || '').trim()));\nconst TO = [...new Set(people.map(p => String(p.email).trim().toLowerCase()))].join(',') || FALLBACK_TO;\n\nconst body = $('Trigger').first().json.body || {};\n// Plain text only and length-capped: the payload is machine-made, but it is\n// still request input and never becomes HTML.\nconst clip = (s, n) => String(s ?? '').replace(/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f]/g, '').slice(0, n);\nconst subject = clip(body.subject, 200).replace(/[\\r\\n]+/g, ' ') || '[NixGen] ops alert';\nconst text = clip(body.text, 8000) || JSON.stringify(body).slice(0, 8000);\nreturn [{ json: { to: TO, subject, text } }];\n"
+      },
+      "id": "build",
+      "name": "Build",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "email",
+      "name": "Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "5b0f3c2e-7d0a-4f43-9a36-0c1f6f9e2a11"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

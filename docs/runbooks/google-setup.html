@@ -1,0 +1,480 @@
+<!doctype html>
+<!-- The owner's checklist for the two Google sign-ins. Open this file in a browser.
+     Nothing here is secret: the addresses are public, and no key or password is in this file.
+     The engineering runbook is supabase/functions/google/README.md; this is the same path in plain steps. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body { margin: 0; } img { max-width: 100%; } [hidden] { display: none !important; }</style>
+<title>DeskDev Google Setup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+  /* Layout: one reading column. A sticky strip carries the two progress counts;
+     each part is a real sequence of numbered steps, and every value the owner
+     must type sits in a copyable mono row so nothing is retyped by hand. */
+  :root {
+    color-scheme: dark;
+    --bg: #06080d;
+    --surface: #0d1119;
+    --surface-2: #131926;
+    --line: rgba(226, 232, 255, 0.09);
+    --line-2: rgba(226, 232, 255, 0.17);
+    --fg: #f3f5fa;
+    --fg-2: #b4bccd;
+    --fg-3: #8791a6;
+    --accent: #3566e3;
+    --accent-text: #8aa8f0;
+    --accent-soft: rgba(53, 102, 227, 0.14);
+    --ok: #4cc38a;
+    --ok-soft: rgba(76, 195, 138, 0.13);
+    --warn: #e2b45a;
+    --warn-soft: rgba(226, 180, 90, 0.12);
+    --glass: rgba(6, 8, 13, 0.84);
+    --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #f5f6f8;
+      --surface: #ffffff;
+      --surface-2: #eef0f4;
+      --line: rgba(12, 16, 28, 0.1);
+      --line-2: rgba(12, 16, 28, 0.2);
+      --fg: #0c0f17;
+      --fg-2: #444c5d;
+      --fg-3: #5f6779;
+      --accent: #1f4ed1;
+      --accent-text: #1f4ed1;
+      --accent-soft: rgba(31, 78, 209, 0.08);
+      --ok: #17794f;
+      --ok-soft: rgba(23, 121, 79, 0.1);
+      --warn: #8a5a00;
+      --warn-soft: rgba(138, 90, 0, 0.09);
+      --glass: rgba(245, 246, 248, 0.88);
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f4;
+    --line: rgba(12, 16, 28, 0.1);
+    --line-2: rgba(12, 16, 28, 0.2);
+    --fg: #0c0f17;
+    --fg-2: #444c5d;
+    --fg-3: #5f6779;
+    --accent: #1f4ed1;
+    --accent-text: #1f4ed1;
+    --accent-soft: rgba(31, 78, 209, 0.08);
+    --ok: #17794f;
+    --ok-soft: rgba(23, 121, 79, 0.1);
+    --warn: #8a5a00;
+    --warn-soft: rgba(138, 90, 0, 0.09);
+    --glass: rgba(245, 246, 248, 0.88);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+    padding-block: 0 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin-inline: auto; display: flex; flex-direction: column; gap: 3rem; }
+  h1, h2, h3 { font-family: var(--font-heading); font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2rem, 5vw, 2.75rem); }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.0625rem; letter-spacing: -0.005em; line-height: 1.35; }
+  p { margin: 0; }
+  a { color: var(--accent-text); text-underline-offset: 0.18em; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; border-radius: 4px; }
+  code, .mono { font-family: var(--font-mono); font-size: 0.875em; }
+  code { background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  .eyebrow { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--fg-3); }
+
+  /* progress strip */
+  .strip {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+    margin-inline: calc(-1 * clamp(1rem, 4vw, 2.5rem));
+    padding: 0.7rem clamp(1rem, 4vw, 2.5rem);
+    background: var(--glass); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .strip-in { max-width: 46rem; margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.25rem; font-size: 0.875rem; color: var(--fg-2); }
+  .strip a { color: var(--fg-2); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .strip a:hover { color: var(--fg); }
+  .count { font-family: var(--font-mono); font-size: 0.8125rem; font-variant-numeric: tabular-nums; padding: 0.1rem 0.5rem; border: 1px solid var(--line-2); border-radius: 999px; color: var(--fg-2); }
+  .count.full { color: var(--ok); border-color: var(--ok); background: var(--ok-soft); }
+  .strip .spacer { flex: 1 1 auto; }
+  .ghost { font: inherit; font-size: 0.8125rem; color: var(--fg-3); background: none; border: 0; padding: 0.2rem 0; cursor: pointer; text-decoration: underline; text-underline-offset: 0.18em; }
+  .ghost:hover { color: var(--fg); }
+
+  /* opening */
+  .open { display: flex; flex-direction: column; gap: 1rem; padding-top: 2.5rem; }
+  .lede { font-size: 1.125rem; color: var(--fg-2); max-width: 38rem; }
+  .state { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.5rem 2.5rem; padding-block: 1.5rem; border-block: 1px solid var(--line); }
+  .state h3 { font-size: 0.8125rem; font-family: var(--font-mono); font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; }
+  .state .done h3 { color: var(--ok); }
+  .state .todo h3 { color: var(--warn); }
+  .state ul { list-style: none; margin: 0.6rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.9375rem; color: var(--fg-2); }
+  .state li { display: grid; grid-template-columns: 1rem 1fr; gap: 0.5rem; }
+  .state li > span { min-width: 0; }
+  .state li::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-top: 0.55em; }
+  .state .done li::before { background: var(--ok); }
+  .state .todo li::before { border: 1.5px solid var(--warn); }
+
+  /* parts and steps */
+  .part { display: flex; flex-direction: column; gap: 1.25rem; scroll-margin-top: 4.5rem; }
+  .part-head { display: flex; flex-direction: column; gap: 0.5rem; }
+  .part-head p { color: var(--fg-2); max-width: 40rem; }
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+  .step { display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); gap: 0 0.75rem; padding-block: 1.25rem; border-bottom: 1px solid var(--line); }
+  .step > label { display: contents; cursor: pointer; }
+  .tick { grid-column: 1; grid-row: 1; position: relative; width: 1.5rem; height: 1.5rem; margin-top: 0.1rem; }
+  .tick input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+  .tick span { position: absolute; inset: 0; border: 1.5px solid var(--line-2); border-radius: 6px; background: var(--surface); display: grid; place-items: center; transition: background-color 0.15s, border-color 0.15s; }
+  .tick span::after { content: ""; width: 0.4rem; height: 0.72rem; border: solid var(--bg); border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg) scale(0); transition: transform 0.15s; }
+  .tick input:checked + span { background: var(--ok); border-color: var(--ok); }
+  .tick input:checked + span::after { transform: translateY(-1px) rotate(45deg) scale(1); }
+  .tick input:focus-visible + span { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+  .step-title { grid-column: 2; grid-row: 1; display: flex; gap: 0.6rem; align-items: baseline; }
+  .n { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--fg-3); font-variant-numeric: tabular-nums; flex: none; }
+  .body { grid-column: 2; display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem; color: var(--fg-2); font-size: 0.9375rem; min-width: 0; }
+  .body strong { color: var(--fg); font-weight: 600; }
+  .step.is-done .step-title h3 { color: var(--fg-3); text-decoration: line-through; text-decoration-color: var(--line-2); }
+  .path { color: var(--fg); font-weight: 500; }
+
+  /* copy rows */
+  .vals { display: flex; flex-direction: column; gap: 0.4rem; }
+  .val { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.5rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 0.35rem 0.35rem 0.35rem 0.75rem; }
+  .val .k { display: block; font-size: 0.75rem; color: var(--fg-3); line-height: 1.3; }
+  .val .v { display: block; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--fg); overflow-wrap: anywhere; line-height: 1.45; user-select: all; }
+  .copy { font: inherit; font-size: 0.8125rem; font-weight: 500; color: var(--accent-text); background: var(--accent-soft); border: 0; border-radius: 6px; padding: 0.4rem 0.7rem; cursor: pointer; min-width: 4.4rem; transition: background-color 0.15s, color 0.15s; }
+  .copy:hover { background: var(--accent); color: #fff; }
+  .copy.ok { background: var(--ok-soft); color: var(--ok); }
+  .note { border-left: 2px solid var(--warn); background: var(--warn-soft); padding: 0.6rem 0.85rem; border-radius: 0 6px 6px 0; color: var(--fg-2); font-size: 0.9rem; }
+  .note strong { color: var(--fg); }
+
+  .after { display: flex; flex-direction: column; gap: 1rem; }
+  .after ul { margin: 0; padding-left: 1.1rem; color: var(--fg-2); display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9375rem; }
+  footer { color: var(--fg-3); font-size: 0.8125rem; border-top: 1px solid var(--line); padding-top: 1.25rem; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (max-width: 30rem) {
+    .step { grid-template-columns: 2rem minmax(0, 1fr); }
+    .val { grid-template-columns: minmax(0, 1fr); padding: 0.5rem 0.6rem; }
+    .copy { justify-self: start; }
+  }
+</style>
+</head>
+<body>
+<div class="strip" role="navigation" aria-label="Progress">
+  <div class="strip-in">
+    <a href="#deskdev">DeskDev client <span class="count" id="count-a">0 / 8</span></a>
+    <a href="#ops">n8n client <span class="count" id="count-b">0 / 7</span></a>
+    <span class="spacer"></span>
+    <button class="ghost" id="reset" type="button">Clear ticks</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="open">
+    <p class="eyebrow">NixGen Solutions · owner checklist</p>
+    <h1>Two Google sign-ins, then everything is connected</h1>
+    <p class="lede">You sign in on Google's own website, <strong>console.cloud.google.com</strong>, with the company Google account, and once in your own n8n. No other service is involved. Each part ends with a command you run yourself.</p>
+    <div class="state">
+      <div class="done">
+        <h3>Already set up</h3>
+        <ul>
+          <li><span>Push notifications: keys made, server configured, delivery on. Tested with a real browser</span></li>
+          <li><span>The key that seals each person's Google connection</span></li>
+          <li><span>Calendar sync plumbing between the database and the server</span></li>
+          <li><span>11 automations loaded into n8n, switched off until they can send mail</span></li>
+        </ul>
+      </div>
+      <div class="todo">
+        <h3>Waiting on Google</h3>
+        <ul>
+          <li><span><strong>Part 1</strong> lets people press Connect Google inside DeskDev</span></li>
+          <li><span><strong>Part 2</strong> lets the automations send email and write the log sheet</span></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <section class="part" id="deskdev" data-part="a">
+    <div class="part-head">
+      <p class="eyebrow">Part 1</p>
+      <h2>The DeskDev client</h2>
+      <p>Powers Connect Google in DeskDev: sign-in, exports to Google Sheets, and the team calendar. Do all of it signed in as the company Google account.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a1"><span></span></span>
+          <span class="step-title"><span class="n">1</span><h3>Create a Google Cloud project named DeskDev</h3></span></label>
+        <div class="body">
+          <p>Open <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a>, type the name, press <span class="path">Create</span>, then select the new project in the bar at the top.</p>
+          <div class="vals"><div class="val"><span><span class="k">Project name</span><span class="v">DeskDev</span></span><button class="copy" type="button">Copy</button></div></div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a2"><span></span></span>
+          <span class="step-title"><span class="n">2</span><h3>Switch on three APIs</h3></span></label>
+        <div class="body">
+          <p>Go to <span class="path">APIs &amp; Services → Library</span> (<a href="https://console.cloud.google.com/apis/library" target="_blank" rel="noopener">open the Library</a>). Search each name, open it, press <span class="path">Enable</span>.</p>
+          <div class="vals">
+            <div class="val"><span><span class="v">Google Drive API</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">Google Sheets API</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">Google Calendar API</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a3"><span></span></span>
+          <span class="step-title"><span class="n">3</span><h3>Fill in Branding</h3></span></label>
+        <div class="body">
+          <p>Go to <span class="path">Google Auth Platform → Branding</span> (<a href="https://console.cloud.google.com/auth/branding" target="_blank" rel="noopener">open Branding</a>). If Google shows a <span class="path">Get started</span> button first, press it and enter the same values. For the support email, pick the company address.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">App name</span><span class="v">DeskDev</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Application home page</span><span class="v">https://nixgensolutions.com</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Privacy policy link</span><span class="v">https://nixgensolutions.com/privacy</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Terms of service link</span><span class="v">https://nixgensolutions.com/terms</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Authorized domain</span><span class="v">nixgensolutions.com</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a4"><span></span></span>
+          <span class="step-title"><span class="n">4</span><h3>Set the audience to External and publish the app</h3></span></label>
+        <div class="body">
+          <p>Go to <span class="path">Audience</span>. User type: <strong>External</strong>. Then press <span class="path">Publish app</span> so the status reads <strong>In production</strong>.</p>
+          <p class="note"><strong>Do not leave it in Testing.</strong> In Testing, Google disconnects every person after 7 days. Publishing needs no review here, because this app only asks for low-risk access.</p>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a5"><span></span></span>
+          <span class="step-title"><span class="n">5</span><h3>Add five access scopes</h3></span></label>
+        <div class="body">
+          <p>Go to <span class="path">Data access → Add or remove scopes</span>. Paste each line into the manual box at the bottom, press <span class="path">Add to table</span>, then <span class="path">Update</span> and <span class="path">Save</span>.</p>
+          <div class="vals">
+            <div class="val"><span><span class="v">openid</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">https://www.googleapis.com/auth/userinfo.email</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">https://www.googleapis.com/auth/drive.file</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">https://www.googleapis.com/auth/calendar.app.created</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Free/busy, for the booking page</span><span class="v">https://www.googleapis.com/auth/calendar.freebusy</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+          <p class="note"><strong>Only these five.</strong> Adding Gmail or full Drive access to this project would force a Google review that can take weeks. Mail belongs to Part 2. The free/busy scope lets the booking page skip times when the company account is already busy; it sees busy and free only, never what an event is. If Google marks it sensitive, the first Connect shows an "unverified app" screen once: press <span class="path">Advanced → Go to DeskDev</span>.</p>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a6"><span></span></span>
+          <span class="step-title"><span class="n">6</span><h3>Create the client</h3></span></label>
+        <div class="body">
+          <p>Go to <span class="path">Clients → Create client</span>. Application type: <strong>Web application</strong>. Under <span class="path">Authorized redirect URIs</span> add these four, exactly as written. Leave JavaScript origins empty. Press <span class="path">Create</span>. If Google asks you to authorize a domain first, add the domain it names under <span class="path">Branding → Authorized domains</span>, then try again.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">Name</span><span class="v">DeskDev web</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Redirect URI 1: the live site</span><span class="v">https://nixgensolutions.com/api/google/callback</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Redirect URI 2: the server, used until the site is live</span><span class="v">https://rgasjotvqwkjbeivlhvn.supabase.co/functions/v1/google/callback</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Redirect URI 3: testing on your own computer</span><span class="v">http://localhost:6969/api/google/callback</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Redirect URI 4: the temporary address, used until the domain is live (this is the one Connect uses today)</span><span class="v">https://nixgen-site.nixgensolutions.workers.dev/api/google/callback</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a7"><span></span></span>
+          <span class="step-title"><span class="n">7</span><h3>Paste the two values into the secrets file</h3></span></label>
+        <div class="body">
+          <p>Google now shows a <strong>Client ID</strong> and a <strong>Client secret</strong>. In VS Code open the file below: it sits in the top folder of the project, next to <code>AGENTS.md</code>. Both lines are already there and empty: paste each value right after its <code>=</code>, with no spaces or quotes, and save.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">File (top folder of the project)</span><span class="v">.env.local</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Line for the Client ID</span><span class="v">GOOGLE_OAUTH_CLIENT_ID=</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Line for the Client secret</span><span class="v">GOOGLE_OAUTH_CLIENT_SECRET=</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+          <p class="note"><strong>The secret goes into that file and nowhere else.</strong> Not into a chat, an email or a note. The setup command reads it from the file and never displays it.</p>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="a8"><span></span></span>
+          <span class="step-title"><span class="n">8</span><h3>Send it to the server</h3></span></label>
+        <div class="body">
+          <p>Open a terminal in the project folder and run the first command. It shows what it would change and changes nothing. If that looks right, run the second one.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">1. Look first</span><span class="v">node scripts/setup-integrations.mjs --only google --dry-run</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">2. Do it</span><span class="v">node scripts/setup-integrations.mjs --only google</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+          <p>It should end with <strong>Done.</strong> and a line that reads <code>set  Google OAuth client</code>. Then open DeskDev, go to <span class="path">Settings → Integrations</span> and press <span class="path">Connect Google</span>: Google asks you to allow access and sends you back to DeskDev.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="part" id="ops" data-part="b">
+    <div class="part-head">
+      <p class="eyebrow">Part 2</p>
+      <h2>The n8n client</h2>
+      <p>Lets the automations send email from the company inbox and write the activity log sheet. It is a separate Google project on purpose: mail access stays away from the DeskDev app.</p>
+    </div>
+    <ol class="steps">
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b1"><span></span></span>
+          <span class="step-title"><span class="n">1</span><h3>Create a second project named NixGen Ops</h3></span></label>
+        <div class="body">
+          <p>Same place as before: <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">console.cloud.google.com/projectcreate</a>. Select the new project at the top before going on.</p>
+          <div class="vals"><div class="val"><span><span class="k">Project name</span><span class="v">NixGen Ops</span></span><button class="copy" type="button">Copy</button></div></div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b2"><span></span></span>
+          <span class="step-title"><span class="n">2</span><h3>Switch on three APIs</h3></span></label>
+        <div class="body">
+          <p><span class="path">APIs &amp; Services → Library</span>, then <span class="path">Enable</span> each one.</p>
+          <div class="vals">
+            <div class="val"><span><span class="v">Gmail API</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">Google Sheets API</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="v">Google Drive API</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b3"><span></span></span>
+          <span class="step-title"><span class="n">3</span><h3>Branding, External, publish</h3></span></label>
+        <div class="body">
+          <p>In <span class="path">Google Auth Platform → Branding</span> enter the app name and the company support email. In <span class="path">Audience</span> choose <strong>External</strong> and press <span class="path">Publish app</span>.</p>
+          <div class="vals"><div class="val"><span><span class="k">App name</span><span class="v">NixGen Ops</span></span><button class="copy" type="button">Copy</button></div></div>
+          <p class="note"><strong>The warning is expected.</strong> When you connect in step 5, Google says the app is not verified. That is normal for a private tool only you use: press <span class="path">Advanced</span>, then <span class="path">Go to NixGen Ops</span>.</p>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b4"><span></span></span>
+          <span class="step-title"><span class="n">4</span><h3>Create the client</h3></span></label>
+        <div class="body">
+          <p><span class="path">Clients → Create client</span>, type <strong>Web application</strong>, one redirect URI. Keep the page with the Client ID and secret open for the next two steps.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">Name</span><span class="v">n8n</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">Authorized redirect URI</span><span class="v">https://nixgen-n8n-8gp7.onrender.com/rest/oauth2-credential/callback</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b5"><span></span></span>
+          <span class="step-title"><span class="n">5</span><h3>Connect Gmail inside n8n</h3></span></label>
+        <div class="body">
+          <p>Open <a href="https://nixgen-n8n-8gp7.onrender.com" target="_blank" rel="noopener">nixgen-n8n-8gp7.onrender.com</a> (it can take a minute to wake up). Go to <span class="path">Credentials → Create credential</span>, pick <strong>Gmail OAuth2 API</strong>, paste the Client ID and Client secret, press <span class="path">Sign in with Google</span> and allow access with the company account. Rename the credential to exactly:</p>
+          <div class="vals"><div class="val"><span><span class="k">Credential name (exact, including the capital G)</span><span class="v">Gmail account</span></span><button class="copy" type="button">Copy</button></div></div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b6"><span></span></span>
+          <span class="step-title"><span class="n">6</span><h3>Connect Google Sheets inside n8n</h3></span></label>
+        <div class="body">
+          <p>Create one more credential: <strong>Google Sheets OAuth2 API</strong>, the same Client ID and secret, sign in with the account that can edit the <strong>Deskdev Log Activities</strong> spreadsheet. Rename it to exactly:</p>
+          <div class="vals"><div class="val"><span><span class="k">Credential name (exact)</span><span class="v">Google Sheets account</span></span><button class="copy" type="button">Copy</button></div></div>
+        </div>
+      </li>
+      <li class="step">
+        <label><span class="tick"><input type="checkbox" id="b7"><span></span></span>
+          <span class="step-title"><span class="n">7</span><h3>Link the credentials and switch the automations on</h3></span></label>
+        <div class="body">
+          <p>In a terminal in the project folder, run the first command: it puts the two credentials into every workflow (the names from steps 5 and 6 are how it finds them). The second one should then list the workflows without any line that says <code>credentials</code>.</p>
+          <div class="vals">
+            <div class="val"><span><span class="k">1. Link them</span><span class="v">node scripts/n8n.mjs push --apply</span></span><button class="copy" type="button">Copy</button></div>
+            <div class="val"><span><span class="k">2. Check</span><span class="v">node scripts/n8n.mjs status</span></span><button class="copy" type="button">Copy</button></div>
+          </div>
+          <p>Back in n8n, open each workflow whose name starts with <strong>[deskdev]</strong> and turn on its <span class="path">Active</span> switch. Leave two of them off: <strong>lead-nudge</strong> and <strong>daily-activity-digest</strong>. For the ones that run on a schedule, press <span class="path">Execute workflow</span> once: the email should arrive in the company inbox, and DeskDev shows the run under <span class="path">Settings → Integrations → Automations</span>.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="after">
+    <h2>Good to know</h2>
+    <ul>
+      <li><strong>Trying Connect Google before the site is live.</strong> The server only accepts the three live addresses today. To test from your own computer, run <code>node scripts/setup-integrations.mjs --only google --dev-origin</code>. On launch day take the local address out again with <code>node scripts/setup-integrations.mjs --only google --prod-origins</code>.</li>
+      <li><strong>Search Console can wait.</strong> Verifying nixgensolutions.com in Google Search Console needs the domain's DNS, so it belongs to launch day. Nothing above depends on it.</li>
+      <li><strong>The team calendar</strong> gets its last setting on launch day too: <code>node scripts/setup-integrations.mjs --only google --redirect-base https://nixgensolutions.com/api/google</code>.</li>
+      <li><strong>Every command above is safe to run twice.</strong> It first looks at what is already there, and adding <code>--dry-run</code> shows what it would do without doing it.</li>
+      <li><strong>These ticks are saved in this browser only.</strong> They are your own notes; nobody else sees them.</li>
+    </ul>
+  </section>
+
+  <footer>Nothing on this page is secret: the addresses above are public. The two client secrets never belong here or in chat.</footer>
+</div>
+
+<script>
+  (function () {
+    var KEY = 'deskdev-google-setup.v1';
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('.step input[type="checkbox"]'));
+    var saved = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { saved = {}; }
+
+    function paint() {
+      ['a', 'b'].forEach(function (part) {
+        var all = boxes.filter(function (b) { return b.id.charAt(0) === part; });
+        var done = all.filter(function (b) { return b.checked; }).length;
+        var el = document.getElementById('count-' + part);
+        el.textContent = done + ' / ' + all.length;
+        el.classList.toggle('full', done === all.length);
+      });
+      boxes.forEach(function (b) { b.closest('.step').classList.toggle('is-done', b.checked); });
+    }
+    function store() {
+      var out = {};
+      boxes.forEach(function (b) { if (b.checked) out[b.id] = 1; });
+      try { localStorage.setItem(KEY, JSON.stringify(out)); } catch (e) { /* private window: ticks last for this visit */ }
+    }
+    boxes.forEach(function (b) {
+      if (saved[b.id]) b.checked = true;
+      b.addEventListener('change', function () { paint(); store(); });
+    });
+    paint();
+
+    document.querySelectorAll('.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var v = btn.parentElement.querySelector('.v');
+        var text = v.textContent;
+        var ok = function () {
+          btn.textContent = 'Copied';
+          btn.classList.add('ok');
+          setTimeout(function () { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 1600);
+        };
+        var select = function () {
+          var range = document.createRange();
+          range.selectNodeContents(v);
+          var sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+          btn.textContent = 'Selected';
+          setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+        };
+        try {
+          navigator.clipboard.writeText(text).then(ok, select);
+        } catch (e) { select(); }
+      });
+    });
+
+    var reset = document.getElementById('reset');
+    var armed = null;
+    reset.addEventListener('click', function () {
+      if (!armed) {
+        reset.textContent = 'Press again to clear all ticks';
+        armed = setTimeout(function () { armed = null; reset.textContent = 'Clear ticks'; }, 4000);
+        return;
+      }
+      clearTimeout(armed);
+      armed = null;
+      reset.textContent = 'Clear ticks';
+      boxes.forEach(function (b) { b.checked = false; });
+      paint();
+      store();
+    });
+  })();
+</script>
+</body>
+</html>

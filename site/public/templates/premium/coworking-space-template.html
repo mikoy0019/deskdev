@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Halcyon Works — Premium Coworking & Flexible Offices</title>
+  <meta name="description" content="Halcyon Works is a premium coworking community of light-filled studios, private offices and flexible desks. Book a tour and find your space." />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink:    '#15140F',
+            cream:  '#FBF8F1',
+            paper:  '#F3EEE3',
+            sand:   '#E7DECB',
+            coral:  '#FF5A3C',
+            coral2: '#FF7A52',
+            moss:   '#26433A',
+            mossLt: '#3A6356',
+            amber:  '#F2B84B',
+          },
+          fontFamily: {
+            display: ['"Fraunces"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          },
+          maxWidth: { container: '1240px' },
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root { --coral:#FF5A3C; --moss:#26433A; }
+    html, body { overflow-x: hidden; }
+    body {
+      background: #FBF8F1;
+      color: #15140F;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-display { font-family: 'Fraunces', serif; }
+
+    /* Reveal helpers */
+    .reveal { opacity: 0; transform: translateY(26px); }
+    .word-anim { display: inline-block; will-change: transform, opacity; }
+
+    /* Marquee / locations rail base */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Amenity card lift */
+    .amenity { transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease, border-color .45s ease; }
+    .amenity:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -28px rgba(21,20,15,.35); }
+
+    /* Tilt cards */
+    .tilt { transform-style: preserve-3d; transition: transform .15s ease; will-change: transform; }
+    .tilt-inner { transform: translateZ(40px); }
+
+    /* Magnetic button */
+    .magnetic { will-change: transform; }
+
+    /* Accordion */
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.2,.7,.2,1); }
+    .faq-item.open .faq-body { max-height: 320px; }
+    .faq-item.open .faq-icon { transform: rotate(45deg); }
+    .faq-icon { transition: transform .4s ease; }
+
+    /* Gradient image fallbacks live in container; img hides on error */
+    .img-wrap { background: linear-gradient(135deg, #E7DECB 0%, #3A6356 60%, #26433A 100%); }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(100deg, #FF5A3C, #F2B84B);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+
+    /* Subtle grain overlay */
+    .grain::before {
+      content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+      background-image: radial-gradient(rgba(21,20,15,.05) 1px, transparent 1px);
+      background-size: 4px 4px;
+    }
+
+    /* Pill nav blur */
+    .nav-blur { backdrop-filter: saturate(160%) blur(14px); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1 !important; transform: none !important; }
+      * { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+
+<body class="antialiased selection:bg-coral selection:text-cream">
+
+  <!-- ===================== NAV ===================== -->
+  <header class="fixed top-0 inset-x-0 z-50 px-4 sm:px-6 pt-4">
+    <nav class="mx-auto max-w-container nav-blur bg-cream/70 border border-ink/10 rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between shadow-[0_10px_40px_-24px_rgba(21,20,15,.6)]">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-ink text-cream font-display text-lg leading-none transition-transform group-hover:rotate-6">H</span>
+        <span class="font-display text-xl tracking-tight">Halcyon<span class="text-coral">.</span></span>
+      </a>
+      <ul class="hidden lg:flex items-center gap-8 text-sm font-medium text-ink/75">
+        <li><a class="hover:text-coral transition-colors" href="#spaces">Spaces</a></li>
+        <li><a class="hover:text-coral transition-colors" href="#locations">Locations</a></li>
+        <li><a class="hover:text-coral transition-colors" href="#membership">Membership</a></li>
+        <li><a class="hover:text-coral transition-colors" href="#community">Community</a></li>
+        <li><a class="hover:text-coral transition-colors" href="#faq">FAQ</a></li>
+      </ul>
+      <a href="#tour" class="magnetic inline-flex items-center gap-2 rounded-xl bg-coral text-cream text-sm font-semibold px-4 sm:px-5 py-2.5 shadow-[0_12px_30px_-12px_rgba(255,90,60,.8)] hover:bg-coral2 transition-colors">
+        Book a tour
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </nav>
+  </header>
+
+  <main id="top">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="relative pt-32 sm:pt-36 lg:pt-44 pb-20 px-4 sm:px-6 grain overflow-hidden">
+      <!-- ambient blobs -->
+      <div class="absolute -top-24 -right-24 w-[28rem] h-[28rem] rounded-full bg-coral/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute top-40 -left-24 w-[22rem] h-[22rem] rounded-full bg-moss/15 blur-3xl pointer-events-none"></div>
+
+      <div class="mx-auto max-w-container relative">
+        <div class="grid lg:grid-cols-12 gap-10 items-end">
+          <div class="lg:col-span-6">
+            <span class="reveal inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[.18em] text-moss bg-moss/10 border border-moss/15 rounded-full px-3 py-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-coral animate-pulse"></span>
+              Now open in 6 cities
+            </span>
+            <h1 class="font-display text-[2.7rem] leading-[1.02] sm:text-6xl lg:text-[4.4rem] tracking-tight mt-6">
+              <span id="headline" class="block">Work where the light gets in.</span>
+              <span class="reveal block grad-text italic font-medium mt-1">Beautifully.</span>
+            </h1>
+            <p class="reveal mt-6 text-lg text-ink/70 max-w-md">
+              Halcyon Works is a coworking community built for people who care how a room feels. Sunlit studios, serious wi-fi, and neighbours worth meeting.
+            </p>
+            <div class="reveal mt-8 flex flex-wrap items-center gap-3">
+              <a href="#tour" class="magnetic inline-flex items-center gap-2 rounded-xl bg-ink text-cream font-semibold px-6 py-3.5 hover:bg-moss transition-colors">
+                Book a tour
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+              <a href="#membership" class="inline-flex items-center gap-2 rounded-xl border border-ink/15 bg-cream/60 font-semibold px-6 py-3.5 hover:border-coral hover:text-coral transition-colors">
+                See plans
+              </a>
+            </div>
+            <div class="reveal mt-8 flex items-center gap-4 text-sm text-ink/55">
+              <div class="flex -space-x-2">
+                <span class="w-8 h-8 rounded-full bg-coral border-2 border-cream"></span>
+                <span class="w-8 h-8 rounded-full bg-moss border-2 border-cream"></span>
+                <span class="w-8 h-8 rounded-full bg-amber border-2 border-cream"></span>
+                <span class="w-8 h-8 rounded-full bg-mossLt border-2 border-cream"></span>
+              </div>
+              <span>Loved by <strong class="text-ink">4,200+</strong> members &amp; founders.</span>
+            </div>
+          </div>
+
+          <!-- Hero image collage with parallax -->
+          <div class="lg:col-span-6">
+            <div class="relative">
+              <div data-parallax="22" class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/3.4] shadow-[0_40px_80px_-40px_rgba(21,20,15,.6)]">
+                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80"
+                     onerror="this.style.display='none'" alt="Bright coworking studio with greenery"
+                     class="w-full h-full object-cover" loading="eager" />
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/30 to-transparent"></div>
+              </div>
+              <!-- floating stat card -->
+              <div data-parallax="-30" class="absolute -bottom-6 -left-4 sm:-left-8 bg-cream rounded-2xl border border-ink/10 shadow-xl px-5 py-4 w-52">
+                <div class="text-xs font-semibold uppercase tracking-wider text-ink/45">Daily light hours</div>
+                <div class="font-display text-3xl mt-1">9.4<span class="text-coral text-xl">h</span></div>
+                <div class="text-xs text-ink/50 mt-0.5">South-facing windows, every floor.</div>
+              </div>
+              <div data-parallax="18" class="absolute -top-5 -right-3 sm:-right-6 bg-moss text-cream rounded-2xl shadow-xl px-4 py-3 w-40 rotate-3">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-cream/60">Avg. wifi</div>
+                <div class="font-display text-2xl mt-0.5">1.2 Gbps</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TRUST / STATS STRIP ===================== -->
+    <section class="px-4 sm:px-6 -mt-4">
+      <div class="mx-auto max-w-container">
+        <div class="rounded-3xl bg-ink text-cream px-6 sm:px-10 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8 relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-56 h-56 rounded-full bg-coral/20 blur-2xl"></div>
+          <div class="reveal">
+            <div class="font-display text-4xl sm:text-5xl"><span class="count" data-target="4200">0</span><span class="text-coral">+</span></div>
+            <div class="text-cream/55 text-sm mt-1">Members &amp; founders</div>
+          </div>
+          <div class="reveal">
+            <div class="font-display text-4xl sm:text-5xl"><span class="count" data-target="14">0</span></div>
+            <div class="text-cream/55 text-sm mt-1">Locations &amp; growing</div>
+          </div>
+          <div class="reveal">
+            <div class="font-display text-4xl sm:text-5xl"><span class="count" data-target="320">0</span><span class="text-coral">k</span></div>
+            <div class="text-cream/55 text-sm mt-1">Sq ft of studio space</div>
+          </div>
+          <div class="reveal">
+            <div class="font-display text-4xl sm:text-5xl"><span class="count" data-target="98">0</span><span class="text-coral">%</span></div>
+            <div class="text-cream/55 text-sm mt-1">Member renewal rate</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== WHY US / AMENITIES ===================== -->
+    <section id="spaces" class="px-4 sm:px-6 py-24">
+      <div class="mx-auto max-w-container">
+        <div class="max-w-2xl">
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">Why Halcyon</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">Everything you need, nothing you don't.</h2>
+          <p class="reveal text-ink/65 mt-4 text-lg">A workspace should disappear into your day. Ours handles the details so the work feels lighter.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-12">
+          <!-- amenity card -->
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-coral/10 text-coral grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12.55a11 11 0 0 1 14 0M8.5 16.05a6 6 0 0 1 7 0M2 9a16 16 0 0 1 20 0M11 19h2"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">Gigabit everywhere</h3>
+            <p class="text-ink/60 mt-2">Hardwired and wireless 1.2 Gbps, redundant uplinks, and private VLAN options for teams.</p>
+          </div>
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-moss/10 text-moss grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4zM6 1v3M10 1v3M14 1v3"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">Barista-grade coffee</h3>
+            <p class="text-ink/60 mt-2">Unlimited specialty coffee, matcha and cold brew on tap. Locally roasted, always warm.</p>
+          </div>
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-amber/15 text-amber grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">Phone booths &amp; rooms</h3>
+            <p class="text-ink/60 mt-2">Acoustically sealed booths and bookable meeting rooms with screens, cameras and quiet.</p>
+          </div>
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-coral/10 text-coral grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">24/7 secure access</h3>
+            <p class="text-ink/60 mt-2">App-based entry, on-site staff till late, and night-owl access for members who don't clock out.</p>
+          </div>
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-moss/10 text-moss grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2a7 7 0 0 0-7 7c0 3 2 5 2 7v1h10v-1c0-2 2-4 2-7a7 7 0 0 0-7-7zM9 21h6"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">Wellness &amp; showers</h3>
+            <p class="text-ink/60 mt-2">Showers, lockers, nap pods and a quiet wellness room — cycle in, refresh, get to it.</p>
+          </div>
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-7">
+            <div class="w-12 h-12 rounded-2xl bg-amber/15 text-amber grid place-items-center">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13A4 4 0 0 1 16 11"/></svg>
+            </div>
+            <h3 class="font-display text-2xl mt-5">A real community</h3>
+            <p class="text-ink/60 mt-2">Curated members, weekly socials and intros that turn into co-founders, clients and friends.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== SPACES / DESKS / OFFICES ===================== -->
+    <section class="px-4 sm:px-6 pb-24">
+      <div class="mx-auto max-w-container">
+        <div class="grid lg:grid-cols-3 gap-5">
+          <!-- big feature -->
+          <article class="reveal lg:col-span-2 relative rounded-3xl overflow-hidden img-wrap min-h-[24rem] group">
+            <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Open coworking floor with desks"
+                 data-parallax="14" class="absolute inset-0 w-full h-full object-cover scale-110" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"></div>
+            <div class="relative h-full flex flex-col justify-end p-8 text-cream">
+              <span class="text-xs font-semibold uppercase tracking-[.18em] text-coral2">Open studio</span>
+              <h3 class="font-display text-3xl sm:text-4xl mt-2 max-w-md">Hot desks in the light.</h3>
+              <p class="text-cream/75 mt-2 max-w-md">Grab any seat on our open floors. Standing desks, ergonomic chairs, and plants that are actually alive.</p>
+              <span class="mt-4 inline-flex items-center gap-2 text-sm font-semibold">From $29/day <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </div>
+          </article>
+
+          <div class="grid grid-rows-2 gap-5">
+            <article class="reveal relative rounded-3xl overflow-hidden img-wrap min-h-[11rem]">
+              <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80"
+                   onerror="this.style.display='none'" alt="Dedicated desk area"
+                   class="absolute inset-0 w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-ink/75 to-transparent"></div>
+              <div class="relative h-full flex flex-col justify-end p-6 text-cream">
+                <h3 class="font-display text-2xl">Dedicated desks</h3>
+                <p class="text-cream/70 text-sm">Your spot, your monitor, your routine.</p>
+              </div>
+            </article>
+            <article class="reveal relative rounded-3xl overflow-hidden img-wrap min-h-[11rem]">
+              <img src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?auto=format&fit=crop&w=1600&q=80"
+                   onerror="this.style.display='none'" alt="Private office suite"
+                   class="absolute inset-0 w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-ink/75 to-transparent"></div>
+              <div class="relative h-full flex flex-col justify-end p-6 text-cream">
+                <h3 class="font-display text-2xl">Private offices</h3>
+                <p class="text-cream/70 text-sm">Lockable suites for teams of 2–40.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== LOCATIONS RAIL ===================== -->
+    <section id="locations" class="py-24 overflow-hidden">
+      <div class="mx-auto max-w-container px-4 sm:px-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">Find your neighbourhood</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-3">Fourteen homes, one membership.</h2>
+        </div>
+        <p class="reveal text-ink/55 max-w-xs text-sm">Drag the rail. Every location is included in the All-Access plan — work from any of them.</p>
+      </div>
+
+      <!-- draggable / scroll rail -->
+      <div id="rail" class="no-scrollbar mt-10 flex gap-5 overflow-x-auto px-4 sm:px-6 cursor-grab pb-4 snap-x">
+        <!-- card template -->
+        <div class="rail-card snap-start shrink-0 w-[78vw] sm:w-[22rem] reveal">
+          <div class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/5]">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Riverside studio" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+            <div class="absolute bottom-0 p-6 text-cream">
+              <div class="text-xs uppercase tracking-wider text-coral2 font-semibold">London</div>
+              <h3 class="font-display text-2xl mt-1">Riverside Studio</h3>
+              <p class="text-cream/70 text-sm mt-1">Wapping &middot; 320 desks</p>
+            </div>
+          </div>
+        </div>
+        <div class="rail-card snap-start shrink-0 w-[78vw] sm:w-[22rem] reveal">
+          <div class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/5]">
+            <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Garden House" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+            <div class="absolute bottom-0 p-6 text-cream">
+              <div class="text-xs uppercase tracking-wider text-coral2 font-semibold">Berlin</div>
+              <h3 class="font-display text-2xl mt-1">Garden House</h3>
+              <p class="text-cream/70 text-sm mt-1">Kreuzberg &middot; 260 desks</p>
+            </div>
+          </div>
+        </div>
+        <div class="rail-card snap-start shrink-0 w-[78vw] sm:w-[22rem] reveal">
+          <div class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/5]">
+            <img src="https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Harbour Loft" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+            <div class="absolute bottom-0 p-6 text-cream">
+              <div class="text-xs uppercase tracking-wider text-coral2 font-semibold">Lisbon</div>
+              <h3 class="font-display text-2xl mt-1">Harbour Loft</h3>
+              <p class="text-cream/70 text-sm mt-1">Alcântara &middot; 180 desks</p>
+            </div>
+          </div>
+        </div>
+        <div class="rail-card snap-start shrink-0 w-[78vw] sm:w-[22rem] reveal">
+          <div class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/5]">
+            <img src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="The Greenhouse" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+            <div class="absolute bottom-0 p-6 text-cream">
+              <div class="text-xs uppercase tracking-wider text-coral2 font-semibold">Amsterdam</div>
+              <h3 class="font-display text-2xl mt-1">The Greenhouse</h3>
+              <p class="text-cream/70 text-sm mt-1">Jordaan &middot; 210 desks</p>
+            </div>
+          </div>
+        </div>
+        <div class="rail-card snap-start shrink-0 w-[78vw] sm:w-[22rem] reveal">
+          <div class="img-wrap relative rounded-3xl overflow-hidden aspect-[4/5]">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Sunset Annex" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+            <div class="absolute bottom-0 p-6 text-cream">
+              <div class="text-xs uppercase tracking-wider text-coral2 font-semibold">Barcelona</div>
+              <h3 class="font-display text-2xl mt-1">Sunset Annex</h3>
+              <p class="text-cream/70 text-sm mt-1">Poblenou &middot; 240 desks</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== COMMUNITY / EVENTS ===================== -->
+    <section id="community" class="px-4 sm:px-6 py-24 bg-moss text-cream relative overflow-hidden">
+      <div class="absolute -top-20 right-10 w-72 h-72 rounded-full bg-coral/20 blur-3xl"></div>
+      <div class="mx-auto max-w-container relative grid lg:grid-cols-2 gap-14 items-center">
+        <div>
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-amber">Community &amp; events</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">The best part isn't the desk.</h2>
+          <p class="reveal text-cream/70 mt-4 text-lg max-w-md">Demo nights, founder breakfasts, rooftop socials and lunch-and-learns. Show up for the work, stay for the people.</p>
+          <div class="reveal mt-8 grid grid-cols-3 gap-4 max-w-md">
+            <div><div class="font-display text-3xl">180<span class="text-amber">+</span></div><div class="text-cream/55 text-sm">Events / year</div></div>
+            <div><div class="font-display text-3xl">52</div><div class="text-cream/55 text-sm">Demo nights</div></div>
+            <div><div class="font-display text-3xl">9k</div><div class="text-cream/55 text-sm">Intros made</div></div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div class="reveal flex items-center gap-4 bg-cream/5 border border-cream/10 rounded-2xl p-4 hover:bg-cream/10 transition-colors">
+            <div class="shrink-0 w-14 h-14 rounded-xl bg-coral text-cream grid place-items-center text-center leading-none">
+              <div><div class="font-display text-lg">12</div><div class="text-[10px] uppercase">Jun</div></div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Founder Breakfast: Raising in '26</h3>
+              <p class="text-cream/55 text-sm">8:30am &middot; Riverside Studio &middot; Free for members</p>
+            </div>
+          </div>
+          <div class="reveal flex items-center gap-4 bg-cream/5 border border-cream/10 rounded-2xl p-4 hover:bg-cream/10 transition-colors">
+            <div class="shrink-0 w-14 h-14 rounded-xl bg-amber text-ink grid place-items-center text-center leading-none">
+              <div><div class="font-display text-lg">19</div><div class="text-[10px] uppercase">Jun</div></div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Demo Night &amp; Rooftop Social</h3>
+              <p class="text-cream/55 text-sm">6:00pm &middot; The Greenhouse &middot; Drinks on us</p>
+            </div>
+          </div>
+          <div class="reveal flex items-center gap-4 bg-cream/5 border border-cream/10 rounded-2xl p-4 hover:bg-cream/10 transition-colors">
+            <div class="shrink-0 w-14 h-14 rounded-xl bg-mossLt text-cream grid place-items-center text-center leading-none">
+              <div><div class="font-display text-lg">27</div><div class="text-[10px] uppercase">Jun</div></div>
+            </div>
+            <div>
+              <h3 class="font-semibold">Lunch &amp; Learn: Brand systems</h3>
+              <p class="text-cream/55 text-sm">12:30pm &middot; Garden House &middot; Lunch included</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MEMBERSHIP PRICING ===================== -->
+    <section id="membership" class="px-4 sm:px-6 py-24">
+      <div class="mx-auto max-w-container">
+        <div class="text-center max-w-2xl mx-auto">
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">Membership</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">Plans that flex with you.</h2>
+          <p class="reveal text-ink/60 mt-4 text-lg">No lock-ins. Upgrade, pause or change locations whenever your work does.</p>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-5 mt-12 items-stretch">
+          <!-- tier 1 -->
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-8 flex flex-col">
+            <h3 class="font-display text-2xl">Day Pass</h3>
+            <p class="text-ink/55 text-sm mt-1">Drop in whenever inspiration strikes.</p>
+            <div class="mt-6 font-display text-5xl">$29<span class="text-lg text-ink/40 font-sans">/day</span></div>
+            <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Hot desk on open floors</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Unlimited coffee &amp; wifi</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Access to community events</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> One location of choice</li>
+            </ul>
+            <a href="#tour" class="magnetic mt-8 inline-flex justify-center items-center rounded-xl border border-ink/15 font-semibold px-5 py-3 hover:border-coral hover:text-coral transition-colors">Get started</a>
+          </div>
+
+          <!-- tier 2 (featured) -->
+          <div class="amenity reveal relative bg-ink text-cream rounded-3xl p-8 flex flex-col shadow-[0_40px_80px_-36px_rgba(21,20,15,.7)] lg:-mt-4">
+            <span class="absolute top-6 right-6 text-[11px] font-semibold uppercase tracking-wider bg-coral text-cream rounded-full px-3 py-1">Most popular</span>
+            <h3 class="font-display text-2xl">All-Access</h3>
+            <p class="text-cream/55 text-sm mt-1">Every location, every day, your way.</p>
+            <div class="mt-6 font-display text-5xl">$349<span class="text-lg text-cream/40 font-sans">/mo</span></div>
+            <ul class="mt-6 space-y-3 text-sm text-cream/80 flex-1">
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Unlimited access to all 14 sites</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Dedicated desk option</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> 10 meeting-room hours / month</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Mail handling &amp; business address</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Priority event invites</li>
+            </ul>
+            <a href="#tour" class="magnetic mt-8 inline-flex justify-center items-center rounded-xl bg-coral text-cream font-semibold px-5 py-3 hover:bg-coral2 transition-colors">Book a tour</a>
+          </div>
+
+          <!-- tier 3 -->
+          <div class="amenity reveal bg-cream border border-ink/10 rounded-3xl p-8 flex flex-col">
+            <h3 class="font-display text-2xl">Private Office</h3>
+            <p class="text-ink/55 text-sm mt-1">A lockable home base for your team.</p>
+            <div class="mt-6 font-display text-5xl">$1,290<span class="text-lg text-ink/40 font-sans">/mo</span></div>
+            <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Private suite for 2–40</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Branded, furnished &amp; lockable</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Unlimited meeting-room hours</li>
+              <li class="flex gap-2.5"><span class="text-coral">✓</span> Dedicated account manager</li>
+            </ul>
+            <a href="#tour" class="magnetic mt-8 inline-flex justify-center items-center rounded-xl border border-ink/15 font-semibold px-5 py-3 hover:border-coral hover:text-coral transition-colors">Talk to sales</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TESTIMONIALS ===================== -->
+    <section class="px-4 sm:px-6 py-24 bg-paper grain relative">
+      <div class="mx-auto max-w-container relative">
+        <div class="max-w-2xl">
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">Members on the record</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">Why they stay.</h2>
+        </div>
+        <div class="grid md:grid-cols-3 gap-5 mt-12">
+          <figure class="reveal bg-cream rounded-3xl border border-ink/10 p-7">
+            <div class="text-coral text-2xl">★★★★★</div>
+            <blockquote class="font-display text-xl mt-4 leading-snug">"I came for the wifi and stayed for the people. Two of my hires sit three desks away."</blockquote>
+            <figcaption class="mt-6 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-full bg-moss"></span>
+              <span><span class="block font-semibold text-sm">Mara Lindgren</span><span class="block text-ink/50 text-xs">Founder, Tidewell</span></span>
+            </figcaption>
+          </figure>
+          <figure class="reveal bg-ink text-cream rounded-3xl p-7 md:-mt-4">
+            <div class="text-amber text-2xl">★★★★★</div>
+            <blockquote class="font-display text-xl mt-4 leading-snug">"The light alone changed how I feel about Mondays. It's the first office I've actually wanted to be in."</blockquote>
+            <figcaption class="mt-6 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-full bg-coral"></span>
+              <span><span class="block font-semibold text-sm">Devon Okoye</span><span class="block text-cream/50 text-xs">Design Lead, Northbeam</span></span>
+            </figcaption>
+          </figure>
+          <figure class="reveal bg-cream rounded-3xl border border-ink/10 p-7">
+            <div class="text-coral text-2xl">★★★★★</div>
+            <blockquote class="font-display text-xl mt-4 leading-snug">"We scaled from 3 to 22 people without ever moving buildings. Halcyon just gave us more room."</blockquote>
+            <figcaption class="mt-6 flex items-center gap-3">
+              <span class="w-10 h-10 rounded-full bg-amber"></span>
+              <span><span class="block font-semibold text-sm">Priya Raman</span><span class="block text-ink/50 text-xs">COO, Loftwork Labs</span></span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROCESS / BOOK A TOUR ===================== -->
+    <section id="tour" class="px-4 sm:px-6 py-24">
+      <div class="mx-auto max-w-container grid lg:grid-cols-2 gap-14 items-center">
+        <div>
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">How it works</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">Booking a tour takes 60 seconds.</h2>
+          <p class="reveal text-ink/60 mt-4 text-lg">Tell us where and when, we'll show you around, and you can start the same day.</p>
+
+          <ol class="mt-10 space-y-6">
+            <li class="reveal flex gap-5">
+              <span class="shrink-0 w-11 h-11 rounded-2xl bg-coral text-cream grid place-items-center font-display text-lg">1</span>
+              <div><h3 class="font-display text-xl">Pick a location</h3><p class="text-ink/60 mt-1">Choose the neighbourhood that fits your commute and vibe.</p></div>
+            </li>
+            <li class="reveal flex gap-5">
+              <span class="shrink-0 w-11 h-11 rounded-2xl bg-moss text-cream grid place-items-center font-display text-lg">2</span>
+              <div><h3 class="font-display text-xl">Take the tour</h3><p class="text-ink/60 mt-1">Walk the floors, test the coffee, meet a few members.</p></div>
+            </li>
+            <li class="reveal flex gap-5">
+              <span class="shrink-0 w-11 h-11 rounded-2xl bg-amber text-ink grid place-items-center font-display text-lg">3</span>
+              <div><h3 class="font-display text-xl">Move in today</h3><p class="text-ink/60 mt-1">Sign in minutes, get your access pass, and start working.</p></div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- tour form card -->
+        <div class="reveal tilt bg-cream border border-ink/10 rounded-3xl p-8 shadow-[0_40px_80px_-44px_rgba(21,20,15,.6)]">
+          <div class="tilt-inner">
+            <h3 class="font-display text-2xl">Book a tour</h3>
+            <p class="text-ink/55 text-sm mt-1">We'll confirm within the hour.</p>
+            <form class="mt-6 space-y-4" onsubmit="event.preventDefault(); this.reset(); this.querySelector('button').textContent='Request sent ✓';">
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-ink/50">Full name</label>
+                <input type="text" required placeholder="Jordan Avery" class="mt-1.5 w-full rounded-xl border border-ink/15 bg-paper/60 px-4 py-3 outline-none focus:border-coral transition-colors" />
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-ink/50">Work email</label>
+                <input type="email" required placeholder="you@company.com" class="mt-1.5 w-full rounded-xl border border-ink/15 bg-paper/60 px-4 py-3 outline-none focus:border-coral transition-colors" />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wider text-ink/50">Location</label>
+                  <select class="mt-1.5 w-full rounded-xl border border-ink/15 bg-paper/60 px-4 py-3 outline-none focus:border-coral transition-colors">
+                    <option>Riverside Studio</option>
+                    <option>Garden House</option>
+                    <option>Harbour Loft</option>
+                    <option>The Greenhouse</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold uppercase tracking-wider text-ink/50">Team size</label>
+                  <select class="mt-1.5 w-full rounded-xl border border-ink/15 bg-paper/60 px-4 py-3 outline-none focus:border-coral transition-colors">
+                    <option>Just me</option>
+                    <option>2–10</option>
+                    <option>11–40</option>
+                    <option>40+</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="w-full rounded-xl bg-coral text-cream font-semibold px-5 py-3.5 hover:bg-coral2 transition-colors">Request my tour</button>
+              <p class="text-center text-xs text-ink/40">No spam. No commitment. Just a walk-through.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section id="faq" class="px-4 sm:px-6 py-24 bg-paper">
+      <div class="mx-auto max-w-3xl">
+        <div class="text-center">
+          <span class="reveal text-xs font-semibold uppercase tracking-[.18em] text-coral">Questions</span>
+          <h2 class="reveal font-display text-4xl sm:text-5xl tracking-tight mt-4">Good to know.</h2>
+        </div>
+        <div class="mt-12 divide-y divide-ink/10 border-y border-ink/10">
+          <div class="faq-item reveal">
+            <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+              <span class="font-display text-xl">Is there a minimum contract?</span>
+              <span class="faq-icon shrink-0 text-coral text-2xl leading-none">+</span>
+            </button>
+            <div class="faq-body"><p class="pb-6 text-ink/65">No lock-ins on monthly memberships. Cancel or pause with 30 days' notice. Private offices run on flexible 3-month minimum terms.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+              <span class="font-display text-xl">Can I use any location?</span>
+              <span class="faq-icon shrink-0 text-coral text-2xl leading-none">+</span>
+            </button>
+            <div class="faq-body"><p class="pb-6 text-ink/65">All-Access members can work from any of our 14 locations, any day. Day Pass and dedicated-desk members are tied to a home site but can buy day passes elsewhere.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+              <span class="font-display text-xl">What are the opening hours?</span>
+              <span class="faq-icon shrink-0 text-coral text-2xl leading-none">+</span>
+            </button>
+            <div class="faq-body"><p class="pb-6 text-ink/65">Staffed 7am–9pm on weekdays. All-Access and office members get secure 24/7 app-based entry, including weekends.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+              <span class="font-display text-xl">Do you allow guests and clients?</span>
+              <span class="faq-icon shrink-0 text-coral text-2xl leading-none">+</span>
+            </button>
+            <div class="faq-body"><p class="pb-6 text-ink/65">Absolutely. Sign guests in at reception, book a meeting room, and use our lounges and café for client catch-ups. Office members get monthly guest-day credits.</p></div>
+          </div>
+          <div class="faq-item reveal">
+            <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+              <span class="font-display text-xl">Is it pet friendly?</span>
+              <span class="faq-icon shrink-0 text-coral text-2xl leading-none">+</span>
+            </button>
+            <div class="faq-body"><p class="pb-6 text-ink/65">Well-behaved dogs are welcome at our Garden House and Greenhouse sites, with water bowls and a dedicated garden. Other locations are dog-free for allergy reasons.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FINAL CTA ===================== -->
+    <section class="px-4 sm:px-6 py-20">
+      <div class="mx-auto max-w-container relative rounded-[2rem] bg-ink text-cream overflow-hidden px-6 sm:px-12 py-16 sm:py-20 text-center grain">
+        <div class="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-coral/25 blur-3xl"></div>
+        <div class="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-moss/40 blur-3xl"></div>
+        <div class="relative max-w-2xl mx-auto">
+          <h2 class="reveal font-display text-4xl sm:text-6xl tracking-tight">Your next desk is waiting.</h2>
+          <p class="reveal text-cream/70 mt-5 text-lg">Book a tour today and we'll have a seat, a coffee, and a few good people ready for you.</p>
+          <div class="reveal mt-9 flex flex-wrap justify-center gap-3">
+            <a href="#tour" class="magnetic inline-flex items-center gap-2 rounded-xl bg-coral text-cream font-semibold px-7 py-4 hover:bg-coral2 transition-colors">
+              Book a tour
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </a>
+            <a href="#membership" class="inline-flex items-center rounded-xl border border-cream/20 font-semibold px-7 py-4 hover:border-coral hover:text-coral transition-colors">See membership</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="px-4 sm:px-6 pb-12">
+    <div class="mx-auto max-w-container">
+      <div class="grid md:grid-cols-5 gap-10 py-12 border-t border-ink/10">
+        <div class="md:col-span-2">
+          <a href="#top" class="flex items-center gap-2.5">
+            <span class="grid place-items-center w-9 h-9 rounded-xl bg-ink text-cream font-display text-lg leading-none">H</span>
+            <span class="font-display text-xl">Halcyon<span class="text-coral">.</span></span>
+          </a>
+          <p class="text-ink/55 mt-4 max-w-xs text-sm">Premium coworking and flexible offices for people who care how a room feels.</p>
+          <div class="mt-5 flex gap-3">
+            <a href="#" aria-label="Twitter" class="w-9 h-9 grid place-items-center rounded-lg border border-ink/15 hover:border-coral hover:text-coral transition-colors"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4 4 0 0 0-6.9 3.7A11.3 11.3 0 0 1 3.8 4.7a4 4 0 0 0 1.2 5.3c-.6 0-1.2-.2-1.8-.5a4 4 0 0 0 3.2 4 4 4 0 0 1-1.8.1 4 4 0 0 0 3.7 2.8A8 8 0 0 1 2 18.3a11.3 11.3 0 0 0 6.1 1.8c7.3 0 11.4-6.2 11.4-11.5v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
+            <a href="#" aria-label="Instagram" class="w-9 h-9 grid place-items-center rounded-lg border border-ink/15 hover:border-coral hover:text-coral transition-colors"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+            <a href="#" aria-label="LinkedIn" class="w-9 h-9 grid place-items-center rounded-lg border border-ink/15 hover:border-coral hover:text-coral transition-colors"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-2.9-1.8-2.9s-2 1.4-2 2.8V21H9z"/></svg></a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm">Spaces</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li><a href="#spaces" class="hover:text-coral transition-colors">Hot desks</a></li>
+            <li><a href="#spaces" class="hover:text-coral transition-colors">Dedicated desks</a></li>
+            <li><a href="#spaces" class="hover:text-coral transition-colors">Private offices</a></li>
+            <li><a href="#spaces" class="hover:text-coral transition-colors">Meeting rooms</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm">Company</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li><a href="#locations" class="hover:text-coral transition-colors">Locations</a></li>
+            <li><a href="#community" class="hover:text-coral transition-colors">Community</a></li>
+            <li><a href="#membership" class="hover:text-coral transition-colors">Membership</a></li>
+            <li><a href="#faq" class="hover:text-coral transition-colors">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold text-sm">Visit us</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li>14 Quayside Walk, Wapping</li>
+            <li>hello@halcyon.works</li>
+            <li>+44 20 7946 0421</li>
+          </ul>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-8 border-t border-ink/10 text-sm text-ink/45">
+        <p>&copy; 2026 Halcyon Works. All rights reserved.</p>
+        <div class="flex gap-6">
+          <a href="#" class="hover:text-coral transition-colors">Privacy</a>
+          <a href="#" class="hover:text-coral transition-colors">Terms</a>
+          <a href="#" class="hover:text-coral transition-colors">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <script>
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---------- Animated headline (split words) ---------- */
+    (function () {
+      const el = document.getElementById('headline');
+      if (!el) return;
+      const words = el.textContent.trim().split(' ');
+      el.innerHTML = words.map(w => `<span class="word-anim">${w}&nbsp;</span>`).join('');
+    })();
+
+    if (!reduceMotion && window.gsap) {
+      gsap.registerPlugin(ScrollTrigger);
+
+      /* Headline word stagger */
+      gsap.from('#headline .word-anim', {
+        yPercent: 120, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08, delay: 0.15
+      });
+
+      /* Generic reveals */
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.85, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      /* Container parallax on interior photos */
+      gsap.utils.toArray('[data-parallax]').forEach((el) => {
+        const amt = parseFloat(el.getAttribute('data-parallax'));
+        gsap.to(el, {
+          y: amt, ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      /* Count-ups */
+      gsap.utils.toArray('.count').forEach((el) => {
+        const target = parseFloat(el.getAttribute('data-target'));
+        const obj = { v: 0 };
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => gsap.to(obj, {
+            v: target, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); }
+          })
+        });
+      });
+
+      /* Locations rail subtle scroll drift */
+      const rail = document.getElementById('rail');
+      if (rail) {
+        gsap.to(rail, {
+          scrollLeft: 120, ease: 'none',
+          scrollTrigger: { trigger: rail, start: 'top 85%', end: 'bottom top', scrub: 1 }
+        });
+      }
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+      document.querySelectorAll('.count').forEach(el => { el.textContent = parseFloat(el.getAttribute('data-target')).toLocaleString(); });
+    }
+
+    /* ---------- Magnetic buttons ---------- */
+    if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+      document.querySelectorAll('.magnetic').forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          const r = btn.getBoundingClientRect();
+          const x = e.clientX - r.left - r.width / 2;
+          const y = e.clientY - r.top - r.height / 2;
+          btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+        });
+        btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+      });
+
+      /* ---------- Tilt cards ---------- */
+      document.querySelectorAll('.tilt').forEach((card) => {
+        card.addEventListener('mousemove', (e) => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `perspective(900px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg)`;
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)';
+        });
+      });
+    }
+
+    /* ---------- Locations rail drag-to-scroll ---------- */
+    (function () {
+      const rail = document.getElementById('rail');
+      if (!rail) return;
+      let down = false, startX, scrollStart;
+      rail.addEventListener('mousedown', (e) => { down = true; rail.style.cursor = 'grabbing'; startX = e.pageX; scrollStart = rail.scrollLeft; });
+      window.addEventListener('mouseup', () => { down = false; rail.style.cursor = 'grab'; });
+      rail.addEventListener('mousemove', (e) => { if (!down) return; e.preventDefault(); rail.scrollLeft = scrollStart - (e.pageX - startX) * 1.4; });
+    })();
+
+    /* ---------- FAQ accordion ---------- */
+    document.querySelectorAll('.faq-trigger').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
+  </script>
+</body>
+</html>

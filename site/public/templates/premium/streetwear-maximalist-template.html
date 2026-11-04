@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VOLTKICKS — Drop 07: STATIC RIOT</title>
+<meta name="description" content="VOLTKICKS — high-energy streetwear drops. Limited runs, loud heat, zero apologies. Shop the drop before it vanishes." />
+
+<!-- Fonts: heavy expressive display + clean grotesk -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0a0a0a',
+          paper: '#f4f1e9',
+          volt: '#caff00',     // accent
+          riot: '#ff2d55',
+          cobalt: '#2962ff',
+          tangerine: '#ff7a00',
+          violet: '#7b2ff7',
+        },
+        fontFamily: {
+          display: ['"Archivo Black"', 'system-ui', 'sans-serif'],
+          grotesk: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    background: #f4f1e9;
+    color: #0a0a0a;
+  }
+  .font-display { font-family: 'Archivo Black', system-ui, sans-serif; }
+
+  /* Outline / stroke text */
+  .text-stroke {
+    -webkit-text-stroke: 2px #0a0a0a;
+    color: transparent;
+  }
+  .text-stroke-paper {
+    -webkit-text-stroke: 2px #f4f1e9;
+    color: transparent;
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; will-change: transform; }
+  .marquee-track { animation: scroll-left 26s linear infinite; }
+  .marquee-track-rev { animation: scroll-right 32s linear infinite; }
+  .marquee-track-fast { animation: scroll-left 16s linear infinite; }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+  /* Sticker */
+  .sticker {
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 3px solid #0a0a0a;
+    box-shadow: 4px 4px 0 #0a0a0a;
+  }
+
+  /* Product flip card */
+  .flip { perspective: 1200px; }
+  .flip-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform .6s cubic-bezier(.2,.8,.2,1);
+    transform-style: preserve-3d;
+  }
+  .flip:hover .flip-inner, .flip:focus-within .flip-inner { transform: rotateY(180deg); }
+  .flip-face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+  .flip-back { transform: rotateY(180deg); }
+
+  /* Diagonal slash divider */
+  .slash {
+    clip-path: polygon(0 18%, 100% 0, 100% 82%, 0 100%);
+  }
+
+  /* Noise grain overlay */
+  .grain::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .06; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  /* Reveal defaults handled by GSAP; fallback visible */
+  .reveal { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track, .marquee-track-rev, .marquee-track-fast { animation: none !important; }
+    .flip-inner { transition: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+
+  ::selection { background: #caff00; color: #0a0a0a; }
+</style>
+</head>
+
+<body class="antialiased selection:bg-volt">
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="mx-3 mt-3 rounded-none border-2 border-ink bg-paper/95 backdrop-blur shadow-[6px_6px_0_#0a0a0a]">
+    <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+      <a href="#top" class="font-display text-xl sm:text-2xl tracking-tight flex items-center gap-2">
+        <span class="inline-block w-4 h-4 bg-volt border-2 border-ink rotate-12"></span>
+        VOLT<span class="text-riot">KICKS</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 font-grotesk font-semibold text-sm uppercase tracking-wide">
+        <a href="#drop" class="hover:text-riot transition">Drop</a>
+        <a href="#shop" class="hover:text-riot transition">Shop</a>
+        <a href="#ethos" class="hover:text-riot transition">Ethos</a>
+        <a href="#lookbook" class="hover:text-riot transition">Lookbook</a>
+        <a href="#faq" class="hover:text-riot transition">FAQ</a>
+      </nav>
+      <a href="#early" class="font-display text-xs sm:text-sm uppercase bg-ink text-volt px-4 py-2 border-2 border-ink hover:bg-volt hover:text-ink transition shadow-[3px_3px_0_#ff2d55]">
+        Bag (0)
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen pt-28 pb-12 grain overflow-hidden bg-paper">
+  <!-- parallax color blocks -->
+  <div data-parallax="0.25" class="pointer-events-none absolute -top-10 -left-16 w-72 h-72 bg-cobalt rotate-12"></div>
+  <div data-parallax="0.5"  class="pointer-events-none absolute top-40 -right-10 w-60 h-60 bg-riot -rotate-6 rounded-full"></div>
+  <div data-parallax="0.35" class="pointer-events-none absolute bottom-10 left-1/4 w-40 h-40 bg-volt rotate-45"></div>
+
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <span class="sticker bg-volt text-ink font-display text-xs uppercase px-3 py-1 -rotate-3">Drop 07</span>
+      <span class="sticker bg-riot text-paper font-display text-xs uppercase px-3 py-1 rotate-2">Limited 300</span>
+      <span class="sticker bg-ink text-volt font-display text-xs uppercase px-3 py-1 -rotate-2">Ships worldwide</span>
+    </div>
+
+    <h1 class="font-display leading-[0.82] tracking-tighter text-[16vw] sm:text-[13vw] lg:text-[11rem]">
+      <span class="block hero-line">STATIC</span>
+      <span class="block hero-line text-stroke">RIOT</span>
+    </h1>
+
+    <div class="mt-8 grid lg:grid-cols-[1.2fr_1fr] gap-8 items-end">
+      <div>
+        <p class="hero-line font-grotesk text-lg sm:text-xl max-w-xl font-medium">
+          Heavyweight heat for people who refuse beige. Drop 07 is loud, limited, and gone the second the timer hits zero. No restocks. No mercy.
+        </p>
+        <div class="hero-line mt-6 flex flex-wrap gap-3">
+          <a href="#shop" class="font-display uppercase text-sm bg-ink text-volt px-6 py-4 border-2 border-ink shadow-[6px_6px_0_#caff00] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#caff00] transition">
+            Shop the drop →
+          </a>
+          <a href="#early" class="font-display uppercase text-sm bg-volt text-ink px-6 py-4 border-2 border-ink shadow-[6px_6px_0_#0a0a0a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#0a0a0a] transition">
+            Get early access
+          </a>
+        </div>
+      </div>
+
+      <!-- COUNTDOWN -->
+      <div id="drop" class="hero-line bg-ink text-paper p-5 border-2 border-ink shadow-[8px_8px_0_#ff2d55]">
+        <p class="font-grotesk uppercase tracking-[0.25em] text-xs text-volt mb-3">Drop closes in</p>
+        <div class="grid grid-cols-4 gap-2 text-center">
+          <div><div id="cd-d" class="font-display text-3xl sm:text-4xl">00</div><div class="text-[10px] uppercase tracking-widest opacity-70">Days</div></div>
+          <div><div id="cd-h" class="font-display text-3xl sm:text-4xl">00</div><div class="text-[10px] uppercase tracking-widest opacity-70">Hrs</div></div>
+          <div><div id="cd-m" class="font-display text-3xl sm:text-4xl">00</div><div class="text-[10px] uppercase tracking-widest opacity-70">Min</div></div>
+          <div><div id="cd-s" class="font-display text-3xl sm:text-4xl text-volt">00</div><div class="text-[10px] uppercase tracking-widest opacity-70">Sec</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TICKER / MARQUEE (multi-direction) ============ -->
+<section class="bg-volt text-ink border-y-2 border-ink py-3 overflow-hidden">
+  <div class="marquee marquee-track-fast font-display text-xl sm:text-2xl uppercase">
+    <span class="flex shrink-0">
+      <span class="px-6">Free shipping over $120</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">No restocks ever</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">300 units only</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">Worldwide drops</span><span class="px-6 text-riot">✦</span>
+    </span>
+    <span class="flex shrink-0" aria-hidden="true">
+      <span class="px-6">Free shipping over $120</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">No restocks ever</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">300 units only</span><span class="px-6 text-riot">✦</span>
+      <span class="px-6">Worldwide drops</span><span class="px-6 text-riot">✦</span>
+    </span>
+  </div>
+</section>
+<section class="bg-ink text-volt border-b-2 border-ink py-3 overflow-hidden">
+  <div class="marquee marquee-track-rev font-display text-xl sm:text-2xl uppercase">
+    <span class="flex shrink-0">
+      <span class="px-6">Static Riot</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Heavyweight 420gsm</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Made loud</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Drop 07</span><span class="px-6 text-paper">◆</span>
+    </span>
+    <span class="flex shrink-0" aria-hidden="true">
+      <span class="px-6">Static Riot</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Heavyweight 420gsm</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Made loud</span><span class="px-6 text-paper">◆</span>
+      <span class="px-6">Drop 07</span><span class="px-6 text-paper">◆</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ FEATURED PRODUCTS ============ -->
+<section id="shop" class="relative bg-paper py-20 grain overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-12 reveal">
+      <h2 class="font-display text-5xl sm:text-7xl tracking-tighter leading-none">
+        THE<br><span class="text-riot">HEAT</span>
+      </h2>
+      <p class="font-grotesk max-w-sm text-sm sm:text-base font-medium">
+        Eight pieces. Each one numbered. Hover to flip — see the back graphic before it's sold out under you.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- card 1 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#2962ff] bg-cobalt" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-cobalt flex items-center justify-center">
+              <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80" alt="Static Riot hoodie" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-luminosity opacity-90" />
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-volt text-ink font-display text-[10px] uppercase px-2 py-1 -rotate-6">01 / 300</span>
+          </div>
+          <div class="flip-back bg-volt text-ink p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none">Riot Hoodie</h3><p class="text-sm mt-2 font-medium">420gsm brushed fleece. Boxy. Heavy. Loud back print.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$148</span><span class="font-display text-xs uppercase bg-ink text-volt px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#ff2d55] bg-riot" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-riot flex items-center justify-center">
+              <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80" alt="Static cargo pants" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-luminosity opacity-90" />
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-ink text-volt font-display text-[10px] uppercase px-2 py-1 rotate-3">02 / 300</span>
+          </div>
+          <div class="flip-back bg-ink text-paper p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none text-volt">Static Cargos</h3><p class="text-sm mt-2 font-medium">Eight pockets. Ripstop. Built to outlast the hype.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$132</span><span class="font-display text-xs uppercase bg-volt text-ink px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#caff00] bg-ink" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-ink flex items-center justify-center">
+              <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80" alt="Drop tee" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-80" />
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-volt text-ink font-display text-[10px] uppercase px-2 py-1 -rotate-3">03 / 300</span>
+          </div>
+          <div class="flip-back bg-tangerine text-ink p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none">Riot Tee</h3><p class="text-sm mt-2 font-medium">Oversized 240gsm. Puff-print scream graphic.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$64</span><span class="font-display text-xs uppercase bg-ink text-volt px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 4 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#7b2ff7] bg-violet" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-violet flex items-center justify-center">
+              <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1600&q=80" alt="Voltkicks sneaker" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-luminosity opacity-90" />
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-volt text-ink font-display text-[10px] uppercase px-2 py-1 rotate-6">04 / 300</span>
+          </div>
+          <div class="flip-back bg-volt text-ink p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none">Voltkick LO</h3><p class="text-sm mt-2 font-medium">Chunky sole. Reflective swoosh-free panels.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$210</span><span class="font-display text-xs uppercase bg-ink text-volt px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 5 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#ff7a00] bg-tangerine" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-tangerine flex items-center justify-center font-display text-ink text-center p-4">
+              <span class="text-3xl leading-tight uppercase">Riot<br>Cap</span>
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-ink text-volt font-display text-[10px] uppercase px-2 py-1 -rotate-6">05 / 300</span>
+          </div>
+          <div class="flip-back bg-ink text-paper p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none text-volt">Riot Cap</h3><p class="text-sm mt-2 font-medium">Structured 6-panel. Rubber static badge.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$48</span><span class="font-display text-xs uppercase bg-volt text-ink px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 6 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#2962ff] bg-cobalt" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-cobalt flex items-center justify-center font-display text-paper text-center p-4">
+              <span class="text-3xl leading-tight uppercase">Shock<br>Vest</span>
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-volt text-ink font-display text-[10px] uppercase px-2 py-1 rotate-3">06 / 300</span>
+          </div>
+          <div class="flip-back bg-riot text-paper p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none">Shock Vest</h3><p class="text-sm mt-2 font-medium">Quilted utility. Detachable static patches.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$176</span><span class="font-display text-xs uppercase bg-ink text-volt px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 7 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#caff00] bg-volt" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-volt flex items-center justify-center font-display text-ink text-center p-4">
+              <span class="text-3xl leading-tight uppercase">Static<br>Shorts</span>
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-ink text-volt font-display text-[10px] uppercase px-2 py-1 -rotate-3">07 / 300</span>
+          </div>
+          <div class="flip-back bg-cobalt text-paper p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none">Static Shorts</h3><p class="text-sm mt-2 font-medium">Mesh-lined. Side-zip vents. Loud waistband.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$78</span><span class="font-display text-xs uppercase bg-volt text-ink px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+      <!-- card 8 -->
+      <article class="product-card reveal flip h-[360px] border-2 border-ink shadow-[6px_6px_0_#0a0a0a] bg-paper" tabindex="0">
+        <div class="flip-inner">
+          <div class="flip-face">
+            <div class="absolute inset-0 bg-paper flex items-center justify-center font-display text-ink text-center p-4 text-stroke">
+              <span class="text-3xl leading-tight uppercase">Riot<br>Socks</span>
+            </div>
+            <span class="sticker absolute top-3 left-3 bg-riot text-paper font-display text-[10px] uppercase px-2 py-1 rotate-6">08 / 300</span>
+          </div>
+          <div class="flip-back bg-ink text-paper p-5 flex flex-col justify-between">
+            <div><h3 class="font-display text-xl uppercase leading-none text-volt">Riot Socks</h3><p class="text-sm mt-2 font-medium">Ribbed crew. Pack of three. Static-print cuff.</p></div>
+            <div class="flex items-center justify-between"><span class="font-display text-2xl">$32</span><span class="font-display text-xs uppercase bg-volt text-ink px-3 py-2">Add +</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / BRAND ETHOS ============ -->
+<section id="ethos" class="relative bg-ink text-paper py-24 grain overflow-hidden">
+  <div data-parallax="0.3" class="pointer-events-none absolute top-10 right-10 w-48 h-48 bg-violet rotate-12 hidden sm:block"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal">
+      <span class="sticker bg-volt text-ink font-display text-xs uppercase px-3 py-1 -rotate-2 inline-block mb-5">Our ethos</span>
+      <h2 class="font-display text-5xl sm:text-6xl tracking-tighter leading-[0.9]">
+        WE DON'T<br>RESTOCK.<br><span class="text-volt">WE RELOAD.</span>
+      </h2>
+    </div>
+    <div class="reveal font-grotesk space-y-5 text-base sm:text-lg font-medium">
+      <p>VOLTKICKS started in a garage with one broken heat press and zero patience for quiet fashion. Every drop is a riot — designed loud, produced small, and never repeated.</p>
+      <p>We make heavyweight gear that earns its volume: 420gsm fleece, ripstop you can't kill, and graphics that don't whisper. When it's gone, it's archive. That's the whole point.</p>
+      <div class="grid grid-cols-3 gap-4 pt-4">
+        <div class="border-2 border-paper p-4"><div class="font-display text-4xl text-volt">07</div><div class="text-xs uppercase tracking-widest opacity-70">Drops</div></div>
+        <div class="border-2 border-paper p-4"><div class="font-display text-4xl text-volt">2.1k</div><div class="text-xs uppercase tracking-widest opacity-70">Units sold</div></div>
+        <div class="border-2 border-paper p-4"><div class="font-display text-4xl text-volt">0</div><div class="text-xs uppercase tracking-widest opacity-70">Restocks</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOOKBOOK BAND ============ -->
+<section id="lookbook" class="relative bg-riot py-0 overflow-hidden slash border-y-2 border-ink">
+  <div class="py-20 grain">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <h2 class="reveal font-display text-paper text-5xl sm:text-7xl tracking-tighter leading-none mb-10 text-center">LOOKBOOK 07</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="reveal aspect-[3/4] border-2 border-ink bg-cobalt overflow-hidden shadow-[6px_6px_0_#0a0a0a]">
+          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 1" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+        </div>
+        <div class="reveal aspect-[3/4] border-2 border-ink bg-volt overflow-hidden shadow-[6px_6px_0_#0a0a0a] mt-8 lg:mt-10">
+          <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 2" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+        </div>
+        <div class="reveal aspect-[3/4] border-2 border-ink bg-tangerine overflow-hidden shadow-[6px_6px_0_#0a0a0a]">
+          <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 3" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+        </div>
+        <div class="reveal aspect-[3/4] border-2 border-ink bg-violet overflow-hidden shadow-[6px_6px_0_#0a0a0a] mt-8 lg:mt-10">
+          <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 4" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY / TESTIMONIALS ============ -->
+<section class="relative bg-paper py-20 grain overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <h2 class="reveal font-display text-5xl sm:text-6xl tracking-tighter leading-none mb-12">
+      THE <span class="text-riot">CULT</span> SPEAKS
+    </h2>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal border-2 border-ink bg-volt p-6 shadow-[6px_6px_0_#0a0a0a] -rotate-1">
+        <blockquote class="font-grotesk font-semibold text-lg">"Copped the Riot Hoodie in 40 seconds flat. Heaviest fleece I own. Already plotting on Drop 08."</blockquote>
+        <figcaption class="mt-4 font-display uppercase text-sm">— Dée, Berlin</figcaption>
+      </figure>
+      <figure class="reveal border-2 border-ink bg-cobalt text-paper p-6 shadow-[6px_6px_0_#0a0a0a] rotate-1">
+        <blockquote class="font-grotesk font-semibold text-lg">"No restocks is brutal but I respect it. My cargos are basically a flex now."</blockquote>
+        <figcaption class="mt-4 font-display uppercase text-sm text-volt">— Marcus, Lagos</figcaption>
+      </figure>
+      <figure class="reveal border-2 border-ink bg-ink text-paper p-6 shadow-[6px_6px_0_#ff2d55] -rotate-1">
+        <blockquote class="font-grotesk font-semibold text-lg">"Loud, fast, gone. VOLTKICKS gets the whole drop game. Early access is non-negotiable."</blockquote>
+        <figcaption class="mt-4 font-display uppercase text-sm text-volt">— Ren, Tokyo</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEWSLETTER / EARLY ACCESS ============ -->
+<section id="early" class="relative bg-volt text-ink py-20 border-y-2 border-ink overflow-hidden grain">
+  <div data-parallax="0.4" class="pointer-events-none absolute -bottom-10 -left-10 w-52 h-52 bg-riot rounded-full"></div>
+  <div class="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
+    <span class="sticker bg-ink text-volt font-display text-xs uppercase px-3 py-1 rotate-2 inline-block mb-5">Skip the line</span>
+    <h2 class="reveal font-display text-5xl sm:text-7xl tracking-tighter leading-none">GET ON<br>THE LIST</h2>
+    <p class="reveal font-grotesk font-medium text-lg mt-5 max-w-xl mx-auto">Early-access members shop Drop 08 a full 24 hours before everyone else. No spam — just heat alerts.</p>
+    <form class="reveal mt-8 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="event.preventDefault(); this.reset(); document.getElementById('joined').classList.remove('hidden');">
+      <input type="email" required placeholder="you@email.com" class="flex-1 px-5 py-4 border-2 border-ink bg-paper font-grotesk font-semibold placeholder:text-ink/50 focus:outline-none focus:bg-white" />
+      <button type="submit" class="font-display uppercase text-sm bg-ink text-volt px-6 py-4 border-2 border-ink shadow-[5px_5px_0_#ff2d55] hover:translate-x-1 hover:translate-y-1 hover:shadow-[1px_1px_0_#ff2d55] transition">Join →</button>
+    </form>
+    <p id="joined" class="hidden mt-4 font-display uppercase text-sm text-riot">You're in. Watch your inbox for Drop 08.</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ACCORDION ============ -->
+<section id="faq" class="relative bg-paper py-20 grain overflow-hidden">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6">
+    <h2 class="reveal font-display text-5xl sm:text-6xl tracking-tighter leading-none mb-10">FAQ</h2>
+    <div class="space-y-4">
+      <div class="faq-item reveal border-2 border-ink bg-white shadow-[5px_5px_0_#0a0a0a]">
+        <button class="faq-trigger w-full flex items-center justify-between text-left px-5 py-4 font-display uppercase text-base sm:text-lg">
+          Do you ever restock? <span class="faq-plus font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-grotesk font-medium">No. Every VOLTKICKS drop is a single limited run. Once the timer hits zero, that piece is archive forever. That scarcity is the point.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-ink bg-white shadow-[5px_5px_0_#0a0a0a]">
+        <button class="faq-trigger w-full flex items-center justify-between text-left px-5 py-4 font-display uppercase text-base sm:text-lg">
+          How fast does a drop sell out? <span class="faq-plus font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-grotesk font-medium">Recent drops cleared in under 4 minutes. Early-access members get a 24-hour head start, so the list is your best shot.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-ink bg-white shadow-[5px_5px_0_#0a0a0a]">
+        <button class="faq-trigger w-full flex items-center justify-between text-left px-5 py-4 font-display uppercase text-base sm:text-lg">
+          Where do you ship? <span class="faq-plus font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-grotesk font-medium">Everywhere. Worldwide tracked shipping, free over $120. Duties calculated at checkout so there are no surprises.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-ink bg-white shadow-[5px_5px_0_#0a0a0a]">
+        <button class="faq-trigger w-full flex items-center justify-between text-left px-5 py-4 font-display uppercase text-base sm:text-lg">
+          What's your return policy? <span class="faq-plus font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-grotesk font-medium">14-day returns on unworn pieces with tags. Limited drops are non-exchangeable for other sizes once sold out — so size up if you live oversized.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative bg-ink text-paper py-24 grain overflow-hidden text-center">
+  <div data-parallax="0.5" class="pointer-events-none absolute top-1/2 left-10 w-32 h-32 bg-volt rotate-45 hidden sm:block"></div>
+  <div data-parallax="0.3" class="pointer-events-none absolute top-10 right-16 w-24 h-24 bg-riot rounded-full hidden sm:block"></div>
+  <div class="relative max-w-4xl mx-auto px-4 sm:px-6">
+    <h2 class="reveal font-display text-6xl sm:text-8xl tracking-tighter leading-[0.85]">
+      DON'T<br><span class="text-stroke-paper">SLEEP.</span>
+    </h2>
+    <p class="reveal font-grotesk font-medium text-lg mt-6 max-w-xl mx-auto">Drop 07: STATIC RIOT is live now. 300 units. When the timer dies, so does your chance.</p>
+    <a href="#shop" class="reveal inline-block mt-8 font-display uppercase bg-volt text-ink px-10 py-5 border-2 border-volt shadow-[8px_8px_0_#ff2d55] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_#ff2d55] transition text-lg">
+      Shop the drop →
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-paper text-ink border-t-2 border-ink overflow-hidden">
+  <div class="bg-volt border-b-2 border-ink py-2 overflow-hidden">
+    <div class="marquee marquee-track font-display uppercase text-lg">
+      <span class="flex shrink-0"><span class="px-6">VOLTKICKS</span><span class="px-6 text-riot">✦</span><span class="px-6">Drop 07</span><span class="px-6 text-riot">✦</span><span class="px-6">Static Riot</span><span class="px-6 text-riot">✦</span><span class="px-6">No restocks</span><span class="px-6 text-riot">✦</span></span>
+      <span class="flex shrink-0" aria-hidden="true"><span class="px-6">VOLTKICKS</span><span class="px-6 text-riot">✦</span><span class="px-6">Drop 07</span><span class="px-6 text-riot">✦</span><span class="px-6">Static Riot</span><span class="px-6 text-riot">✦</span><span class="px-6">No restocks</span><span class="px-6 text-riot">✦</span></span>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div>
+      <a href="#top" class="font-display text-2xl flex items-center gap-2">
+        <span class="inline-block w-4 h-4 bg-volt border-2 border-ink rotate-12"></span>VOLT<span class="text-riot">KICKS</span>
+      </a>
+      <p class="font-grotesk text-sm mt-3 font-medium max-w-xs">Loud, limited, gone. Heavyweight streetwear drops for people who refuse beige.</p>
+    </div>
+    <div>
+      <h4 class="font-display uppercase text-sm mb-3">Shop</h4>
+      <ul class="font-grotesk text-sm space-y-2 font-medium">
+        <li><a href="#shop" class="hover:text-riot">The Heat</a></li>
+        <li><a href="#drop" class="hover:text-riot">Current Drop</a></li>
+        <li><a href="#lookbook" class="hover:text-riot">Lookbook</a></li>
+        <li><a href="#early" class="hover:text-riot">Early Access</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display uppercase text-sm mb-3">Info</h4>
+      <ul class="font-grotesk text-sm space-y-2 font-medium">
+        <li><a href="#ethos" class="hover:text-riot">Ethos</a></li>
+        <li><a href="#faq" class="hover:text-riot">FAQ</a></li>
+        <li><a href="#faq" class="hover:text-riot">Shipping</a></li>
+        <li><a href="#faq" class="hover:text-riot">Returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display uppercase text-sm mb-3">Follow the riot</h4>
+      <div class="flex gap-2">
+        <a href="#early" class="sticker bg-ink text-volt font-display text-xs uppercase px-3 py-2 hover:bg-riot hover:text-paper transition">IG</a>
+        <a href="#early" class="sticker bg-ink text-volt font-display text-xs uppercase px-3 py-2 hover:bg-riot hover:text-paper transition">TT</a>
+        <a href="#early" class="sticker bg-ink text-volt font-display text-xs uppercase px-3 py-2 hover:bg-riot hover:text-paper transition">X</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t-2 border-ink py-4 px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-grotesk font-medium uppercase tracking-wide">
+    <span>© 2026 VOLTKICKS. All heat reserved.</span>
+    <span>Made loud · Numbered · Gone</span>
+  </div>
+</footer>
+
+<script>
+  // ---- Countdown (drop closes ~6 days out, rolling) ----
+  (function () {
+    var target = new Date().getTime() + (6 * 24 * 60 * 60 * 1000) - (3 * 60 * 60 * 1000);
+    var d = document.getElementById('cd-d'), h = document.getElementById('cd-h'),
+        m = document.getElementById('cd-m'), s = document.getElementById('cd-s');
+    function pad(n){ return String(n).padStart(2,'0'); }
+    function tick(){
+      var diff = target - new Date().getTime();
+      if (diff < 0) diff = 0;
+      var days = Math.floor(diff / 86400000);
+      var hrs  = Math.floor((diff % 86400000) / 3600000);
+      var min  = Math.floor((diff % 3600000) / 60000);
+      var sec  = Math.floor((diff % 60000) / 1000);
+      if (d) d.textContent = pad(days);
+      if (h) h.textContent = pad(hrs);
+      if (m) m.textContent = pad(min);
+      if (s) s.textContent = pad(sec);
+    }
+    tick(); setInterval(tick, 1000);
+  })();
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll('.faq-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var item = btn.closest('.faq-item');
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function (i) { i.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  // ---- GSAP motion (reduced-motion guarded) ----
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || typeof gsap === 'undefined') return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero staggered intro
+    gsap.from('.hero-line', { y: 60, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.1 });
+
+    // Diagonal scroll reveals
+    gsap.utils.toArray('.reveal').forEach(function (el) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+        y: 50, x: -20, opacity: 0, rotation: -1.5, duration: 0.8, ease: 'power2.out'
+      });
+    });
+
+    // Product cards sticker-rotate in
+    gsap.utils.toArray('.product-card').forEach(function (el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 92%' },
+        scale: 0.85, rotation: (i % 2 === 0 ? -4 : 4), opacity: 0,
+        duration: 0.6, ease: 'back.out(1.6)'
+      });
+    });
+
+    // Parallax color blocks
+    gsap.utils.toArray('[data-parallax]').forEach(function (el) {
+      var speed = parseFloat(el.getAttribute('data-parallax')) || 0.3;
+      gsap.to(el, {
+        yPercent: speed * 60,
+        ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

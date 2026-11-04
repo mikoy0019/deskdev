@@ -1,0 +1,609 @@
+{
+  "name": "[deskdev] inbound-lead",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-lead-intake",
+        "responseMode": "onReceived",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-lead-intake",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      },
+      "notes": "Fired by migration 035's trigger: n8n_post('deskdev-lead-intake', { lead_id }) for each new non-spam lead. The site never calls n8n."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Called by the database, never by the site: migration 035's trigger runs\n// n8n_post('deskdev-lead-intake', { lead_id }) once intake_site_lead has\n// recorded a new, non-spam lead. Only the id travels; everything else is read\n// back from the database, so a forged body can at most name an existing lead.\nconst body = $input.first().json.body || {};\nconst leadId = String(body.lead_id || '').trim().toLowerCase();\nif (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(leadId)) {\n  throw new Error('deskdev-lead-intake: body.lead_id must be a uuid');\n}\nreturn [{ json: { lead_id: leadId } }];\n"
+      },
+      "id": "parse",
+      "name": "Parse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/leads?select=*&id=eq.{{ $json.lead_id }}&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "lead",
+      "name": "Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/workspace_settings?select=*&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "settings",
+      "name": "Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/lead_activity?select=id&lead_id=eq.{{ $('Parse').first().json.lead_id }}&action=eq.auto_reply_sent&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "prior-reply",
+      "name": "Prior auto-reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decide everything once, so every later node reads the same facts.\n// The database is the system of record: intake_site_lead (migration 034)\n// already stored, scored and assigned the lead and notified the team in-app.\n// This workflow only adds side effects: the prospect's auto-reply, the team\n// email, a Sheets row and the run log. Any of them failing loses no lead.\nconst APP_URL = 'https://workspace.nixgensolutions.com';\nconst SITE_URL = 'https://nixgensolutions.com';\nconst FALLBACK_TO = 'nixgensolutions@gmail.com'; // company inbox: only when no teammate qualifies\n// A webhook that arrives late (n8n asleep, a replay) must not send a\n// \"thanks, we got it\" days after the fact.\nconst AUTO_REPLY_MAX_AGE_MS = 24 * 60 * 60 * 1000;\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\n\nconst rows = (name) => $(name).all().map(i => i.json).flat().filter(r => r && typeof r === 'object');\nconst leadId = $('Parse').first().json.lead_id;\nconst lead = rows('Lead').find(r => r.id === leadId);\n// workspace_settings is a singleton keyed by id = true (migration 033).\nconst settings = rows('Settings').find(r => r.id === true) || {};\nconst priorReply = rows('Prior auto-reply').some(r => r.id);\nconst people = rows('Recipients')\n  .filter(p => p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\n\nconst skip = (reason) => [{ json: { process: false, lead_id: leadId, reason } }];\nif (!lead) return skip('lead_not_found');\n// Quarantined leads never trigger this workflow; checked again because a\n// teammate may have marked it spam between the insert and this run.\nif (lead.spam === true) return skip('spam');\n// A CSV import of old enquiries is history, not news: no emails, no rows.\nif (lead.form === 'import') return skip('import');\nif (lead.stage === 'won' || lead.stage === 'lost') return skip('closed');\n\n// Every value below is prospect-typed or teammate-typed text: escaped once,\n// at the point it enters HTML. Subjects lose line breaks.\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst oneLine = (s, max) => String(s ?? '').replace(/[\\r\\n\\t]+/g, ' ').replace(/\\s{2,}/g, ' ').trim().slice(0, max);\nconst safeHttps = (u) => {\n  try {\n    const x = new URL(String(u ?? '').trim());\n    return x.protocol === 'https:' && !x.username && !x.password ? x.href : '';\n  } catch (e) {\n    return '';\n  }\n};\nconst tz = (() => {\n  const want = (settings.growth_business_hours || {}).tz || 'Asia/Manila';\n  try { new Intl.DateTimeFormat('en-US', { timeZone: want }); return want; } catch (e) { return 'Asia/Manila'; }\n})();\nconst when = (iso) => {\n  const d = new Date(iso);\n  if (!iso || Number.isNaN(d.getTime())) return '';\n  return new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(d) + ' (' + tz + ')';\n};\n\nconst services = Array.isArray(lead.services) ? lead.services.filter(Boolean).map(String) : [];\nconst prospectEmail = String(lead.email || '').trim();\nconst owner = people.find(p => p.id === lead.owner_id);\n\n// ---- 1. Auto-reply to the prospect -------------------------------------------\n// Off unless an admin switched it on (Settings → Growth). It never echoes the\n// prospect's message, budget or links back: the form takes any address, so an\n// echo would let anyone send our mail with their words to a stranger. Only a\n// plain first name is used, and only when it looks like one.\nconst submittedAt = Date.parse(lead.last_submitted_at || lead.created_at || '');\nconst fresh = Number.isFinite(submittedAt) && Date.now() - submittedAt < AUTO_REPLY_MAX_AGE_MS;\nlet replyReason = '';\nif (settings.growth_auto_reply !== true) replyReason = 'auto_reply_off';\nelse if (priorReply) replyReason = 'already_sent';\nelse if (lead.source !== 'website' || lead.form === 'email') replyReason = 'not_a_site_form';\nelse if (!EMAIL_RE.test(prospectEmail)) replyReason = 'no_valid_email';\nelse if (!fresh) replyReason = 'stale';\nconst autoReply = replyReason === '';\n\nconst first = String(lead.name || '').trim().split(/\\s+/)[0] || '';\nconst greet = /^\\p{L}[\\p{L}'’-]{0,29}$/u.test(first) ? first : 'there';\nconst booking = safeHttps(settings.growth_booking_url);\nconst reply = autoReply ? {\n  to: prospectEmail,\n  subject: 'Thanks for contacting NixGen Solutions',\n  html: `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;line-height:1.55;max-width:560px\">\n  <p>Hi ${esc(greet)},</p>\n  <p>Thanks for reaching out to NixGen Solutions. We've received your message, and we'll respond within 12 hours.</p>\n  ${booking ? `<p>Prefer to talk it through? <a href=\"${esc(booking)}\">Pick a time for a call</a>.</p>` : ''}\n  <p>If there's anything you'd like to add, just reply to this email.</p>\n  <p style=\"margin-top:20px\">The NixGen Solutions team<br><a href=\"${SITE_URL}\" style=\"color:#2563eb\">nixgensolutions.com</a></p>\n</div>`,\n} : null;\n\n// ---- 2. Team email -------------------------------------------------------------\n// The lead's owner, plus every Growth editor while \"notify everyone\" is on\n// (growth_notify_all, the default). Admins when nobody else qualifies.\nconst growthEditors = settings.growth_notify_all === false ? [] : people.filter(p =>\n  p.role === 'admin' || (p.permissions || {}).growth === 'edit');\nlet team = [owner, ...growthEditors].filter(Boolean);\nif (!team.length) team = people.filter(p => p.role === 'admin');\nconst teamTo = [...new Set(team.map(p => String(p.email).trim().toLowerCase()))].join(',') || FALLBACK_TO;\n\nconst attr = lead.attribution && typeof lead.attribution === 'object' ? lead.attribution : {};\nconst touch = attr.last || attr.first || attr;\nconst campaign = [touch.utm_source, touch.utm_medium, touch.utm_campaign].filter(Boolean).map(String).join(' / ');\nconst referrer = touch.referrer ? String(touch.referrer) : '';\nconst score = Number.isFinite(Number(lead.score)) && lead.score !== null ? Number(lead.score) : null;\nconst link = `${APP_URL}/growth/leads?lead=${encodeURIComponent(lead.id)}`;\n\nconst row = (label, value, extra = '') => value === '' || value == null ? '' :\n  `<tr><td style=\"padding:5px 12px 5px 0;color:#666;font-size:13px;vertical-align:top;white-space:nowrap\">${label}</td><td style=\"padding:5px 0;font-size:14px;${extra}\">${esc(value)}</td></tr>`;\nconst message = String(lead.message || '').slice(0, 4000);\nconst teamHtml = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;max-width:640px\">\n  <h2 style=\"margin:0 0 4px\">New lead: ${esc(lead.name || 'Website enquiry')}${lead.hot ? ' 🔥' : ''}</h2>\n  <p style=\"margin:0 0 16px;color:#666\">${esc(lead.company || 'No company given')}${lead.existing_client_id ? ' · existing client' : ''}</p>\n  <table style=\"border-collapse:collapse\">\n    ${row('Email', prospectEmail)}\n    ${row('Phone', lead.phone || '')}\n    ${row('Services', services.join(', '))}\n    ${row('Budget', lead.budget_band || '')}\n    ${row('Timeline', lead.timeline || '')}\n    ${row('Score', score === null ? '' : `${score}${lead.hot ? ' (hot)' : ''}`)}\n    ${row('Owner', owner ? owner.full_name || owner.email : 'Unassigned')}\n    ${row('Reply by', when(lead.sla_due_at), 'color:#b91c1c')}\n    ${row('Source', [lead.source, lead.form].filter(Boolean).join(' · '))}\n    ${row('Campaign', campaign)}\n    ${row('Referrer', referrer.slice(0, 200))}\n  </table>\n  ${message ? `<p style=\"margin:16px 0 4px;color:#666;font-size:13px\">Their message</p>\n  <div style=\"white-space:pre-wrap;border-left:3px solid #e5e7eb;padding:4px 12px;font-size:14px\">${esc(message)}</div>` : ''}\n  <p style=\"margin-top:20px\"><a href=\"${esc(link)}\" style=\"background:#2563eb;color:#fff;text-decoration:none;padding:9px 14px;border-radius:8px;font-size:14px\">Open the lead in DeskDev</a></p>\n  <p style=\"margin-top:16px;color:#999;font-size:12px\">${autoReply ? 'An auto-reply was sent to the prospect.' : 'No auto-reply was sent.'} Sent by n8n.</p>\n</div>`;\nconst teamSubject = oneLine(`New lead: ${lead.name || 'Website enquiry'}${lead.company ? ` (${lead.company})` : ''}${lead.hot ? ' [hot]' : ''}`, 160);\n\n// ---- 3. Sheets row -------------------------------------------------------------\n// Same header as before (Name Company Email Notes). The prospect's message\n// stays in the database: the sheet is a log, not a second copy of their words.\nconst now = new Date();\nconst sheet = {\n  Timestamp: now.toISOString(),\n  Date: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now),\n  Time: new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit' }).format(now),\n  Name: oneLine(lead.name, 200),\n  Company: oneLine(lead.company, 200),\n  Email: oneLine(prospectEmail, 254),\n  Notes: [\n    services.length ? `Services: ${services.join(', ')}` : '',\n    lead.budget_band ? `Budget: ${lead.budget_band}` : '',\n    lead.timeline ? `Timeline: ${lead.timeline}` : '',\n    score === null ? '' : `Score: ${score}`,\n    lead.form ? `Form: ${lead.form}` : '',\n    `Lead: ${lead.id}`,\n  ].filter(Boolean).map(s => oneLine(s, 300)).join(' · '),\n};\n\nreturn [{ json: {\n  process: true,\n  lead_id: lead.id,\n  auto_reply: autoReply,\n  auto_reply_reason: replyReason || 'sent',\n  reply,\n  team: { to: teamTo, count: teamTo.split(',').length, subject: teamSubject, html: teamHtml },\n  sheet,\n} }];\n"
+      },
+      "id": "plan",
+      "name": "Plan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "process",
+              "leftValue": "={{ $json.process ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "process",
+      "name": "Process?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "auto-reply",
+              "leftValue": "={{ $json.auto_reply ? 'yes' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "auto-reply",
+      "name": "Auto-reply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Plan').first().json.reply.to }}",
+        "subject": "={{ $('Plan').first().json.reply.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Plan').first().json.reply.html }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "NixGen Solutions"
+        }
+      },
+      "id": "send-reply",
+      "name": "Send auto-reply",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1980,
+        -240
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "168b0de8-fa17-4f4c-9ff7-7865af5ab7de"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/lead_activity",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lead_id: $('Plan').first().json.lead_id, actor_id: null, action: 'auto_reply_sent', detail: { channel: 'email', gmail_id: $json.id || null, execution_id: String($execution.id) } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "record-reply",
+      "name": "Record auto-reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -240
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Plan').first().json.team.to }}",
+        "subject": "={{ $('Plan').first().json.team.subject }}",
+        "emailType": "html",
+        "message": "={{ $('Plan').first().json.team.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "team-email",
+      "name": "Team email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2420,
+        -120
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "0b4b1dbd-c818-4149-a704-b5e0afdb7a27"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The Gmail step outputs Gmail's response, not its input: rebuild the row from Plan.\nreturn [{ json: $('Plan').first().json.sheet }];\n"
+      },
+      "id": "row",
+      "name": "Sheet row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Inbound Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet",
+      "name": "Append: Inbound Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2860,
+        -120
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'inbound-lead', workflow: $workflow.name, status: 'ok', execution_id: String($execution.id), detail: { lead_id: $('Plan').first().json.lead_id, auto_reply: $('Plan').first().json.auto_reply_reason, team_recipients: $('Plan').first().json.team.count } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        3080,
+        -120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'inbound-lead', workflow: $workflow.name, status: 'skipped', execution_id: String($execution.id), detail: { lead_id: $json.lead_id, reason: $json.reason } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-skipped",
+      "name": "Log skipped",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        1760,
+        120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse": {
+      "main": [
+        [
+          {
+            "node": "Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Prior auto-reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prior auto-reply": {
+      "main": [
+        [
+          {
+            "node": "Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan": {
+      "main": [
+        [
+          {
+            "node": "Process?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process?": {
+      "main": [
+        [
+          {
+            "node": "Auto-reply?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-reply?": {
+      "main": [
+        [
+          {
+            "node": "Send auto-reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Team email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send auto-reply": {
+      "main": [
+        [
+          {
+            "node": "Record auto-reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record auto-reply": {
+      "main": [
+        [
+          {
+            "node": "Team email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team email": {
+      "main": [
+        [
+          {
+            "node": "Sheet row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet row": {
+      "main": [
+        [
+          {
+            "node": "Append: Inbound Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append: Inbound Leads": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

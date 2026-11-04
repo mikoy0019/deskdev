@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wanderoost — Find Your Next Stay</title>
+<meta name="description" content="Wanderoost is a short-term stays marketplace. Search hand-picked homes, cabins, and villas by location, dates, and guests — book with friendly, verified hosts." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sand: {
+            50:  '#fbf7f1',
+            100: '#f4ebdd',
+            200: '#e9d6bc',
+            300: '#dcbd95',
+          },
+          clay: {
+            400: '#e8855a',
+            500: '#e2683a',
+            600: '#cf522a',
+            700: '#a93f20',
+          },
+          pine: {
+            600: '#2f5d4f',
+            700: '#274b40',
+            800: '#1d382f',
+            900: '#142822',
+          },
+          ink: '#1c1a17',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          soft: '0 10px 40px -12px rgba(28,26,23,0.18)',
+          lift: '0 24px 60px -20px rgba(28,26,23,0.30)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#fbf7f1; color:#1c1a17; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  ::selection { background:#e2683a; color:#fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:11px; }
+  ::-webkit-scrollbar-track { background:#f4ebdd; }
+  ::-webkit-scrollbar-thumb { background:#dcbd95; border-radius:9px; border:2px solid #f4ebdd; }
+  ::-webkit-scrollbar-thumb:hover { background:#e2683a; }
+
+  .font-display { font-family:'Fraunces',serif; }
+
+  /* Hero gradient veil */
+  .hero-veil {
+    background:
+      radial-gradient(120% 90% at 15% 10%, rgba(20,40,34,0.10) 0%, transparent 55%),
+      linear-gradient(180deg, rgba(20,40,34,0.30) 0%, rgba(20,40,34,0.55) 100%);
+  }
+
+  .gloss {
+    background:linear-gradient(110deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 70%);
+    background-size:220% 100%;
+  }
+
+  /* Marquee */
+  .marquee-track { display:flex; width:max-content; animation:marquee 38s linear infinite; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+  .marquee-wrap:hover .marquee-track { animation-play-state:paused; }
+
+  /* Field focus glow */
+  .field-active { box-shadow:0 0 0 2px #e2683a, 0 14px 30px -14px rgba(226,104,58,.5); }
+
+  /* Card image zoom */
+  .stay-card .stay-img { transition:transform .9s cubic-bezier(.16,1,.3,1); }
+  .stay-card:hover .stay-img { transform:scale(1.09); }
+
+  /* Tilt smoothing */
+  .tilt { transform-style:preserve-3d; transition:transform .35s cubic-bezier(.16,1,.3,1); will-change:transform; }
+
+  /* Accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .faq-item.open .faq-body { max-height:260px; }
+  .faq-item.open .faq-icon { transform:rotate(45deg); }
+  .faq-icon { transition:transform .35s ease; }
+
+  /* Rail scroll */
+  .rail { scrollbar-width:none; }
+  .rail::-webkit-scrollbar { display:none; }
+
+  .reveal { opacity:0; transform:translateY(34px); }
+
+  .grain::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- ===== NAV ===== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div id="navbar" class="mt-4 flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-300">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-clay-500 text-white shadow-soft">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+        </span>
+        <span class="font-display text-xl font-600 tracking-tight">Wanderoost</span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-sm font-500 text-ink/70">
+        <a href="#stays" class="hover:text-clay-600 transition">Stays</a>
+        <a href="#destinations" class="hover:text-clay-600 transition">Destinations</a>
+        <a href="#how" class="hover:text-clay-600 transition">How it works</a>
+        <a href="#host" class="hover:text-clay-600 transition">Become a host</a>
+        <a href="#faq" class="hover:text-clay-600 transition">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#host" class="hidden sm:inline-flex text-sm font-600 text-ink/80 hover:text-clay-600 transition">List your place</a>
+        <a href="#search" class="inline-flex items-center gap-2 rounded-full bg-pine-800 text-sand-50 text-sm font-600 px-5 py-2.5 hover:bg-pine-900 transition shadow-soft">
+          Sign in
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ===== HERO ===== -->
+<section id="top" class="relative min-h-[100svh] flex items-center pt-28 pb-16 overflow-hidden grain">
+  <!-- BG image in gradient container -->
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-pine-800 via-pine-700 to-clay-700">
+    <div id="hero-parallax" class="absolute inset-0 scale-110">
+      <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80"
+           alt="A welcoming home at dusk" class="w-full h-full object-cover"
+           onerror="this.style.display='none'" />
+    </div>
+    <div class="absolute inset-0 hero-veil"></div>
+  </div>
+
+  <div class="mx-auto max-w-7xl w-full px-5 sm:px-8">
+    <div class="max-w-3xl">
+      <span data-reveal class="inline-flex items-center gap-2 rounded-full bg-white/12 backdrop-blur px-4 py-1.5 text-xs font-600 tracking-wide text-sand-50 ring-1 ring-white/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-clay-400 animate-pulse"></span>
+        Over 18,000 hand-picked stays
+      </span>
+
+      <h1 class="mt-6 font-display text-4xl sm:text-6xl lg:text-7xl font-600 leading-[1.02] text-sand-50">
+        <span class="block overflow-hidden"><span class="hl inline-block">Stay somewhere</span></span>
+        <span class="block overflow-hidden"><span class="hl inline-block">that feels like <span class="text-clay-400 italic">yours.</span></span></span>
+      </h1>
+
+      <p data-reveal class="mt-6 max-w-xl text-base sm:text-lg text-sand-100/90 leading-relaxed">
+        From slow-morning cabins to sun-washed villas, Wanderoost connects you with verified hosts and homes you'll actually want to come back to.
+      </p>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div id="search" data-reveal class="mt-10 lg:mt-12">
+      <div class="bg-sand-50/95 backdrop-blur-xl rounded-3xl sm:rounded-full p-2.5 shadow-lift max-w-4xl ring-1 ring-white/30">
+        <div class="grid grid-cols-1 sm:grid-cols-[1.4fr_1fr_1fr_auto] gap-1.5">
+          <label class="search-field group relative rounded-2xl sm:rounded-full px-5 py-3 cursor-text transition">
+            <span class="block text-[11px] font-700 uppercase tracking-wider text-ink/45">Where</span>
+            <input type="text" placeholder="Anywhere — try 'coastal'" class="w-full bg-transparent outline-none text-sm font-600 text-ink placeholder:text-ink/40" />
+          </label>
+          <label class="search-field group relative rounded-2xl sm:rounded-full px-5 py-3 cursor-text transition sm:border-l sm:border-ink/10">
+            <span class="block text-[11px] font-700 uppercase tracking-wider text-ink/45">When</span>
+            <input type="text" placeholder="Add dates" class="w-full bg-transparent outline-none text-sm font-600 text-ink placeholder:text-ink/40" />
+          </label>
+          <label class="search-field group relative rounded-2xl sm:rounded-full px-5 py-3 cursor-text transition sm:border-l sm:border-ink/10">
+            <span class="block text-[11px] font-700 uppercase tracking-wider text-ink/45">Who</span>
+            <input type="text" placeholder="Add guests" class="w-full bg-transparent outline-none text-sm font-600 text-ink placeholder:text-ink/40" />
+          </label>
+          <button id="searchBtn" class="relative overflow-hidden inline-flex items-center justify-center gap-2 rounded-2xl sm:rounded-full bg-clay-500 text-white font-700 px-7 py-4 hover:bg-clay-600 transition shadow-soft">
+            <span id="searchBtnInner" class="inline-flex items-center gap-2">
+              <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              Search
+            </span>
+            <span class="gloss absolute inset-0"></span>
+          </button>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2 text-xs">
+        <span class="text-sand-100/80 font-600 mr-1">Popular:</span>
+        <button class="chip rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/20 text-sand-50 px-3 py-1.5 font-600 transition">Cabins</button>
+        <button class="chip rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/20 text-sand-50 px-3 py-1.5 font-600 transition">Beachfront</button>
+        <button class="chip rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/20 text-sand-50 px-3 py-1.5 font-600 transition">Pet-friendly</button>
+        <button class="chip rounded-full bg-white/15 hover:bg-white/25 ring-1 ring-white/20 text-sand-50 px-3 py-1.5 font-600 transition">Long stays</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST / STATS STRIP ===== -->
+<section class="relative bg-pine-900 text-sand-50">
+  <div class="marquee-wrap overflow-hidden border-y border-white/10 py-3">
+    <div class="marquee-track gap-10 text-xs font-600 uppercase tracking-[0.2em] text-sand-100/70">
+      <span class="flex items-center gap-10">
+        <span>★ Verified hosts</span><span>•</span><span>24/7 guest care</span><span>•</span><span>Free cancellation*</span><span>•</span><span>Secure payments</span><span>•</span><span>No hidden fees</span><span>•</span>
+      </span>
+      <span class="flex items-center gap-10" aria-hidden="true">
+        <span>★ Verified hosts</span><span>•</span><span>24/7 guest care</span><span>•</span><span>Free cancellation*</span><span>•</span><span>Secure payments</span><span>•</span><span>No hidden fees</span><span>•</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-12">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div data-reveal>
+        <div class="font-display text-4xl sm:text-5xl font-600 text-clay-400"><span class="count" data-to="18420">0</span></div>
+        <p class="mt-1 text-sm text-sand-100/70 font-500">Stays listed</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-4xl sm:text-5xl font-600 text-clay-400"><span class="count" data-to="9700">0</span>+</div>
+        <p class="mt-1 text-sm text-sand-100/70 font-500">Trusted hosts</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-4xl sm:text-5xl font-600 text-clay-400"><span class="count" data-to="142">0</span></div>
+        <p class="mt-1 text-sm text-sand-100/70 font-500">Cities & towns</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-4xl sm:text-5xl font-600 text-clay-400">4.9<span class="text-2xl align-top">★</span></div>
+        <p class="mt-1 text-sm text-sand-100/70 font-500">Avg. guest rating</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURED STAYS ===== -->
+<section id="stays" class="relative py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div data-reveal>
+        <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Handpicked this week</span>
+        <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600 leading-tight max-w-xl">Stays our guests keep raving about</h2>
+      </div>
+      <a href="#" data-reveal class="inline-flex items-center gap-2 text-sm font-700 text-pine-800 hover:text-clay-600 transition shrink-0">
+        Browse all stays
+        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+      <!-- Card 1 -->
+      <article data-reveal class="stay-card group rounded-3xl bg-white shadow-soft hover:shadow-lift transition-all duration-500 overflow-hidden ring-1 ring-ink/5">
+        <div class="relative h-60 overflow-hidden bg-gradient-to-br from-pine-700 to-clay-600">
+          <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80" alt="Modern hillside home" class="stay-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur text-[11px] font-700 px-3 py-1 text-pine-800">Guest favorite</span>
+          <button class="absolute top-3 right-3 grid place-items-center w-9 h-9 rounded-full bg-white/85 backdrop-blur text-ink/70 hover:text-clay-600 hover:scale-110 transition" aria-label="Save">
+            <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3">
+            <h3 class="font-display text-lg font-600 leading-snug">The Cedar Loft</h3>
+            <span class="shrink-0 inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="w-4 h-4 text-clay-500" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg>4.97</span>
+          </div>
+          <p class="text-sm text-ink/55 mt-1">Asheville, North Carolina</p>
+          <p class="text-sm text-ink/55">Entire cabin · Sleeps 4 · Hot tub</p>
+          <div class="mt-4 flex items-center justify-between">
+            <p class="text-sm"><span class="font-700 text-ink">$182</span><span class="text-ink/55"> / night</span></p>
+            <span class="text-xs font-600 text-pine-700 bg-sand-100 rounded-full px-3 py-1">2 nights min</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2 -->
+      <article data-reveal class="stay-card group rounded-3xl bg-white shadow-soft hover:shadow-lift transition-all duration-500 overflow-hidden ring-1 ring-ink/5">
+        <div class="relative h-60 overflow-hidden bg-gradient-to-br from-clay-500 to-pine-700">
+          <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80" alt="Bright coastal interior" class="stay-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-clay-500 text-[11px] font-700 px-3 py-1 text-white">New</span>
+          <button class="absolute top-3 right-3 grid place-items-center w-9 h-9 rounded-full bg-white/85 backdrop-blur text-ink/70 hover:text-clay-600 hover:scale-110 transition" aria-label="Save">
+            <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3">
+            <h3 class="font-display text-lg font-600 leading-snug">Saltbreeze Studio</h3>
+            <span class="shrink-0 inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="w-4 h-4 text-clay-500" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg>4.91</span>
+          </div>
+          <p class="text-sm text-ink/55 mt-1">Tofino, British Columbia</p>
+          <p class="text-sm text-ink/55">Entire studio · Sleeps 2 · Ocean view</p>
+          <div class="mt-4 flex items-center justify-between">
+            <p class="text-sm"><span class="font-700 text-ink">$219</span><span class="text-ink/55"> / night</span></p>
+            <span class="text-xs font-600 text-pine-700 bg-sand-100 rounded-full px-3 py-1">Pet-friendly</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article data-reveal class="stay-card group rounded-3xl bg-white shadow-soft hover:shadow-lift transition-all duration-500 overflow-hidden ring-1 ring-ink/5">
+        <div class="relative h-60 overflow-hidden bg-gradient-to-br from-pine-800 to-sand-300">
+          <img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1600&q=80" alt="Warm living room" class="stay-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur text-[11px] font-700 px-3 py-1 text-pine-800">Superhost</span>
+          <button class="absolute top-3 right-3 grid place-items-center w-9 h-9 rounded-full bg-white/85 backdrop-blur text-ink/70 hover:text-clay-600 hover:scale-110 transition" aria-label="Save">
+            <svg viewBox="0 0 24 24" class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3">
+            <h3 class="font-display text-lg font-600 leading-snug">Olive Grove Villa</h3>
+            <span class="shrink-0 inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="w-4 h-4 text-clay-500" fill="currentColor"><path d="M12 2l2.9 6.3 6.9.6-5.2 4.5 1.6 6.7L12 17.3 5.8 20.6l1.6-6.7L2.2 8.9l6.9-.6z"/></svg>5.0</span>
+          </div>
+          <p class="text-sm text-ink/55 mt-1">Paros, Greece</p>
+          <p class="text-sm text-ink/55">Entire villa · Sleeps 6 · Private pool</p>
+          <div class="mt-4 flex items-center justify-between">
+            <p class="text-sm"><span class="font-700 text-ink">$340</span><span class="text-ink/55"> / night</span></p>
+            <span class="text-xs font-600 text-pine-700 bg-sand-100 rounded-full px-3 py-1">Sea view</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DESTINATIONS RAIL ===== -->
+<section id="destinations" class="relative py-20 sm:py-24 bg-sand-100 overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex items-end justify-between gap-4">
+      <div data-reveal>
+        <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Where to next</span>
+        <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600">Trending destinations</h2>
+      </div>
+      <div class="hidden sm:flex gap-2">
+        <button id="railPrev" class="grid place-items-center w-11 h-11 rounded-full bg-white ring-1 ring-ink/10 hover:bg-pine-800 hover:text-white transition" aria-label="Previous">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button id="railNext" class="grid place-items-center w-11 h-11 rounded-full bg-white ring-1 ring-ink/10 hover:bg-pine-800 hover:text-white transition" aria-label="Next">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rail" class="rail mt-10 flex gap-5 overflow-x-auto px-5 sm:px-8 pb-4 snap-x snap-mandatory">
+    <!-- destination cards generated below -->
+    <div class="dest-card snap-start shrink-0 w-[78vw] sm:w-[340px] relative rounded-3xl overflow-hidden h-80 bg-gradient-to-br from-pine-700 to-clay-600 shadow-soft">
+      <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80" alt="Lisbon" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+      <div class="absolute bottom-0 p-6 text-white">
+        <h3 class="font-display text-2xl font-600">Lisbon</h3>
+        <p class="text-sand-100/80 text-sm mt-1">1,240 stays · from $74/night</p>
+      </div>
+    </div>
+    <div class="dest-card snap-start shrink-0 w-[78vw] sm:w-[340px] relative rounded-3xl overflow-hidden h-80 bg-gradient-to-br from-clay-500 to-pine-700 shadow-soft">
+      <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80" alt="Kyoto" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+      <div class="absolute bottom-0 p-6 text-white">
+        <h3 class="font-display text-2xl font-600">Kyoto</h3>
+        <p class="text-sand-100/80 text-sm mt-1">860 stays · from $98/night</p>
+      </div>
+    </div>
+    <div class="dest-card snap-start shrink-0 w-[78vw] sm:w-[340px] relative rounded-3xl overflow-hidden h-80 bg-gradient-to-br from-pine-800 to-sand-300 shadow-soft">
+      <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=1600&q=80" alt="Tulum" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+      <div class="absolute bottom-0 p-6 text-white">
+        <h3 class="font-display text-2xl font-600">Tulum</h3>
+        <p class="text-sand-100/80 text-sm mt-1">540 stays · from $120/night</p>
+      </div>
+    </div>
+    <div class="dest-card snap-start shrink-0 w-[78vw] sm:w-[340px] relative rounded-3xl overflow-hidden h-80 bg-gradient-to-br from-clay-600 to-pine-800 shadow-soft">
+      <img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1600&q=80" alt="Queenstown" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+      <div class="absolute bottom-0 p-6 text-white">
+        <h3 class="font-display text-2xl font-600">Queenstown</h3>
+        <p class="text-sand-100/80 text-sm mt-1">410 stays · from $135/night</p>
+      </div>
+    </div>
+    <div class="dest-card snap-start shrink-0 w-[78vw] sm:w-[340px] relative rounded-3xl overflow-hidden h-80 bg-gradient-to-br from-pine-700 to-clay-500 shadow-soft">
+      <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80" alt="Marrakech" class="absolute inset-0 w-full h-full object-cover" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+      <div class="absolute bottom-0 p-6 text-white">
+        <h3 class="font-display text-2xl font-600">Marrakech</h3>
+        <p class="text-sand-100/80 text-sm mt-1">690 stays · from $66/night</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY BOOK ===== -->
+<section class="relative py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <div data-reveal class="relative">
+        <div class="relative rounded-[2rem] overflow-hidden h-[460px] bg-gradient-to-br from-pine-800 to-clay-600 shadow-lift">
+          <img id="why-img" src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80" alt="Cozy home" class="w-full h-full object-cover scale-110" onerror="this.style.display='none'" />
+        </div>
+        <div class="absolute -bottom-6 -right-3 sm:right-6 bg-sand-50 rounded-2xl shadow-lift p-5 w-56 ring-1 ring-ink/5">
+          <div class="flex -space-x-2">
+            <span class="w-9 h-9 rounded-full bg-clay-400 ring-2 ring-sand-50"></span>
+            <span class="w-9 h-9 rounded-full bg-pine-600 ring-2 ring-sand-50"></span>
+            <span class="w-9 h-9 rounded-full bg-sand-300 ring-2 ring-sand-50"></span>
+          </div>
+          <p class="mt-3 text-sm font-700 text-ink">Booked 3 times today</p>
+          <p class="text-xs text-ink/55">in your shortlist</p>
+        </div>
+      </div>
+
+      <div>
+        <div data-reveal>
+          <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Why Wanderoost</span>
+          <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600 leading-tight">Booking that feels personal, not transactional</h2>
+        </div>
+        <div class="mt-10 space-y-7">
+          <div data-reveal class="flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-sand-100 text-clay-600"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+            <div>
+              <h3 class="font-display text-xl font-600">Every host is verified</h3>
+              <p class="mt-1 text-ink/60 leading-relaxed">ID checks, real reviews, and quality standards on every listing — so the place you see is the place you get.</p>
+            </div>
+          </div>
+          <div data-reveal class="flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-sand-100 text-clay-600"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div>
+              <h3 class="font-display text-xl font-600">Real humans, around the clock</h3>
+              <p class="mt-1 text-ink/60 leading-relaxed">Locked out at midnight? Plans changed? Our guest care team answers in minutes, day or night.</p>
+            </div>
+          </div>
+          <div data-reveal class="flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-sand-100 text-clay-600"><svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10h18M7 3v4M17 3v4"/><rect x="3" y="6" width="18" height="15" rx="2"/></svg></span>
+            <div>
+              <h3 class="font-display text-xl font-600">Flexible, fair cancellation</h3>
+              <p class="mt-1 text-ink/60 leading-relaxed">Most stays offer free cancellation up to 48 hours before check-in. No fine print, no surprises.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how" class="relative py-20 sm:py-28 bg-pine-900 text-sand-50 grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div data-reveal class="max-w-2xl">
+      <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-400">Three easy steps</span>
+      <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600 leading-tight">From browsing to keys-in-hand</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6">
+      <div data-reveal class="relative rounded-3xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+        <span class="font-display text-5xl font-600 text-clay-400/40">01</span>
+        <h3 class="mt-4 font-display text-xl font-600">Search & shortlist</h3>
+        <p class="mt-2 text-sand-100/70 leading-relaxed">Filter by vibe, budget, and dates. Save your favorites to a shareable shortlist.</p>
+      </div>
+      <div data-reveal class="relative rounded-3xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+        <span class="font-display text-5xl font-600 text-clay-400/40">02</span>
+        <h3 class="mt-4 font-display text-xl font-600">Book in seconds</h3>
+        <p class="mt-2 text-sand-100/70 leading-relaxed">Instant-book eligible homes confirm immediately. Pay securely, all-in pricing shown upfront.</p>
+      </div>
+      <div data-reveal class="relative rounded-3xl bg-white/5 ring-1 ring-white/10 p-7 hover:bg-white/10 transition">
+        <span class="font-display text-5xl font-600 text-clay-400/40">03</span>
+        <h3 class="mt-4 font-display text-xl font-600">Settle in</h3>
+        <p class="mt-2 text-sand-100/70 leading-relaxed">Get directions, check-in steps, and a local guide from your host — all in one place.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BECOME A HOST ===== -->
+<section id="host" class="relative py-20 sm:py-28 overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-clay-600 to-clay-700 grain">
+      <div class="absolute inset-0 opacity-25">
+        <img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=1600&q=80" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="relative grid lg:grid-cols-2 gap-10 items-center p-8 sm:p-14">
+        <div data-reveal>
+          <span class="text-xs font-700 uppercase tracking-[0.18em] text-sand-100">Earn with your space</span>
+          <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600 text-white leading-tight">Your spare room could pay for your next trip</h2>
+          <p class="mt-5 text-sand-50/90 max-w-md leading-relaxed">Hosts on Wanderoost earn a median of <span class="font-700">$1,180/month</span>. We handle payments, insurance, and guest screening — you bring the home.</p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="#" class="inline-flex items-center gap-2 rounded-full bg-white text-clay-700 font-700 px-6 py-3.5 hover:bg-sand-100 transition shadow-soft">Start hosting</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-full bg-white/15 ring-1 ring-white/30 text-white font-600 px-6 py-3.5 hover:bg-white/25 transition">Estimate my earnings</a>
+          </div>
+        </div>
+        <div data-reveal class="grid grid-cols-2 gap-4">
+          <div class="rounded-2xl bg-white/12 backdrop-blur ring-1 ring-white/20 p-5 text-white">
+            <div class="font-display text-3xl font-600">$0</div>
+            <p class="text-sm text-sand-50/80 mt-1">to list your place</p>
+          </div>
+          <div class="rounded-2xl bg-white/12 backdrop-blur ring-1 ring-white/20 p-5 text-white">
+            <div class="font-display text-3xl font-600">$1M</div>
+            <p class="text-sm text-sand-50/80 mt-1">host protection</p>
+          </div>
+          <div class="rounded-2xl bg-white/12 backdrop-blur ring-1 ring-white/20 p-5 text-white">
+            <div class="font-display text-3xl font-600">48h</div>
+            <p class="text-sm text-sand-50/80 mt-1">avg. first booking</p>
+          </div>
+          <div class="rounded-2xl bg-white/12 backdrop-blur ring-1 ring-white/20 p-5 text-white">
+            <div class="font-display text-3xl font-600">3%</div>
+            <p class="text-sm text-sand-50/80 mt-1">flat host fee</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about" class="relative py-20 sm:py-24 bg-sand-100">
+  <div class="mx-auto max-w-5xl px-5 sm:px-8 text-center">
+    <span data-reveal class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Our story</span>
+    <h2 data-reveal class="mt-4 font-display text-3xl sm:text-5xl font-600 leading-tight">We started Wanderoost because a stay should feel like a welcome, not a checkout flow.</h2>
+    <p data-reveal class="mt-6 text-lg text-ink/60 leading-relaxed max-w-3xl mx-auto">Born on a rainy road-trip in 2021, we set out to build the kind of booking platform we wished existed — honest pricing, hosts who actually care, and homes with a story. Today, tens of thousands of guests find their stay with us every week.</p>
+    <div data-reveal class="mt-10 flex flex-wrap justify-center gap-x-10 gap-y-4 text-sm font-600 text-pine-800">
+      <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-clay-500"></span> Independent & host-first</span>
+      <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-clay-500"></span> Carbon-offset stays</span>
+      <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-clay-500"></span> 1% pledged to housing</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="relative py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div data-reveal class="max-w-2xl">
+      <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Guest stories</span>
+      <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600 leading-tight">Loved by travelers and hosts alike</h2>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure data-reveal class="rounded-3xl bg-white shadow-soft ring-1 ring-ink/5 p-7">
+        <div class="flex gap-0.5 text-clay-500">★★★★★</div>
+        <blockquote class="mt-4 text-ink/75 leading-relaxed">"The cabin was even cozier than the photos. Our host left a hand-drawn map of trails — that's the Wanderoost difference."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-clay-400"></span>
+          <div><p class="font-700 text-sm">Mara T.</p><p class="text-xs text-ink/50">Booked The Cedar Loft</p></div>
+        </figcaption>
+      </figure>
+      <figure data-reveal class="rounded-3xl bg-pine-800 text-sand-50 shadow-soft p-7">
+        <div class="flex gap-0.5 text-clay-400">★★★★★</div>
+        <blockquote class="mt-4 text-sand-100/90 leading-relaxed">"As a host, payouts are fast and the dashboard is dead simple. I filled my calendar in under a week."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-clay-400"></span>
+          <div><p class="font-700 text-sm">Devon R.</p><p class="text-xs text-sand-100/60">Superhost · 41 stays</p></div>
+        </figcaption>
+      </figure>
+      <figure data-reveal class="rounded-3xl bg-white shadow-soft ring-1 ring-ink/5 p-7">
+        <div class="flex gap-0.5 text-clay-500">★★★★★</div>
+        <blockquote class="mt-4 text-ink/75 leading-relaxed">"Plans fell through and support refunded us within the hour. No script, no runaround. We'll book again."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-pine-600"></span>
+          <div><p class="font-700 text-sm">Priya & Sam</p><p class="text-xs text-ink/50">Booked Olive Grove Villa</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="relative py-20 sm:py-28 bg-sand-100">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div data-reveal class="text-center">
+      <span class="text-xs font-700 uppercase tracking-[0.18em] text-clay-600">Good to know</span>
+      <h2 class="mt-3 font-display text-3xl sm:text-5xl font-600">Questions, answered</h2>
+    </div>
+
+    <div class="mt-12 space-y-3">
+      <div data-reveal class="faq-item open rounded-2xl bg-white ring-1 ring-ink/5 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">How does payment and pricing work?</span>
+          <svg class="faq-icon w-5 h-5 text-clay-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60 leading-relaxed">You pay securely at booking. The total you see is the total you pay — taxes and our small service fee are shown before you confirm. No drip pricing, ever.</p></div>
+      </div>
+      <div data-reveal class="faq-item rounded-2xl bg-white ring-1 ring-ink/5 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">Can I cancel my reservation?</span>
+          <svg class="faq-icon w-5 h-5 text-clay-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60 leading-relaxed">Most stays offer free cancellation up to 48 hours before check-in. Each listing displays its exact policy on the booking screen so there's no guesswork.</p></div>
+      </div>
+      <div data-reveal class="faq-item rounded-2xl bg-white ring-1 ring-ink/5 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">Are the hosts and homes verified?</span>
+          <svg class="faq-icon w-5 h-5 text-clay-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60 leading-relaxed">Yes. Every host completes ID verification and agrees to our quality standards. Reviews come only from guests who actually stayed.</p></div>
+      </div>
+      <div data-reveal class="faq-item rounded-2xl bg-white ring-1 ring-ink/5 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">How do I become a host?</span>
+          <svg class="faq-icon w-5 h-5 text-clay-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60 leading-relaxed">Tap "List your place," add a few photos and details, set your price, and publish. It's free to list, and most hosts get their first booking within 48 hours.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="relative py-24 sm:py-32 overflow-hidden bg-pine-900 text-sand-50 grain">
+  <div class="absolute inset-0 -z-0 opacity-30">
+    <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-pine-900/70"></div>
+  </div>
+  <div class="relative mx-auto max-w-3xl px-5 sm:px-8 text-center">
+    <h2 data-reveal class="font-display text-4xl sm:text-6xl font-600 leading-[1.05]">Your next stay is waiting</h2>
+    <p data-reveal class="mt-5 text-lg text-sand-100/80 max-w-xl mx-auto">Browse thousands of homes, save your favorites, and book the one that feels right.</p>
+    <div data-reveal class="mt-9 flex flex-wrap justify-center gap-3">
+      <a href="#search" class="inline-flex items-center gap-2 rounded-full bg-clay-500 text-white font-700 px-8 py-4 hover:bg-clay-600 transition shadow-lift">Find a stay</a>
+      <a href="#host" class="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/25 text-sand-50 font-600 px-8 py-4 hover:bg-white/20 transition">Become a host</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-ink text-sand-100/70">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-16">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-xl bg-clay-500 text-white"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg></span>
+          <span class="font-display text-xl font-600 text-sand-50">Wanderoost</span>
+        </a>
+        <p class="mt-4 max-w-sm text-sm leading-relaxed">A short-term stays marketplace built on trust, honest pricing, and hosts who care. Find a home that feels like yours.</p>
+        <div class="mt-6 flex gap-3">
+          <a href="#" aria-label="Instagram" class="grid place-items-center w-10 h-10 rounded-full bg-white/5 hover:bg-clay-500 hover:text-white transition"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="Twitter" class="grid place-items-center w-10 h-10 rounded-full bg-white/5 hover:bg-clay-500 hover:text-white transition"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M18 2h3l-7 8 8 12h-6l-5-7-6 7H2l8-9L2 2h6l4 6z"/></svg></a>
+          <a href="#" aria-label="Facebook" class="grid place-items-center w-10 h-10 rounded-full bg-white/5 hover:bg-clay-500 hover:text-white transition"><svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M14 9h3V5h-3a4 4 0 0 0-4 4v2H7v4h3v6h4v-6h3l1-4h-4V9a1 1 0 0 1 1-1z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-700 text-sand-50 text-sm">Explore</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#stays" class="hover:text-clay-400 transition">Featured stays</a></li>
+          <li><a href="#destinations" class="hover:text-clay-400 transition">Destinations</a></li>
+          <li><a href="#how" class="hover:text-clay-400 transition">How it works</a></li>
+          <li><a href="#faq" class="hover:text-clay-400 transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sand-50 text-sm">Hosting</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#host" class="hover:text-clay-400 transition">Become a host</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Host resources</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Earnings calculator</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Host protection</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sand-50 text-sm">Company</h4>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#about" class="hover:text-clay-400 transition">About us</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Careers</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Press</a></li>
+          <li><a href="#" class="hover:text-clay-400 transition">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <p>© 2026 Wanderoost, Inc. All rights reserved. *Free cancellation on eligible stays.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-clay-400 transition">Privacy</a>
+        <a href="#" class="hover:text-clay-400 transition">Terms</a>
+        <a href="#" class="hover:text-clay-400 transition">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- NAV SCROLL STATE ---- */
+  const navbar = document.getElementById('navbar');
+  const onScroll = () => {
+    if (window.scrollY > 30) {
+      navbar.classList.add('bg-sand-50/85','backdrop-blur-xl','shadow-soft','ring-1','ring-ink/5');
+    } else {
+      navbar.classList.remove('bg-sand-50/85','backdrop-blur-xl','shadow-soft','ring-1','ring-ink/5');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- SEARCH FIELD FOCUS GLOW ---- */
+  document.querySelectorAll('.search-field').forEach((f) => {
+    const input = f.querySelector('input');
+    if (!input) return;
+    input.addEventListener('focus', () => f.classList.add('field-active'));
+    input.addEventListener('blur', () => f.classList.remove('field-active'));
+  });
+
+  /* ---- POPULAR CHIPS -> fill Where field ---- */
+  const whereInput = document.querySelector('.search-field input');
+  document.querySelectorAll('.chip').forEach((c) => {
+    c.addEventListener('click', () => { if (whereInput) { whereInput.value = c.textContent.trim(); whereInput.focus(); } });
+  });
+
+  /* ---- DESTINATIONS RAIL ARROWS ---- */
+  const rail = document.getElementById('rail');
+  const step = 360;
+  document.getElementById('railPrev')?.addEventListener('click', () => rail.scrollBy({ left: -step, behavior: 'smooth' }));
+  document.getElementById('railNext')?.addEventListener('click', () => rail.scrollBy({ left: step, behavior: 'smooth' }));
+
+  /* ---- FAQ ACCORDION ---- */
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  if (reduce) return; // skip motion entirely
+
+  /* ---- POINTER: MAGNETIC SEARCH CTA ---- */
+  const magnet = document.getElementById('searchBtn');
+  const magnetInner = document.getElementById('searchBtnInner');
+  if (magnet) {
+    magnet.addEventListener('mousemove', (e) => {
+      const r = magnet.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      magnetInner.style.transform = `translate(${x * 0.3}px, ${y * 0.35}px)`;
+    });
+    magnet.addEventListener('mouseleave', () => { magnetInner.style.transform = 'translate(0,0)'; });
+  }
+
+  /* ---- POINTER: CARD TILT ---- */
+  document.querySelectorAll('.stay-card').forEach((card) => {
+    card.classList.add('tilt');
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `perspective(900px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(900px) rotateY(0) rotateX(0) translateY(0)'; });
+  });
+
+  /* ---- GSAP ---- */
+  window.addEventListener('load', () => {
+    if (!window.gsap) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero headline reveal */
+    gsap.set('.hl', { yPercent: 110 });
+    gsap.to('.hl', { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.12, delay: 0.15 });
+
+    /* Hero secondary reveals */
+    gsap.utils.toArray('#top [data-reveal]').forEach((el, i) => {
+      gsap.fromTo(el, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.5 + i * 0.12 });
+    });
+
+    /* Generic section reveals */
+    gsap.utils.toArray('[data-reveal]:not(#top [data-reveal])').forEach((el) => {
+      gsap.fromTo(el, { opacity: 0, y: 34 }, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 86%' }
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach((el) => {
+      const to = +el.dataset.to;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => { el.textContent = Math.floor(obj.v).toLocaleString(); }
+        })
+      });
+    });
+
+    /* Container parallax on hero image */
+    gsap.to('#hero-parallax', {
+      yPercent: 18, ease: 'none',
+      scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    /* Why-book image parallax */
+    gsap.to('#why-img', {
+      yPercent: -12, ease: 'none',
+      scrollTrigger: { trigger: '#why-img', start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+
+    ScrollTrigger.refresh();
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+# Dependency update PRs. Minor and patch bumps are grouped into one PR per
+# folder per week so they are reviewable; majors arrive one at a time.
+# Security updates (Dependabot alerts) are separate and switched on in
+# Settings > Code security; they ignore the limits below.
+#
+# Not covered on purpose:
+#   mobile/                 parked (Expo); its versions are pinned to the Expo SDK.
+#   supabase/functions/     Deno imports by URL; Dependabot has no Deno ecosystem.
+#   video/                  local Remotion project, not shipped.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Asia/Manila
+    open-pull-requests-limit: 5
+    # Site CI installs with --legacy-peer-deps. Dependabot cannot take that
+    # flag; it reads it from site/.npmrc (legacy-peer-deps=true). That file
+    # does not exist yet: until it does, site PRs whose update hits a peer
+    # conflict fail to open (Dependabot reports it in Insights > Dependency graph).
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      site-minor-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Framework majors move together (next + the OpenNext Cloudflare
+      # adapter + wrangler) and need a manual upgrade with a preview deploy.
+      # A Next.js minor can need a newer adapter too (its peer range), which
+      # the site CI build catches.
+      - dependency-name: next
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@opennextjs/cloudflare'
+        update-types: ['version-update:semver-major']
+      - dependency-name: wrangler
+        update-types: ['version-update:semver-major']
+      - dependency-name: react
+        update-types: ['version-update:semver-major']
+      - dependency-name: react-dom
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: npm
+    directory: /workers/n8n-keepalive
+    schedule:
+      interval: monthly
+      timezone: Asia/Manila
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      watchdog-all:
+        patterns: ['*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: Asia/Manila
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'chore(ci)'
+    groups:
+      actions-all:
+        patterns: ['*']

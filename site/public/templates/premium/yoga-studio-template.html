@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sundara — Boutique Yoga &amp; Movement Studio</title>
+<meta name="description" content="Sundara is a boutique yoga and movement studio. Breathe deeper, move with intention, return to yourself. Daily classes, workshops, and a quiet space to land." />
+
+<!-- Fonts: warm serif + soft sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sand:      '#EFE7DA',
+          sandlite:  '#F7F2EA',
+          sage:      '#8A9A7B',
+          sagedeep:  '#5F6E54',
+          terra:     '#C07B57',
+          terradeep: '#9A5A3C',
+          clay:      '#B8917A',
+          bark:      '#3A332C',
+          stone:     '#6B6357',
+          cream:     '#FBF8F2',
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans:  ['Mulish', 'sans-serif'],
+        },
+        letterSpacing: { widest2: '0.32em' },
+      }
+    }
+  }
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --terra:#C07B57; --sage:#8A9A7B; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FBF8F2;
+    color: #3A332C;
+    font-family: 'Mulish', sans-serif;
+    cursor: none;
+  }
+  ::selection { background: #C07B57; color: #FBF8F2; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; border-radius: 9999px;
+    pointer-events: none; z-index: 9999; mix-blend-mode: multiply;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot  { width: 7px; height: 7px; background: #9A5A3C; }
+  .cursor-ring { width: 38px; height: 38px; border: 1.5px solid rgba(154,90,60,.45); transition: width .3s, height .3s, background .3s, border-color .3s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(192,123,87,.10); border-color: rgba(192,123,87,.30); }
+  @media (max-width: 900px) { .cursor-dot, .cursor-ring { display: none; } body { cursor: auto; } }
+
+  /* Masked serif reveal lines */
+  .reveal-mask { display: block; overflow: hidden; }
+  .reveal-mask > span { display: block; transform: translateY(110%); }
+
+  .fade-up { opacity: 0; transform: translateY(34px); }
+
+  /* Breathing accent */
+  @keyframes breathe {
+    0%, 100% { transform: scale(1);   opacity: .55; }
+    50%      { transform: scale(1.16); opacity: .9; }
+  }
+  .breathe { animation: breathe 7s ease-in-out infinite; }
+
+  /* Soft floating shapes */
+  @keyframes drift {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    33%     { transform: translate(18px,-26px) rotate(6deg); }
+    66%     { transform: translate(-14px,16px) rotate(-5deg); }
+  }
+  .drift  { animation: drift 18s ease-in-out infinite; }
+  .drift2 { animation: drift 24s ease-in-out infinite reverse; }
+
+  .grain:before {
+    content:""; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .nav-link { position: relative; }
+  .nav-link:after {
+    content:""; position:absolute; left:0; bottom:-4px; width:0; height:1px; background:#9A5A3C; transition: width .4s ease;
+  }
+  .nav-link:hover:after { width:100%; }
+
+  .class-card { transition: transform .55s cubic-bezier(.16,1,.3,1), box-shadow .55s; }
+  .class-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -28px rgba(58,51,44,.35); }
+
+  .magnetic { will-change: transform; }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.16,1,.3,1); }
+
+  .img-warm { background: linear-gradient(135deg, #E4D3C0 0%, #C9B49E 50%, #B8917A 100%); }
+  .img-sage { background: linear-gradient(135deg, #B9C4AC 0%, #8A9A7B 60%, #5F6E54 100%); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breathe, .drift, .drift2 { animation: none !important; }
+    .fade-up { opacity: 1 !important; transform: none !important; }
+    .reveal-mask > span { transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- Cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between py-5">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="relative w-9 h-9 grid place-items-center">
+        <span class="absolute inset-0 rounded-full bg-terra/30 breathe"></span>
+        <span class="relative w-3 h-3 rounded-full bg-terradeep"></span>
+      </span>
+      <span class="font-serif text-2xl tracking-tight text-bark">Sundara</span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-9 text-sm text-stone font-medium">
+      <a href="#philosophy" class="nav-link">Philosophy</a>
+      <a href="#classes" class="nav-link">Classes</a>
+      <a href="#schedule" class="nav-link">Schedule</a>
+      <a href="#teachers" class="nav-link">Teachers</a>
+      <a href="#pricing" class="nav-link">Membership</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </div>
+
+    <a href="#offer" class="magnetic hidden sm:inline-flex items-center gap-2 rounded-full bg-bark text-cream px-6 py-2.5 text-sm font-medium hover:bg-terradeep transition-colors duration-500">
+      Book a class
+    </a>
+    <button id="burger" class="lg:hidden text-bark" aria-label="Menu">
+      <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7h20M3 13h20M3 19h20"/></svg>
+    </button>
+  </nav>
+
+  <!-- mobile menu -->
+  <div id="mobileMenu" class="lg:hidden hidden bg-cream/95 backdrop-blur border-t border-bark/10">
+    <div class="px-6 py-6 flex flex-col gap-4 text-stone">
+      <a href="#philosophy" class="mob-link">Philosophy</a>
+      <a href="#classes" class="mob-link">Classes</a>
+      <a href="#schedule" class="mob-link">Schedule</a>
+      <a href="#teachers" class="mob-link">Teachers</a>
+      <a href="#pricing" class="mob-link">Membership</a>
+      <a href="#faq" class="mob-link">FAQ</a>
+      <a href="#offer" class="mob-link inline-flex w-max rounded-full bg-bark text-cream px-6 py-2.5 mt-2">Book a class</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- floating soft shapes -->
+  <div class="drift  absolute -top-10 -left-16 w-80 h-80 rounded-full bg-sage/25 blur-3xl"></div>
+  <div class="drift2 absolute top-1/3 -right-24 w-96 h-96 rounded-full bg-terra/20 blur-3xl"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center relative z-10 w-full">
+    <!-- copy -->
+    <div>
+      <p class="reveal-mask mb-6"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Boutique yoga &amp; movement</span></p>
+      <h1 class="font-serif font-light text-bark leading-[1.02] text-5xl sm:text-6xl lg:text-[5.2rem]">
+        <span class="reveal-mask"><span>Breathe deeper.</span></span>
+        <span class="reveal-mask"><span class="italic text-terradeep">Move with</span></span>
+        <span class="reveal-mask"><span>intention.</span></span>
+      </h1>
+      <p class="fade-up mt-8 text-lg text-stone max-w-md leading-relaxed">
+        A quiet studio to slow down, soften, and return to yourself — daily flows, restorative practice, and breathwork in a light-filled room.
+      </p>
+      <div class="fade-up mt-10 flex flex-wrap items-center gap-5">
+        <a href="#offer" class="magnetic inline-flex items-center gap-2 rounded-full bg-terra text-cream px-8 py-4 text-sm font-medium hover:bg-terradeep transition-colors duration-500 shadow-lg shadow-terra/25">
+          Book your first class
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8h12M9 3l5 5-5 5"/></svg>
+        </a>
+        <a href="#schedule" class="nav-link text-sm font-medium text-bark">View the schedule</a>
+      </div>
+
+      <div class="fade-up mt-14 flex items-center gap-10">
+        <div>
+          <div class="count font-serif text-3xl text-bark" data-to="2400" data-suffix="+">0</div>
+          <p class="text-xs text-stone tracking-wide uppercase mt-1">Souls who breathe with us</p>
+        </div>
+        <div class="w-px h-10 bg-bark/15"></div>
+        <div>
+          <div class="count font-serif text-3xl text-bark" data-to="38" data-suffix="">0</div>
+          <p class="text-xs text-stone tracking-wide uppercase mt-1">Classes each week</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- hero image w/ parallax -->
+    <div class="relative">
+      <div class="img-warm relative rounded-[2.5rem] overflow-hidden aspect-[4/5] shadow-2xl shadow-bark/20">
+        <img data-parallax src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1600&q=80"
+             alt="A calm yoga practice" loading="eager"
+             onerror="this.style.display='none'"
+             class="w-full h-[115%] object-cover -mt-[7%]" />
+        <div class="absolute inset-0 bg-gradient-to-t from-bark/30 via-transparent to-transparent"></div>
+      </div>
+      <!-- floating breathe badge -->
+      <div class="absolute -bottom-6 -left-6 bg-cream rounded-3xl p-5 shadow-xl shadow-bark/15 flex items-center gap-4">
+        <span class="relative w-12 h-12 grid place-items-center">
+          <span class="absolute inset-0 rounded-full bg-sage/40 breathe"></span>
+          <span class="relative w-4 h-4 rounded-full bg-sagedeep"></span>
+        </span>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-stone">Inhale</p>
+          <p class="font-serif text-bark text-lg leading-none">Exhale</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-stone">
+    <span class="text-[10px] uppercase tracking-widest2">Scroll</span>
+    <span class="w-px h-10 bg-stone/40 overflow-hidden relative">
+      <span class="absolute inset-x-0 top-0 h-3 bg-terradeep animate-[drift_2s_ease-in-out_infinite]"></span>
+    </span>
+  </div>
+</section>
+
+<!-- ===================== PHILOSOPHY ===================== -->
+<section id="philosophy" class="relative py-28 lg:py-36 bg-sandlite">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal-mask mb-6"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Our philosophy</span></p>
+    <h2 class="font-serif font-light text-bark text-3xl sm:text-4xl lg:text-5xl leading-snug">
+      <span class="reveal-mask"><span>Yoga is not about touching your toes.</span></span>
+      <span class="reveal-mask"><span class="italic text-sagedeep">It is about what you learn on the way down.</span></span>
+    </h2>
+    <p class="fade-up mt-10 text-lg text-stone max-w-2xl mx-auto leading-relaxed">
+      At Sundara we believe movement is a conversation with yourself — unhurried, honest, and kind. There are no mirrors here, no competition, no perfect pose. Only breath, ground, and the slow unfolding of presence.
+    </p>
+
+    <div class="mt-16 grid sm:grid-cols-3 gap-8 text-left">
+      <div class="fade-up">
+        <div class="w-12 h-12 rounded-2xl bg-terra/15 grid place-items-center mb-4">
+          <svg width="22" height="22" fill="none" stroke="#9A5A3C" stroke-width="1.4"><circle cx="11" cy="11" r="8"/><path d="M11 6v5l3 2"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-bark mb-2">Slow &amp; intentional</h3>
+        <p class="text-stone text-sm leading-relaxed">We move at the pace of breath. No rushing, no forcing — only deepening into what the body already knows.</p>
+      </div>
+      <div class="fade-up">
+        <div class="w-12 h-12 rounded-2xl bg-sage/20 grid place-items-center mb-4">
+          <svg width="22" height="22" fill="none" stroke="#5F6E54" stroke-width="1.4"><path d="M11 2c4 5 6 8 6 11a6 6 0 11-12 0c0-3 2-6 6-11z"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-bark mb-2">Grounded in nature</h3>
+        <p class="text-stone text-sm leading-relaxed">Earth tones, plants, daylight, and timber. A space designed to soften the nervous system the moment you arrive.</p>
+      </div>
+      <div class="fade-up">
+        <div class="w-12 h-12 rounded-2xl bg-clay/25 grid place-items-center mb-4">
+          <svg width="22" height="22" fill="none" stroke="#9A5A3C" stroke-width="1.4"><path d="M4 18c3-6 11-6 14 0M11 3v4M6 6l2 2M16 6l-2 2"/></svg>
+        </div>
+        <h3 class="font-serif text-xl text-bark mb-2">For every body</h3>
+        <p class="text-stone text-sm leading-relaxed">From first-timers to seasoned practitioners. Every class is offered with options, props, and zero pressure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CLASSES / STYLES ===================== -->
+<section id="classes" class="py-28 lg:py-36 bg-cream relative overflow-hidden">
+  <div class="drift2 absolute top-20 -right-20 w-72 h-72 rounded-full bg-sage/15 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16">
+      <div>
+        <p class="reveal-mask mb-5"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Classes &amp; styles</span></p>
+        <h2 class="font-serif font-light text-bark text-4xl lg:text-5xl leading-tight max-w-xl">
+          <span class="reveal-mask"><span>Find the practice</span></span>
+          <span class="reveal-mask"><span class="italic text-sagedeep">that meets you today.</span></span>
+        </h2>
+      </div>
+      <p class="fade-up text-stone max-w-sm leading-relaxed">Six signature styles, woven through the week. Come for the flow, stay for the stillness.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
+      <!-- card -->
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-sandlite border border-bark/5">
+        <div class="img-sage relative aspect-[16/11] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1600&q=80" alt="Vinyasa flow" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <span class="absolute top-4 left-4 text-[10px] uppercase tracking-widest2 bg-cream/90 text-bark px-3 py-1 rounded-full">All levels</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-serif text-2xl text-bark mb-2">Vinyasa Flow</h3>
+          <p class="text-stone text-sm leading-relaxed mb-5">Breath-linked movement that builds gentle heat and fluid strength. A moving meditation.</p>
+          <div class="flex items-center justify-between text-xs text-stone uppercase tracking-wide">
+            <span>60 min</span><span class="text-terradeep">Warm room</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-sandlite border border-bark/5">
+        <div class="img-warm relative aspect-[16/11] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80" alt="Restorative yoga" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <span class="absolute top-4 left-4 text-[10px] uppercase tracking-widest2 bg-cream/90 text-bark px-3 py-1 rounded-full">Beginner</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-serif text-2xl text-bark mb-2">Restorative</h3>
+          <p class="text-stone text-sm leading-relaxed mb-5">Long, supported holds with bolsters and blankets. The art of doing absolutely nothing, well.</p>
+          <div class="flex items-center justify-between text-xs text-stone uppercase tracking-wide">
+            <span>75 min</span><span class="text-terradeep">Candlelit</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-sandlite border border-bark/5">
+        <div class="img-sage relative aspect-[16/11] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=1600&q=80" alt="Mat pilates" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <span class="absolute top-4 left-4 text-[10px] uppercase tracking-widest2 bg-cream/90 text-bark px-3 py-1 rounded-full">Intermediate</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-serif text-2xl text-bark mb-2">Mat Pilates</h3>
+          <p class="text-stone text-sm leading-relaxed mb-5">Precise, core-deep movement to build stability and length. Strength with softness.</p>
+          <div class="flex items-center justify-between text-xs text-stone uppercase tracking-wide">
+            <span>50 min</span><span class="text-terradeep">Studio</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-sandlite border border-bark/5">
+        <div class="img-warm relative aspect-[16/11] overflow-hidden grid place-items-center">
+          <div class="relative w-20 h-20 grid place-items-center"><span class="absolute inset-0 rounded-full bg-cream/40 breathe"></span><span class="relative w-6 h-6 rounded-full bg-cream"></span></div>
+        </div>
+        <div class="p-7">
+          <h3 class="font-serif text-2xl text-bark mb-2">Breath &amp; Stillness</h3>
+          <p class="text-stone text-sm leading-relaxed mb-5">Pranayama and guided meditation to settle the mind and widen the space between thoughts.</p>
+          <div class="flex items-center justify-between text-xs text-stone uppercase tracking-wide">
+            <span>45 min</span><span class="text-terradeep">Seated</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-sandlite border border-bark/5">
+        <div class="img-sage relative aspect-[16/11] overflow-hidden grid place-items-center">
+          <svg width="60" height="60" fill="none" stroke="#FBF8F2" stroke-width="1.2"><path d="M30 8c8 9 12 14 12 20a12 12 0 11-24 0c0-6 4-11 12-20z"/></svg>
+        </div>
+        <div class="p-7">
+          <h3 class="font-serif text-2xl text-bark mb-2">Yin Yoga</h3>
+          <p class="text-stone text-sm leading-relaxed mb-5">Deep, slow stretches held for minutes to reach connective tissue and quiet the noise.</p>
+          <div class="flex items-center justify-between text-xs text-stone uppercase tracking-wide">
+            <span>70 min</span><span class="text-terradeep">Dim</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="class-card group rounded-[2rem] overflow-hidden bg-bark text-cream border border-bark/5">
+        <div class="p-7 h-full flex flex-col justify-between min-h-[18rem]">
+          <div>
+            <span class="text-[10px] uppercase tracking-widest2 bg-cream/15 px-3 py-1 rounded-full">New</span>
+            <h3 class="font-serif text-2xl mt-5 mb-2">Sunrise Sadhana</h3>
+            <p class="text-cream/70 text-sm leading-relaxed">A 6am ritual of movement, breath, and intention to meet the day grounded. Tea included.</p>
+          </div>
+          <a href="#schedule" class="magnetic mt-6 inline-flex items-center gap-2 text-sm text-terra font-medium">
+            See times <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7.5h10M8 3l4.5 4.5L8 12"/></svg>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SCHEDULE ===================== -->
+<section id="schedule" class="py-28 lg:py-36 bg-sandlite">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="reveal-mask mb-5"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Weekly rhythm</span></p>
+      <h2 class="font-serif font-light text-bark text-4xl lg:text-5xl">
+        <span class="reveal-mask"><span>This week at Sundara</span></span>
+      </h2>
+    </div>
+
+    <div class="rounded-[2rem] bg-cream border border-bark/5 overflow-hidden shadow-xl shadow-bark/5">
+      <div class="divide-y divide-bark/8">
+        <!-- row -->
+        <div class="sched-row fade-up grid grid-cols-12 items-center gap-4 px-6 sm:px-8 py-6 hover:bg-sandlite transition-colors">
+          <div class="col-span-12 sm:col-span-2 text-sm font-semibold text-terradeep">06:00</div>
+          <div class="col-span-7 sm:col-span-5"><h4 class="font-serif text-lg text-bark">Sunrise Sadhana</h4><p class="text-xs text-stone uppercase tracking-wide">Mon · Wed · Fri</p></div>
+          <div class="col-span-3 sm:col-span-2 text-sm text-stone">Maya R.</div>
+          <div class="col-span-2 sm:col-span-3 text-right"><a href="#offer" class="magnetic text-xs uppercase tracking-wide text-bark border border-bark/20 rounded-full px-4 py-1.5 hover:bg-bark hover:text-cream transition-colors">Book</a></div>
+        </div>
+        <div class="sched-row fade-up grid grid-cols-12 items-center gap-4 px-6 sm:px-8 py-6 hover:bg-sandlite transition-colors">
+          <div class="col-span-12 sm:col-span-2 text-sm font-semibold text-terradeep">09:30</div>
+          <div class="col-span-7 sm:col-span-5"><h4 class="font-serif text-lg text-bark">Vinyasa Flow</h4><p class="text-xs text-stone uppercase tracking-wide">Daily</p></div>
+          <div class="col-span-3 sm:col-span-2 text-sm text-stone">Theo L.</div>
+          <div class="col-span-2 sm:col-span-3 text-right"><a href="#offer" class="magnetic text-xs uppercase tracking-wide text-bark border border-bark/20 rounded-full px-4 py-1.5 hover:bg-bark hover:text-cream transition-colors">Book</a></div>
+        </div>
+        <div class="sched-row fade-up grid grid-cols-12 items-center gap-4 px-6 sm:px-8 py-6 hover:bg-sandlite transition-colors">
+          <div class="col-span-12 sm:col-span-2 text-sm font-semibold text-terradeep">12:15</div>
+          <div class="col-span-7 sm:col-span-5"><h4 class="font-serif text-lg text-bark">Mat Pilates</h4><p class="text-xs text-stone uppercase tracking-wide">Tue · Thu</p></div>
+          <div class="col-span-3 sm:col-span-2 text-sm text-stone">Ines K.</div>
+          <div class="col-span-2 sm:col-span-3 text-right"><a href="#offer" class="magnetic text-xs uppercase tracking-wide text-bark border border-bark/20 rounded-full px-4 py-1.5 hover:bg-bark hover:text-cream transition-colors">Book</a></div>
+        </div>
+        <div class="sched-row fade-up grid grid-cols-12 items-center gap-4 px-6 sm:px-8 py-6 hover:bg-sandlite transition-colors">
+          <div class="col-span-12 sm:col-span-2 text-sm font-semibold text-terradeep">17:45</div>
+          <div class="col-span-7 sm:col-span-5"><h4 class="font-serif text-lg text-bark">Yin Yoga</h4><p class="text-xs text-stone uppercase tracking-wide">Mon · Wed</p></div>
+          <div class="col-span-3 sm:col-span-2 text-sm text-stone">Maya R.</div>
+          <div class="col-span-2 sm:col-span-3 text-right"><a href="#offer" class="magnetic text-xs uppercase tracking-wide text-bark border border-bark/20 rounded-full px-4 py-1.5 hover:bg-bark hover:text-cream transition-colors">Book</a></div>
+        </div>
+        <div class="sched-row fade-up grid grid-cols-12 items-center gap-4 px-6 sm:px-8 py-6 hover:bg-sandlite transition-colors">
+          <div class="col-span-12 sm:col-span-2 text-sm font-semibold text-terradeep">19:30</div>
+          <div class="col-span-7 sm:col-span-5"><h4 class="font-serif text-lg text-bark">Restorative &amp; Breath</h4><p class="text-xs text-stone uppercase tracking-wide">Fri · Sun</p></div>
+          <div class="col-span-3 sm:col-span-2 text-sm text-stone">Theo L.</div>
+          <div class="col-span-2 sm:col-span-3 text-right"><a href="#offer" class="magnetic text-xs uppercase tracking-wide text-bark border border-bark/20 rounded-full px-4 py-1.5 hover:bg-bark hover:text-cream transition-colors">Book</a></div>
+        </div>
+      </div>
+    </div>
+    <p class="fade-up text-center text-stone text-sm mt-8">Full timetable in the studio app — over 38 classes weekly.</p>
+  </div>
+</section>
+
+<!-- ===================== TEACHERS ===================== -->
+<section id="teachers" class="py-28 lg:py-36 bg-cream relative overflow-hidden">
+  <div class="drift absolute -bottom-16 -left-16 w-80 h-80 rounded-full bg-terra/10 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center mb-16">
+      <p class="reveal-mask mb-5"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">The teachers</span></p>
+      <h2 class="font-serif font-light text-bark text-4xl lg:text-5xl">
+        <span class="reveal-mask"><span>Guides, not gurus</span></span>
+      </h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="fade-up group">
+        <div class="img-warm relative rounded-[2rem] overflow-hidden aspect-[4/5] mb-5">
+          <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=1600&q=80" alt="Maya" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-serif text-2xl text-bark">Maya Rahimi</h3>
+        <p class="text-terradeep text-sm uppercase tracking-wide mb-2">Founder · Yin &amp; Sadhana</p>
+        <p class="text-stone text-sm leading-relaxed">500-hr trained in the himalayan tradition. Maya teaches the pause between breaths.</p>
+      </div>
+      <div class="fade-up group">
+        <div class="img-sage relative rounded-[2rem] overflow-hidden aspect-[4/5] mb-5">
+          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1600&q=80" alt="Theo" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-serif text-2xl text-bark">Theo Laurent</h3>
+        <p class="text-terradeep text-sm uppercase tracking-wide mb-2">Vinyasa &amp; Breathwork</p>
+        <p class="text-stone text-sm leading-relaxed">A dancer turned yogi, Theo brings fluid, musical sequencing and a contagious calm.</p>
+      </div>
+      <div class="fade-up group">
+        <div class="img-warm relative rounded-[2rem] overflow-hidden aspect-[4/5] mb-5">
+          <img src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=1600&q=80" alt="Ines" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-serif text-2xl text-bark">Ines Kovač</h3>
+        <p class="text-terradeep text-sm uppercase tracking-wide mb-2">Pilates &amp; Mobility</p>
+        <p class="text-stone text-sm leading-relaxed">Precise and warm, Ines helps you find strength you didn't know your body was holding.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT / SPACE ===================== -->
+<section id="space" class="py-28 lg:py-36 bg-bark text-cream relative overflow-hidden">
+  <div class="drift2 absolute top-10 right-10 w-72 h-72 rounded-full bg-terra/20 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center relative z-10">
+    <div class="relative">
+      <div class="img-sage rounded-[2.5rem] overflow-hidden aspect-[5/6]">
+        <img data-parallax src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?auto=format&fit=crop&w=1600&q=80" alt="The Sundara space" loading="lazy" onerror="this.style.display='none'" class="w-full h-[115%] object-cover -mt-[7%]" />
+      </div>
+      <div class="absolute -top-6 -right-6 bg-cream text-bark rounded-3xl p-5 shadow-xl">
+        <p class="font-serif text-3xl leading-none">7yrs</p>
+        <p class="text-xs uppercase tracking-wide text-stone mt-1">Holding space</p>
+      </div>
+    </div>
+    <div>
+      <p class="reveal-mask mb-6"><span class="text-xs tracking-widest2 uppercase text-terra font-semibold">The space</span></p>
+      <h2 class="font-serif font-light text-4xl lg:text-5xl leading-tight">
+        <span class="reveal-mask"><span>A light-filled room</span></span>
+        <span class="reveal-mask"><span class="italic text-terra">that exhales with you.</span></span>
+      </h2>
+      <p class="fade-up mt-8 text-cream/70 leading-relaxed max-w-lg">
+        Reclaimed oak floors, hanging plants, linen drapes, and tall north windows. We built Sundara as an antidote to the rush — somewhere to leave your phone, your shoes, and your striving at the door.
+      </p>
+      <ul class="fade-up mt-8 space-y-4">
+        <li class="flex items-center gap-4 text-cream/80"><span class="w-2 h-2 rounded-full bg-terra"></span> Heated hardwood &amp; natural light</li>
+        <li class="flex items-center gap-4 text-cream/80"><span class="w-2 h-2 rounded-full bg-sage"></span> Props, mats &amp; tea provided</li>
+        <li class="flex items-center gap-4 text-cream/80"><span class="w-2 h-2 rounded-full bg-clay"></span> Showers, lockers &amp; a quiet garden</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-28 lg:py-36 bg-sandlite">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal-mask mb-6"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">In their words</span></p>
+    <blockquote class="fade-up font-serif font-light text-bark text-2xl sm:text-3xl lg:text-4xl leading-relaxed italic">
+      &ldquo;I came for the stretch and stayed for the silence. Sundara is the one hour each week where I finally hear myself think.&rdquo;
+    </blockquote>
+    <div class="fade-up mt-8 flex items-center justify-center gap-3 text-stone">
+      <span class="w-10 h-10 rounded-full img-warm"></span>
+      <div class="text-left"><p class="font-medium text-bark">Amara Sienna</p><p class="text-xs uppercase tracking-wide">Member · 2 years</p></div>
+    </div>
+
+    <div class="mt-16 grid sm:grid-cols-3 gap-6 text-left">
+      <div class="fade-up bg-cream rounded-3xl p-7 border border-bark/5">
+        <p class="text-stone text-sm leading-relaxed mb-5">&ldquo;The restorative classes undid years of tension in my shoulders. Truly healing.&rdquo;</p>
+        <p class="text-sm font-medium text-bark">— Daniel O.</p>
+      </div>
+      <div class="fade-up bg-cream rounded-3xl p-7 border border-bark/5">
+        <p class="text-stone text-sm leading-relaxed mb-5">&ldquo;As a total beginner I felt zero pressure. The teachers meet you exactly where you are.&rdquo;</p>
+        <p class="text-sm font-medium text-bark">— Priya N.</p>
+      </div>
+      <div class="fade-up bg-cream rounded-3xl p-7 border border-bark/5">
+        <p class="text-stone text-sm leading-relaxed mb-5">&ldquo;Sunrise Sadhana changed my whole relationship with mornings. I'm hooked.&rdquo;</p>
+        <p class="text-sm font-medium text-bark">— Marco V.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MEMBERSHIP / PRICING ===================== -->
+<section id="pricing" class="py-28 lg:py-36 bg-cream relative overflow-hidden">
+  <div class="drift absolute -top-10 right-1/4 w-72 h-72 rounded-full bg-sage/15 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center mb-16">
+      <p class="reveal-mask mb-5"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Membership</span></p>
+      <h2 class="font-serif font-light text-bark text-4xl lg:text-5xl">
+        <span class="reveal-mask"><span>Practice on your terms</span></span>
+      </h2>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-7 items-stretch">
+      <!-- drop in -->
+      <div class="fade-up rounded-[2rem] bg-sandlite border border-bark/5 p-9 flex flex-col">
+        <h3 class="font-serif text-2xl text-bark">Drop-in</h3>
+        <p class="text-stone text-sm mt-2 mb-6">Come when the mood calls.</p>
+        <p class="font-serif text-5xl text-bark">$22<span class="text-base text-stone font-sans"> / class</span></p>
+        <ul class="mt-8 space-y-3 text-sm text-stone flex-1">
+          <li class="flex gap-3"><span class="text-sage">✦</span> Any single class</li>
+          <li class="flex gap-3"><span class="text-sage">✦</span> Mat &amp; props included</li>
+          <li class="flex gap-3"><span class="text-sage">✦</span> No commitment</li>
+        </ul>
+        <a href="#offer" class="magnetic mt-8 text-center rounded-full border border-bark/25 py-3 text-sm font-medium text-bark hover:bg-bark hover:text-cream transition-colors">Choose drop-in</a>
+      </div>
+
+      <!-- unlimited (featured) -->
+      <div class="fade-up rounded-[2rem] bg-bark text-cream p-9 flex flex-col relative shadow-2xl shadow-bark/30 lg:-translate-y-3">
+        <span class="absolute top-6 right-6 text-[10px] uppercase tracking-widest2 bg-terra px-3 py-1 rounded-full">Most loved</span>
+        <h3 class="font-serif text-2xl">Unlimited</h3>
+        <p class="text-cream/60 text-sm mt-2 mb-6">For the dedicated practitioner.</p>
+        <p class="font-serif text-5xl">$148<span class="text-base text-cream/60 font-sans"> / month</span></p>
+        <ul class="mt-8 space-y-3 text-sm text-cream/80 flex-1">
+          <li class="flex gap-3"><span class="text-terra">✦</span> Unlimited classes</li>
+          <li class="flex gap-3"><span class="text-terra">✦</span> 2 guest passes monthly</li>
+          <li class="flex gap-3"><span class="text-terra">✦</span> Workshop discounts</li>
+          <li class="flex gap-3"><span class="text-terra">✦</span> Free mat storage</li>
+        </ul>
+        <a href="#offer" class="magnetic mt-8 text-center rounded-full bg-terra py-3 text-sm font-medium text-cream hover:bg-terradeep transition-colors">Begin unlimited</a>
+      </div>
+
+      <!-- 10 pack -->
+      <div class="fade-up rounded-[2rem] bg-sandlite border border-bark/5 p-9 flex flex-col">
+        <h3 class="font-serif text-2xl text-bark">10-Class Pack</h3>
+        <p class="text-stone text-sm mt-2 mb-6">Flexible &amp; shareable.</p>
+        <p class="font-serif text-5xl text-bark">$185<span class="text-base text-stone font-sans"> / pack</span></p>
+        <ul class="mt-8 space-y-3 text-sm text-stone flex-1">
+          <li class="flex gap-3"><span class="text-sage">✦</span> 10 classes, your pace</li>
+          <li class="flex gap-3"><span class="text-sage">✦</span> Valid 4 months</li>
+          <li class="flex gap-3"><span class="text-sage">✦</span> Share with a friend</li>
+        </ul>
+        <a href="#offer" class="magnetic mt-8 text-center rounded-full border border-bark/25 py-3 text-sm font-medium text-bark hover:bg-bark hover:text-cream transition-colors">Get the pack</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FIRST-CLASS OFFER ===================== -->
+<section id="offer" class="py-24 lg:py-32 bg-terra relative overflow-hidden">
+  <div class="drift absolute -top-16 -left-16 w-80 h-80 rounded-full bg-cream/15 blur-3xl"></div>
+  <div class="drift2 absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-bark/15 blur-3xl"></div>
+  <div class="max-w-3xl mx-auto px-6 text-center relative z-10 text-cream">
+    <span class="relative inline-grid place-items-center w-16 h-16 mb-8">
+      <span class="absolute inset-0 rounded-full bg-cream/25 breathe"></span>
+      <span class="relative w-5 h-5 rounded-full bg-cream"></span>
+    </span>
+    <h2 class="font-serif font-light text-4xl lg:text-6xl leading-tight">
+      <span class="reveal-mask"><span>Your first week</span></span>
+      <span class="reveal-mask"><span class="italic">is on the house.</span></span>
+    </h2>
+    <p class="fade-up mt-6 text-cream/85 text-lg max-w-xl mx-auto">Try any class, any time, for seven days — no card, no pressure. Just bring yourself and a willingness to slow down.</p>
+    <form class="fade-up mt-10 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="event.preventDefault(); this.reset(); this.querySelector('button').textContent='See you soon ✦';">
+      <input type="email" required placeholder="your@email.com" class="flex-1 rounded-full px-6 py-4 bg-cream/95 text-bark placeholder-stone/60 focus:outline-none focus:ring-2 focus:ring-bark/30" />
+      <button type="submit" class="magnetic rounded-full bg-bark text-cream px-8 py-4 text-sm font-medium hover:bg-terradeep transition-colors whitespace-nowrap">Claim free week</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-28 lg:py-36 bg-sandlite">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="reveal-mask mb-5"><span class="text-xs tracking-widest2 uppercase text-terradeep font-semibold">Questions</span></p>
+      <h2 class="font-serif font-light text-bark text-4xl lg:text-5xl">
+        <span class="reveal-mask"><span>Before you begin</span></span>
+      </h2>
+    </div>
+
+    <div class="divide-y divide-bark/10 border-y border-bark/10">
+      <div class="faq fade-up">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bark">I've never done yoga. Is that okay?</span>
+          <span class="faq-icon text-terradeep text-2xl transition-transform duration-500 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-stone leading-relaxed pb-6">Completely. Most of our community started exactly where you are. Choose an all-levels or beginner class, arrive ten minutes early, and a teacher will help you settle in.</p></div>
+      </div>
+      <div class="faq fade-up">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bark">What should I bring?</span>
+          <span class="faq-icon text-terradeep text-2xl transition-transform duration-500 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-stone leading-relaxed pb-6">Just comfortable clothes and a water bottle. Mats, blocks, bolsters, blankets, and herbal tea are all provided. We practice barefoot.</p></div>
+      </div>
+      <div class="faq fade-up">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bark">Do I need to book ahead?</span>
+          <span class="faq-icon text-terradeep text-2xl transition-transform duration-500 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-stone leading-relaxed pb-6">We recommend it — our rooms are intentionally small to keep the space calm. Reserve through the studio app or simply claim your free week above.</p></div>
+      </div>
+      <div class="faq fade-up">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bark">Can I pause my membership?</span>
+          <span class="faq-icon text-terradeep text-2xl transition-transform duration-500 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-stone leading-relaxed pb-6">Of course. Life has seasons. You can pause your unlimited membership for up to three months a year, no questions asked.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="py-28 lg:py-40 bg-cream text-center relative overflow-hidden">
+  <div class="drift absolute top-1/4 left-1/3 w-80 h-80 rounded-full bg-sage/10 blur-3xl"></div>
+  <div class="max-w-3xl mx-auto px-6 relative z-10">
+    <h2 class="font-serif font-light text-bark text-4xl sm:text-5xl lg:text-6xl leading-tight">
+      <span class="reveal-mask"><span>Come home to</span></span>
+      <span class="reveal-mask"><span class="italic text-terradeep">your breath.</span></span>
+    </h2>
+    <p class="fade-up mt-6 text-stone text-lg max-w-md mx-auto">The mat is waiting. So is a quieter, softer version of your day.</p>
+    <a href="#offer" class="magnetic fade-up mt-10 inline-flex items-center gap-2 rounded-full bg-terra text-cream px-9 py-4 text-sm font-medium hover:bg-terradeep transition-colors shadow-lg shadow-terra/25">
+      Book your first class
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8h12M9 3l5 5-5 5"/></svg>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-bark text-cream/80 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-12 pb-14 border-b border-cream/10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-3 mb-5">
+          <span class="relative w-9 h-9 grid place-items-center"><span class="absolute inset-0 rounded-full bg-terra/40 breathe"></span><span class="relative w-3 h-3 rounded-full bg-terra"></span></span>
+          <span class="font-serif text-2xl text-cream">Sundara</span>
+        </a>
+        <p class="max-w-sm leading-relaxed text-cream/60">A boutique yoga &amp; movement studio. Breathe deeper, move with intention, return to yourself.</p>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm uppercase tracking-wide">Studio</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#classes" class="nav-link hover:text-cream">Classes</a></li>
+          <li><a href="#schedule" class="nav-link hover:text-cream">Schedule</a></li>
+          <li><a href="#teachers" class="nav-link hover:text-cream">Teachers</a></li>
+          <li><a href="#pricing" class="nav-link hover:text-cream">Membership</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm uppercase tracking-wide">Visit</h4>
+        <ul class="space-y-2.5 text-sm text-cream/60">
+          <li>41 Willow Lane, Riverbend</li>
+          <li>Open daily · 6am – 9pm</li>
+          <li>hello@sundara.studio</li>
+          <li>+1 (555) 084 2200</li>
+        </ul>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
+      <p>© 2026 Sundara Studio. Crafted with breath.</p>
+      <div class="flex gap-6">
+        <a href="#" class="nav-link hover:text-cream">Instagram</a>
+        <a href="#" class="nav-link hover:text-cream">Newsletter</a>
+        <a href="#" class="nav-link hover:text-cream">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.classList.add('bg-cream/85','backdrop-blur','shadow-sm','shadow-bark/5');
+    else nav.classList.remove('bg-cream/85','backdrop-blur','shadow-sm','shadow-bark/5');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Mobile menu ---------- */
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => menu.classList.toggle('hidden'));
+  menu.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', () => menu.classList.add('hidden')));
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform = 'rotate(135deg)'; }
+    });
+  });
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (!reduce && window.matchMedia('(min-width: 901px)').matches) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let rx = 0, ry = 0, x = 0, y = 0;
+    window.addEventListener('mousemove', e => {
+      x = e.clientX; y = e.clientY;
+      dot.style.left = x + 'px'; dot.style.top = y + 'px';
+    });
+    const ringLoop = () => {
+      rx += (x - rx) * 0.16; ry += (y - ry) * 0.16;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(ringLoop);
+    };
+    ringLoop();
+
+    document.querySelectorAll('a, button, .class-card, .magnetic').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+
+    /* magnetic pull */
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - (r.left + r.width / 2);
+        const my = e.clientY - (r.top + r.height / 2);
+        el.style.transform = `translate(${mx * 0.25}px, ${my * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reduce) {
+      gsap.set('.reveal-mask > span, .fade-up', { clearProps: 'all', opacity: 1, y: 0 });
+      runCounts();
+    } else {
+      /* masked serif reveals */
+      gsap.utils.toArray('.reveal-mask').forEach(mask => {
+        const span = mask.querySelector('span');
+        gsap.to(span, {
+          y: '0%', duration: 1.1, ease: 'power3.out',
+          scrollTrigger: { trigger: mask, start: 'top 88%' }
+        });
+      });
+
+      /* fade-ups */
+      gsap.utils.toArray('.fade-up').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 1, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 90%' }
+        });
+      });
+
+      /* schedule rows stagger */
+      ScrollTrigger.batch('.sched-row', {
+        start: 'top 92%',
+        onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.08, duration: 0.8, ease: 'power2.out' })
+      });
+
+      /* container parallax on calm imagery */
+      gsap.utils.toArray('[data-parallax]').forEach(img => {
+        gsap.fromTo(img, { yPercent: -6 }, {
+          yPercent: 6, ease: 'none',
+          scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      ScrollTrigger.create({ trigger: '.hero', start: 'top top' });
+      runCounts();
+    }
+  } else {
+    document.querySelectorAll('.reveal-mask > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('.fade-up').forEach(s => { s.style.opacity = 1; s.style.transform = 'none'; });
+    runCounts();
+  }
+
+  /* ---------- Count-ups ---------- */
+  function runCounts() {
+    document.querySelectorAll('.count').forEach(el => {
+      const to = parseInt(el.dataset.to, 10);
+      const suffix = el.dataset.suffix || '';
+      const start = () => {
+        const t0 = performance.now(), dur = 1800;
+        const tick = now => {
+          const p = Math.min((now - t0) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(to * eased).toLocaleString() + suffix;
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      };
+      if (window.gsap && window.ScrollTrigger && !reduce) {
+        ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: start });
+      } else { start(); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

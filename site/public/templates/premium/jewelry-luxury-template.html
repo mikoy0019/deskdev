@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aurélise — Fine Jewellery Maison · Haute Joaillerie Since 1908</title>
+<meta name="description" content="Aurélise is a Parisian fine-jewellery maison. Hand-set diamonds, ethically sourced gold, and one-of-a-kind bespoke commissions crafted by master artisans." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: refined serif + fine sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0a0807',   // near-black
+          coal:   '#100d0b',
+          shadow: '#16110d',
+          gold:   '#c9a24b',   // primary gold accent
+          champ:  '#e7cf9b',   // champagne highlight
+          rose:   '#caa37e',   // soft rose-gold
+          stone:  '#9a9087',   // muted stone text
+          ivory:  '#f4efe6',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          sans:  ['"Jost"', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          maison: '0.42em',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { --gold:#c9a24b; --champ:#e7cf9b; }
+  html, body { background:#0a0807; color:#f4efe6; }
+  body { font-family:'Jost', sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; cursor:none; }
+
+  ::selection { background:rgba(201,162,75,0.32); color:#fff; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position:fixed; top:0; left:0; border-radius:9999px; pointer-events:none;
+    z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:difference;
+  }
+  .cursor-dot  { width:6px; height:6px; background:var(--champ); }
+  .cursor-ring { width:40px; height:40px; border:1px solid rgba(231,207,155,0.55); transition:width .35s ease, height .35s ease, border-color .35s ease, background .35s ease; }
+  .cursor-ring.grow { width:74px; height:74px; border-color:rgba(201,162,75,0.9); background:rgba(201,162,75,0.06); }
+  @media (max-width:1024px){ body{cursor:auto;} .cursor-dot,.cursor-ring{display:none;} }
+
+  /* Shimmer / sparkle sweep on text */
+  .shimmer-text {
+    background:linear-gradient(100deg,
+      #b89a55 0%, #b89a55 36%,
+      #fff7e2 48%, #f2dca6 52%,
+      #b89a55 64%, #b89a55 100%);
+    background-size:250% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+    animation:shimmerSweep 6.5s linear infinite;
+  }
+  @keyframes shimmerSweep { 0%{background-position:180% 0;} 100%{background-position:-80% 0;} }
+
+  /* Sparkle particles */
+  .sparkle {
+    position:absolute; width:4px; height:4px; pointer-events:none;
+    background:radial-gradient(circle, #fff 0%, var(--champ) 40%, transparent 70%);
+    border-radius:9999px; opacity:0;
+    animation:twinkle 3.4s ease-in-out infinite;
+  }
+  .sparkle::before, .sparkle::after {
+    content:''; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:linear-gradient(transparent, #fff, transparent);
+  }
+  .sparkle::before { width:1px; height:14px; }
+  .sparkle::after  { width:14px; height:1px; background:linear-gradient(90deg,transparent,#fff,transparent); }
+  @keyframes twinkle {
+    0%,100%{opacity:0; transform:scale(0.2) rotate(0deg);}
+    45%{opacity:1; transform:scale(1) rotate(35deg);}
+    60%{opacity:.55; transform:scale(.75) rotate(60deg);}
+  }
+
+  /* Masked serif reveal lines */
+  .reveal-line { display:block; overflow:hidden; }
+  .reveal-line > span { display:block; transform:translateY(110%); }
+
+  /* Clip-path image reveal */
+  .clip-reveal { clip-path:inset(0 0 100% 0); }
+
+  /* Hairline gold underline link */
+  .gold-link { position:relative; }
+  .gold-link::after {
+    content:''; position:absolute; left:0; bottom:-4px; width:0; height:1px;
+    background:linear-gradient(90deg,var(--gold),var(--champ)); transition:width .5s cubic-bezier(.16,1,.3,1);
+  }
+  .gold-link:hover::after { width:100%; }
+
+  /* Product zoom container */
+  .zoom-frame img { transition:transform 1.4s cubic-bezier(.16,1,.3,1), filter 1s ease; }
+  .zoom-frame:hover img { transform:scale(1.08); filter:saturate(1.1) brightness(1.05); }
+
+  /* Thin gold rule */
+  .rule { height:1px; background:linear-gradient(90deg,transparent,rgba(201,162,75,.5),transparent); }
+
+  /* FAQ accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .6s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-body { max-height:280px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+  .faq-plus { transition:transform .5s cubic-bezier(.16,1,.3,1); }
+
+  .grain::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .vignette::after {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 30%, transparent 40%, rgba(0,0,0,.55) 100%);
+  }
+
+  .nav-scrolled { background:rgba(10,8,7,0.82); backdrop-filter:blur(14px); border-color:rgba(201,162,75,.14); }
+
+  /* Marquee for lookbook band */
+  .marquee-track { display:flex; width:max-content; animation:marquee 38s linear infinite; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+    .reveal-line > span { transform:none !important; }
+    .clip-reveal { clip-path:none !important; }
+    .marquee-track { animation:none !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 border-b border-transparent transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
+    <a href="#top" class="font-serif text-2xl tracking-[0.3em] text-ivory" data-hover>
+      AURÉLISE
+    </a>
+    <ul class="hidden lg:flex items-center gap-10 text-[11px] tracking-[0.28em] uppercase text-stone font-sans">
+      <li><a href="#collections" class="gold-link hover:text-ivory transition" data-hover>Collections</a></li>
+      <li><a href="#atelier" class="gold-link hover:text-ivory transition" data-hover>Atelier</a></li>
+      <li><a href="#materials" class="gold-link hover:text-ivory transition" data-hover>Materials</a></li>
+      <li><a href="#bespoke" class="gold-link hover:text-ivory transition" data-hover>Bespoke</a></li>
+      <li><a href="#press" class="gold-link hover:text-ivory transition" data-hover>Press</a></li>
+    </ul>
+    <a href="#appointments" data-hover data-magnetic
+       class="hidden sm:inline-flex items-center gap-2 text-[11px] tracking-[0.24em] uppercase border border-gold/40 text-champ px-6 py-3 rounded-full hover:bg-gold/10 hover:border-gold transition-all duration-500">
+      <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span> Book a Viewing
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center overflow-hidden vignette" id="hero">
+  <!-- macro product image -->
+  <div class="absolute inset-0 z-0 bg-gradient-to-b from-shadow via-ink to-ink">
+    <div class="absolute inset-0 zoom-frame">
+      <img id="heroImg" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=80"
+           alt="Macro of a diamond solitaire ring" loading="eager"
+           class="w-full h-full object-cover opacity-55 clip-reveal"
+           onerror="this.style.display='none'" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/55 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40"></div>
+  </div>
+
+  <!-- sparkle field -->
+  <div id="sparkleField" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+  <div class="relative z-20 max-w-7xl mx-auto px-6 lg:px-10 w-full pt-24">
+    <p class="reveal-line text-[11px] sm:text-xs tracking-maison uppercase text-gold mb-8">
+      <span>Paris · Haute Joaillerie · Est. 1908</span>
+    </p>
+
+    <h1 class="font-serif font-light leading-[0.92] text-ivory text-[16vw] sm:text-[13vw] lg:text-[10.5rem]">
+      <span class="reveal-line"><span>The Light</span></span>
+      <span class="reveal-line"><span class="shimmer-text italic font-normal">Eternal</span></span>
+    </h1>
+
+    <div class="mt-10 max-w-md">
+      <p class="reveal-line text-stone text-base sm:text-lg font-light leading-relaxed">
+        <span>A century of master craftsmanship, distilled into singular pieces —
+        hand-set diamonds and ethically sourced gold, made to outlive us all.</span>
+      </p>
+    </div>
+
+    <div class="mt-12 flex flex-wrap items-center gap-6 reveal-line">
+      <span class="contents">
+        <a href="#collections" data-hover data-magnetic
+           class="group inline-flex items-center gap-3 bg-gradient-to-r from-gold to-champ text-ink text-[11px] tracking-[0.26em] uppercase px-9 py-4 rounded-full font-medium hover:shadow-[0_0_40px_-8px_rgba(201,162,75,0.7)] transition-all duration-500">
+          Explore Collections
+          <span class="group-hover:translate-x-1 transition-transform">→</span>
+        </a>
+        <a href="#atelier" data-hover class="text-[11px] tracking-[0.26em] uppercase text-stone gold-link hover:text-ivory transition">
+          Our Atelier
+        </a>
+      </span>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3 text-stone">
+    <span class="text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+    <span class="w-px h-12 bg-gradient-to-b from-gold to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ COLLECTION INTRO + COUNTERS ============ -->
+<section class="relative py-28 lg:py-40 border-t border-gold/10" id="intro">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-12 gap-12 items-end">
+      <div class="lg:col-span-7">
+        <p class="text-[11px] tracking-maison uppercase text-gold mb-8" data-reveal>The Maison</p>
+        <h2 class="font-serif font-light text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ivory" data-reveal>
+          Jewellery is memory made permanent —
+          <span class="italic text-champ">a quiet, radiant inheritance.</span>
+        </h2>
+      </div>
+      <div class="lg:col-span-5 lg:pl-10 lg:border-l border-gold/15">
+        <p class="text-stone leading-relaxed font-light" data-reveal>
+          From our atelier on the Rue de la Lumière, every Aurélise piece begins as a sketch
+          and ends as an heirloom. We work slowly, by hand, in service of a single belief:
+          that beauty worth keeping cannot be rushed.
+        </p>
+      </div>
+    </div>
+
+    <!-- counters -->
+    <div class="mt-20 grid grid-cols-2 lg:grid-cols-4 gap-px bg-gold/10 rounded-2xl overflow-hidden">
+      <div class="bg-coal p-8 lg:p-10 text-center" data-reveal>
+        <div class="font-serif text-5xl lg:text-6xl text-champ"><span class="count" data-to="117">0</span></div>
+        <p class="mt-3 text-[10px] tracking-[0.26em] uppercase text-stone">Years of Mastery</p>
+      </div>
+      <div class="bg-coal p-8 lg:p-10 text-center" data-reveal>
+        <div class="font-serif text-5xl lg:text-6xl text-champ"><span class="count" data-to="42">0</span></div>
+        <p class="mt-3 text-[10px] tracking-[0.26em] uppercase text-stone">Master Artisans</p>
+      </div>
+      <div class="bg-coal p-8 lg:p-10 text-center" data-reveal>
+        <div class="font-serif text-5xl lg:text-6xl text-champ"><span class="count" data-to="9">0</span><span class="text-gold">k</span></div>
+        <p class="mt-3 text-[10px] tracking-[0.26em] uppercase text-stone">Stones Hand-Set</p>
+      </div>
+      <div class="bg-coal p-8 lg:p-10 text-center" data-reveal>
+        <div class="font-serif text-5xl lg:text-6xl text-champ"><span class="count" data-to="100">0</span><span class="text-gold">%</span></div>
+        <p class="mt-3 text-[10px] tracking-[0.26em] uppercase text-stone">Traceable Gold</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURED PIECES GRID ============ -->
+<section class="relative py-24 lg:py-32" id="collections">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-16">
+      <div>
+        <p class="text-[11px] tracking-maison uppercase text-gold mb-5" data-reveal>Featured Pieces</p>
+        <h2 class="font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ivory" data-reveal>
+          The Signature <span class="italic text-champ">Collection</span>
+        </h2>
+      </div>
+      <a href="#" data-hover class="text-[11px] tracking-[0.26em] uppercase text-stone gold-link hover:text-ivory transition">
+        View All 84 Pieces →
+      </a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <!-- card 1 (tall) -->
+      <article class="group sm:row-span-2 relative rounded-2xl overflow-hidden bg-shadow zoom-frame" data-reveal data-hover>
+        <div class="absolute inset-0 bg-gradient-to-b from-coal to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1600&q=80"
+             alt="Solitaire diamond ring" loading="lazy"
+             class="w-full h-full object-cover min-h-[26rem] sm:min-h-[42rem] opacity-90"
+             onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+        <div class="absolute inset-x-0 bottom-0 p-8">
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Solitaire · 2.4ct</p>
+          <h3 class="font-serif text-3xl text-ivory">Lumière Solitaire</h3>
+          <p class="mt-2 text-stone text-sm font-light">A flawless brilliant-cut diamond, suspended in 18k.</p>
+          <p class="mt-4 font-serif text-2xl text-champ">€ 24,800</p>
+        </div>
+      </article>
+
+      <!-- card 2 -->
+      <article class="group relative rounded-2xl overflow-hidden bg-shadow zoom-frame" data-reveal data-hover>
+        <div class="absolute inset-0 bg-gradient-to-b from-coal to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1600&q=80"
+             alt="Gold drop earrings" loading="lazy"
+             class="w-full h-72 object-cover opacity-90" onerror="this.style.display='none'" />
+        <div class="p-7">
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Earrings · 18k Gold</p>
+          <h3 class="font-serif text-2xl text-ivory">Cascade de Soleil</h3>
+          <p class="mt-3 font-serif text-xl text-champ">€ 7,950</p>
+        </div>
+      </article>
+
+      <!-- card 3 -->
+      <article class="group relative rounded-2xl overflow-hidden bg-shadow zoom-frame" data-reveal data-hover>
+        <div class="absolute inset-0 bg-gradient-to-b from-coal to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1600&q=80"
+             alt="Diamond tennis bracelet" loading="lazy"
+             class="w-full h-72 object-cover opacity-90" onerror="this.style.display='none'" />
+        <div class="p-7">
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Bracelet · Pavé</p>
+          <h3 class="font-serif text-2xl text-ivory">Rivière Éternelle</h3>
+          <p class="mt-3 font-serif text-xl text-champ">€ 18,400</p>
+        </div>
+      </article>
+
+      <!-- card 4 (wide) -->
+      <article class="group sm:col-span-2 relative rounded-2xl overflow-hidden bg-shadow zoom-frame" data-reveal data-hover>
+        <div class="absolute inset-0 bg-gradient-to-r from-coal to-ink"></div>
+        <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=1600&q=80"
+             alt="Sapphire and diamond ring" loading="lazy"
+             class="w-full h-72 object-cover opacity-80" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/30 to-transparent"></div>
+        <div class="absolute inset-y-0 left-0 flex flex-col justify-center p-8 max-w-sm">
+          <p class="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Maison Exclusive · One of One</p>
+          <h3 class="font-serif text-3xl text-ivory">Nuit de Saphir</h3>
+          <p class="mt-2 text-stone text-sm font-light">A Ceylon sapphire framed by 1.6ct of pavé brilliance.</p>
+          <p class="mt-4 font-serif text-2xl text-champ">On Request</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ATELIER / CRAFTSMANSHIP STORY (parallax) ============ -->
+<section class="relative py-28 lg:py-44 overflow-hidden" id="atelier">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <!-- parallax image -->
+      <div class="relative rounded-3xl overflow-hidden bg-shadow vignette" data-reveal>
+        <div class="parallax-wrap">
+          <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1600&q=80"
+               alt="Artisan at the jeweller's bench" loading="lazy"
+               class="parallax-img w-full h-[34rem] object-cover scale-110 opacity-80"
+               onerror="this.style.display='none'" />
+        </div>
+        <div class="absolute bottom-6 left-6 right-6 flex items-center justify-between text-[10px] tracking-[0.26em] uppercase text-champ">
+          <span>Rue de la Lumière · Atelier No. 1</span>
+          <span>Paris</span>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[11px] tracking-maison uppercase text-gold mb-8" data-reveal>The Atelier</p>
+        <h2 class="font-serif font-light text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ivory mb-8" data-reveal>
+          Forty hands. <span class="italic text-champ">One obsession.</span>
+        </h2>
+        <p class="text-stone leading-relaxed font-light mb-6" data-reveal>
+          Behind every Aurélise piece is a bench, a loupe, and an artisan who has spent decades
+          perfecting a single craft. Setters, polishers, lapidaries — each touches the metal in turn,
+          a silent relay passed down through four generations.
+        </p>
+        <p class="text-stone leading-relaxed font-light mb-10" data-reveal>
+          A single bespoke ring can take 300 hours. We would not have it any other way.
+        </p>
+
+        <div class="space-y-px bg-gold/10 rounded-xl overflow-hidden">
+          <div class="bg-coal p-6 flex items-center gap-6" data-reveal>
+            <span class="font-serif text-3xl text-gold">01</span>
+            <div><h4 class="text-ivory font-medium">Sketch & Wax</h4><p class="text-stone text-sm font-light">Hand-drawn, then carved in wax.</p></div>
+          </div>
+          <div class="bg-coal p-6 flex items-center gap-6" data-reveal>
+            <span class="font-serif text-3xl text-gold">02</span>
+            <div><h4 class="text-ivory font-medium">Cast & Set</h4><p class="text-stone text-sm font-light">Gold poured, each stone hand-set under the loupe.</p></div>
+          </div>
+          <div class="bg-coal p-6 flex items-center gap-6" data-reveal>
+            <span class="font-serif text-3xl text-gold">03</span>
+            <div><h4 class="text-ivory font-medium">Polish & Inspect</h4><p class="text-stone text-sm font-light">Mirror-finished, certified, then signed.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATERIALS ============ -->
+<section class="relative py-24 lg:py-32 border-t border-gold/10 bg-coal/40" id="materials">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="max-w-2xl mb-16">
+      <p class="text-[11px] tracking-maison uppercase text-gold mb-6" data-reveal>The Materials</p>
+      <h2 class="font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ivory" data-reveal>
+        Sourced with <span class="italic text-champ">conscience.</span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+      <div class="rounded-2xl border border-gold/15 bg-ink/60 p-9 hover:border-gold/40 transition-all duration-500" data-reveal data-hover>
+        <div class="font-serif text-2xl text-champ mb-1">Au</div>
+        <h3 class="font-serif text-3xl text-ivory mb-4">18k Gold</h3>
+        <p class="text-stone font-light leading-relaxed text-sm">
+          Fully traceable, recycled and Fairmined gold, refined in-house to our signature warm hue.
+        </p>
+        <div class="rule mt-7 mb-5"></div>
+        <p class="text-[10px] tracking-[0.26em] uppercase text-gold">100% Traceable Origin</p>
+      </div>
+
+      <div class="rounded-2xl border border-gold/15 bg-ink/60 p-9 hover:border-gold/40 transition-all duration-500" data-reveal data-hover>
+        <div class="font-serif text-2xl text-champ mb-1">C</div>
+        <h3 class="font-serif text-3xl text-ivory mb-4">Diamonds</h3>
+        <p class="text-stone font-light leading-relaxed text-sm">
+          GIA-certified, conflict-free stones selected for fire and clarity, hand-graded by our gemmologists.
+        </p>
+        <div class="rule mt-7 mb-5"></div>
+        <p class="text-[10px] tracking-[0.26em] uppercase text-gold">GIA Certified · D–F Colour</p>
+      </div>
+
+      <div class="rounded-2xl border border-gold/15 bg-ink/60 p-9 hover:border-gold/40 transition-all duration-500" data-reveal data-hover>
+        <div class="font-serif text-2xl text-champ mb-1">Pt</div>
+        <h3 class="font-serif text-3xl text-ivory mb-4">Platinum</h3>
+        <p class="text-stone font-light leading-relaxed text-sm">
+          Dense, enduring, and naturally white — the quiet strength behind our most permanent settings.
+        </p>
+        <div class="rule mt-7 mb-5"></div>
+        <p class="text-[10px] tracking-[0.26em] uppercase text-gold">950 Purity · Hypoallergenic</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOOKBOOK BAND (marquee) ============ -->
+<section class="relative py-16 border-y border-gold/10 overflow-hidden" id="lookbook">
+  <div class="marquee-track">
+    <div class="flex items-center gap-8 pr-8">
+      <span class="font-serif italic text-5xl lg:text-7xl text-ivory/90">Lumière</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif text-5xl lg:text-7xl text-champ/70">Éternelle</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif italic text-5xl lg:text-7xl text-ivory/90">Saphir</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif text-5xl lg:text-7xl text-champ/70">Bespoke</span>
+      <span class="text-gold text-3xl">✦</span>
+    </div>
+    <div class="flex items-center gap-8 pr-8" aria-hidden="true">
+      <span class="font-serif italic text-5xl lg:text-7xl text-ivory/90">Lumière</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif text-5xl lg:text-7xl text-champ/70">Éternelle</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif italic text-5xl lg:text-7xl text-ivory/90">Saphir</span>
+      <span class="text-gold text-3xl">✦</span>
+      <span class="font-serif text-5xl lg:text-7xl text-champ/70">Bespoke</span>
+      <span class="text-gold text-3xl">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / PRESS ============ -->
+<section class="relative py-28 lg:py-36" id="press">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid lg:grid-cols-12 gap-16">
+      <div class="lg:col-span-4">
+        <p class="text-[11px] tracking-maison uppercase text-gold mb-6" data-reveal>In Their Words</p>
+        <h2 class="font-serif font-light text-4xl lg:text-5xl text-ivory leading-tight" data-reveal>
+          The world's most <span class="italic text-champ">discerning collectors.</span>
+        </h2>
+        <div class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 text-stone text-xs tracking-[0.26em] uppercase" data-reveal>
+          <span>VOGUE</span><span>FT · How To Spend It</span><span>Robb Report</span><span>Tatler</span>
+        </div>
+      </div>
+
+      <div class="lg:col-span-8 grid sm:grid-cols-2 gap-6">
+        <figure class="rounded-2xl border border-gold/15 bg-coal p-8" data-reveal data-hover>
+          <div class="text-gold mb-5">★★★★★</div>
+          <blockquote class="font-serif text-2xl text-ivory leading-snug font-light">
+            "An Aurélise commission is the closest thing to commissioning light itself."
+          </blockquote>
+          <figcaption class="mt-6 text-stone text-sm">— Élise V., Private Collector, Geneva</figcaption>
+        </figure>
+        <figure class="rounded-2xl border border-gold/15 bg-coal p-8" data-reveal data-hover>
+          <div class="text-gold mb-5">★★★★★</div>
+          <blockquote class="font-serif text-2xl text-ivory leading-snug font-light">
+            "The detail is almost unbearable. I have never seen a setting this precise."
+          </blockquote>
+          <figcaption class="mt-6 text-stone text-sm">— Robb Report, Jewellery Annual</figcaption>
+        </figure>
+        <figure class="rounded-2xl border border-gold/15 bg-coal p-8 sm:col-span-2" data-reveal data-hover>
+          <div class="text-gold mb-5">★★★★★</div>
+          <blockquote class="font-serif text-3xl text-ivory leading-snug font-light">
+            "They didn't sell me a ring. They handed me an heirloom my granddaughter will fight over."
+          </blockquote>
+          <figcaption class="mt-6 text-stone text-sm">— A. Moreau, Bespoke Client since 2014</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BESPOKE / APPOINTMENTS ============ -->
+<section class="relative py-28 lg:py-40 border-t border-gold/10 overflow-hidden" id="bespoke">
+  <div id="bespokeSparkles" class="absolute inset-0 pointer-events-none"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10" id="appointments">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div>
+        <p class="text-[11px] tracking-maison uppercase text-gold mb-8" data-reveal>Bespoke Commissions</p>
+        <h2 class="font-serif font-light text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ivory mb-8" data-reveal>
+          Begin a piece that has <span class="italic text-champ">never existed before.</span>
+        </h2>
+        <p class="text-stone leading-relaxed font-light mb-10" data-reveal>
+          Sit with a master jeweller — in our Paris salon or by private video — and design something
+          entirely your own. Every bespoke journey begins with a single, unhurried conversation.
+        </p>
+
+        <ul class="space-y-4 mb-12">
+          <li class="flex items-center gap-4 text-ivory" data-reveal><span class="text-gold">✦</span> Private one-to-one design consultation</li>
+          <li class="flex items-center gap-4 text-ivory" data-reveal><span class="text-gold">✦</span> Hand-rendered sketches & wax preview</li>
+          <li class="flex items-center gap-4 text-ivory" data-reveal><span class="text-gold">✦</span> Lifetime maison guarantee & care</li>
+        </ul>
+
+        <a href="#cta" data-hover data-magnetic
+           class="inline-flex items-center gap-3 bg-gradient-to-r from-gold to-champ text-ink text-[11px] tracking-[0.26em] uppercase px-9 py-4 rounded-full font-medium hover:shadow-[0_0_40px_-8px_rgba(201,162,75,0.7)] transition-all duration-500">
+          Request a Consultation →
+        </a>
+      </div>
+
+      <!-- appointment card -->
+      <div class="relative rounded-3xl border border-gold/20 bg-coal/80 p-8 lg:p-10 backdrop-blur" data-reveal>
+        <h3 class="font-serif text-3xl text-ivory mb-1">Book a Private Viewing</h3>
+        <p class="text-stone text-sm font-light mb-8">Paris · London · By appointment only</p>
+        <div class="space-y-4">
+          <input type="text" placeholder="Full name" data-hover
+                 class="w-full bg-ink/70 border border-gold/15 rounded-lg px-5 py-4 text-ivory placeholder-stone focus:border-gold/60 outline-none transition" />
+          <input type="email" placeholder="Email address" data-hover
+                 class="w-full bg-ink/70 border border-gold/15 rounded-lg px-5 py-4 text-ivory placeholder-stone focus:border-gold/60 outline-none transition" />
+          <select data-hover class="w-full bg-ink/70 border border-gold/15 rounded-lg px-5 py-4 text-stone focus:border-gold/60 outline-none transition">
+            <option>I'm interested in…</option>
+            <option>An engagement ring</option>
+            <option>A bespoke commission</option>
+            <option>A signature collection piece</option>
+          </select>
+          <button type="button" data-hover data-magnetic
+                  class="w-full bg-gradient-to-r from-gold to-champ text-ink text-[11px] tracking-[0.26em] uppercase py-4 rounded-lg font-medium hover:shadow-[0_0_40px_-8px_rgba(201,162,75,0.7)] transition-all duration-500">
+            Reserve My Appointment
+          </button>
+        </div>
+        <p class="text-stone/60 text-[11px] mt-5 text-center">No obligation. Your details remain private.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ACCORDION ============ -->
+<section class="relative py-24 lg:py-32" id="faq">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-[11px] tracking-maison uppercase text-gold mb-6" data-reveal>Questions</p>
+      <h2 class="font-serif font-light text-4xl sm:text-5xl text-ivory" data-reveal>
+        Considered <span class="italic text-champ">answers.</span>
+      </h2>
+    </div>
+
+    <div class="divide-y divide-gold/10 border-y border-gold/10">
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-7 text-left" data-hover>
+          <span class="font-serif text-xl lg:text-2xl text-ivory">How long does a bespoke commission take?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-7 text-stone font-light leading-relaxed">Most bespoke pieces are completed within 8 to 12 weeks, depending on stone sourcing. Particularly intricate commissions may take up to six months — we will never compromise the work to meet a deadline.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-7 text-left" data-hover>
+          <span class="font-serif text-xl lg:text-2xl text-ivory">Are your diamonds ethically sourced?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-7 text-stone font-light leading-relaxed">Every stone is conflict-free and GIA-certified, with full chain-of-custody documentation. Our gold is recycled or Fairmined, and 100% traceable to source.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-7 text-left" data-hover>
+          <span class="font-serif text-xl lg:text-2xl text-ivory">Do you ship internationally?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-7 text-stone font-light leading-relaxed">Yes. We ship worldwide via fully insured, signature-required courier, in our signed presentation case, with certification and a lifetime care guarantee.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-7 text-left" data-hover>
+          <span class="font-serif text-xl lg:text-2xl text-ivory">Can pieces be resized or restored?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-7 text-stone font-light leading-relaxed">Always. Every Aurélise piece carries a lifetime maison guarantee, including complimentary resizing, polishing, and restoration at our Paris atelier.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 lg:py-48 overflow-hidden vignette" id="cta">
+  <div class="absolute inset-0 z-0 bg-gradient-to-b from-ink to-coal">
+    <img src="https://images.unsplash.com/photo-1611652022419-a9419f74343d?auto=format&fit=crop&w=1600&q=80"
+         alt="Diamond detail" loading="lazy"
+         class="w-full h-full object-cover opacity-25" onerror="this.style.display='none'" />
+  </div>
+  <div id="ctaSparkles" class="absolute inset-0 z-10 pointer-events-none"></div>
+
+  <div class="relative z-20 max-w-4xl mx-auto px-6 text-center">
+    <p class="text-[11px] tracking-maison uppercase text-gold mb-8" data-reveal>The Light Eternal</p>
+    <h2 class="font-serif font-light text-5xl sm:text-6xl lg:text-8xl leading-[0.95] text-ivory mb-10" data-reveal>
+      Explore the
+      <span class="block shimmer-text italic">Aurélise Collection</span>
+    </h2>
+    <p class="text-stone text-lg font-light max-w-xl mx-auto mb-12" data-reveal>
+      Discover pieces made to be worn now and inherited forever.
+    </p>
+    <div class="flex flex-wrap justify-center gap-6" data-reveal>
+      <a href="#collections" data-hover data-magnetic
+         class="inline-flex items-center gap-3 bg-gradient-to-r from-gold to-champ text-ink text-[11px] tracking-[0.26em] uppercase px-10 py-5 rounded-full font-medium hover:shadow-[0_0_50px_-8px_rgba(201,162,75,0.8)] transition-all duration-500">
+        Enter the Collection →
+      </a>
+      <a href="#appointments" data-hover class="inline-flex items-center text-[11px] tracking-[0.26em] uppercase text-stone gold-link hover:text-ivory px-6 py-5 transition">
+        Book a Private Viewing
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative border-t border-gold/10 bg-coal pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-12 gap-12 mb-16">
+      <div class="md:col-span-5">
+        <div class="font-serif text-3xl tracking-[0.3em] text-ivory mb-6">AURÉLISE</div>
+        <p class="text-stone font-light max-w-sm leading-relaxed">
+          A Parisian fine-jewellery maison since 1908. Heirlooms hand-crafted by master artisans,
+          made to hold light for a hundred years.
+        </p>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="text-[10px] tracking-[0.26em] uppercase text-gold mb-5">Maison</h4>
+        <ul class="space-y-3 text-stone text-sm">
+          <li><a href="#collections" data-hover class="gold-link hover:text-ivory transition">Collections</a></li>
+          <li><a href="#atelier" data-hover class="gold-link hover:text-ivory transition">The Atelier</a></li>
+          <li><a href="#bespoke" data-hover class="gold-link hover:text-ivory transition">Bespoke</a></li>
+          <li><a href="#materials" data-hover class="gold-link hover:text-ivory transition">Materials</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="text-[10px] tracking-[0.26em] uppercase text-gold mb-5">Client Care</h4>
+        <ul class="space-y-3 text-stone text-sm">
+          <li><a href="#faq" data-hover class="gold-link hover:text-ivory transition">FAQ</a></li>
+          <li><a href="#appointments" data-hover class="gold-link hover:text-ivory transition">Appointments</a></li>
+          <li><a href="#" data-hover class="gold-link hover:text-ivory transition">Care & Repairs</a></li>
+          <li><a href="#" data-hover class="gold-link hover:text-ivory transition">Certification</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-3">
+        <h4 class="text-[10px] tracking-[0.26em] uppercase text-gold mb-5">Visit</h4>
+        <p class="text-stone text-sm font-light leading-relaxed">
+          12 Rue de la Lumière<br>75008 Paris, France<br>
+          <a href="#" data-hover class="text-champ gold-link">salon@aurelise.example</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="rule mb-8"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-stone/70 text-xs">
+      <p>© 1908–2026 Aurélise Maison. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" data-hover class="gold-link hover:text-ivory transition">Instagram</a>
+        <a href="#" data-hover class="gold-link hover:text-ivory transition">Privacy</a>
+        <a href="#" data-hover class="gold-link hover:text-ivory transition">Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ GSAP + ScrollTrigger ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('nav-scrolled');
+    else nav.classList.remove('nav-scrolled');
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Sparkle generator ---------- */
+  function seedSparkles(el, count) {
+    if (!el || reduce) return;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('span');
+      s.className = 'sparkle';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 100 + '%';
+      const scale = 0.5 + Math.random() * 1.6;
+      s.style.transform = `scale(${scale})`;
+      s.style.animationDelay = (Math.random() * 3.4) + 's';
+      s.style.animationDuration = (2.6 + Math.random() * 2.4) + 's';
+      el.appendChild(s);
+    }
+  }
+  seedSparkles(document.getElementById('sparkleField'), 26);
+  seedSparkles(document.getElementById('bespokeSparkles'), 18);
+  seedSparkles(document.getElementById('ctaSparkles'), 22);
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!reduce && window.matchMedia('(min-width:1025px)').matches) {
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    (function loop() {
+      rx += (mx - rx) * 0.16; ry += (my - ry) * 0.16;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+    // Magnetic CTAs
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width / 2);
+        const y = e.clientY - (r.top + r.height / 2);
+        el.style.transform = `translate(${x * 0.28}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  if (reduce || typeof gsap === 'undefined') {
+    document.querySelectorAll('.reveal-line > span, [data-reveal]').forEach(el => {
+      el.style.transform = 'none'; el.style.opacity = '1';
+    });
+    document.querySelectorAll('.clip-reveal').forEach(el => el.style.clipPath = 'none');
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Hero entrance ---------- */
+  const heroLines = document.querySelectorAll('#hero .reveal-line > span');
+  gsap.to(heroLines, {
+    y: 0, duration: 1.5, ease: 'power4.out', stagger: 0.12, delay: 0.25
+  });
+  gsap.to('#heroImg', {
+    clipPath: 'inset(0 0 0% 0)', duration: 2.2, ease: 'power3.inOut', delay: 0.2
+  });
+
+  /* ---------- Generic masked reveals ---------- */
+  document.querySelectorAll('[data-reveal]').forEach(el => {
+    gsap.fromTo(el,
+      { y: 42, opacity: 0 },
+      {
+        y: 0, opacity: 1, duration: 1.1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+  });
+
+  /* ---------- Section heading line reveals (non-hero) ---------- */
+  document.querySelectorAll('main section:not(#hero) .reveal-line > span').forEach(span => {
+    gsap.fromTo(span, { y: '110%' }, {
+      y: '0%', duration: 1.2, ease: 'power4.out',
+      scrollTrigger: { trigger: span, start: 'top 90%' }
+    });
+  });
+
+  /* ---------- Parallax (atelier image) ---------- */
+  gsap.to('.parallax-img', {
+    yPercent: -12, ease: 'none',
+    scrollTrigger: { trigger: '.parallax-wrap', start: 'top bottom', end: 'bottom top', scrub: true }
+  });
+
+  /* ---------- Hero subtle parallax ---------- */
+  gsap.to('#heroImg', {
+    yPercent: 14, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+
+  /* ---------- Count-ups ---------- */
+  document.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to;
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: to, duration: 2, ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(obj.v); }
+      })
+    });
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-trigger').addEventListener('click', () => {
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tempora — Where Teams Build Momentum</title>
+<meta name="description" content="Tempora is the project & task management platform that turns scattered work into shipped outcomes. Boards, timelines, and automations your team will actually use." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          body: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: {
+            50: '#f5f6fb',
+            100: '#e8eaf4',
+            200: '#cdd2e7',
+            300: '#a6aed1',
+            400: '#7882b4',
+            500: '#56609a',
+            600: '#434b7e',
+            700: '#383e66',
+            800: '#2a2e4a',
+            900: '#1c1f33',
+            950: '#10121f',
+          },
+          violet: {
+            DEFAULT: '#6d5cf0',
+            soft: '#8b7df4',
+          },
+          mint: '#2dd4a7',
+          coral: '#ff7a59',
+          amber: '#ffb43d',
+        },
+        boxShadow: {
+          soft: '0 10px 40px -12px rgba(28,31,51,0.18)',
+          glow: '0 0 0 1px rgba(109,92,240,0.18), 0 24px 60px -20px rgba(109,92,240,0.45)',
+          card: '0 4px 24px -8px rgba(28,31,51,0.14)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --violet: #6d5cf0; }
+  html, body { overflow-x: hidden; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #ffffff; color: #1c1f33; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,h4 { font-family: 'Sora', sans-serif; letter-spacing: -0.02em; }
+
+  .grain::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  .gradient-text {
+    background: linear-gradient(100deg, #6d5cf0 0%, #2dd4a7 60%, #ffb43d 120%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .glass {
+    background: rgba(255,255,255,.7);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
+  .glass-dark {
+    background: rgba(28,31,51,.55);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+  }
+  .mesh {
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(109,92,240,.22), transparent 60%),
+      radial-gradient(700px 480px at 92% 4%, rgba(45,212,167,.18), transparent 60%),
+      radial-gradient(600px 600px at 60% 120%, rgba(255,180,61,.14), transparent 60%);
+  }
+  .dot-grid {
+    background-image: radial-gradient(rgba(86,96,154,.16) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  /* board card */
+  .board-card { transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s; }
+  .board-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -16px rgba(28,31,51,.35); }
+  .feature-card { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s; }
+
+  .tilt-wrap { perspective: 1400px; }
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; }
+
+  .marquee-track { animation: scrollx 28s linear infinite; }
+  @keyframes scrollx { from { transform: translateX(0);} to { transform: translateX(-50%);} }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content:""; position:absolute; left:0; bottom:-4px; height:2px; width:0;
+    background: linear-gradient(90deg,#6d5cf0,#2dd4a7); transition: width .3s;
+  }
+  .nav-link:hover::after { width:100%; }
+
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .4s cubic-bezier(.2,.7,.2,1); }
+
+  .magnetic { will-change: transform; }
+  .reveal { opacity:0; transform: translateY(28px); }
+
+  .tab-btn.active { background:#1c1f33; color:#fff; }
+  .tab-btn.active .tab-ico { color:#2dd4a7; }
+
+  ::selection { background: rgba(109,92,240,.25); }
+
+  /* scrollbar accent */
+  .scroll-thin::-webkit-scrollbar { height:6px; }
+  .scroll-thin::-webkit-scrollbar-thumb { background:#cdd2e7; border-radius:99px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased text-ink-900">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="glass border-b border-ink-100/70">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet to-mint shadow-glow">
+          <span class="absolute inset-0 rounded-xl opacity-40 blur-sm bg-gradient-to-br from-violet to-mint"></span>
+          <svg viewBox="0 0 24 24" class="relative h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
+          </svg>
+        </span>
+        <span class="font-display font-extrabold text-lg tracking-tight">Tempora</span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-ink-600">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#how" class="nav-link">How it works</a>
+        <a href="#views" class="nav-link">Views</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#security" class="nav-link">Security</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-flex text-sm font-semibold text-ink-700 hover:text-ink-900 transition">Sign in</a>
+        <a href="#cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-ink-900 text-white text-sm font-semibold px-4 py-2 shadow-soft hover:bg-violet transition-colors">
+          Start free
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <button id="menuBtn" class="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-ink-200 text-ink-700" aria-label="Menu">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- mobile menu -->
+    <div id="mobileMenu" class="lg:hidden hidden border-t border-ink-100 bg-white/95">
+      <div class="px-5 py-4 flex flex-col gap-1 text-sm font-medium text-ink-700">
+        <a href="#features" class="py-2.5 border-b border-ink-100">Features</a>
+        <a href="#how" class="py-2.5 border-b border-ink-100">How it works</a>
+        <a href="#views" class="py-2.5 border-b border-ink-100">Views</a>
+        <a href="#pricing" class="py-2.5 border-b border-ink-100">Pricing</a>
+        <a href="#security" class="py-2.5 border-b border-ink-100">Security</a>
+        <a href="#faq" class="py-2.5">FAQ</a>
+        <a href="#cta" class="mt-3 inline-flex justify-center rounded-full bg-ink-900 text-white font-semibold px-4 py-2.5">Start free</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="relative pt-28 lg:pt-36 pb-20 mesh overflow-hidden">
+  <div class="absolute inset-0 dot-grid opacity-60"></div>
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <!-- copy -->
+    <div class="lg:col-span-5">
+      <div class="reveal inline-flex items-center gap-2 rounded-full border border-violet/30 bg-white/70 px-3 py-1.5 text-xs font-semibold text-violet shadow-sm">
+        <span class="relative flex h-2 w-2"><span class="animate-ping absolute h-2 w-2 rounded-full bg-mint opacity-75"></span><span class="relative h-2 w-2 rounded-full bg-mint"></span></span>
+        New — Tempora Flow automations are live
+      </div>
+      <h1 class="reveal mt-5 font-display font-extrabold text-4xl sm:text-5xl xl:text-6xl leading-[1.05]">
+        Where teams build
+        <span id="rotator" class="gradient-text">momentum</span>
+      </h1>
+      <p class="reveal mt-5 text-lg text-ink-500 max-w-lg leading-relaxed">
+        Tempora turns scattered tasks, threads, and deadlines into one calm system of record. Plan on boards, ship on timelines, and let automations handle the busywork.
+      </p>
+      <div class="reveal mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="#cta" class="magnetic group inline-flex items-center justify-center gap-2 rounded-full bg-violet text-white font-semibold px-6 py-3.5 shadow-glow hover:bg-ink-900 transition-colors">
+          Start free — no card
+          <svg class="h-4 w-4 group-hover:translate-x-0.5 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#how" class="inline-flex items-center justify-center gap-2 rounded-full bg-white border border-ink-200 text-ink-800 font-semibold px-6 py-3.5 hover:border-violet/50 hover:text-violet transition">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 5v14l11-7z"/></svg>
+          Watch the 2-min tour
+        </a>
+      </div>
+
+      <!-- count-ups -->
+      <div class="reveal mt-10 grid grid-cols-3 gap-5 max-w-md">
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-ink-900"><span class="count" data-to="28">0</span>k+</div>
+          <div class="text-xs text-ink-500 mt-0.5">Teams onboard</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-ink-900"><span class="count" data-to="14">0</span>M</div>
+          <div class="text-xs text-ink-500 mt-0.5">Tasks shipped</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-ink-900"><span class="count" data-to="99.9" data-dec="1">0</span>%</div>
+          <div class="text-xs text-ink-500 mt-0.5">Uptime SLA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- board mockup -->
+    <div class="lg:col-span-7 tilt-wrap">
+      <div id="dashTilt" class="tilt relative">
+        <div class="relative rounded-3xl bg-white shadow-glow ring-1 ring-ink-100 overflow-hidden">
+          <!-- app top bar -->
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-ink-100 bg-ink-50">
+            <span class="h-3 w-3 rounded-full bg-coral"></span>
+            <span class="h-3 w-3 rounded-full bg-amber"></span>
+            <span class="h-3 w-3 rounded-full bg-mint"></span>
+            <div class="ml-3 flex items-center gap-2 text-xs font-medium text-ink-500">
+              <span class="inline-flex items-center gap-1.5 rounded-md bg-white px-2 py-1 ring-1 ring-ink-100"><span class="h-2 w-2 rounded-sm bg-violet"></span> Q3 Launch · Board</span>
+            </div>
+            <div class="ml-auto flex -space-x-2">
+              <span class="h-6 w-6 rounded-full ring-2 ring-white bg-violet text-[10px] font-bold text-white grid place-items-center">AR</span>
+              <span class="h-6 w-6 rounded-full ring-2 ring-white bg-mint text-[10px] font-bold text-white grid place-items-center">JD</span>
+              <span class="h-6 w-6 rounded-full ring-2 ring-white bg-amber text-[10px] font-bold text-white grid place-items-center">KP</span>
+              <span class="h-6 w-6 rounded-full ring-2 ring-white bg-ink-300 text-[10px] font-bold text-white grid place-items-center">+5</span>
+            </div>
+          </div>
+
+          <!-- board columns -->
+          <div class="grid grid-cols-3 gap-3 p-4 bg-ink-50/40">
+            <!-- col 1 -->
+            <div>
+              <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-[11px] font-bold uppercase tracking-wide text-ink-500">Backlog</span>
+                <span class="text-[10px] font-semibold text-ink-400 bg-ink-100 rounded-full px-1.5">4</span>
+              </div>
+              <div class="space-y-2.5">
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card">
+                  <div class="h-1.5 w-10 rounded-full bg-coral/70 mb-2"></div>
+                  <p class="text-xs font-semibold text-ink-800 leading-snug">Audit onboarding funnel</p>
+                  <div class="mt-2 flex items-center gap-1.5"><span class="text-[10px] rounded bg-coral/10 text-coral font-semibold px-1.5 py-0.5">High</span><span class="h-4 w-4 rounded-full bg-violet"></span></div>
+                </div>
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card">
+                  <div class="h-1.5 w-8 rounded-full bg-violet/60 mb-2"></div>
+                  <p class="text-xs font-semibold text-ink-800 leading-snug">Pricing page copy</p>
+                  <div class="mt-2 flex items-center gap-1.5"><span class="text-[10px] rounded bg-ink-100 text-ink-500 font-semibold px-1.5 py-0.5">Design</span><span class="h-4 w-4 rounded-full bg-mint"></span></div>
+                </div>
+              </div>
+            </div>
+            <!-- col 2 -->
+            <div>
+              <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-[11px] font-bold uppercase tracking-wide text-ink-500">In progress</span>
+                <span class="text-[10px] font-semibold text-ink-400 bg-ink-100 rounded-full px-1.5">3</span>
+              </div>
+              <div class="space-y-2.5">
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card">
+                  <div class="h-1.5 w-12 rounded-full bg-mint/70 mb-2"></div>
+                  <p class="text-xs font-semibold text-ink-800 leading-snug">Build board automations</p>
+                  <div class="mt-2 h-1 w-full rounded-full bg-ink-100 overflow-hidden"><div class="h-full w-2/3 rounded-full bg-mint"></div></div>
+                  <div class="mt-2 flex items-center gap-1.5"><span class="text-[10px] rounded bg-mint/10 text-mint font-semibold px-1.5 py-0.5">Dev</span><span class="h-4 w-4 rounded-full bg-amber"></span></div>
+                </div>
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card">
+                  <div class="h-1.5 w-9 rounded-full bg-amber/70 mb-2"></div>
+                  <p class="text-xs font-semibold text-ink-800 leading-snug">Sync Slack channels</p>
+                  <div class="mt-2 flex items-center gap-1.5"><span class="text-[10px] rounded bg-amber/10 text-amber font-semibold px-1.5 py-0.5">Ops</span><span class="h-4 w-4 rounded-full bg-violet"></span></div>
+                </div>
+              </div>
+            </div>
+            <!-- col 3 -->
+            <div>
+              <div class="flex items-center justify-between mb-2 px-1">
+                <span class="text-[11px] font-bold uppercase tracking-wide text-ink-500">Done</span>
+                <span class="text-[10px] font-semibold text-mint bg-mint/10 rounded-full px-1.5">7</span>
+              </div>
+              <div class="space-y-2.5">
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card opacity-90">
+                  <div class="flex items-center gap-1.5 mb-2"><svg class="h-3.5 w-3.5 text-mint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div class="h-1.5 w-8 rounded-full bg-ink-200"></div></div>
+                  <p class="text-xs font-semibold text-ink-500 leading-snug line-through">Ship v2 timeline</p>
+                </div>
+                <div class="kcard board-card rounded-xl bg-white ring-1 ring-ink-100 p-3 shadow-card opacity-90">
+                  <div class="flex items-center gap-1.5 mb-2"><svg class="h-3.5 w-3.5 text-mint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div class="h-1.5 w-10 rounded-full bg-ink-200"></div></div>
+                  <p class="text-xs font-semibold text-ink-500 leading-snug line-through">Q2 retro notes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- floating chips -->
+        <div class="float-chip absolute -left-4 top-1/3 hidden sm:flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-glow ring-1 ring-ink-100">
+          <span class="grid h-7 w-7 place-items-center rounded-lg bg-mint/15 text-mint"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>
+          <div><p class="text-[11px] font-bold text-ink-800 leading-none">Task auto-closed</p><p class="text-[10px] text-ink-400 mt-0.5">by Tempora Flow</p></div>
+        </div>
+        <div class="float-chip absolute -right-3 bottom-8 hidden sm:flex items-center gap-2 rounded-2xl bg-ink-900 px-3 py-2 shadow-glow">
+          <span class="grid h-7 w-7 place-items-center rounded-lg bg-violet/30 text-white"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M2 12h20"/></svg></span>
+          <div><p class="text-[11px] font-bold text-white leading-none">+38% throughput</p><p class="text-[10px] text-ink-300 mt-0.5">this sprint</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOGO STRIP ================= -->
+<section class="py-10 border-y border-ink-100 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <p class="text-center text-xs font-semibold uppercase tracking-[0.18em] text-ink-400 mb-6">Trusted by fast-moving teams at</p>
+    <div class="marquee relative overflow-hidden">
+      <div class="marquee-track flex items-center gap-14 w-max opacity-70">
+        <!-- set repeated twice for seamless loop -->
+        <div class="flex items-center gap-14 shrink-0">
+          <span class="text-xl font-display font-bold text-ink-400">Northwind</span>
+          <span class="text-xl font-display font-bold text-ink-400">Brightlane</span>
+          <span class="text-xl font-display font-bold text-ink-400">Cobalt&nbsp;Labs</span>
+          <span class="text-xl font-display font-bold text-ink-400">Heliogram</span>
+          <span class="text-xl font-display font-bold text-ink-400">Quartzly</span>
+          <span class="text-xl font-display font-bold text-ink-400">Foundry&nbsp;9</span>
+          <span class="text-xl font-display font-bold text-ink-400">Meridian</span>
+        </div>
+        <div class="flex items-center gap-14 shrink-0" aria-hidden="true">
+          <span class="text-xl font-display font-bold text-ink-400">Northwind</span>
+          <span class="text-xl font-display font-bold text-ink-400">Brightlane</span>
+          <span class="text-xl font-display font-bold text-ink-400">Cobalt&nbsp;Labs</span>
+          <span class="text-xl font-display font-bold text-ink-400">Heliogram</span>
+          <span class="text-xl font-display font-bold text-ink-400">Quartzly</span>
+          <span class="text-xl font-display font-bold text-ink-400">Foundry&nbsp;9</span>
+          <span class="text-xl font-display font-bold text-ink-400">Meridian</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section id="features" class="py-24 bg-ink-50/40 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Everything in one place</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl leading-tight">The toolkit your team stops fighting</h2>
+      <p class="reveal mt-4 text-ink-500 text-lg">Stop stitching together five apps. Tempora gives planning, execution, and visibility a single home — fast enough to feel invisible.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card -->
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-violet/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-violet/10 text-violet group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Boards that flow</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">Drag, group, and swimlane your way. Kanban that updates the moment work moves — no refresh, no mess.</p>
+      </div>
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-mint/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-mint/10 text-mint group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Timeline & roadmaps</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">Gantt-style timelines with dependencies that re-plan themselves when a date slips. Always know what's at risk.</p>
+      </div>
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-amber/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-amber/10 text-amber group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-3 7h6l-5 13 2-9H8z"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Tempora Flow</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">No-code automations: when status changes, assign, notify, move, and close. Reclaim hours every week.</p>
+      </div>
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-violet/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-violet/10 text-violet group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-6"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Live dashboards</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">Burndown, velocity, workload balance — real-time charts that make standups a 5-minute formality.</p>
+      </div>
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-mint/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-mint/10 text-mint group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Threaded context</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">Comments, mentions, and docs live on the task. The decision and the work never drift apart again.</p>
+      </div>
+      <div class="feature-card reveal group rounded-2xl bg-white ring-1 ring-ink-100 p-6 hover:ring-amber/40 hover:shadow-glow">
+        <span class="grid h-11 w-11 place-items-center rounded-xl bg-amber/10 text-amber group-hover:scale-110 transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <h3 class="mt-4 font-display font-bold text-lg">Permissions & spaces</h3>
+        <p class="mt-2 text-sm text-ink-500 leading-relaxed">Public, private, or guest. Org-wide roles and per-space access that scale from 3 to 3,000 people.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">From chaos to clarity</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl">Up and running in an afternoon</h2>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-3 gap-8 relative">
+      <!-- connector line -->
+      <div class="hidden lg:block absolute top-7 left-[16%] right-[16%] h-px bg-gradient-to-r from-violet/30 via-mint/40 to-amber/30"></div>
+
+      <div class="reveal relative text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white ring-1 ring-ink-100 shadow-card relative z-10">
+          <span class="font-display font-extrabold text-violet">01</span>
+        </div>
+        <h3 class="mt-5 font-display font-bold text-xl">Import your work</h3>
+        <p class="mt-2 text-ink-500 text-sm leading-relaxed max-w-xs mx-auto">Bring tasks from spreadsheets, Trello, Jira, or Asana with one click. Tempora maps fields for you.</p>
+      </div>
+      <div class="reveal relative text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white ring-1 ring-ink-100 shadow-card relative z-10">
+          <span class="font-display font-extrabold text-mint">02</span>
+        </div>
+        <h3 class="mt-5 font-display font-bold text-xl">Shape your flow</h3>
+        <p class="mt-2 text-ink-500 text-sm leading-relaxed max-w-xs mx-auto">Pick a template or build columns, statuses, and automations that match how your team actually ships.</p>
+      </div>
+      <div class="reveal relative text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-white ring-1 ring-ink-100 shadow-card relative z-10">
+          <span class="font-display font-extrabold text-amber">03</span>
+        </div>
+        <h3 class="mt-5 font-display font-bold text-xl">Ship with momentum</h3>
+        <p class="mt-2 text-ink-500 text-sm leading-relaxed max-w-xs mx-auto">Watch throughput climb. Dashboards surface blockers before they become missed deadlines.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VIEWS / USE-CASES (TABS) ================= -->
+<section id="views" class="py-24 bg-ink-950 text-white grain relative overflow-hidden">
+  <div class="absolute inset-0 mesh opacity-50"></div>
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-mint">One platform, every angle</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl">See your work the way your team thinks</h2>
+    </div>
+
+    <!-- tabs -->
+    <div class="mt-10 flex flex-wrap gap-2.5" id="tabBtns">
+      <button data-tab="board" class="tab-btn active inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold bg-white/5 text-ink-100 ring-1 ring-white/10 transition">
+        <svg class="tab-ico h-4 w-4 text-ink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="7" height="11" rx="1.5"/></svg> Board
+      </button>
+      <button data-tab="timeline" class="tab-btn inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold bg-white/5 text-ink-100 ring-1 ring-white/10 transition">
+        <svg class="tab-ico h-4 w-4 text-ink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h12M3 12h18M3 17h8"/></svg> Timeline
+      </button>
+      <button data-tab="calendar" class="tab-btn inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold bg-white/5 text-ink-100 ring-1 ring-white/10 transition">
+        <svg class="tab-ico h-4 w-4 text-ink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg> Calendar
+      </button>
+      <button data-tab="workload" class="tab-btn inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold bg-white/5 text-ink-100 ring-1 ring-white/10 transition">
+        <svg class="tab-ico h-4 w-4 text-ink-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="7"/><rect x="13" y="6" width="3" height="11"/></svg> Workload
+      </button>
+    </div>
+
+    <!-- tab panels -->
+    <div class="mt-8 rounded-3xl glass-dark ring-1 ring-white/10 p-4 sm:p-6 min-h-[340px]">
+      <!-- BOARD -->
+      <div class="tab-panel" data-panel="board">
+        <div class="grid sm:grid-cols-4 gap-3">
+          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-300 mb-2">To do</p>
+            <div class="space-y-2">
+              <div class="rounded-lg bg-white/10 p-2.5"><div class="h-1.5 w-8 rounded bg-coral/70 mb-1.5"></div><p class="text-xs text-ink-100">Wireframe settings</p></div>
+              <div class="rounded-lg bg-white/10 p-2.5"><div class="h-1.5 w-10 rounded bg-violet/70 mb-1.5"></div><p class="text-xs text-ink-100">API rate limits</p></div>
+            </div>
+          </div>
+          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-300 mb-2">Doing</p>
+            <div class="space-y-2">
+              <div class="rounded-lg bg-white/10 p-2.5"><div class="h-1.5 w-12 rounded bg-mint/70 mb-1.5"></div><p class="text-xs text-ink-100">Auth refactor</p></div>
+            </div>
+          </div>
+          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-ink-300 mb-2">Review</p>
+            <div class="space-y-2">
+              <div class="rounded-lg bg-white/10 p-2.5"><div class="h-1.5 w-9 rounded bg-amber/70 mb-1.5"></div><p class="text-xs text-ink-100">PR #482</p></div>
+            </div>
+          </div>
+          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+            <p class="text-[11px] font-bold uppercase tracking-wide text-mint mb-2">Shipped</p>
+            <div class="space-y-2">
+              <div class="rounded-lg bg-mint/10 p-2.5"><p class="text-xs text-ink-200 line-through">Release notes</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- TIMELINE -->
+      <div class="tab-panel hidden" data-panel="timeline">
+        <div class="space-y-3">
+          <div class="grid grid-cols-12 gap-2 text-[10px] text-ink-400 font-semibold px-1"><span class="col-span-3">Task</span><span class="col-span-2">Wk 1</span><span class="col-span-2">Wk 2</span><span class="col-span-2">Wk 3</span><span class="col-span-3">Wk 4</span></div>
+          <div class="grid grid-cols-12 gap-2 items-center"><span class="col-span-3 text-xs text-ink-100">Discovery</span><div class="col-span-9 relative h-6"><div class="absolute left-0 w-1/3 h-6 rounded-md bg-violet/70"></div></div></div>
+          <div class="grid grid-cols-12 gap-2 items-center"><span class="col-span-3 text-xs text-ink-100">Design sprint</span><div class="col-span-9 relative h-6"><div class="absolute left-[20%] w-2/5 h-6 rounded-md bg-mint/70"></div></div></div>
+          <div class="grid grid-cols-12 gap-2 items-center"><span class="col-span-3 text-xs text-ink-100">Build</span><div class="col-span-9 relative h-6"><div class="absolute left-[45%] w-1/2 h-6 rounded-md bg-amber/70"></div></div></div>
+          <div class="grid grid-cols-12 gap-2 items-center"><span class="col-span-3 text-xs text-ink-100">QA & launch</span><div class="col-span-9 relative h-6"><div class="absolute left-[78%] w-1/5 h-6 rounded-md bg-coral/70"></div></div></div>
+        </div>
+      </div>
+      <!-- CALENDAR -->
+      <div class="tab-panel hidden" data-panel="calendar">
+        <div class="grid grid-cols-7 gap-2 text-center">
+          <span class="text-[10px] font-bold text-ink-400">M</span><span class="text-[10px] font-bold text-ink-400">T</span><span class="text-[10px] font-bold text-ink-400">W</span><span class="text-[10px] font-bold text-ink-400">T</span><span class="text-[10px] font-bold text-ink-400">F</span><span class="text-[10px] font-bold text-ink-400">S</span><span class="text-[10px] font-bold text-ink-400">S</span>
+          <!-- 21 cells -->
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">1</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">2</span><div class="mt-1 h-1.5 rounded bg-violet/70"></div></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">3</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">4</span><div class="mt-1 h-1.5 rounded bg-mint/70"></div><div class="mt-1 h-1.5 rounded bg-amber/70"></div></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">5</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">6</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">7</span><div class="mt-1 h-1.5 rounded bg-coral/70"></div></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">8</span></div>
+          <div class="rounded-lg bg-violet/15 ring-1 ring-violet/40 h-16 p-1.5 text-left"><span class="text-[10px] text-white font-bold">9</span><div class="mt-1 h-1.5 rounded bg-violet/70"></div></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">10</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">11</span><div class="mt-1 h-1.5 rounded bg-mint/70"></div></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">12</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">13</span></div>
+          <div class="rounded-lg bg-white/5 h-16 p-1.5 text-left"><span class="text-[10px] text-ink-400">14</span><div class="mt-1 h-1.5 rounded bg-amber/70"></div></div>
+        </div>
+      </div>
+      <!-- WORKLOAD -->
+      <div class="tab-panel hidden" data-panel="workload">
+        <div class="space-y-4">
+          <div class="flex items-center gap-3"><span class="h-8 w-8 rounded-full bg-violet grid place-items-center text-[11px] font-bold">AR</span><div class="flex-1"><div class="flex justify-between text-xs text-ink-200 mb-1"><span>Ana Reyes</span><span class="text-mint">balanced</span></div><div class="h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full w-3/5 rounded-full bg-mint"></div></div></div></div>
+          <div class="flex items-center gap-3"><span class="h-8 w-8 rounded-full bg-amber grid place-items-center text-[11px] font-bold">JD</span><div class="flex-1"><div class="flex justify-between text-xs text-ink-200 mb-1"><span>Jude Okafor</span><span class="text-amber">near capacity</span></div><div class="h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full w-5/6 rounded-full bg-amber"></div></div></div></div>
+          <div class="flex items-center gap-3"><span class="h-8 w-8 rounded-full bg-coral grid place-items-center text-[11px] font-bold">KP</span><div class="flex-1"><div class="flex justify-between text-xs text-ink-200 mb-1"><span>Kit Park</span><span class="text-coral">overloaded</span></div><div class="h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full w-full rounded-full bg-coral"></div></div></div></div>
+          <div class="flex items-center gap-3"><span class="h-8 w-8 rounded-full bg-mint grid place-items-center text-[11px] font-bold">LM</span><div class="flex-1"><div class="flex justify-between text-xs text-ink-200 mb-1"><span>Lena Marsh</span><span class="text-ink-300">light</span></div><div class="h-2.5 rounded-full bg-white/10 overflow-hidden"><div class="h-full w-1/3 rounded-full bg-violet"></div></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INTEGRATIONS ================= -->
+<section class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Plays well with everything</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl leading-tight">Connect the tools you already love</h2>
+      <p class="reveal mt-4 text-ink-500 text-lg">Two-way sync with your stack. Push updates to chat, pull commits from your repo, and trigger Flow automations from anywhere.</p>
+      <a href="#" class="reveal mt-6 inline-flex items-center gap-2 text-violet font-semibold hover:gap-3 transition-all">Browse 120+ integrations <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+    <div class="reveal grid grid-cols-4 gap-3 sm:gap-4">
+      <!-- integration tiles -->
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-violet/40 hover:text-violet transition">Slack</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-mint/40 hover:text-mint transition">GitHub</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-amber/40 hover:text-amber transition">Figma</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-violet/40 hover:text-violet transition">Drive</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-coral/40 hover:text-coral transition">Notion</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-mint/40 hover:text-mint transition">Zoom</div>
+      <div class="aspect-square rounded-2xl bg-ink-50 ring-1 ring-ink-100 grid place-items-center font-display font-bold text-ink-500 hover:ring-amber/40 hover:text-amber transition">Linear</div>
+      <div class="aspect-square rounded-2xl bg-gradient-to-br from-violet to-mint grid place-items-center font-display font-bold text-white">+112</div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRICING ================= -->
+<section id="pricing" class="py-24 bg-ink-50/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Simple, scalable pricing</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl">Pay for outcomes, not seats you don't use</h2>
+      <p class="reveal mt-4 text-ink-500">Start free forever. Upgrade when your team grows. Cancel anytime.</p>
+    </div>
+
+    <div class="mt-12 grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- starter -->
+      <div class="reveal rounded-3xl bg-white ring-1 ring-ink-100 p-7 flex flex-col">
+        <h3 class="font-display font-bold text-lg">Starter</h3>
+        <p class="text-sm text-ink-500 mt-1">For small teams getting organized.</p>
+        <div class="mt-5 flex items-baseline gap-1"><span class="font-display font-extrabold text-4xl">$0</span><span class="text-ink-400 text-sm">/ forever</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-ink-600 flex-1">
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Up to 10 members</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Unlimited boards</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 3 active automations</li>
+        </ul>
+        <a href="#cta" class="mt-7 inline-flex justify-center rounded-full border border-ink-200 px-5 py-3 font-semibold text-ink-800 hover:border-violet/50 hover:text-violet transition">Get started</a>
+      </div>
+      <!-- pro (featured) -->
+      <div class="reveal relative rounded-3xl bg-ink-900 text-white p-7 flex flex-col shadow-glow ring-1 ring-violet/40 lg:-translate-y-3">
+        <span class="absolute top-5 right-5 rounded-full bg-mint/20 text-mint text-[11px] font-bold px-2.5 py-1">Most popular</span>
+        <h3 class="font-display font-bold text-lg">Pro</h3>
+        <p class="text-sm text-ink-300 mt-1">For teams shipping on deadlines.</p>
+        <div class="mt-5 flex items-baseline gap-1"><span class="font-display font-extrabold text-4xl">$11</span><span class="text-ink-400 text-sm">/ user / mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-ink-200 flex-1">
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Unlimited members</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Timeline, calendar & workload</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Unlimited Tempora Flow</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Advanced dashboards</li>
+        </ul>
+        <a href="#cta" class="magnetic mt-7 inline-flex justify-center rounded-full bg-violet px-5 py-3 font-semibold text-white hover:bg-mint hover:text-ink-900 transition">Start 14-day trial</a>
+      </div>
+      <!-- enterprise -->
+      <div class="reveal rounded-3xl bg-white ring-1 ring-ink-100 p-7 flex flex-col">
+        <h3 class="font-display font-bold text-lg">Enterprise</h3>
+        <p class="text-sm text-ink-500 mt-1">For orgs that need control & scale.</p>
+        <div class="mt-5 flex items-baseline gap-1"><span class="font-display font-extrabold text-4xl">Custom</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-ink-600 flex-1">
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> SSO/SAML & SCIM</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Dedicated success manager</li>
+          <li class="flex gap-2"><svg class="h-4 w-4 text-mint shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 99.99% uptime & audit logs</li>
+        </ul>
+        <a href="#cta" class="mt-7 inline-flex justify-center rounded-full border border-ink-200 px-5 py-3 font-semibold text-ink-800 hover:border-violet/50 hover:text-violet transition">Talk to sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="py-24 bg-white">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Loved by teams that ship</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl">Don't take our word for it</h2>
+    </div>
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl bg-ink-50/60 ring-1 ring-ink-100 p-7 flex flex-col">
+        <div class="flex gap-0.5 text-amber mb-4">★★★★★</div>
+        <blockquote class="text-ink-700 leading-relaxed flex-1">"We cut our standups in half. The workload view caught burnout before it happened — that alone paid for the year."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-violet grid place-items-center text-white font-bold text-sm">AR</span>
+          <div><p class="font-semibold text-sm text-ink-900">Ana Reyes</p><p class="text-xs text-ink-500">Head of Ops, Brightlane</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl bg-ink-900 text-white p-7 flex flex-col shadow-glow">
+        <div class="flex gap-0.5 text-amber mb-4">★★★★★</div>
+        <blockquote class="text-ink-100 leading-relaxed flex-1">"Migrated 40 people off three tools in a weekend. Tempora Flow now runs our entire release process untouched."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-mint grid place-items-center text-ink-900 font-bold text-sm">JD</span>
+          <div><p class="font-semibold text-sm text-white">Jude Okafor</p><p class="text-xs text-ink-300">Eng Lead, Cobalt Labs</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl bg-ink-50/60 ring-1 ring-ink-100 p-7 flex flex-col">
+        <div class="flex gap-0.5 text-amber mb-4">★★★★★</div>
+        <blockquote class="text-ink-700 leading-relaxed flex-1">"Finally a tool the whole team actually opens. The timeline re-plans itself, so my Mondays aren't spent dragging bars."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-amber grid place-items-center text-white font-bold text-sm">KP</span>
+          <div><p class="font-semibold text-sm text-ink-900">Kit Park</p><p class="text-xs text-ink-500">PM, Foundry 9</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SECURITY ================= -->
+<section id="security" class="py-24 bg-ink-50/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="relative rounded-3xl overflow-hidden ring-1 ring-ink-100 bg-gradient-to-br from-ink-900 to-ink-700 aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80" alt="" class="absolute inset-0 h-full w-full object-cover opacity-35 mix-blend-luminosity" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 grid place-items-center">
+          <span class="grid h-20 w-20 place-items-center rounded-3xl glass-dark ring-1 ring-white/20 text-mint">
+            <svg class="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Enterprise-grade trust</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl leading-tight">Your work, locked down by default</h2>
+      <p class="reveal mt-4 text-ink-500 text-lg">Security isn't a tier — it's the foundation. Encryption everywhere, granular roles, and the certifications your CISO asks about.</p>
+      <div class="reveal mt-7 grid sm:grid-cols-2 gap-4">
+        <div class="flex gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-mint/10 text-mint shrink-0"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><div><p class="font-semibold text-sm">AES-256 encryption</p><p class="text-xs text-ink-500 mt-0.5">At rest and in transit.</p></div></div>
+        <div class="flex gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-violet/10 text-violet shrink-0"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></span><div><p class="font-semibold text-sm">SOC 2 Type II</p><p class="text-xs text-ink-500 mt-0.5">Independently audited.</p></div></div>
+        <div class="flex gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-amber/10 text-amber shrink-0"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg></span><div><p class="font-semibold text-sm">GDPR & data residency</p><p class="text-xs text-ink-500 mt-0.5">EU & US regions.</p></div></div>
+        <div class="flex gap-3"><span class="grid h-9 w-9 place-items-center rounded-lg bg-coral/10 text-coral shrink-0"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span><div><p class="font-semibold text-sm">SSO, SAML & SCIM</p><p class="text-xs text-ink-500 mt-0.5">One-click provisioning.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="py-24 bg-white">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center">
+      <p class="reveal text-sm font-bold uppercase tracking-[0.16em] text-violet">Questions, answered</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl sm:text-4xl">Frequently asked</h2>
+    </div>
+    <div class="mt-10 divide-y divide-ink-100 rounded-2xl ring-1 ring-ink-100 bg-white" id="faqList">
+      <div class="faq reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-5 sm:px-6 py-5">
+          <span class="font-semibold text-ink-900">How long does it take to migrate from another tool?</span>
+          <svg class="faq-ico h-5 w-5 text-violet shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body px-5 sm:px-6"><p class="pb-5 text-ink-500 text-sm leading-relaxed">Most teams import in under 30 minutes. Our one-click importers pull tasks, statuses, assignees, and comments from Trello, Jira, Asana, and CSVs, mapping fields automatically.</p></div>
+      </div>
+      <div class="faq reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-5 sm:px-6 py-5">
+          <span class="font-semibold text-ink-900">Do you offer a free plan forever?</span>
+          <svg class="faq-ico h-5 w-5 text-violet shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body px-5 sm:px-6"><p class="pb-5 text-ink-500 text-sm leading-relaxed">Yes. Starter is free for up to 10 members with unlimited boards. No credit card, no time limit — upgrade only when you need timelines, workload, or unlimited automations.</p></div>
+      </div>
+      <div class="faq reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-5 sm:px-6 py-5">
+          <span class="font-semibold text-ink-900">Can automations run without a developer?</span>
+          <svg class="faq-ico h-5 w-5 text-violet shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body px-5 sm:px-6"><p class="pb-5 text-ink-500 text-sm leading-relaxed">Absolutely. Tempora Flow is fully no-code: pick a trigger, add conditions, choose actions. If you do want code, our API and webhooks are there for power users.</p></div>
+      </div>
+      <div class="faq reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-5 sm:px-6 py-5">
+          <span class="font-semibold text-ink-900">Is my data secure and exportable?</span>
+          <svg class="faq-ico h-5 w-5 text-violet shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body px-5 sm:px-6"><p class="pb-5 text-ink-500 text-sm leading-relaxed">Always. We're SOC 2 Type II certified with AES-256 encryption. Your data is yours — export everything to CSV or JSON anytime, no lock-in.</p></div>
+      </div>
+      <div class="faq reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-5 sm:px-6 py-5">
+          <span class="font-semibold text-ink-900">What support do paid plans include?</span>
+          <svg class="faq-ico h-5 w-5 text-violet shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body px-5 sm:px-6"><p class="pb-5 text-ink-500 text-sm leading-relaxed">Pro plans get priority chat support with a 4-hour median response. Enterprise adds a dedicated success manager, onboarding workshops, and a 99.99% uptime SLA.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section id="cta" class="py-24 bg-white">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="reveal relative overflow-hidden rounded-[2rem] bg-ink-950 text-white px-7 sm:px-14 py-16 text-center grain">
+      <div class="absolute inset-0 mesh opacity-60"></div>
+      <div class="absolute inset-0 dot-grid opacity-30"></div>
+      <div class="relative">
+        <h2 class="font-display font-extrabold text-3xl sm:text-5xl leading-tight">Give your team its<br class="hidden sm:block" /> <span class="gradient-text">momentum</span> back</h2>
+        <p class="mt-5 text-ink-300 text-lg max-w-xl mx-auto">Join 28,000+ teams who replaced the chaos with one calm system of record. Free to start — set up in an afternoon.</p>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#" class="magnetic inline-flex items-center justify-center gap-2 rounded-full bg-white text-ink-900 font-bold px-7 py-4 hover:bg-mint transition-colors">
+            Start free — no card
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#" class="inline-flex items-center justify-center gap-2 rounded-full ring-1 ring-white/25 text-white font-semibold px-7 py-4 hover:bg-white/10 transition">Book a demo</a>
+        </div>
+        <p class="mt-6 text-xs text-ink-400">No credit card · Cancel anytime · GDPR ready</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ink-950 text-ink-300 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-2 lg:grid-cols-6 gap-10">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet to-mint">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          </span>
+          <span class="font-display font-extrabold text-lg text-white">Tempora</span>
+        </a>
+        <p class="mt-4 text-sm text-ink-400 max-w-xs leading-relaxed">The project & task platform where teams build momentum. Plan, ship, and see everything in one calm place.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" aria-label="X" class="grid h-9 w-9 place-items-center rounded-lg bg-white/5 hover:bg-violet transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.3 8.3L23 22h-6.6l-5.2-6.8L5.2 22H2l7.8-8.9L1.5 2h6.8l4.7 6.2L18.9 2z"/></svg></a>
+          <a href="#" aria-label="LinkedIn" class="grid h-9 w-9 place-items-center rounded-lg bg-white/5 hover:bg-violet transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM0 8h5v16H0zM8 8h4.8v2.2h.07c.67-1.2 2.3-2.46 4.73-2.46C22.4 7.74 24 10 24 14v10h-5v-8.9c0-2.12-.04-4.85-2.96-4.85-2.96 0-3.42 2.31-3.42 4.7V24H8z"/></svg></a>
+          <a href="#" aria-label="GitHub" class="grid h-9 w-9 place-items-center rounded-lg bg-white/5 hover:bg-violet transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.6 2 12.3c0 4.5 2.9 8.3 6.8 9.7.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.4-3.4-1.4-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.3 9.3 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10.3 10.3 0 0 0 22 12.3C22 6.6 17.5 2 12 2z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <p class="font-semibold text-white text-sm mb-4">Product</p>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#features" class="hover:text-white transition">Features</a></li>
+          <li><a href="#views" class="hover:text-white transition">Views</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+          <li><a href="#" class="hover:text-white transition">Integrations</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-white text-sm mb-4">Company</p>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#" class="hover:text-white transition">About</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+          <li><a href="#" class="hover:text-white transition">Blog</a></li>
+          <li><a href="#" class="hover:text-white transition">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-white text-sm mb-4">Resources</p>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#" class="hover:text-white transition">Docs</a></li>
+          <li><a href="#" class="hover:text-white transition">Templates</a></li>
+          <li><a href="#" class="hover:text-white transition">API</a></li>
+          <li><a href="#" class="hover:text-white transition">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold text-white text-sm mb-4">Legal</p>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-white transition">Terms</a></li>
+          <li><a href="#security" class="hover:text-white transition">Security</a></li>
+          <li><a href="#" class="hover:text-white transition">DPA</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-ink-400">
+      <p>© 2026 Tempora Labs, Inc. All rights reserved.</p>
+      <p class="flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-mint"></span> All systems operational</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- Nav scroll state ---
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 12) nav.classList.add('shadow-soft');
+    else nav.classList.remove('shadow-soft');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // --- Mobile menu ---
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  // --- Headline rotator ---
+  const rotator = document.getElementById('rotator');
+  const words = ['momentum', 'clarity', 'velocity', 'focus'];
+  let wi = 0;
+  if (!reduce) {
+    setInterval(() => {
+      wi = (wi + 1) % words.length;
+      rotator.style.opacity = 0;
+      rotator.style.transform = 'translateY(8px)';
+      rotator.style.transition = 'opacity .3s, transform .3s';
+      setTimeout(() => {
+        rotator.textContent = words[wi];
+        rotator.style.opacity = 1;
+        rotator.style.transform = 'translateY(0)';
+      }, 320);
+    }, 2600);
+  }
+
+  // --- FAQ accordion ---
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const ico = btn.querySelector('.faq-ico');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      // close all
+      document.querySelectorAll('.faq-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-ico').forEach(i => i.style.transform = 'rotate(0deg)');
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        ico.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  // --- Tabs ---
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      panels.forEach(p => {
+        if (p.dataset.panel === tab) {
+          p.classList.remove('hidden');
+          if (!reduce && window.gsap) gsap.fromTo(p, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: .4, ease: 'power2.out' });
+        } else {
+          p.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // --- Magnetic buttons ---
+  if (!reduce) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.22}px, ${y * 0.3}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  // --- Tilt-3D dashboard ---
+  if (!reduce) {
+    const tilt = document.getElementById('dashTilt');
+    const wrap = tilt ? tilt.parentElement : null;
+    if (wrap) {
+      wrap.addEventListener('mousemove', e => {
+        const r = wrap.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        tilt.style.transform = `rotateY(${px * 9}deg) rotateX(${-py * 9}deg)`;
+      });
+      wrap.addEventListener('mouseleave', () => { tilt.style.transform = 'rotateY(0deg) rotateX(0deg)'; });
+    }
+  }
+
+  // --- GSAP animations ---
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // Hero copy stagger
+      gsap.to('.reveal', { opacity: 1, y: 0, duration: .8, ease: 'power3.out', stagger: 0.06,
+        scrollTrigger: { trigger: 'body', start: 'top top' } });
+
+      // per-section reveal
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.fromTo(el, { opacity: 0, y: 28 }, {
+          opacity: 1, y: 0, duration: .8, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // Kanban cards drift in
+      gsap.from('.kcard', {
+        opacity: 0, y: 24, scale: .96, duration: .7, ease: 'power3.out', stagger: 0.08,
+        scrollTrigger: { trigger: '#dashTilt', start: 'top 80%' }
+      });
+
+      // Floating chips
+      gsap.to('.float-chip', { y: -8, duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1, stagger: 0.4 });
+
+      // Container parallax for hero mesh
+      gsap.to('.mesh', {
+        backgroundPositionY: '40px', ease: 'none',
+        scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: true }
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    }
+  }
+
+  // --- Count-ups ---
+  const counters = document.querySelectorAll('.count');
+  const animateCount = (el) => {
+    const to = parseFloat(el.dataset.to);
+    const dec = parseInt(el.dataset.dec || '0', 10);
+    if (reduce) { el.textContent = to.toFixed(dec); return; }
+    let start = 0;
+    const dur = 1600;
+    const t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = (to * eased).toFixed(dec);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = to.toFixed(dec);
+    };
+    requestAnimationFrame(step);
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { animateCount(e.target); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.6 });
+    counters.forEach(c => io.observe(c));
+  } else {
+    counters.forEach(animateCount);
+  }
+
+  // Open first FAQ by default
+  const firstFaq = document.querySelector('.faq-q');
+  if (firstFaq) firstFaq.click();
+})();
+</script>
+</body>
+</html>

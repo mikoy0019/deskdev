@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meridian Partners — Strategy &amp; Capital Advisory</title>
+<meta name="description" content="Meridian Partners is an independent strategy and capital advisory firm. Disciplined counsel for boards, founders, and institutional investors." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#13130F',
+          paper: '#F4F2EC',
+          stone: '#6B6B61',
+          mist: '#A6A69B',
+          line: '#D9D6CC',
+          accent: '#B5562B',
+        },
+        fontFamily: {
+          grotesk: ['Archivo', 'system-ui', 'sans-serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          serif: ['Newsreader', 'Georgia', 'serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { background:#F4F2EC; color:#13130F; }
+  body { font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  ::selection { background:#13130F; color:#F4F2EC; }
+
+  .display { font-family:'Archivo',sans-serif; letter-spacing:-0.03em; line-height:0.94; }
+  .mono { font-family:'Archivo',sans-serif; font-variant-numeric:tabular-nums; }
+  .serif-accent { font-family:'Newsreader',serif; }
+
+  .eyebrow {
+    font-family:'Archivo',sans-serif; font-size:0.66rem; letter-spacing:0.32em;
+    text-transform:uppercase; font-weight:600; color:#6B6B61;
+  }
+  .idx { font-family:'Archivo',sans-serif; font-variant-numeric:tabular-nums; letter-spacing:0.05em; }
+
+  /* Masked reveal */
+  .reveal-mask { overflow:hidden; }
+  .reveal-mask > .reveal-inner { display:block; transform:translateY(110%); }
+
+  /* Animated rule (line draw) */
+  .rule-x { transform:scaleX(0); transform-origin:left center; }
+  .rule-y { transform:scaleY(0); transform-origin:top center; }
+
+  .fade-up { opacity:0; transform:translateY(24px); }
+
+  /* Nav link underline */
+  .nav-link { position:relative; }
+  .nav-link::after {
+    content:''; position:absolute; left:0; bottom:-3px; height:1px; width:100%;
+    background:#13130F; transform:scaleX(0); transform-origin:left; transition:transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .nav-link:hover::after { transform:scaleX(1); }
+
+  /* FAQ */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .55s cubic-bezier(.22,1,.36,1); }
+  .faq-item.open .faq-body { max-height:280px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+  .faq-plus { transition:transform .4s cubic-bezier(.22,1,.36,1); }
+
+  .link-arrow { transition:transform .35s cubic-bezier(.22,1,.36,1); display:inline-block; }
+  .group:hover .link-arrow { transform:translateX(6px); }
+
+  .grid-cell { transition:background-color .4s ease; }
+  .grid-cell:hover { background-color:#ECEAE2; }
+
+  .hairline { background:#D9D6CC; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-mask > .reveal-inner { transform:none !important; }
+    .rule-x,.rule-y { transform:none !important; }
+    .fade-up { opacity:1 !important; transform:none !important; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 bg-paper/85 backdrop-blur-md border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="h-16 md:h-20 grid grid-cols-12 items-center gap-4">
+      <a href="#top" class="col-span-6 md:col-span-3 flex items-center gap-3">
+        <span class="inline-block w-3 h-3 bg-accent rotate-45"></span>
+        <span class="display text-lg md:text-xl tracking-tight">MERIDIAN<span class="text-stone">·</span>PARTNERS</span>
+      </a>
+      <nav class="hidden md:flex col-span-6 justify-center gap-9 text-[0.8rem] font-medium text-ink/80">
+        <a href="#practice" class="nav-link">Practice</a>
+        <a href="#approach" class="nav-link">Approach</a>
+        <a href="#firm" class="nav-link">Firm</a>
+        <a href="#outcomes" class="nav-link">Outcomes</a>
+        <a href="#insights" class="nav-link">Insights</a>
+      </nav>
+      <div class="col-span-6 md:col-span-3 flex justify-end items-center gap-5">
+        <span class="hidden lg:block mono text-xs text-stone tracking-wide">EST. 2009</span>
+        <a href="#contact" class="text-[0.78rem] font-medium border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors duration-300">
+          Engage
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="pt-32 md:pt-44 pb-16 md:pb-24 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+
+    <!-- meta row -->
+    <div class="grid grid-cols-12 gap-4 mb-10 md:mb-16">
+      <div class="col-span-12 md:col-span-3 hero-meta fade-up">
+        <p class="eyebrow mb-2">Independent Advisory</p>
+        <p class="text-sm text-stone leading-relaxed">Strategy, capital, and the discipline between the two.</p>
+      </div>
+      <div class="hidden md:block md:col-span-6"></div>
+      <div class="col-span-12 md:col-span-3 hero-meta fade-up md:text-right">
+        <p class="eyebrow mb-2">Headquarters</p>
+        <p class="text-sm text-stone leading-relaxed">Zürich · London · New York</p>
+      </div>
+    </div>
+
+    <!-- headline -->
+    <h1 class="display text-[clamp(2.6rem,9vw,8.4rem)] text-ink">
+      <span class="reveal-mask block"><span class="reveal-inner">Clarity under</span></span>
+      <span class="reveal-mask block"><span class="reveal-inner">complexity. <span class="serif-accent italic font-normal text-accent">Counsel</span></span></span>
+      <span class="reveal-mask block"><span class="reveal-inner">that compounds.</span></span>
+    </h1>
+
+    <!-- sub row -->
+    <div class="grid grid-cols-12 gap-4 mt-12 md:mt-20 items-end">
+      <div class="col-span-12 md:col-span-5 hero-meta fade-up">
+        <p class="text-base md:text-lg text-ink/75 leading-relaxed max-w-md">
+          We advise boards, founders, and institutional investors on the decisions
+          that define a decade — capital structure, market entry, transactions, and
+          the quiet work of building enduring enterprises.
+        </p>
+      </div>
+      <div class="hidden md:block md:col-span-3"></div>
+      <div class="col-span-12 md:col-span-4 hero-meta fade-up">
+        <a href="#practice" class="group inline-flex items-center gap-4 border-t border-ink pt-4 w-full md:w-auto">
+          <span class="display text-2xl md:text-3xl">Explore the practice</span>
+          <span class="link-arrow text-2xl text-accent">→</span>
+        </a>
+        <p class="mono text-xs text-mist mt-4 tracking-wide">SCROLL ↓ &nbsp; 01 / 09</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS STRIP ===================== -->
+<section class="border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-2 md:grid-cols-4">
+      <!-- cell -->
+      <div class="stat py-10 md:py-14 pr-6 border-r border-line">
+        <div class="mono text-4xl md:text-6xl text-ink"><span class="count" data-to="240" data-suffix="">0</span><span class="text-accent">+</span></div>
+        <p class="text-sm text-stone mt-3 leading-snug">Engagements delivered<br>across four continents</p>
+      </div>
+      <div class="stat py-10 md:py-14 px-6 md:border-r border-line">
+        <div class="mono text-4xl md:text-6xl text-ink">$<span class="count" data-to="18" data-suffix="">0</span><span class="text-accent">.4B</span></div>
+        <p class="text-sm text-stone mt-3 leading-snug">Aggregate transaction<br>value advised</p>
+      </div>
+      <div class="stat py-10 md:py-14 pr-6 md:px-6 border-r border-line border-t md:border-t-0">
+        <div class="mono text-4xl md:text-6xl text-ink"><span class="count" data-to="94" data-suffix="">0</span><span class="text-accent">%</span></div>
+        <p class="text-sm text-stone mt-3 leading-snug">Of clients return for<br>a second mandate</p>
+      </div>
+      <div class="stat py-10 md:py-14 px-6 md:pl-6 border-t md:border-t-0">
+        <div class="mono text-4xl md:text-6xl text-ink"><span class="count" data-to="16" data-suffix="">0</span><span class="text-accent"> yrs</span></div>
+        <p class="text-sm text-stone mt-3 leading-snug">Median tenure of<br>our senior partners</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRACTICE AREAS ===================== -->
+<section id="practice" class="py-20 md:py-32 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4 mb-12 md:mb-20">
+      <div class="col-span-12 md:col-span-4">
+        <p class="eyebrow mb-4 sec-eyebrow fade-up">02 — Practice Areas</p>
+        <h2 class="display text-4xl md:text-6xl reveal-mask"><span class="reveal-inner block">Where we<br>do our work.</span></h2>
+      </div>
+      <div class="col-span-12 md:col-span-4 md:col-start-9 flex md:items-end">
+        <p class="text-sm md:text-base text-stone leading-relaxed fade-up">
+          Five disciplines, one operating standard. Each mandate is staffed by
+          partners — never delegated to a layer of analysts you will never meet.
+        </p>
+      </div>
+    </div>
+
+    <!-- grid of practices -->
+    <div class="border-t border-line">
+      <!-- row -->
+      <a href="#" class="practice group grid grid-cols-12 gap-4 items-baseline py-7 md:py-9 border-b border-line grid-cell px-2 -mx-2">
+        <span class="idx col-span-2 md:col-span-1 text-xs text-mist pt-1">01</span>
+        <span class="display col-span-10 md:col-span-5 text-2xl md:text-4xl text-ink">Corporate Strategy</span>
+        <span class="col-span-12 md:col-span-5 text-sm text-stone leading-relaxed mt-2 md:mt-0">Portfolio reshaping, growth architecture, and the disciplined allocation of scarce capital.</span>
+        <span class="hidden md:flex col-span-1 justify-end text-accent text-xl link-arrow">→</span>
+      </a>
+      <a href="#" class="practice group grid grid-cols-12 gap-4 items-baseline py-7 md:py-9 border-b border-line grid-cell px-2 -mx-2">
+        <span class="idx col-span-2 md:col-span-1 text-xs text-mist pt-1">02</span>
+        <span class="display col-span-10 md:col-span-5 text-2xl md:text-4xl text-ink">Mergers &amp; Acquisitions</span>
+        <span class="col-span-12 md:col-span-5 text-sm text-stone leading-relaxed mt-2 md:mt-0">Sell-side, buy-side, and complex carve-outs — advised from thesis to close.</span>
+        <span class="hidden md:flex col-span-1 justify-end text-accent text-xl link-arrow">→</span>
+      </a>
+      <a href="#" class="practice group grid grid-cols-12 gap-4 items-baseline py-7 md:py-9 border-b border-line grid-cell px-2 -mx-2">
+        <span class="idx col-span-2 md:col-span-1 text-xs text-mist pt-1">03</span>
+        <span class="display col-span-10 md:col-span-5 text-2xl md:text-4xl text-ink">Capital &amp; Restructuring</span>
+        <span class="col-span-12 md:col-span-5 text-sm text-stone leading-relaxed mt-2 md:mt-0">Balance-sheet design, refinancing, and turnaround under operational pressure.</span>
+        <span class="hidden md:flex col-span-1 justify-end text-accent text-xl link-arrow">→</span>
+      </a>
+      <a href="#" class="practice group grid grid-cols-12 gap-4 items-baseline py-7 md:py-9 border-b border-line grid-cell px-2 -mx-2">
+        <span class="idx col-span-2 md:col-span-1 text-xs text-mist pt-1">04</span>
+        <span class="display col-span-10 md:col-span-5 text-2xl md:text-4xl text-ink">Market Entry</span>
+        <span class="col-span-12 md:col-span-5 text-sm text-stone leading-relaxed mt-2 md:mt-0">Geographic and segment expansion grounded in evidence, not optimism.</span>
+        <span class="hidden md:flex col-span-1 justify-end text-accent text-xl link-arrow">→</span>
+      </a>
+      <a href="#" class="practice group grid grid-cols-12 gap-4 items-baseline py-7 md:py-9 border-b border-line grid-cell px-2 -mx-2">
+        <span class="idx col-span-2 md:col-span-1 text-xs text-mist pt-1">05</span>
+        <span class="display col-span-10 md:col-span-5 text-2xl md:text-4xl text-ink">Board Advisory</span>
+        <span class="col-span-12 md:col-span-5 text-sm text-stone leading-relaxed mt-2 md:mt-0">Governance, succession, and the counsel that belongs in the room before the vote.</span>
+        <span class="hidden md:flex col-span-1 justify-end text-accent text-xl link-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== APPROACH / METHOD ===================== -->
+<section id="approach" class="py-20 md:py-32 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4">
+      <!-- left rail -->
+      <div class="col-span-12 md:col-span-4 mb-12 md:mb-0">
+        <p class="eyebrow mb-4 sec-eyebrow fade-up">03 — The Method</p>
+        <h2 class="display text-4xl md:text-6xl mb-8 reveal-mask"><span class="reveal-inner block">A way of<br>thinking.</span></h2>
+        <p class="serif-accent italic text-xl md:text-2xl text-ink/80 leading-snug max-w-sm fade-up">
+          “We do not sell decks. We sell judgment — and the conviction to defend it.”
+        </p>
+        <p class="text-sm text-stone mt-6 fade-up">— Founding Principle, Article I</p>
+      </div>
+
+      <!-- method steps -->
+      <div class="col-span-12 md:col-span-7 md:col-start-6">
+        <div class="space-y-0">
+          <div class="method grid grid-cols-12 gap-4 py-8 border-t border-line">
+            <span class="idx col-span-2 text-accent text-sm pt-1">01</span>
+            <div class="col-span-10">
+              <h3 class="display text-2xl md:text-3xl mb-3">Frame the real question</h3>
+              <p class="text-sm md:text-base text-stone leading-relaxed max-w-xl">Most mandates arrive mis-stated. We spend the first week dismantling the question until only the decision that matters remains.</p>
+            </div>
+          </div>
+          <div class="method grid grid-cols-12 gap-4 py-8 border-t border-line">
+            <span class="idx col-span-2 text-accent text-sm pt-1">02</span>
+            <div class="col-span-10">
+              <h3 class="display text-2xl md:text-3xl mb-3">Evidence over instinct</h3>
+              <p class="text-sm md:text-base text-stone leading-relaxed max-w-xl">Primary data, proprietary models, and field diligence. We pressure-test every assumption until it earns its place in the recommendation.</p>
+            </div>
+          </div>
+          <div class="method grid grid-cols-12 gap-4 py-8 border-t border-line">
+            <span class="idx col-span-2 text-accent text-sm pt-1">03</span>
+            <div class="col-span-10">
+              <h3 class="display text-2xl md:text-3xl mb-3">A single defensible path</h3>
+              <p class="text-sm md:text-base text-stone leading-relaxed max-w-xl">No menu of options designed to avoid accountability. One recommendation, the reasoning laid bare, and a partner who will stand behind it.</p>
+            </div>
+          </div>
+          <div class="method grid grid-cols-12 gap-4 py-8 border-t border-b border-line">
+            <span class="idx col-span-2 text-accent text-sm pt-1">04</span>
+            <div class="col-span-10">
+              <h3 class="display text-2xl md:text-3xl mb-3">Stay until it holds</h3>
+              <p class="text-sm md:text-base text-stone leading-relaxed max-w-xl">Advice without implementation is theatre. We remain through execution — to the moment the decision proves itself in the numbers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FIRM / ABOUT ===================== -->
+<section id="firm" class="py-20 md:py-32 border-b border-line bg-ink text-paper">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4 mb-12 md:mb-20">
+      <div class="col-span-12 md:col-span-6">
+        <p class="eyebrow mb-6 text-mist sec-eyebrow fade-up" style="color:#A6A69B">04 — The Firm</p>
+        <h2 class="display text-3xl md:text-5xl leading-tight text-paper reveal-mask">
+          <span class="reveal-inner block">Founded on the belief that good advice is rare,</span>
+          <span class="reveal-inner block">and that <span class="serif-accent italic text-accent">scarcity</span> is the point.</span>
+        </h2>
+      </div>
+      <div class="col-span-12 md:col-span-4 md:col-start-9 flex md:items-end">
+        <p class="text-sm md:text-base text-mist leading-relaxed fade-up" style="color:#A6A69B">
+          We keep the firm deliberately small. Fewer partners, fewer clients, and the
+          freedom to refuse work that does not deserve our full attention.
+        </p>
+      </div>
+    </div>
+
+    <!-- firm grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 border-t" style="border-color:#2a2a22">
+      <div class="firm-cell py-10 md:py-12 md:pr-10 border-b md:border-b-0 md:border-r" style="border-color:#2a2a22">
+        <span class="mono text-accent text-sm">i.</span>
+        <h3 class="display text-2xl mt-4 mb-3 text-paper">Independence</h3>
+        <p class="text-sm leading-relaxed" style="color:#A6A69B">No banking arm, no products to sell, no incentive but the quality of the counsel itself.</p>
+      </div>
+      <div class="firm-cell py-10 md:py-12 md:px-10 border-b md:border-b-0 md:border-r" style="border-color:#2a2a22">
+        <span class="mono text-accent text-sm">ii.</span>
+        <h3 class="display text-2xl mt-4 mb-3 text-paper">Discretion</h3>
+        <p class="text-sm leading-relaxed" style="color:#A6A69B">The most important work is never announced. Our reference list is private, and our clients prefer it that way.</p>
+      </div>
+      <div class="firm-cell py-10 md:py-12 md:pl-10">
+        <span class="mono text-accent text-sm">iii.</span>
+        <h3 class="display text-2xl mt-4 mb-3 text-paper">Continuity</h3>
+        <p class="text-sm leading-relaxed" style="color:#A6A69B">The partner who wins the mandate is the partner who delivers it — from first meeting to final board.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== OUTCOMES / TESTIMONIALS ===================== -->
+<section id="outcomes" class="py-20 md:py-32 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4 mb-12 md:mb-20">
+      <div class="col-span-12 md:col-span-4">
+        <p class="eyebrow mb-4 sec-eyebrow fade-up">05 — Client Outcomes</p>
+        <h2 class="display text-4xl md:text-6xl reveal-mask"><span class="reveal-inner block">In their<br>own words.</span></h2>
+      </div>
+      <div class="col-span-12 md:col-span-4 md:col-start-9 flex md:items-end">
+        <p class="text-sm text-stone leading-relaxed fade-up">
+          Named references provided on request, with the client's consent — never before.
+          A selection of de-identified results below.
+        </p>
+      </div>
+    </div>
+
+    <!-- testimonials -->
+    <div class="grid grid-cols-1 md:grid-cols-2">
+      <figure class="quote py-10 md:py-14 md:pr-14 border-t border-line md:border-r">
+        <blockquote class="serif-accent text-xl md:text-2xl leading-snug text-ink/90">
+          “They told us the answer we did not want to hear, and were right. The board has not engaged anyone else since.”
+        </blockquote>
+        <figcaption class="mt-8 flex items-center gap-4">
+          <span class="w-8 h-px hairline"></span>
+          <span class="text-sm"><span class="font-medium text-ink">Chair, Audit Committee</span><br><span class="text-stone">European Industrial Group</span></span>
+        </figcaption>
+      </figure>
+      <figure class="quote py-10 md:py-14 md:pl-14 border-t border-line">
+        <blockquote class="serif-accent text-xl md:text-2xl leading-snug text-ink/90">
+          “A small team that out-thought a much larger bank. The diligence was surgical; the recommendation, unambiguous.”
+        </blockquote>
+        <figcaption class="mt-8 flex items-center gap-4">
+          <span class="w-8 h-px hairline"></span>
+          <span class="text-sm"><span class="font-medium text-ink">Managing Partner</span><br><span class="text-stone">Mid-Market Buyout Fund</span></span>
+        </figcaption>
+      </figure>
+      <figure class="quote py-10 md:py-14 md:pr-14 border-t border-line md:border-r">
+        <blockquote class="serif-accent text-xl md:text-2xl leading-snug text-ink/90">
+          “Eighteen months later the thesis has held to within a point. That kind of precision is not luck.”
+        </blockquote>
+        <figcaption class="mt-8 flex items-center gap-4">
+          <span class="w-8 h-px hairline"></span>
+          <span class="text-sm"><span class="font-medium text-ink">Founder &amp; CEO</span><br><span class="text-stone">Cross-Border Technology Firm</span></span>
+        </figcaption>
+      </figure>
+      <figure class="quote py-10 md:py-14 md:pl-14 border-t border-b border-line">
+        <blockquote class="serif-accent text-xl md:text-2xl leading-snug text-ink/90">
+          “They stayed through implementation when others would have invoiced and left. That is the whole difference.”
+        </blockquote>
+        <figcaption class="mt-8 flex items-center gap-4">
+          <span class="w-8 h-px hairline"></span>
+          <span class="text-sm"><span class="font-medium text-ink">Chief Financial Officer</span><br><span class="text-stone">Listed Consumer Business</span></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INSIGHTS / PROCESS ===================== -->
+<section id="insights" class="py-20 md:py-32 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4 mb-12 md:mb-16 items-end">
+      <div class="col-span-12 md:col-span-7">
+        <p class="eyebrow mb-4 sec-eyebrow fade-up">06 — Insights</p>
+        <h2 class="display text-4xl md:text-6xl reveal-mask"><span class="reveal-inner block">Selected<br>thinking.</span></h2>
+      </div>
+      <div class="col-span-12 md:col-span-3 md:col-start-10 md:text-right mt-6 md:mt-0">
+        <a href="#" class="group inline-flex items-center gap-3 text-sm font-medium border-b border-ink pb-1">
+          All publications <span class="link-arrow text-accent">→</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-line border border-line">
+      <article class="insight bg-paper p-7 md:p-9 grid-cell">
+        <div class="flex items-center justify-between mb-8">
+          <span class="eyebrow">Capital Markets</span>
+          <span class="mono text-xs text-mist">04 · 2026</span>
+        </div>
+        <h3 class="display text-2xl md:text-[1.7rem] leading-tight mb-4">The cost of optionality in a higher-rate decade</h3>
+        <p class="text-sm text-stone leading-relaxed mb-8">Why balance sheets built for flexibility now carry a quiet, compounding premium — and when to pay it.</p>
+        <a href="#" class="group inline-flex items-center gap-2 text-sm font-medium">Read <span class="link-arrow text-accent">→</span></a>
+      </article>
+      <article class="insight bg-paper p-7 md:p-9 grid-cell">
+        <div class="flex items-center justify-between mb-8">
+          <span class="eyebrow">Strategy</span>
+          <span class="mono text-xs text-mist">03 · 2026</span>
+        </div>
+        <h3 class="display text-2xl md:text-[1.7rem] leading-tight mb-4">Portfolio discipline when growth slows</h3>
+        <p class="text-sm text-stone leading-relaxed mb-8">A framework for deciding what to keep, what to fund, and what to let go — before the market decides for you.</p>
+        <a href="#" class="group inline-flex items-center gap-2 text-sm font-medium">Read <span class="link-arrow text-accent">→</span></a>
+      </article>
+      <article class="insight bg-paper p-7 md:p-9 grid-cell">
+        <div class="flex items-center justify-between mb-8">
+          <span class="eyebrow">Governance</span>
+          <span class="mono text-xs text-mist">01 · 2026</span>
+        </div>
+        <h3 class="display text-2xl md:text-[1.7rem] leading-tight mb-4">What boards underprice in succession</h3>
+        <p class="text-sm text-stone leading-relaxed mb-8">The most expensive transitions are the ones planned eighteen months too late. A short note on timing.</p>
+        <a href="#" class="group inline-flex items-center gap-2 text-sm font-medium">Read <span class="link-arrow text-accent">→</span></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-20 md:py-32 border-b border-line">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12 md:col-span-4 mb-10 md:mb-0">
+        <p class="eyebrow mb-4 sec-eyebrow fade-up">07 — Enquiries</p>
+        <h2 class="display text-4xl md:text-6xl reveal-mask"><span class="reveal-inner block">Before you<br>engage.</span></h2>
+      </div>
+
+      <div class="col-span-12 md:col-span-7 md:col-start-6">
+        <div class="border-t border-line">
+          <div class="faq-item border-b border-line">
+            <button class="faq-trigger w-full flex items-start justify-between gap-6 py-7 text-left">
+              <span class="grid grid-cols-[2rem_1fr] gap-3 items-start">
+                <span class="idx text-accent text-sm pt-1">01</span>
+                <span class="display text-xl md:text-2xl text-ink">How do you structure fees?</span>
+              </span>
+              <span class="faq-plus text-2xl text-stone leading-none mt-1">+</span>
+            </button>
+            <div class="faq-body"><p class="pl-[2.75rem] pb-7 text-sm md:text-base text-stone leading-relaxed max-w-xl">Retainer for strategic mandates, success-linked for transactions. We agree the basis in writing before any work begins, and we never bill for a recommendation we would not act on ourselves.</p></div>
+          </div>
+          <div class="faq-item border-b border-line">
+            <button class="faq-trigger w-full flex items-start justify-between gap-6 py-7 text-left">
+              <span class="grid grid-cols-[2rem_1fr] gap-3 items-start">
+                <span class="idx text-accent text-sm pt-1">02</span>
+                <span class="display text-xl md:text-2xl text-ink">Will I work directly with a partner?</span>
+              </span>
+              <span class="faq-plus text-2xl text-stone leading-none mt-1">+</span>
+            </button>
+            <div class="faq-body"><p class="pl-[2.75rem] pb-7 text-sm md:text-base text-stone leading-relaxed max-w-xl">Always. A named partner owns your mandate end to end. We do not operate a pyramid, and you will never be handed to a team you have not met.</p></div>
+          </div>
+          <div class="faq-item border-b border-line">
+            <button class="faq-trigger w-full flex items-start justify-between gap-6 py-7 text-left">
+              <span class="grid grid-cols-[2rem_1fr] gap-3 items-start">
+                <span class="idx text-accent text-sm pt-1">03</span>
+                <span class="display text-xl md:text-2xl text-ink">Do you ever decline work?</span>
+              </span>
+              <span class="faq-plus text-2xl text-stone leading-none mt-1">+</span>
+            </button>
+            <div class="faq-body"><p class="pl-[2.75rem] pb-7 text-sm md:text-base text-stone leading-relaxed max-w-xl">Frequently. If we cannot add judgment beyond what you already hold, or if a conflict exists, we say so at the outset. Saying no is part of the service.</p></div>
+          </div>
+          <div class="faq-item border-b border-line">
+            <button class="faq-trigger w-full flex items-start justify-between gap-6 py-7 text-left">
+              <span class="grid grid-cols-[2rem_1fr] gap-3 items-start">
+                <span class="idx text-accent text-sm pt-1">04</span>
+                <span class="display text-xl md:text-2xl text-ink">How long is a typical engagement?</span>
+              </span>
+              <span class="faq-plus text-2xl text-stone leading-none mt-1">+</span>
+            </button>
+            <div class="faq-body"><p class="pl-[2.75rem] pb-7 text-sm md:text-base text-stone leading-relaxed max-w-xl">Strategy mandates run six to fourteen weeks; transactions, longer. Where it matters, we stay through implementation rather than handing over a document and departing.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="contact" class="py-24 md:py-40">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid grid-cols-12 gap-4">
+      <div class="col-span-12 md:col-span-8">
+        <p class="eyebrow mb-6 sec-eyebrow fade-up">08 — Engage</p>
+        <h2 class="display text-[clamp(2.4rem,7vw,6.5rem)] text-ink leading-[0.95]">
+          <span class="reveal-mask block"><span class="reveal-inner">Begin with a</span></span>
+          <span class="reveal-mask block"><span class="reveal-inner"><span class="serif-accent italic font-normal text-accent">conversation</span>.</span></span>
+        </h2>
+      </div>
+      <div class="col-span-12 md:col-span-4 flex flex-col justify-end mt-10 md:mt-0">
+        <p class="text-sm md:text-base text-stone leading-relaxed mb-8 max-w-sm">
+          Tell us the decision in front of you. We will tell you, candidly, whether we
+          are the right firm to help you make it.
+        </p>
+        <a href="mailto:office@meridianpartners.example" class="group inline-flex items-center justify-between gap-4 bg-ink text-paper px-6 py-5 hover:bg-accent transition-colors duration-300">
+          <span class="display text-lg">office@meridianpartners.example</span>
+          <span class="link-arrow text-xl">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="border-t border-line bg-ink text-paper">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 py-14 md:py-20">
+    <div class="grid grid-cols-12 gap-y-12 gap-x-4">
+      <div class="col-span-12 md:col-span-4">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="inline-block w-3 h-3 bg-accent rotate-45"></span>
+          <span class="display text-xl text-paper">MERIDIAN·PARTNERS</span>
+        </div>
+        <p class="text-sm leading-relaxed max-w-xs" style="color:#A6A69B">Independent strategy &amp; capital advisory. Counsel for the decisions that define a decade.</p>
+      </div>
+
+      <div class="col-span-6 md:col-span-2 md:col-start-7">
+        <p class="eyebrow mb-5" style="color:#6B6B61">Practice</p>
+        <ul class="space-y-3 text-sm" style="color:#A6A69B">
+          <li><a href="#practice" class="hover:text-paper transition-colors">Strategy</a></li>
+          <li><a href="#practice" class="hover:text-paper transition-colors">M&amp;A</a></li>
+          <li><a href="#practice" class="hover:text-paper transition-colors">Capital</a></li>
+          <li><a href="#practice" class="hover:text-paper transition-colors">Board Advisory</a></li>
+        </ul>
+      </div>
+      <div class="col-span-6 md:col-span-2">
+        <p class="eyebrow mb-5" style="color:#6B6B61">Firm</p>
+        <ul class="space-y-3 text-sm" style="color:#A6A69B">
+          <li><a href="#firm" class="hover:text-paper transition-colors">About</a></li>
+          <li><a href="#insights" class="hover:text-paper transition-colors">Insights</a></li>
+          <li><a href="#outcomes" class="hover:text-paper transition-colors">Outcomes</a></li>
+          <li><a href="#contact" class="hover:text-paper transition-colors">Contact</a></li>
+        </ul>
+      </div>
+      <div class="col-span-12 md:col-span-2">
+        <p class="eyebrow mb-5" style="color:#6B6B61">Offices</p>
+        <ul class="space-y-3 text-sm" style="color:#A6A69B">
+          <li>Zürich</li>
+          <li>London</li>
+          <li>New York</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hairline h-px w-full my-12" style="background:#2a2a22"></div>
+
+    <div class="grid grid-cols-12 gap-4 items-center">
+      <p class="col-span-12 md:col-span-6 mono text-xs tracking-wide" style="color:#6B6B61">© 2026 MERIDIAN PARTNERS AG — ALL RIGHTS RESERVED</p>
+      <div class="col-span-12 md:col-span-6 flex md:justify-end gap-7 text-xs" style="color:#6B6B61">
+        <a href="#" class="hover:text-paper transition-colors">Privacy</a>
+        <a href="#" class="hover:text-paper transition-colors">Terms</a>
+        <a href="#" class="hover:text-paper transition-colors">Regulatory</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero masked reveals
+    gsap.to('.reveal-mask > .reveal-inner', {
+      y: '0%', duration: 1.1, ease: 'power3.out', stagger: 0.09, delay: 0.15,
+    });
+
+    // Hero meta fade
+    gsap.to('.hero-meta', {
+      opacity: 1, y: 0, duration: 1, ease: 'power2.out', stagger: 0.12, delay: 0.5,
+    });
+
+    // Section masked reveals on scroll (skip hero, already animated)
+    document.querySelectorAll('.reveal-mask').forEach((el) => {
+      const inner = el.querySelector('.reveal-inner');
+      if (!inner) return;
+      // skip hero (already animated)
+      if (el.closest('h1')) return;
+      gsap.fromTo(inner, { y: '110%' }, {
+        y: '0%', duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
+    });
+
+    // generic fade-ups
+    gsap.utils.toArray('.fade-up').forEach((el) => {
+      if (el.classList.contains('hero-meta')) return;
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 90%' },
+      });
+    });
+
+    // Practice / method / firm / insight / quote row fades
+    const rowFade = (sel) => {
+      gsap.utils.toArray(sel).forEach((el, i) => {
+        gsap.from(el, {
+          opacity: 0, y: 28, duration: 0.85, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 90%' },
+        });
+      });
+    };
+    rowFade('.practice'); rowFade('.method'); rowFade('.firm-cell');
+    rowFade('.insight'); rowFade('.quote'); rowFade('.stat');
+
+    // Count-ups
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseFloat(el.dataset.to);
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          gsap.to(obj, {
+            v: to, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => {
+              el.textContent = Number.isInteger(to)
+                ? Math.round(obj.v).toString()
+                : obj.v.toFixed(1);
+            },
+          });
+        },
+      });
+    });
+  } else {
+    // reduced motion: ensure visible
+    document.querySelectorAll('.count').forEach((el) => { el.textContent = el.dataset.to; });
+  }
+
+  // FAQ accordion (always works)
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Nav background intensify on scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) nav.classList.add('shadow-[0_1px_0_0_#D9D6CC]');
+    else nav.classList.remove('shadow-[0_1px_0_0_#D9D6CC]');
+  }, { passive: true });
+</script>
+</body>
+</html>

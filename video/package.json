@@ -1,0 +1,25 @@
+{
+  "name": "nixgen-vsl",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "voiceover": "node scripts/voiceover.mjs",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts NixGenVSL out/nixgen-vsl.mp4",
+    "export": "node scripts/export-site.mjs",
+    "export:site": "node scripts/export-site.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.532",
+    "@remotion/google-fonts": "4.0.532",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.532"
+  }
+}

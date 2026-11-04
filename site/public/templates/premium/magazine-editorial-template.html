@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Margin &mdash; A Quarterly of Ideas, Culture &amp; the Slow Read</title>
+<meta name="description" content="The Margin is an independent magazine for the curious reader — long-form essays, design criticism, and dispatches from the edges of culture." />
+
+<!-- Fonts: elegant serif (Fraunces) + clean sans label (Inter) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink:    '#1a1714',
+        paper:  '#f6f1e7',
+        cream:  '#efe7d6',
+        ochre:  '#b4541f',   // accent
+        rust:   '#8c3b14',
+        sage:   '#5c6651',
+        fog:    '#d8cfbe',
+        smoke:  '#7a716333'
+      },
+      fontFamily: {
+        serif: ['Fraunces', 'Georgia', 'serif'],
+        sans:  ['Inter', 'system-ui', 'sans-serif']
+      },
+      letterSpacing: {
+        label: '0.22em'
+      }
+    }
+  }
+}
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --accent:#b4541f; }
+
+  html, body { overflow-x: hidden; background:#f6f1e7; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    color:#1a1714;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .label {
+    font-family:'Inter',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.22em;
+    font-weight:600;
+    font-size:0.7rem;
+  }
+
+  /* Reading-progress bar */
+  #progress-bar {
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg,var(--accent),#8c3b14);
+    z-index:90; transition:width .08s linear;
+  }
+
+  /* Drop cap */
+  .dropcap::first-letter {
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    float:left;
+    font-size:4.6rem;
+    line-height:0.78;
+    padding:0.18rem 0.6rem 0 0;
+    color:var(--accent);
+    font-optical-sizing:auto;
+  }
+
+  /* Multi-column reading */
+  .columns-read {
+    column-count:2;
+    column-gap:2.6rem;
+    column-rule:1px solid #d8cfbe;
+  }
+  @media (max-width:767px){ .columns-read{ column-count:1; } }
+
+  /* Masked text reveal */
+  .reveal-line { overflow:hidden; display:block; }
+  .reveal-line > span { display:block; transform:translateY(108%); }
+
+  /* Marquee */
+  .marquee-track {
+    display:inline-flex; white-space:nowrap; will-change:transform;
+    animation:marquee 32s linear infinite;
+  }
+  @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .marquee-wrap:hover .marquee-track { animation-play-state:paused; }
+
+  /* Parallax image inside card */
+  .parallax-wrap { overflow:hidden; }
+  .parallax-img { will-change:transform; transform:scale(1.16); }
+
+  /* Hairline */
+  .hairline { border-top:1px solid #c9bfac; }
+
+  /* FAQ accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .faq-item.open .faq-body { max-height:340px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+  .faq-plus { transition:transform .35s ease; }
+
+  /* Link underline animation */
+  .ulink { background-image:linear-gradient(var(--accent),var(--accent));
+    background-size:0% 1px; background-repeat:no-repeat; background-position:left bottom;
+    transition:background-size .35s ease; }
+  .ulink:hover { background-size:100% 1px; }
+
+  /* Pull quote */
+  .pullquote { quotes:"\201C" "\201D"; }
+  .pullquote::before { content:open-quote; color:var(--accent); font-size:1.2em; }
+  .pullquote::after  { content:close-quote; color:var(--accent); font-size:1.2em; }
+
+  .grain { position:fixed; inset:0; pointer-events:none; z-index:80; opacity:0.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation:none !important; }
+    .reveal-line > span { transform:none !important; }
+    .parallax-img { transform:scale(1) !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<div id="progress-bar"></div>
+<div class="grain"></div>
+
+<!-- ============ MASTHEAD NAV ============ -->
+<header class="sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-fog">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <!-- top row: date + brand + actions -->
+    <div class="flex items-center justify-between py-3 text-xs">
+      <span class="label text-ink/50 hidden sm:block">Vol. XIV &middot; No. 3 &middot; Summer Issue</span>
+      <a href="#top" class="font-serif font-semibold tracking-tight text-2xl sm:text-3xl text-ink">
+        The <span class="text-ochre italic">Margin</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <span class="label text-ink/50 hidden md:inline">Est. 2011</span>
+        <a href="#newsletter" class="hidden sm:inline-flex label bg-ink text-paper px-4 py-2 rounded-full hover:bg-ochre transition-colors">Subscribe</a>
+      </div>
+    </div>
+    <!-- category row -->
+    <nav class="hairline flex items-center justify-center gap-5 sm:gap-8 py-3 overflow-x-auto">
+      <a href="#latest"    class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap">Latest</a>
+      <a href="#culture"   class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap">Culture</a>
+      <a href="#ideas"     class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap">Ideas</a>
+      <a href="#design"    class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap">Design</a>
+      <a href="#essays"    class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap">Essays</a>
+      <a href="#about"     class="label text-ink/70 hover:text-ochre transition-colors whitespace-nowrap hidden sm:inline">The Masthead</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ FEATURED-STORY HERO ============ -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 pt-12 lg:pt-16 pb-14">
+  <div class="grid lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+    <!-- text -->
+    <div class="lg:col-span-7 order-2 lg:order-1">
+      <div class="label text-ochre mb-5">Cover Story &middot; The Long Read</div>
+      <h1 class="font-serif font-semibold leading-[0.95] text-[2.6rem] sm:text-6xl lg:text-7xl tracking-tight">
+        <span class="reveal-line"><span>The Quiet Return</span></span>
+        <span class="reveal-line"><span>of the <span class="italic text-ochre">Unhurried</span></span></span>
+        <span class="reveal-line"><span>Sentence</span></span>
+      </h1>
+      <p data-fade class="mt-6 text-xl sm:text-2xl text-ink/70 font-light max-w-xl leading-snug">
+        How a generation raised on the infinite scroll is rediscovering the patience of the page &mdash; and what the slow read asks of us in return.
+      </p>
+      <div data-fade class="mt-8 flex items-center gap-4 text-sm text-ink/60">
+        <span class="font-medium text-ink">By Imogen Hale-Vance</span>
+        <span class="w-1 h-1 rounded-full bg-ink/30"></span>
+        <span>18 min read</span>
+        <span class="w-1 h-1 rounded-full bg-ink/30"></span>
+        <span>Essays</span>
+      </div>
+      <a href="#latest" data-fade class="mt-8 inline-flex items-center gap-2 label text-ink border-b-2 border-ochre pb-1 hover:gap-3 transition-all">
+        Read the feature
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+    <!-- image -->
+    <div class="lg:col-span-5 order-1 lg:order-2">
+      <figure class="parallax-wrap relative rounded-sm aspect-[4/5] bg-gradient-to-br from-rust via-ochre to-sage">
+        <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+             src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80"
+             alt="A still, sunlit reading room" loading="eager"
+             onerror="this.style.display='none'">
+        <figcaption class="absolute bottom-3 right-3 label text-paper/80 bg-ink/40 backdrop-blur px-3 py-1.5 rounded-full">Photograph &middot; The Margin</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HEADLINE MARQUEE ============ -->
+<section aria-hidden="true" class="border-y border-fog bg-cream py-4 marquee-wrap select-none">
+  <div class="marquee-track text-ink/80 font-serif italic text-lg sm:text-xl">
+    <span class="px-6">Read slowly.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Notice everything.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Long sentences welcome.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Ideas worth the patience.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Read slowly.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Notice everything.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Long sentences welcome.</span><span class="text-ochre px-6">&bull;</span>
+    <span class="px-6">Ideas worth the patience.</span><span class="text-ochre px-6">&bull;</span>
+  </div>
+</section>
+
+<!-- ============ LATEST ARTICLES GRID (mixed sizes) ============ -->
+<section id="latest" class="max-w-7xl mx-auto px-5 lg:px-8 py-16 lg:py-24">
+  <div class="flex items-end justify-between mb-10">
+    <h2 class="font-serif font-semibold text-3xl sm:text-4xl tracking-tight">Latest from the Issue</h2>
+    <a href="#" class="label text-ochre ulink hidden sm:inline">View all dispatches</a>
+  </div>
+
+  <div class="grid md:grid-cols-12 gap-8">
+    <!-- big feature card -->
+    <article data-card class="md:col-span-7 group">
+      <a href="#" class="block">
+        <figure class="parallax-wrap relative aspect-[16/10] rounded-sm bg-gradient-to-br from-sage to-ink mb-5">
+          <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?auto=format&fit=crop&w=1000&q=80"
+               alt="Notebook and coffee on a wooden desk" loading="lazy"
+               onerror="this.style.display='none'">
+        </figure>
+        <div class="label text-ochre mb-2" id="ideas">Ideas</div>
+        <h3 class="font-serif font-semibold text-2xl sm:text-3xl leading-tight tracking-tight group-hover:text-ochre transition-colors">
+          Against the Tyranny of the Takeaway: in defence of the inconclusive essay
+        </h3>
+        <p class="mt-3 text-ink/65 text-lg leading-snug">Not every argument needs a verdict. We make the case for writing that thinks aloud, wanders, and refuses the tidy bow.</p>
+        <div class="mt-4 text-sm text-ink/50">By Theo Marchetti &middot; 12 min</div>
+      </a>
+    </article>
+
+    <!-- right column: two stacked -->
+    <div class="md:col-span-5 grid gap-8 content-start">
+      <article data-card class="group" id="culture">
+        <a href="#" class="flex gap-5">
+          <figure class="parallax-wrap relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-sm bg-gradient-to-br from-ochre to-rust">
+            <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80"
+                 alt="Hands holding an open book" loading="lazy"
+                 onerror="this.style.display='none'">
+          </figure>
+          <div>
+            <div class="label text-ochre mb-1">Culture</div>
+            <h3 class="font-serif font-semibold text-xl leading-tight group-hover:text-ochre transition-colors">The Second Life of the Pocket Paperback</h3>
+            <div class="mt-2 text-sm text-ink/50">By Nadia Okonkwo &middot; 7 min</div>
+          </div>
+        </a>
+      </article>
+
+      <article data-card class="group">
+        <a href="#" class="flex gap-5">
+          <figure class="parallax-wrap relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 rounded-sm bg-gradient-to-br from-sage to-ink">
+            <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+                 src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&q=80"
+                 alt="A desk strewn with papers and analytics" loading="lazy"
+                 onerror="this.style.display='none'">
+          </figure>
+          <div>
+            <div class="label text-ochre mb-1" id="design">Design</div>
+            <h3 class="font-serif font-semibold text-xl leading-tight group-hover:text-ochre transition-colors">Why the Margins Matter: a typographer's quiet manifesto</h3>
+            <div class="mt-2 text-sm text-ink/50">By Cassian Wren &middot; 9 min</div>
+          </div>
+        </a>
+      </article>
+
+      <article data-card class="group hairline pt-6">
+        <a href="#" class="block">
+          <div class="label text-ochre mb-1" id="essays">Essays</div>
+          <h3 class="font-serif font-semibold text-xl leading-tight group-hover:text-ochre transition-colors">Letters to a Younger Reader, on the Use of Being Bored</h3>
+          <p class="mt-2 text-ink/60">A short correspondence on attention, idleness, and the rooms where good ideas wait.</p>
+          <div class="mt-2 text-sm text-ink/50">By Imogen Hale-Vance &middot; 5 min</div>
+        </a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATEGORY RAIL ============ -->
+<section class="border-y border-fog bg-cream/60">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 py-14 lg:py-20">
+    <div class="flex items-end justify-between mb-8">
+      <h2 class="font-serif font-semibold text-2xl sm:text-3xl tracking-tight">From the Culture Desk</h2>
+      <span class="label text-ink/40 hidden sm:inline">Scroll &rarr;</span>
+    </div>
+    <div class="flex gap-6 overflow-x-auto pb-4 -mx-1 px-1 snap-x">
+      <!-- rail card -->
+      <article data-card class="snap-start shrink-0 w-72 sm:w-80 group">
+        <figure class="parallax-wrap relative aspect-[5/4] rounded-sm bg-gradient-to-br from-rust to-ochre mb-4">
+          <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80"
+               alt="A room of bookshelves" loading="lazy" onerror="this.style.display='none'">
+        </figure>
+        <div class="label text-ochre mb-1">Film</div>
+        <h3 class="font-serif font-semibold text-lg leading-tight group-hover:text-ochre transition-colors">The Slow Cinema Revival No One Asked For (and Everyone Needed)</h3>
+        <div class="mt-2 text-sm text-ink/50">6 min</div>
+      </article>
+      <article data-card class="snap-start shrink-0 w-72 sm:w-80 group">
+        <figure class="parallax-wrap relative aspect-[5/4] rounded-sm bg-gradient-to-br from-sage to-ink mb-4">
+          <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1516251193007-45ef944ab0c6?auto=format&fit=crop&w=600&q=80"
+               alt="Coffee and notes" loading="lazy" onerror="this.style.display='none'">
+        </figure>
+        <div class="label text-ochre mb-1">Music</div>
+        <h3 class="font-serif font-semibold text-lg leading-tight group-hover:text-ochre transition-colors">Ambient Albums for People Who Hate Ambient Albums</h3>
+        <div class="mt-2 text-sm text-ink/50">8 min</div>
+      </article>
+      <article data-card class="snap-start shrink-0 w-72 sm:w-80 group">
+        <figure class="parallax-wrap relative aspect-[5/4] rounded-sm bg-gradient-to-br from-ochre to-rust mb-4">
+          <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=600&q=80"
+               alt="Open book held in hands" loading="lazy" onerror="this.style.display='none'">
+        </figure>
+        <div class="label text-ochre mb-1">Books</div>
+        <h3 class="font-serif font-semibold text-lg leading-tight group-hover:text-ochre transition-colors">A Field Guide to the Books You'll Never Finish (and Should Keep Anyway)</h3>
+        <div class="mt-2 text-sm text-ink/50">11 min</div>
+      </article>
+      <article data-card class="snap-start shrink-0 w-72 sm:w-80 group">
+        <figure class="parallax-wrap relative aspect-[5/4] rounded-sm bg-gradient-to-br from-ink to-sage mb-4">
+          <img class="parallax-img absolute inset-0 w-full h-full object-cover"
+               src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80"
+               alt="Desk with papers" loading="lazy" onerror="this.style.display='none'">
+        </figure>
+        <div class="label text-ochre mb-1">City</div>
+        <h3 class="font-serif font-semibold text-lg leading-tight group-hover:text-ochre transition-colors">The Last Newsstand on Holloway Road, and the Man Who Keeps It</h3>
+        <div class="mt-2 text-sm text-ink/50">9 min</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EDITOR'S PICK / PULL-QUOTE FEATURE ============ -->
+<section class="max-w-5xl mx-auto px-5 lg:px-8 py-20 lg:py-28">
+  <div class="label text-ochre text-center mb-3">Editor's Pick</div>
+  <h2 class="font-serif font-semibold text-3xl sm:text-5xl text-center tracking-tight leading-tight mb-12">
+    The Hour Before Anyone Wakes
+  </h2>
+
+  <p class="dropcap columns-read text-[1.06rem] sm:text-lg leading-relaxed text-ink/85 mb-10">
+    There is a particular hush that belongs to the hour before the household stirs, before the kettle and the inbox and the day's small negotiations begin. It is the only stretch of time I have found that resists being optimised. You cannot make it shorter without losing it entirely; you cannot fill it without spoiling its single, fragile virtue, which is emptiness. For years I treated this hour as wasted &mdash; a margin to be tightened, a slack to be cut. I have since come to believe it is the most useful part of the day precisely because it produces nothing, asks for nothing, and lets the mind drift toward thoughts it would never reach at noon. The slow read begins here, in the unhurried sentence that nobody is waiting for.
+  </p>
+
+  <figure class="my-12 text-center max-w-3xl mx-auto">
+    <blockquote data-fade class="pullquote font-serif italic text-2xl sm:text-4xl leading-snug text-ink">
+      We mistake speed for understanding, and call the confusion productivity.
+    </blockquote>
+    <figcaption class="label text-ink/50 mt-5">&mdash; from the editor's note, Summer Issue</figcaption>
+  </figure>
+
+  <p class="text-[1.06rem] sm:text-lg leading-relaxed text-ink/85 max-w-2xl mx-auto text-center">
+    This issue is an argument for the long way around. Pour something. Sit somewhere with bad reception. Read the whole thing.
+  </p>
+</section>
+
+<!-- ============ ABOUT THE PUBLICATION ============ -->
+<section id="about" class="bg-ink text-paper">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <div>
+      <div class="label text-ochre mb-5">The Masthead</div>
+      <h2 class="font-serif font-semibold text-3xl sm:text-5xl leading-tight tracking-tight mb-6">
+        An independent quarterly for the curious, the patient, and the chronically over-tabbed.
+      </h2>
+      <p class="text-paper/70 text-lg leading-relaxed mb-5">
+        <span class="font-medium text-paper">The Margin</span> has published long-form essays, design criticism and dispatches from the edges of culture since 2011. We have no algorithm, no autoplay, and no opinion on your screen time &mdash; only a stubborn faith in writing that takes its time.
+      </p>
+      <p class="text-paper/70 text-lg leading-relaxed">
+        Three issues a year, printed on paper you'd be glad to keep, with everything also free to read here for as long as you'll have us.
+      </p>
+    </div>
+    <div class="grid grid-cols-3 gap-6 text-center">
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">14</div>
+        <div class="label text-paper/50 mt-2">Years</div>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">62k</div>
+        <div class="label text-paper/50 mt-2">Readers</div>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">340</div>
+        <div class="label text-paper/50 mt-2">Essays</div>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">3</div>
+        <div class="label text-paper/50 mt-2">Issues / yr</div>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">19</div>
+        <div class="label text-paper/50 mt-2">Contributors</div>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-4xl sm:text-5xl text-ochre">0</div>
+        <div class="label text-paper/50 mt-2">Autoplay</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTRIBUTORS / TESTIMONIALS ============ -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 py-20 lg:py-28">
+  <div class="text-center mb-14">
+    <div class="label text-ochre mb-3">Voices &amp; Contributors</div>
+    <h2 class="font-serif font-semibold text-3xl sm:text-4xl tracking-tight">What readers and writers say</h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-8">
+    <figure data-card class="bg-cream/60 border border-fog rounded-sm p-8">
+      <blockquote class="font-serif text-xl leading-snug text-ink/90 mb-6">"The only thing in my inbox I open the moment it lands. It feels like a letter, not a feed."</blockquote>
+      <figcaption class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full bg-gradient-to-br from-ochre to-rust shrink-0"></span>
+        <span><span class="block font-medium text-ink">Eleni Castellanos</span><span class="label text-ink/45">Subscriber, since 2016</span></span>
+      </figcaption>
+    </figure>
+    <figure data-card class="bg-cream/60 border border-fog rounded-sm p-8">
+      <blockquote class="font-serif text-xl leading-snug text-ink/90 mb-6">"Writing for The Margin is the rare brief that asks for more words, not fewer. A gift to any essayist."</blockquote>
+      <figcaption class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full bg-gradient-to-br from-sage to-ink shrink-0"></span>
+        <span><span class="block font-medium text-ink">Theo Marchetti</span><span class="label text-ink/45">Contributing Editor</span></span>
+      </figcaption>
+    </figure>
+    <figure data-card class="bg-cream/60 border border-fog rounded-sm p-8">
+      <blockquote class="font-serif text-xl leading-snug text-ink/90 mb-6">"I cancelled four newsletters to make room for this one. No regrets, only quieter mornings."</blockquote>
+      <figcaption class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-full bg-gradient-to-br from-rust to-ochre shrink-0"></span>
+        <span><span class="block font-medium text-ink">Marcus Ifeoma</span><span class="label text-ink/45">Subscriber, since 2020</span></span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ NEWSLETTER SIGNUP ============ -->
+<section id="newsletter" class="border-y border-fog bg-cream">
+  <div class="max-w-3xl mx-auto px-5 lg:px-8 py-20 lg:py-24 text-center">
+    <div class="label text-ochre mb-4">The Dispatch</div>
+    <h2 class="font-serif font-semibold text-3xl sm:text-5xl tracking-tight leading-tight mb-5">
+      One unhurried letter, every other Sunday.
+    </h2>
+    <p class="text-ink/65 text-lg max-w-xl mx-auto mb-8">
+      New essays, an editor's note, and one good thing worth reading elsewhere. No tracking pixels, no &ldquo;5 things,&rdquo; no noise.
+    </p>
+    <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return handleSignup(event)">
+      <label for="email" class="sr-only">Email address</label>
+      <input id="email" type="email" required placeholder="you@example.com"
+             class="flex-1 px-5 py-3.5 rounded-full bg-paper border border-fog text-ink placeholder-ink/40 focus:outline-none focus:border-ochre focus:ring-2 focus:ring-ochre/20 transition">
+      <button type="submit" class="label bg-ink text-paper px-7 py-3.5 rounded-full hover:bg-ochre transition-colors">Subscribe</button>
+    </form>
+    <p id="signup-msg" class="mt-4 text-sm text-sage font-medium h-5"></p>
+    <p class="label text-ink/35 mt-2">Free forever &middot; Unsubscribe in one click</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ACCORDION ============ -->
+<section class="max-w-3xl mx-auto px-5 lg:px-8 py-20 lg:py-28">
+  <div class="text-center mb-12">
+    <div class="label text-ochre mb-3">Questions</div>
+    <h2 class="font-serif font-semibold text-3xl sm:text-4xl tracking-tight">Before you subscribe</h2>
+  </div>
+  <div class="divide-y divide-fog border-y border-fog">
+    <div class="faq-item open">
+      <button class="faq-toggle w-full flex items-center justify-between gap-6 py-6 text-left">
+        <span class="font-serif font-semibold text-xl text-ink">Is the writing really free to read?</span>
+        <span class="faq-plus text-ochre text-2xl font-light shrink-0">+</span>
+      </button>
+      <div class="faq-body"><p class="pb-6 text-ink/65 text-lg leading-relaxed">Every essay we've ever published is free to read on this site. Subscriptions support the writers and pay for the print edition &mdash; they're a way to keep the lights on, not a paywall.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-toggle w-full flex items-center justify-between gap-6 py-6 text-left">
+        <span class="font-serif font-semibold text-xl text-ink">What do I actually get in the post?</span>
+        <span class="faq-plus text-ochre text-2xl font-light shrink-0">+</span>
+      </button>
+      <div class="faq-body"><p class="pb-6 text-ink/65 text-lg leading-relaxed">Print subscribers receive three issues a year &mdash; Spring, Summer, and Winter &mdash; each a properly bound object on heavy uncoated stock, mailed flat so it arrives un-creased.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-toggle w-full flex items-center justify-between gap-6 py-6 text-left">
+        <span class="font-serif font-semibold text-xl text-ink">Do you take pitches from new writers?</span>
+        <span class="faq-plus text-ochre text-2xl font-light shrink-0">+</span>
+      </button>
+      <div class="faq-body"><p class="pb-6 text-ink/65 text-lg leading-relaxed">Always. We read every pitch sent to the commissioning desk and reply within three weeks. We pay on acceptance, and we never ask for work on spec.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-toggle w-full flex items-center justify-between gap-6 py-6 text-left">
+        <span class="font-serif font-semibold text-xl text-ink">Will my inbox be buried?</span>
+        <span class="faq-plus text-ochre text-2xl font-light shrink-0">+</span>
+      </button>
+      <div class="faq-body"><p class="pb-6 text-ink/65 text-lg leading-relaxed">No. The Dispatch arrives once a fortnight and nothing else does. We don't sell your address, run drip campaigns, or count your opens.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="bg-ink text-paper">
+  <div class="max-w-4xl mx-auto px-5 lg:px-8 py-24 lg:py-32 text-center">
+    <div class="label text-ochre mb-5">Join the Margin</div>
+    <h2 class="font-serif font-semibold text-4xl sm:text-6xl leading-[1.02] tracking-tight mb-7">
+      Some things are worth<br class="hidden sm:block"> <span class="italic text-ochre">reading twice.</span>
+    </h2>
+    <p class="text-paper/65 text-lg sm:text-xl max-w-xl mx-auto mb-10">
+      Become a subscriber today and get the Summer Issue, the full archive, and a standing invitation to read slowly.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#newsletter" class="label bg-ochre text-paper px-8 py-4 rounded-full hover:bg-rust transition-colors">Subscribe &mdash; from &pound;6/mo</a>
+      <a href="#latest" class="label border border-paper/30 text-paper px-8 py-4 rounded-full hover:bg-paper/10 transition-colors">Browse the issue first</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-paper border-t border-fog">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+    <div class="grid md:grid-cols-12 gap-10 mb-12">
+      <div class="md:col-span-5">
+        <a href="#top" class="font-serif font-semibold text-3xl text-ink">The <span class="text-ochre italic">Margin</span></a>
+        <p class="mt-4 text-ink/60 max-w-sm leading-relaxed">A quarterly of ideas, culture and the slow read. Printed in London, read everywhere there is patience left.</p>
+      </div>
+      <div class="md:col-span-2">
+        <div class="label text-ink/40 mb-4">Sections</div>
+        <ul class="space-y-2.5 text-ink/70">
+          <li><a href="#culture" class="ulink hover:text-ochre">Culture</a></li>
+          <li><a href="#ideas" class="ulink hover:text-ochre">Ideas</a></li>
+          <li><a href="#design" class="ulink hover:text-ochre">Design</a></li>
+          <li><a href="#essays" class="ulink hover:text-ochre">Essays</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <div class="label text-ink/40 mb-4">The Margin</div>
+        <ul class="space-y-2.5 text-ink/70">
+          <li><a href="#about" class="ulink hover:text-ochre">Masthead</a></li>
+          <li><a href="#" class="ulink hover:text-ochre">Pitch us</a></li>
+          <li><a href="#newsletter" class="ulink hover:text-ochre">The Dispatch</a></li>
+          <li><a href="#" class="ulink hover:text-ochre">Archive</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-3">
+        <div class="label text-ink/40 mb-4">Follow</div>
+        <ul class="space-y-2.5 text-ink/70">
+          <li><a href="#" class="ulink hover:text-ochre">Instagram</a></li>
+          <li><a href="#" class="ulink hover:text-ochre">Bluesky</a></li>
+          <li><a href="#" class="ulink hover:text-ochre">RSS</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="hairline pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink/45">
+      <p>&copy; 2026 The Margin Press Ltd. All rights reserved.</p>
+      <p class="label">Made for the slow read</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Reading-progress bar */
+  const bar = document.getElementById('progress-bar');
+  function updateBar() {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateBar, { passive: true });
+  window.addEventListener('resize', updateBar);
+  updateBar();
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* Newsletter handler */
+  window.handleSignup = function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('signup-msg');
+    msg.textContent = 'You’re in — watch for the next Dispatch on Sunday.';
+    e.target.reset();
+    return false;
+  };
+
+  /* GSAP motion */
+  if (reduce || typeof gsap === 'undefined') {
+    document.querySelectorAll('.reveal-line > span, [data-fade]').forEach(el => {
+      el.style.transform = 'none'; el.style.opacity = '1';
+    });
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* Masked headline reveal */
+  gsap.to('.reveal-line > span', {
+    yPercent: 0, duration: 1.1, ease: 'power3.out', stagger: 0.12, delay: 0.15
+  });
+
+  /* Fade-up elements */
+  gsap.utils.toArray('[data-fade]').forEach(el => {
+    gsap.from(el, {
+      y: 26, opacity: 0, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  /* Staggered card reveals */
+  gsap.utils.toArray('[data-card]').forEach(el => {
+    gsap.from(el, {
+      y: 34, opacity: 0, duration: 0.85, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 90%' }
+    });
+  });
+
+  /* Image parallax inside cards */
+  gsap.utils.toArray('.parallax-img').forEach(img => {
+    gsap.fromTo(img, { yPercent: -8 }, {
+      yPercent: 8, ease: 'none',
+      scrollTrigger: { trigger: img.closest('.parallax-wrap'), start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+})();
+</script>
+</body>
+</html>

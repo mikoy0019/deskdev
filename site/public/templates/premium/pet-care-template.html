@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pawmel — Fresh Food & Wellness Subscriptions for Happy Pets</title>
+<meta name="description" content="Pawmel delivers vet-formulated fresh food and wellness boxes to your door. Real ingredients, tail-wagging joy, cancel anytime." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts: rounded friendly display + clean body -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fredoka', 'system-ui', 'sans-serif'],
+          body: ['Nunito', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          cream: '#FFF8F0',
+          peach: '#FFE3CC',
+          coral: '#FF7A59',
+          coraldark: '#E85F3D',
+          berry: '#7C4DFF',
+          mint: '#34D1A4',
+          sky: '#52B6FF',
+          sunny: '#FFC15E',
+          ink: '#3A2E2A',
+          cocoa: '#6B5750',
+        },
+        boxShadow: {
+          soft: '0 14px 40px -12px rgba(255,122,89,0.30)',
+          softpurple: '0 14px 40px -12px rgba(124,77,255,0.30)',
+          card: '0 24px 60px -20px rgba(58,46,42,0.25)',
+        },
+        borderRadius: {
+          blob: '42% 58% 63% 37% / 41% 44% 56% 59%',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { background-color: #FFF8F0; }
+  body { font-family: 'Nunito', sans-serif; color: #3A2E2A; overflow-x: hidden; }
+  h1,h2,h3,h4,.font-display { font-family: 'Fredoka', sans-serif; }
+
+  ::selection { background: #FF7A59; color: #fff; }
+
+  /* Marquee */
+  .marquee-track { display: flex; width: max-content; animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+
+  /* Floating shapes */
+  .float-shape { position: absolute; pointer-events: none; opacity: .9; will-change: transform; }
+
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(100deg, #FF7A59 0%, #7C4DFF 55%, #52B6FF 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Product tilt */
+  .tilt-card { transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease; will-change: transform; }
+
+  /* FAQ accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* Magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* Blob image mask */
+  .blob-mask { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%; }
+  .blob-mask-2 { border-radius: 58% 42% 38% 62% / 56% 39% 61% 44%; }
+
+  .reveal { opacity: 0; }
+
+  /* Wiggle on hover */
+  .wiggle:hover { animation: wiggle .5s ease; }
+  @keyframes wiggle { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-7deg)} 75%{transform:rotate(7deg)} }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="bg-cream text-ink antialiased">
+
+<!-- ============ FLOATING BACKGROUND SHAPES ============ -->
+<div aria-hidden="true" class="fixed inset-0 -z-10 overflow-hidden">
+  <div class="float-shape text-peach" style="top:8%; left:6%;" data-speed="0.4">
+    <svg width="120" height="120" viewBox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="62" rx="22" ry="18"/><circle cx="24" cy="38" r="9"/><circle cx="42" cy="26" r="9"/><circle cx="62" cy="26" r="9"/><circle cx="78" cy="40" r="9"/></svg>
+  </div>
+  <div class="float-shape text-coral/30" style="top:24%; right:8%;" data-speed="0.7">
+    <svg width="90" height="90" viewBox="0 0 100 100" fill="currentColor"><rect x="22" y="40" width="56" height="20" rx="10"/><circle cx="22" cy="38" r="12"/><circle cx="22" cy="62" r="12"/><circle cx="78" cy="38" r="12"/><circle cx="78" cy="62" r="12"/></svg>
+  </div>
+  <div class="float-shape text-mint/40" style="top:58%; left:3%;" data-speed="0.55">
+    <svg width="100" height="100" viewBox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="62" rx="22" ry="18"/><circle cx="24" cy="38" r="9"/><circle cx="42" cy="26" r="9"/><circle cx="62" cy="26" r="9"/><circle cx="78" cy="40" r="9"/></svg>
+  </div>
+  <div class="float-shape text-berry/25" style="top:74%; right:5%;" data-speed="0.5">
+    <svg width="110" height="110" viewBox="0 0 100 100" fill="currentColor"><rect x="22" y="40" width="56" height="20" rx="10"/><circle cx="22" cy="38" r="12"/><circle cx="22" cy="62" r="12"/><circle cx="78" cy="38" r="12"/><circle cx="78" cy="62" r="12"/></svg>
+  </div>
+  <div class="float-shape text-sunny/40" style="top:42%; left:48%;" data-speed="0.35">
+    <svg width="70" height="70" viewBox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="62" rx="20" ry="16"/><circle cx="26" cy="40" r="8"/><circle cx="44" cy="28" r="8"/><circle cx="62" cy="28" r="8"/><circle cx="76" cy="42" r="8"/></svg>
+  </div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 mt-4">
+    <div id="navbar" class="flex items-center justify-between rounded-full bg-white/70 backdrop-blur-md border border-white/60 shadow-soft px-4 sm:px-6 py-3 transition-all duration-300">
+      <a href="#top" class="flex items-center gap-2 font-display font-700 text-xl text-ink">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl bg-coral text-white wiggle shadow-soft">
+          <svg width="22" height="22" viewBox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="62" rx="22" ry="18"/><circle cx="24" cy="38" r="9"/><circle cx="42" cy="26" r="9"/><circle cx="62" cy="26" r="9"/><circle cx="78" cy="40" r="9"/></svg>
+        </span>
+        Pawmel
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-sm font-600 text-cocoa">
+        <a href="#benefits" class="hover:text-coral transition">Why Pawmel</a>
+        <a href="#plans" class="hover:text-coral transition">Plans</a>
+        <a href="#how" class="hover:text-coral transition">How it works</a>
+        <a href="#pricing" class="hover:text-coral transition">Pricing</a>
+        <a href="#faq" class="hover:text-coral transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button aria-label="Cart" class="relative grid place-items-center w-11 h-11 rounded-full bg-cream hover:bg-peach transition text-ink">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="absolute -top-1 -right-1 grid place-items-center w-5 h-5 rounded-full bg-coral text-white text-[10px] font-800">2</span>
+        </button>
+        <a href="#plans" class="magnetic hidden sm:inline-flex items-center gap-2 rounded-full bg-coral hover:bg-coraldark text-white font-700 text-sm px-5 py-2.5 shadow-soft transition">
+          Shop now
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative pt-32 sm:pt-40 pb-20 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-mint/20 text-mint border border-mint/30 px-4 py-1.5 text-sm font-700 mb-6">
+        <span class="w-2 h-2 rounded-full bg-mint animate-pulse"></span> Fresh, vet-formulated, delivered
+      </span>
+      <h1 class="font-display font-700 leading-[1.02] text-5xl sm:text-6xl xl:text-7xl text-ink mb-6">
+        Real food for <br />
+        <span id="headline-rotate" class="text-gradient">happy tails</span>
+      </h1>
+      <p class="reveal text-lg text-cocoa max-w-md mb-8">
+        Pawmel sends gently-cooked meals and wellness boxes tailored to your pet — measured by weight, packed with love, and dropped at your door. Cancel anytime.
+      </p>
+      <div class="reveal flex flex-wrap items-center gap-4 mb-10">
+        <a href="#plans" class="magnetic inline-flex items-center gap-2 rounded-full bg-coral hover:bg-coraldark text-white font-700 text-base px-7 py-4 shadow-soft transition">
+          Build your box
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 rounded-full bg-white hover:bg-peach text-ink font-700 text-base px-7 py-4 border border-peach transition">
+          How it works
+        </a>
+      </div>
+      <div class="reveal flex items-center gap-4">
+        <div class="flex -space-x-3">
+          <span class="w-10 h-10 rounded-full ring-3 ring-cream bg-peach grid place-items-center text-coral">🐶</span>
+          <span class="w-10 h-10 rounded-full ring-3 ring-cream bg-mint/30 grid place-items-center">🐱</span>
+          <span class="w-10 h-10 rounded-full ring-3 ring-cream bg-sky/30 grid place-items-center">🐰</span>
+          <span class="w-10 h-10 rounded-full ring-3 ring-cream bg-sunny/40 grid place-items-center text-cocoa font-800 text-xs">+9k</span>
+        </div>
+        <p class="text-sm text-cocoa font-600">Loved by <span class="font-800 text-ink">9,400+</span> pet parents <span class="text-sunny">★★★★★</span></p>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div class="absolute -inset-6 bg-gradient-to-br from-peach via-coral/30 to-berry/20 blob-mask blur-2xl opacity-70"></div>
+      <div class="relative blob-mask overflow-hidden shadow-card bg-gradient-to-br from-peach to-coral/40 aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Happy golden retriever" class="w-full h-full object-cover" loading="eager" />
+      </div>
+      <!-- floating badges -->
+      <div class="hero-badge absolute -left-4 sm:-left-8 top-10 bg-white rounded-3xl shadow-card px-5 py-3 flex items-center gap-3">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl bg-mint/20 text-mint text-xl">🥩</span>
+        <div><p class="font-800 text-sm leading-tight">100% real</p><p class="text-xs text-cocoa">human-grade</p></div>
+      </div>
+      <div class="hero-badge absolute -right-3 sm:-right-6 bottom-16 bg-white rounded-3xl shadow-card px-5 py-3 flex items-center gap-3">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl bg-coral/15 text-coral text-xl">🚚</span>
+        <div><p class="font-800 text-sm leading-tight">Free delivery</p><p class="text-xs text-cocoa">every 2 weeks</p></div>
+      </div>
+      <div class="hero-badge absolute right-6 -top-3 bg-white rounded-3xl shadow-card px-4 py-2.5 flex items-center gap-2">
+        <span class="text-sunny text-lg">★★★★★</span>
+        <span class="font-800 text-sm">4.9</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative py-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="stat-card text-center rounded-3xl bg-white shadow-card p-6">
+        <p class="font-display font-700 text-4xl text-coral"><span class="count" data-target="9400">0</span>+</p>
+        <p class="text-sm text-cocoa font-600 mt-1">Happy pets fed</p>
+      </div>
+      <div class="stat-card text-center rounded-3xl bg-white shadow-card p-6">
+        <p class="font-display font-700 text-4xl text-berry"><span class="count" data-target="3200">0</span>+</p>
+        <p class="text-sm text-cocoa font-600 mt-1">5-star reviews</p>
+      </div>
+      <div class="stat-card text-center rounded-3xl bg-white shadow-card p-6">
+        <p class="font-display font-700 text-4xl text-mint"><span class="count" data-target="98">0</span>%</p>
+        <p class="text-sm text-cocoa font-600 mt-1">Bowl-clean rate</p>
+      </div>
+      <div class="stat-card text-center rounded-3xl bg-white shadow-card p-6">
+        <p class="font-display font-700 text-4xl text-sky"><span class="count" data-target="42">0</span></p>
+        <p class="text-sm text-cocoa font-600 mt-1">Vet-tested recipes</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE OF BENEFITS ============ -->
+<section class="py-6 bg-ink text-cream -rotate-1 my-8">
+  <div class="marquee-wrap overflow-hidden">
+    <div class="marquee-track gap-10 text-2xl sm:text-3xl font-display font-600 whitespace-nowrap">
+      <span class="flex items-center gap-10">
+        <span>🦴 No fillers</span><span class="text-coral">•</span>
+        <span>🐾 Vet-formulated</span><span class="text-mint">•</span>
+        <span>🥗 Real ingredients</span><span class="text-sunny">•</span>
+        <span>🚚 Free delivery</span><span class="text-sky">•</span>
+        <span>♻️ Eco packaging</span><span class="text-coral">•</span>
+        <span>❤️ Cancel anytime</span><span class="text-berry">•</span>
+      </span>
+      <span class="flex items-center gap-10" aria-hidden="true">
+        <span>🦴 No fillers</span><span class="text-coral">•</span>
+        <span>🐾 Vet-formulated</span><span class="text-mint">•</span>
+        <span>🥗 Real ingredients</span><span class="text-sunny">•</span>
+        <span>🚚 Free delivery</span><span class="text-sky">•</span>
+        <span>♻️ Eco packaging</span><span class="text-coral">•</span>
+        <span>❤️ Cancel anytime</span><span class="text-berry">•</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENEFITS / WHY US ============ -->
+<section id="benefits" class="py-20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal inline-block rounded-full bg-coral/10 text-coral px-4 py-1.5 text-sm font-700 mb-4">Why pet parents switch</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mb-4">Goodness they can taste, <span class="text-gradient">care you can see</span></h2>
+      <p class="reveal text-cocoa text-lg">Every bowl is built around your pet's age, weight, and quirks — nothing sneaky, nothing artificial.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-coral/15 text-2xl mb-5 group-hover:scale-110 transition">🍲</span>
+        <h3 class="font-display font-600 text-xl mb-2">Gently cooked fresh</h3>
+        <p class="text-cocoa text-sm leading-relaxed">Slow-cooked at low temps to lock in nutrients — never extruded into mystery kibble dust.</p>
+      </div>
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-mint/20 text-2xl mb-5 group-hover:scale-110 transition">🧬</span>
+        <h3 class="font-display font-600 text-xl mb-2">Tailored portions</h3>
+        <p class="text-cocoa text-sm leading-relaxed">Tell us their weight & goals; our nutritionists calibrate calories to the gram, every box.</p>
+      </div>
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-sky/20 text-2xl mb-5 group-hover:scale-110 transition">🩺</span>
+        <h3 class="font-display font-600 text-xl mb-2">Vet on speed-dial</h3>
+        <p class="text-cocoa text-sm leading-relaxed">Free chat with our in-house vets whenever you have a tummy, coat, or appetite question.</p>
+      </div>
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-sunny/30 text-2xl mb-5 group-hover:scale-110 transition">♻️</span>
+        <h3 class="font-display font-600 text-xl mb-2">Planet-kind packs</h3>
+        <p class="text-cocoa text-sm leading-relaxed">Curbside-recyclable insulation and trays. Good for your pup, gentle on the planet.</p>
+      </div>
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-berry/15 text-2xl mb-5 group-hover:scale-110 transition">📅</span>
+        <h3 class="font-display font-600 text-xl mb-2">Flex on your terms</h3>
+        <p class="text-cocoa text-sm leading-relaxed">Skip a week, swap recipes, or pause — manage it all in two taps. No awkward calls.</p>
+      </div>
+      <div class="benefit-card group rounded-3xl bg-white shadow-card p-7 hover:-translate-y-2 transition-transform duration-300">
+        <span class="grid place-items-center w-14 h-14 rounded-2xl bg-coral/15 text-2xl mb-5 group-hover:scale-110 transition">😻</span>
+        <h3 class="font-display font-600 text-xl mb-2">Picky-eater promise</h3>
+        <p class="text-cocoa text-sm leading-relaxed">If they snub their first box, we'll refund it and help you find the recipe they crave.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRODUCTS / PLANS GRID ============ -->
+<section id="plans" class="py-20 bg-gradient-to-b from-cream to-peach/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal inline-block rounded-full bg-berry/10 text-berry px-4 py-1.5 text-sm font-700 mb-4">Build a box</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mb-4">Pick their <span class="text-gradient">flavour adventure</span></h2>
+      <p class="reveal text-cocoa text-lg">Mix-and-match recipes and wellness add-ons. Every plan ships free.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card 1 -->
+      <div class="tilt-card group relative rounded-[2rem] bg-white shadow-card overflow-hidden cursor-pointer">
+        <div class="absolute top-4 left-4 z-10 rounded-full bg-coral text-white text-xs font-800 px-3 py-1">Bestseller</div>
+        <div class="aspect-square overflow-hidden bg-gradient-to-br from-peach to-coral/30">
+          <img src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Beef & sweet potato bowl" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" />
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-600 text-lg">Beef & Sweet Potato</h3>
+          <p class="text-xs text-cocoa mb-3">Muscle-building, grain-free</p>
+          <div class="flex items-center justify-between">
+            <span class="font-800 text-coral text-lg">$2.40<span class="text-xs text-cocoa font-600">/day</span></span>
+            <button class="add-btn grid place-items-center w-10 h-10 rounded-full bg-coral text-white hover:bg-coraldark transition shadow-soft">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- card 2 -->
+      <div class="tilt-card group relative rounded-[2rem] bg-white shadow-card overflow-hidden cursor-pointer">
+        <div class="aspect-square overflow-hidden bg-gradient-to-br from-mint/30 to-sky/30">
+          <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Chicken & pumpkin bowl" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" />
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-600 text-lg">Chicken & Pumpkin</h3>
+          <p class="text-xs text-cocoa mb-3">Gentle on sensitive tummies</p>
+          <div class="flex items-center justify-between">
+            <span class="font-800 text-coral text-lg">$2.10<span class="text-xs text-cocoa font-600">/day</span></span>
+            <button class="add-btn grid place-items-center w-10 h-10 rounded-full bg-coral text-white hover:bg-coraldark transition shadow-soft">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- card 3 -->
+      <div class="tilt-card group relative rounded-[2rem] bg-white shadow-card overflow-hidden cursor-pointer">
+        <div class="absolute top-4 left-4 z-10 rounded-full bg-mint text-white text-xs font-800 px-3 py-1">New</div>
+        <div class="aspect-square overflow-hidden bg-gradient-to-br from-sunny/40 to-coral/20">
+          <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Salmon & greens bowl" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" loading="lazy" />
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-600 text-lg">Salmon & Greens</h3>
+          <p class="text-xs text-cocoa mb-3">Omega-rich for shiny coats</p>
+          <div class="flex items-center justify-between">
+            <span class="font-800 text-coral text-lg">$2.80<span class="text-xs text-cocoa font-600">/day</span></span>
+            <button class="add-btn grid place-items-center w-10 h-10 rounded-full bg-coral text-white hover:bg-coraldark transition shadow-soft">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- card 4 -->
+      <div class="tilt-card group relative rounded-[2rem] bg-white shadow-card overflow-hidden cursor-pointer">
+        <div class="aspect-square overflow-hidden bg-gradient-to-br from-berry/20 to-peach grid place-items-center text-7xl">🐾</div>
+        <div class="p-5">
+          <h3 class="font-display font-600 text-lg">Wellness Add-on Box</h3>
+          <p class="text-xs text-cocoa mb-3">Chews, supplements, treats</p>
+          <div class="flex items-center justify-between">
+            <span class="font-800 text-coral text-lg">$14<span class="text-xs text-cocoa font-600">/mo</span></span>
+            <button class="add-btn grid place-items-center w-10 h-10 rounded-full bg-coral text-white hover:bg-coraldark transition shadow-soft">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal inline-block rounded-full bg-mint/15 text-mint px-4 py-1.5 text-sm font-700 mb-4">Subscription in 4 steps</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl">From quiz to <span class="text-gradient">happy bowl</span></h2>
+    </div>
+    <div class="grid md:grid-cols-4 gap-6 relative">
+      <div class="step-card relative rounded-3xl bg-white shadow-card p-7 text-center">
+        <span class="grid place-items-center w-14 h-14 mx-auto rounded-2xl bg-coral text-white font-display font-700 text-2xl mb-4">1</span>
+        <h3 class="font-display font-600 text-lg mb-2">Tell us about them</h3>
+        <p class="text-sm text-cocoa">Breed, age, weight & dietary quirks in a 2-minute quiz.</p>
+      </div>
+      <div class="step-card relative rounded-3xl bg-white shadow-card p-7 text-center">
+        <span class="grid place-items-center w-14 h-14 mx-auto rounded-2xl bg-berry text-white font-display font-700 text-2xl mb-4">2</span>
+        <h3 class="font-display font-600 text-lg mb-2">We craft the plan</h3>
+        <p class="text-sm text-cocoa">Nutritionists portion every recipe to their exact needs.</p>
+      </div>
+      <div class="step-card relative rounded-3xl bg-white shadow-card p-7 text-center">
+        <span class="grid place-items-center w-14 h-14 mx-auto rounded-2xl bg-mint text-white font-display font-700 text-2xl mb-4">3</span>
+        <h3 class="font-display font-600 text-lg mb-2">Box lands at home</h3>
+        <p class="text-sm text-cocoa">Chilled, pre-portioned trays arrive free every two weeks.</p>
+      </div>
+      <div class="step-card relative rounded-3xl bg-white shadow-card p-7 text-center">
+        <span class="grid place-items-center w-14 h-14 mx-auto rounded-2xl bg-sunny text-white font-display font-700 text-2xl mb-4">4</span>
+        <h3 class="font-display font-600 text-lg mb-2">Tails wag, you flex</h3>
+        <p class="text-sm text-cocoa">Skip, swap, or pause anytime from your dashboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section class="py-20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative order-2 lg:order-1">
+      <div class="absolute -inset-4 bg-gradient-to-tr from-mint/40 to-berry/20 blob-mask-2 blur-2xl"></div>
+      <div class="relative blob-mask-2 overflow-hidden shadow-card aspect-[5/4] bg-gradient-to-br from-mint/30 to-coral/30">
+        <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Pup enjoying meal" class="w-full h-full object-cover" loading="lazy" />
+      </div>
+    </div>
+    <div class="order-1 lg:order-2">
+      <span class="reveal inline-block rounded-full bg-coral/10 text-coral px-4 py-1.5 text-sm font-700 mb-4">Our story</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mb-5">Started by a dog named <span class="text-gradient">Biscuit</span></h2>
+      <p class="reveal text-cocoa text-lg mb-5 leading-relaxed">
+        When our founder's senior beagle stopped eating, no shelf could help. So we partnered with veterinary nutritionists to cook real food in real kitchens — and Biscuit's appetite (and zoomies) came roaring back.
+      </p>
+      <p class="reveal text-cocoa mb-8 leading-relaxed">
+        Today Pawmel feeds thousands of pets the way we fed Biscuit: with named ingredients, gentle cooking, and a vet you can actually talk to.
+      </p>
+      <div class="reveal flex flex-wrap gap-6">
+        <div><p class="font-display font-700 text-3xl text-coral">100%</p><p class="text-sm text-cocoa font-600">human-grade food</p></div>
+        <div><p class="font-display font-700 text-3xl text-berry">7</p><p class="text-sm text-cocoa font-600">on-staff vets</p></div>
+        <div><p class="font-display font-700 text-3xl text-mint">0</p><p class="text-sm text-cocoa font-600">artificial fillers</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20 bg-gradient-to-b from-peach/40 to-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal inline-block rounded-full bg-sunny/20 text-sunny px-4 py-1.5 text-sm font-700 mb-4">★★★★★ 4.9 average</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl">Wagging reviews from <span class="text-gradient">real pet parents</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="testi-card rounded-3xl bg-white shadow-card p-7">
+        <p class="text-sunny text-lg mb-3">★★★★★</p>
+        <p class="text-cocoa leading-relaxed mb-5">"My fussy chihuahua used to walk away from her bowl. Now she does laps until it's served. Game-changer."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-coral/15 grid place-items-center text-xl">🐕</span>
+          <div><p class="font-700 text-sm">Naledi M.</p><p class="text-xs text-cocoa">& Mochi the chihuahua</p></div>
+        </div>
+      </div>
+      <div class="testi-card rounded-3xl bg-white shadow-card p-7">
+        <p class="text-sunny text-lg mb-3">★★★★★</p>
+        <p class="text-cocoa leading-relaxed mb-5">"The vet chat saved me a $90 visit. They spotted his upset stomach was the treats, not the food. So thoughtful."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-mint/20 grid place-items-center text-xl">🐶</span>
+          <div><p class="font-700 text-sm">Thabo K.</p><p class="text-xs text-cocoa">& Rocco the lab</p></div>
+        </div>
+      </div>
+      <div class="testi-card rounded-3xl bg-white shadow-card p-7">
+        <p class="text-sunny text-lg mb-3">★★★★★</p>
+        <p class="text-cocoa leading-relaxed mb-5">"Shinier coat, less shedding, more zoomies. Pausing for our holiday took literally two taps. Obsessed."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-sky/20 grid place-items-center text-xl">🐱</span>
+          <div><p class="font-700 text-sm">Aisha R.</p><p class="text-xs text-cocoa">& Pixel the cat</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BUNDLE / PRICING ============ -->
+<section id="pricing" class="py-20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal inline-block rounded-full bg-berry/10 text-berry px-4 py-1.5 text-sm font-700 mb-4">Simple pricing</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mb-4">Plans that grow with <span class="text-gradient">your pet</span></h2>
+      <p class="reveal text-cocoa text-lg">Cancel or change anytime. First box always 50% off.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 items-stretch">
+      <!-- Taster -->
+      <div class="price-card rounded-[2rem] bg-white shadow-card p-8 flex flex-col">
+        <h3 class="font-display font-600 text-2xl mb-1">Taster</h3>
+        <p class="text-sm text-cocoa mb-5">Perfect for small or single pets.</p>
+        <p class="font-display font-700 text-5xl mb-1">$32<span class="text-base text-cocoa font-600">/mo</span></p>
+        <p class="text-xs text-mint font-700 mb-6">First box $16</p>
+        <ul class="space-y-3 text-sm text-cocoa flex-1 mb-7">
+          <li class="flex gap-2"><span class="text-mint">✔</span> 1 fresh recipe</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Bi-weekly delivery</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Vet chat access</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Pause anytime</li>
+        </ul>
+        <a href="#" class="text-center rounded-full bg-cream hover:bg-peach text-ink font-700 py-3.5 border border-peach transition">Choose Taster</a>
+      </div>
+      <!-- Pawfect (featured) -->
+      <div class="price-card relative rounded-[2rem] bg-ink text-cream shadow-card p-8 flex flex-col scale-105 z-10">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-coral text-white text-xs font-800 px-4 py-1.5">Most popular 🐾</span>
+        <h3 class="font-display font-600 text-2xl mb-1">Pawfect</h3>
+        <p class="text-sm text-cream/70 mb-5">Our complete fresh-food plan.</p>
+        <p class="font-display font-700 text-5xl mb-1">$58<span class="text-base text-cream/70 font-600">/mo</span></p>
+        <p class="text-xs text-mint font-700 mb-6">First box $29</p>
+        <ul class="space-y-3 text-sm text-cream/85 flex-1 mb-7">
+          <li class="flex gap-2"><span class="text-mint">✔</span> 2 rotating recipes</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Weekly delivery</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Priority vet chat</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Free wellness samples</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Pause anytime</li>
+        </ul>
+        <a href="#" class="magnetic text-center rounded-full bg-coral hover:bg-coraldark text-white font-700 py-3.5 shadow-soft transition">Choose Pawfect</a>
+      </div>
+      <!-- Pack -->
+      <div class="price-card rounded-[2rem] bg-white shadow-card p-8 flex flex-col">
+        <h3 class="font-display font-600 text-2xl mb-1">The Pack</h3>
+        <p class="text-sm text-cocoa mb-5">For multi-pet households.</p>
+        <p class="font-display font-700 text-5xl mb-1">$96<span class="text-base text-cocoa font-600">/mo</span></p>
+        <p class="text-xs text-mint font-700 mb-6">First box $48</p>
+        <ul class="space-y-3 text-sm text-cocoa flex-1 mb-7">
+          <li class="flex gap-2"><span class="text-mint">✔</span> Up to 4 pets</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> All recipes unlocked</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Wellness box included</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Dedicated vet line</li>
+          <li class="flex gap-2"><span class="text-mint">✔</span> Pause anytime</li>
+        </ul>
+        <a href="#" class="text-center rounded-full bg-cream hover:bg-peach text-ink font-700 py-3.5 border border-peach transition">Choose The Pack</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ACCORDION ============ -->
+<section id="faq" class="py-20">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <span class="reveal inline-block rounded-full bg-coral/10 text-coral px-4 py-1.5 text-sm font-700 mb-4">Curious paws</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl">Questions, <span class="text-gradient">answered</span></h2>
+    </div>
+    <div class="space-y-4">
+      <div class="faq-item rounded-3xl bg-white shadow-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-700 font-display text-lg">
+          How do you keep the food fresh in transit?
+          <span class="faq-icon grid place-items-center w-8 h-8 rounded-full bg-coral/10 text-coral text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-cocoa">Every box ships in a recyclable insulated liner with plant-based ice packs, keeping meals chilled for up to 48 hours. Pop them in the fridge or freezer on arrival.</p></div>
+      </div>
+      <div class="faq-item rounded-3xl bg-white shadow-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-700 font-display text-lg">
+          Can I really cancel anytime?
+          <span class="faq-icon grid place-items-center w-8 h-8 rounded-full bg-coral/10 text-coral text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-cocoa">Absolutely. Skip, pause, or cancel from your dashboard in two taps — no phone calls, no guilt trips, no hidden fees.</p></div>
+      </div>
+      <div class="faq-item rounded-3xl bg-white shadow-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-700 font-display text-lg">
+          What if my pet doesn't like it?
+          <span class="faq-icon grid place-items-center w-8 h-8 rounded-full bg-coral/10 text-coral text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-cocoa">Our picky-eater promise has you covered: if your pet snubs their first box, we refund it and help you switch to a recipe they'll love.</p></div>
+      </div>
+      <div class="faq-item rounded-3xl bg-white shadow-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-700 font-display text-lg">
+          Is Pawmel suitable for cats too?
+          <span class="faq-icon grid place-items-center w-8 h-8 rounded-full bg-coral/10 text-coral text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-cocoa">Yes! We offer feline-specific recipes formulated by veterinary nutritionists, with the taurine and protein levels cats need to thrive.</p></div>
+      </div>
+      <div class="faq-item rounded-3xl bg-white shadow-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-700 font-display text-lg">
+          Where do you deliver?
+          <span class="faq-icon grid place-items-center w-8 h-8 rounded-full bg-coral/10 text-coral text-xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-cocoa">We currently deliver free across all major metro areas, with next-day cold-chain coverage expanding monthly. Enter your postcode at checkout to confirm.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-20">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="relative rounded-[2.5rem] bg-coral overflow-hidden shadow-soft px-8 sm:px-16 py-16 text-center">
+      <div class="absolute -top-8 -left-8 text-white/10 text-[12rem] leading-none select-none">🐾</div>
+      <div class="absolute -bottom-12 -right-6 text-white/10 text-[12rem] leading-none select-none">🦴</div>
+      <div class="relative">
+        <h2 class="font-display font-700 text-4xl sm:text-5xl text-white mb-5">Your pet's next bowl is calling</h2>
+        <p class="text-white/90 text-lg max-w-xl mx-auto mb-9">Take the 2-minute quiz and get 50% off your first box of fresh, vet-formulated goodness.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#plans" class="magnetic inline-flex items-center gap-2 rounded-full bg-white text-coral font-800 text-base px-8 py-4 shadow-card hover:scale-105 transition">
+            Build your box
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+          <a href="#how" class="inline-flex items-center gap-2 rounded-full bg-coraldark/40 text-white font-700 text-base px-8 py-4 hover:bg-coraldark/60 transition">See how it works</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-cream pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-5 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2 font-display font-700 text-2xl mb-4">
+          <span class="grid place-items-center w-10 h-10 rounded-2xl bg-coral text-white">
+            <svg width="22" height="22" viewBox="0 0 100 100" fill="currentColor"><ellipse cx="50" cy="62" rx="22" ry="18"/><circle cx="24" cy="38" r="9"/><circle cx="42" cy="26" r="9"/><circle cx="62" cy="26" r="9"/><circle cx="78" cy="40" r="9"/></svg>
+          </span>
+          Pawmel
+        </a>
+        <p class="text-cream/60 text-sm max-w-xs mb-5">Fresh, vet-formulated food and wellness boxes delivered to your door. Real ingredients, real tail wags.</p>
+        <div class="flex gap-3">
+          <a href="#" aria-label="Instagram" class="grid place-items-center w-10 h-10 rounded-full bg-white/10 hover:bg-coral transition">📸</a>
+          <a href="#" aria-label="TikTok" class="grid place-items-center w-10 h-10 rounded-full bg-white/10 hover:bg-coral transition">🎵</a>
+          <a href="#" aria-label="Facebook" class="grid place-items-center w-10 h-10 rounded-full bg-white/10 hover:bg-coral transition">👍</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display font-600 mb-4">Shop</h4>
+        <ul class="space-y-2 text-sm text-cream/60">
+          <li><a href="#plans" class="hover:text-coral transition">Fresh recipes</a></li>
+          <li><a href="#plans" class="hover:text-coral transition">Wellness boxes</a></li>
+          <li><a href="#pricing" class="hover:text-coral transition">Plans</a></li>
+          <li><a href="#" class="hover:text-coral transition">Gift cards</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-600 mb-4">Company</h4>
+        <ul class="space-y-2 text-sm text-cream/60">
+          <li><a href="#" class="hover:text-coral transition">Our story</a></li>
+          <li><a href="#" class="hover:text-coral transition">Our vets</a></li>
+          <li><a href="#" class="hover:text-coral transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-coral transition">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-600 mb-4">Support</h4>
+        <ul class="space-y-2 text-sm text-cream/60">
+          <li><a href="#faq" class="hover:text-coral transition">FAQ</a></li>
+          <li><a href="#" class="hover:text-coral transition">Contact us</a></li>
+          <li><a href="#" class="hover:text-coral transition">Delivery areas</a></li>
+          <li><a href="#" class="hover:text-coral transition">Vet chat</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-cream/50">
+      <p>© 2026 Pawmel Pet Co. Made with 🐾 for good bois & girls.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-coral transition">Privacy</a>
+        <a href="#" class="hover:text-coral transition">Terms</a>
+        <a href="#" class="hover:text-coral transition">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Nav shrink on scroll */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 30) {
+      navbar.classList.add('shadow-card', 'py-2');
+      navbar.classList.remove('py-3');
+    } else {
+      navbar.classList.remove('shadow-card', 'py-2');
+      navbar.classList.add('py-3');
+    }
+  });
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* Add-to-cart bounce */
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (reduceMotion) return;
+      gsap.fromTo(btn, { scale: 1 }, { scale: 1.35, duration: 0.18, yoyo: true, repeat: 1, ease: 'back.out(3)' });
+    });
+  });
+
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero reveals — springy */
+    gsap.set('.reveal', { y: 28, opacity: 0 });
+    gsap.to('#top .reveal', {
+      y: 0, opacity: 1, duration: 0.9, stagger: 0.12, ease: 'back.out(1.6)', delay: 0.15
+    });
+
+    /* Headline pop */
+    gsap.from('#top h1', { scale: 0.92, opacity: 0, duration: 1, ease: 'back.out(1.8)' });
+
+    /* Hero badges float in + idle bob */
+    gsap.utils.toArray('.hero-badge').forEach((b, i) => {
+      gsap.from(b, { scale: 0, opacity: 0, duration: 0.7, delay: 0.6 + i * 0.15, ease: 'back.out(2.2)' });
+      gsap.to(b, { y: '+=10', duration: 2.4 + i * 0.3, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1 });
+    });
+
+    /* Hero blob image */
+    gsap.from('#top .blob-mask', { scale: 0.85, opacity: 0, duration: 1.1, ease: 'back.out(1.4)' });
+
+    /* Scroll reveals for the rest */
+    gsap.utils.toArray('.reveal').forEach(el => {
+      if (el.closest('#top')) return;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%',
+        onEnter: () => gsap.to(el, { y: 0, opacity: 1, duration: 0.8, ease: 'back.out(1.5)' })
+      });
+    });
+
+    /* Card group reveals */
+    const groups = ['.stat-card', '.benefit-card', '.tilt-card', '.step-card', '.testi-card', '.price-card'];
+    groups.forEach(sel => {
+      gsap.utils.toArray(sel).forEach((card, i) => {
+        gsap.from(card, {
+          scrollTrigger: { trigger: card, start: 'top 90%' },
+          y: 40, opacity: 0, duration: 0.7, delay: (i % 4) * 0.08, ease: 'back.out(1.4)'
+        });
+      });
+    });
+
+    /* Count-ups */
+    document.querySelectorAll('.count').forEach(el => {
+      const target = +el.dataset.target;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: target, duration: 1.8, ease: 'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); }
+          });
+        }
+      });
+    });
+
+    /* Floating shapes parallax */
+    gsap.utils.toArray('.float-shape').forEach(shape => {
+      const speed = parseFloat(shape.dataset.speed) || 0.5;
+      gsap.to(shape, {
+        yPercent: -40 * speed * 5,
+        ease: 'none',
+        scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 }
+      });
+      gsap.to(shape, { rotation: speed > 0.5 ? 18 : -18, duration: 6 + speed * 4, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+    });
+
+    /* Rotating headline words */
+    const words = ['happy tails', 'healthy bowls', 'zoomie energy', 'shiny coats'];
+    let wi = 0;
+    const hr = document.getElementById('headline-rotate');
+    setInterval(() => {
+      wi = (wi + 1) % words.length;
+      gsap.to(hr, { y: -14, opacity: 0, duration: 0.3, ease: 'power2.in', onComplete: () => {
+        hr.textContent = words[wi];
+        gsap.fromTo(hr, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(2)' });
+      }});
+    }, 2600);
+
+    /* Magnetic buttons */
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        gsap.to(btn, { x: x * 0.3, y: y * 0.4, duration: 0.4, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.4)' }));
+    });
+
+    /* Product tilt on pointer */
+    document.querySelectorAll('.tilt-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(card, { rotationY: px * 12, rotationX: -py * 12, scale: 1.03, duration: 0.4, ease: 'power2.out', transformPerspective: 800 });
+      });
+      card.addEventListener('mouseleave', () => gsap.to(card, { rotationY: 0, rotationX: 0, scale: 1, duration: 0.6, ease: 'elastic.out(1, 0.5)' }));
+    });
+  }
+</script>
+</body>
+</html>

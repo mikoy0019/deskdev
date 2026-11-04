@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Little Meadow — Organic Baby Clothing &amp; Essentials</title>
+<meta name="description" content="Little Meadow makes gentle, organic baby clothing and essentials — sustainably grown, softly made, kind to little skin and the planet." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:  '#FBF7F0',
+          sand:   '#F3EADC',
+          sage:   '#A9BCA1',
+          sageDk: '#7E9476',
+          blush:  '#F0CFC9',
+          blushDk:'#E0A8A0',
+          honey:  '#E9A45C',
+          cocoa:  '#5A4A40',
+          ink:    '#43352E',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          body: ['Nunito', 'sans-serif'],
+        },
+        borderRadius: {
+          blob: '42% 58% 56% 44% / 50% 44% 56% 50%',
+        },
+      }
+    }
+  }
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #FBF7F0; color: #43352E; overflow-x: hidden; cursor: none; }
+  ::selection { background: #F0CFC9; color: #5A4A40; }
+
+  /* Custom soft scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #F3EADC; }
+  ::-webkit-scrollbar-thumb { background: #A9BCA1; border-radius: 10px; }
+
+  /* Cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%);
+    mix-blend-mode: multiply;
+  }
+  .cursor-dot { width: 8px; height: 8px; background: #7E9476; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1.5px solid #A9BCA1;
+    transition: width .25s ease, height .25s ease, background .25s ease, opacity .25s ease;
+  }
+  .cursor-ring.grow { width: 64px; height: 64px; background: rgba(240,207,201,.35); border-color: transparent; }
+
+  /* Floating clouds / stars */
+  .floaty { position: absolute; opacity: .5; will-change: transform; }
+  @keyframes bob {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-22px) rotate(4deg); }
+  }
+  .bob { animation: bob 7s ease-in-out infinite; }
+  .bob-slow { animation: bob 11s ease-in-out infinite; }
+  .bob-fast { animation: bob 5s ease-in-out infinite; }
+
+  /* Soft gradient image wrap */
+  .img-soft { background: linear-gradient(135deg,#F3EADC 0%,#F0CFC9 55%,#A9BCA1 100%); }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollx 28s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+
+  /* Reveal base */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height: 240px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  /* Headline word mask */
+  .word { display: inline-block; overflow: hidden; vertical-align: top; }
+  .word > span { display: inline-block; }
+
+  .tilt { transition: transform .3s ease; will-change: transform; transform-style: preserve-3d; }
+
+  .underline-sweep { background-image: linear-gradient(#E9A45C,#E9A45C); background-size: 0% 3px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size .4s ease; }
+  .group:hover .underline-sweep, .underline-sweep:hover { background-size: 100% 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- Cursor -->
+<div class="cursor-ring"></div>
+<div class="cursor-dot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-full bg-cream/80 backdrop-blur border border-sand px-5 py-3 shadow-sm" id="nav-pill">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-full bg-sage text-cream font-display text-lg">m</span>
+        <span class="font-display text-xl text-ink">Little Meadow</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-cocoa/80">
+        <a href="#shop" class="hover:text-ink underline-sweep">Bestsellers</a>
+        <a href="#collections" class="hover:text-ink underline-sweep">Collections</a>
+        <a href="#materials" class="hover:text-ink underline-sweep">Materials</a>
+        <a href="#gifting" class="hover:text-ink underline-sweep">Gifting</a>
+        <a href="#faq" class="hover:text-ink underline-sweep">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button class="relative inline-grid place-items-center w-10 h-10 rounded-full bg-sand hover:bg-blush transition-colors" aria-label="Cart" data-magnetic>
+          <svg class="w-5 h-5 text-cocoa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 7h12l-1 12a2 2 0 01-2 2H9a2 2 0 01-2-2L6 7z"/><path d="M9 7V5a3 3 0 016 0v2"/></svg>
+          <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-honey text-cream text-[11px] font-bold grid place-items-center">3</span>
+        </button>
+        <a href="#shop" data-magnetic class="hidden sm:inline-block rounded-full bg-sageDk text-cream text-sm font-bold px-5 py-2.5 hover:bg-sage transition-colors">Shop</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative pt-36 pb-24 sm:pt-44 sm:pb-32 overflow-hidden">
+  <!-- floaty shapes -->
+  <div class="floaty bob top-28 left-[6%] w-24 h-16 bg-white rounded-full blur-[1px]"></div>
+  <div class="floaty bob-slow top-64 left-[80%] w-32 h-20 bg-white rounded-full"></div>
+  <div class="floaty bob-fast top-[60%] left-[12%] text-honey text-4xl">✦</div>
+  <div class="floaty bob top-40 left-[46%] text-blushDk text-2xl">✦</div>
+  <div class="floaty bob-slow top-[70%] left-[88%] text-sage text-3xl">✦</div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center relative z-10">
+    <!-- Copy -->
+    <div data-parallax="0.06">
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-sand text-cocoa text-xs font-bold px-4 py-2 mb-6">
+        <span class="w-2 h-2 rounded-full bg-sageDk"></span> GOTS-certified organic cotton
+      </span>
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-ink mb-6" id="headline">
+        <span class="word"><span>Softly</span></span>
+        <span class="word"><span>made</span></span>
+        <span class="word"><span>for</span></span>
+        <br/>
+        <span class="word"><span class="italic text-sageDk">little</span></span>
+        <span class="word"><span class="italic text-sageDk">meadows.</span></span>
+      </h1>
+      <p class="reveal text-lg text-cocoa/80 max-w-md mb-8 leading-relaxed">
+        Gentle, breathable baby clothing and essentials — grown without pesticides, dyed with plants, and stitched to be passed down, not thrown away.
+      </p>
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <a href="#shop" id="shop-cta" data-magnetic class="rounded-full bg-honey text-cream font-bold px-8 py-4 shadow-lg shadow-honey/30 hover:shadow-xl transition-shadow">Shop the meadow</a>
+        <a href="#materials" class="group inline-flex items-center gap-2 font-bold text-cocoa">
+          <span class="underline-sweep">Our materials</span>
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <!-- count ups -->
+      <div class="reveal grid grid-cols-3 gap-6 mt-12 max-w-md">
+        <div>
+          <div class="font-display text-3xl text-sageDk" data-count="38000">0</div>
+          <p class="text-xs text-cocoa/60 mt-1 font-semibold">Happy families</p>
+        </div>
+        <div>
+          <div class="font-display text-3xl text-sageDk" data-count="100">0</div>
+          <p class="text-xs text-cocoa/60 mt-1 font-semibold">% organic cotton</p>
+        </div>
+        <div>
+          <div class="font-display text-3xl text-sageDk" data-count="12">0</div>
+          <p class="text-xs text-cocoa/60 mt-1 font-semibold">Plant-based dyes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero image -->
+    <div class="relative" data-parallax="-0.05">
+      <div class="relative mx-auto w-[88%] aspect-[4/5] rounded-blob img-soft overflow-hidden shadow-2xl shadow-sage/30 tilt" id="hero-img">
+        <img src="https://images.unsplash.com/photo-1522771930-8e5be1c4d7c3?auto=format&fit=crop&w=1600&q=80" alt="Baby in soft organic clothing" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <!-- floating product chip -->
+      <div class="absolute -left-2 bottom-10 bg-cream rounded-2xl shadow-xl p-4 flex items-center gap-3 bob">
+        <span class="w-10 h-10 rounded-full bg-blush grid place-items-center text-lg">🌿</span>
+        <div>
+          <p class="text-sm font-extrabold text-ink leading-none">Meadow Romper</p>
+          <p class="text-xs text-cocoa/60 mt-1">from $34</p>
+        </div>
+      </div>
+      <div class="absolute -right-1 top-8 bg-cream rounded-2xl shadow-xl px-4 py-3 bob-slow">
+        <p class="text-xs font-bold text-sageDk">★★★★★</p>
+        <p class="text-xs text-cocoa/60">9,200 reviews</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="py-5 bg-sageDk text-cream overflow-hidden select-none">
+  <div class="marquee text-lg font-display">
+    <div class="flex gap-10 pr-10">
+      <span>Gentle on skin ✦</span><span>Kind to the planet ✦</span><span>Free shipping over $60 ✦</span><span>Made to be handed down ✦</span><span>Plant-dyed ✦</span><span>Carbon-neutral delivery ✦</span>
+    </div>
+    <div class="flex gap-10 pr-10" aria-hidden="true">
+      <span>Gentle on skin ✦</span><span>Kind to the planet ✦</span><span>Free shipping over $60 ✦</span><span>Made to be handed down ✦</span><span>Plant-dyed ✦</span><span>Carbon-neutral delivery ✦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="shop" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Loved by little ones</span>
+        <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3">This week's bestsellers</h2>
+      </div>
+      <a href="#collections" class="reveal group inline-flex items-center gap-2 font-bold text-cocoa">
+        <span class="underline-sweep">Browse all</span>
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card -->
+      <article class="reveal group product-card">
+        <div class="relative aspect-[4/5] rounded-3xl img-soft overflow-hidden mb-4">
+          <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1600&q=80" alt="Cloud Sleepsuit" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 bg-cream text-cocoa text-xs font-bold px-3 py-1 rounded-full">New</span>
+          <button class="absolute bottom-3 inset-x-3 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all bg-sageDk text-cream font-bold py-2.5 rounded-full text-sm">Add to cart</button>
+        </div>
+        <h3 class="font-display text-lg text-ink">Cloud Sleepsuit</h3>
+        <p class="text-sm text-cocoa/60">Buttery ribbed cotton</p>
+        <p class="font-bold text-sageDk mt-1">$38</p>
+      </article>
+
+      <article class="reveal group product-card">
+        <div class="relative aspect-[4/5] rounded-3xl img-soft overflow-hidden mb-4">
+          <img src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=1600&q=80" alt="Meadow Romper" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <button class="absolute bottom-3 inset-x-3 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all bg-sageDk text-cream font-bold py-2.5 rounded-full text-sm">Add to cart</button>
+        </div>
+        <h3 class="font-display text-lg text-ink">Meadow Romper</h3>
+        <p class="text-sm text-cocoa/60">Plant-dyed sage</p>
+        <p class="font-bold text-sageDk mt-1">$34</p>
+      </article>
+
+      <article class="reveal group product-card">
+        <div class="relative aspect-[4/5] rounded-3xl img-soft overflow-hidden mb-4">
+          <img src="https://images.unsplash.com/photo-1607453998774-d533f65dac99?auto=format&fit=crop&w=1600&q=80" alt="Blossom Bonnet Set" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 bg-blushDk text-cream text-xs font-bold px-3 py-1 rounded-full">Bestseller</span>
+          <button class="absolute bottom-3 inset-x-3 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all bg-sageDk text-cream font-bold py-2.5 rounded-full text-sm">Add to cart</button>
+        </div>
+        <h3 class="font-display text-lg text-ink">Blossom Bonnet Set</h3>
+        <p class="text-sm text-cocoa/60">Bonnet + booties</p>
+        <p class="font-bold text-sageDk mt-1">$28</p>
+      </article>
+
+      <article class="reveal group product-card">
+        <div class="relative aspect-[4/5] rounded-3xl img-soft overflow-hidden mb-4">
+          <img src="https://images.unsplash.com/photo-1522771930-8e5be1c4d7c3?auto=format&fit=crop&w=1600&q=80" alt="Snuggle Swaddle" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <button class="absolute bottom-3 inset-x-3 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all bg-sageDk text-cream font-bold py-2.5 rounded-full text-sm">Add to cart</button>
+        </div>
+        <h3 class="font-display text-lg text-ink">Snuggle Swaddle</h3>
+        <p class="text-sm text-cocoa/60">Muslin, 2-pack</p>
+        <p class="font-bold text-sageDk mt-1">$42</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COLLECTIONS ============ -->
+<section id="collections" class="py-24 sm:py-32 bg-sand relative overflow-hidden">
+  <div class="floaty bob-slow top-12 left-[85%] text-sage text-4xl">✦</div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative z-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Shop by stage</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3">Collections that grow with them</h2>
+    </div>
+    <div class="grid md:grid-cols-2 gap-8">
+      <a href="#shop" class="reveal group relative rounded-[2rem] overflow-hidden img-soft aspect-[16/10] flex items-end p-8">
+        <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=1600&q=80" alt="Newborn collection" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-cocoa/10 to-transparent"></div>
+        <div class="relative text-cream">
+          <p class="text-xs font-bold uppercase tracking-widest opacity-80">0–6 months</p>
+          <h3 class="font-display text-3xl mt-1">The Newborn Nest</h3>
+          <p class="mt-2 text-sm opacity-90">Featherlight layers for first cuddles.</p>
+        </div>
+      </a>
+      <a href="#shop" class="reveal group relative rounded-[2rem] overflow-hidden img-soft aspect-[16/10] flex items-end p-8">
+        <img src="https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=1600&q=80" alt="Toddler collection" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-cocoa/70 via-cocoa/10 to-transparent"></div>
+        <div class="relative text-cream">
+          <p class="text-xs font-bold uppercase tracking-widest opacity-80">1–4 years</p>
+          <h3 class="font-display text-3xl mt-1">The Toddler Roam</h3>
+          <p class="mt-2 text-sm opacity-90">Tough little play clothes that stay soft.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATERIALS / SAFETY ============ -->
+<section id="materials" class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative" data-parallax="0.05">
+      <div class="rounded-blob img-soft overflow-hidden aspect-square shadow-2xl shadow-sage/30">
+        <img src="https://images.unsplash.com/photo-1607453998774-d533f65dac99?auto=format&fit=crop&w=1600&q=80" alt="Organic cotton close up" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -bottom-4 -right-2 bg-cream rounded-2xl shadow-xl px-5 py-4 bob">
+        <p class="font-display text-2xl text-sageDk">OEKO-TEX®</p>
+        <p class="text-xs text-cocoa/60">Tested for harmful substances</p>
+      </div>
+    </div>
+    <div>
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Materials &amp; safety</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3 mb-6">What touches their skin matters</h2>
+      <p class="reveal text-cocoa/80 leading-relaxed mb-8 max-w-md">Every thread is traceable from seed to seam. No synthetics, no nasties — just fabrics gentle enough for the most delicate days.</p>
+      <div class="space-y-5">
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-sage/30 grid place-items-center text-sageDk text-xl">🌱</span>
+          <div><h3 class="font-bold text-ink">GOTS organic cotton</h3><p class="text-sm text-cocoa/70">Grown without pesticides or synthetic fertilizers.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-blush/50 grid place-items-center text-blushDk text-xl">💧</span>
+          <div><h3 class="font-bold text-ink">Plant-based dyes</h3><p class="text-sm text-cocoa/70">Coloured with madder, indigo and chamomile.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-honey/25 grid place-items-center text-honey text-xl">🪡</span>
+          <div><h3 class="font-bold text-ink">Flat-seam comfort</h3><p class="text-sm text-cocoa/70">No scratchy tags; nickel-free snaps throughout.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE BRAND / ABOUT BANNER ============ -->
+<section class="py-24 sm:py-28 bg-sageDk text-cream relative overflow-hidden">
+  <div class="floaty bob top-8 left-[8%] w-24 h-14 bg-white/20 rounded-full"></div>
+  <div class="floaty bob-slow bottom-10 left-[82%] w-28 h-16 bg-white/15 rounded-full"></div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center relative z-10">
+    <span class="reveal text-sm font-bold uppercase tracking-widest text-cream/70">Our promise</span>
+    <h2 class="reveal font-display text-3xl sm:text-5xl leading-snug mt-4">
+      We believe a baby's first wardrobe should be as <span class="italic text-blush">gentle on the earth</span> as it is on their skin.
+    </h2>
+    <p class="reveal mt-6 text-cream/80 max-w-xl mx-auto">Founded by two new parents in a small coastal town, Little Meadow grew from a simple wish — clothes we'd feel good wrapping our own little ones in.</p>
+  </div>
+</section>
+
+<!-- ============ GIFTING ============ -->
+<section id="gifting" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="order-2 lg:order-1">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Gifting</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3 mb-6">The new-baby gift, beautifully done</h2>
+      <p class="reveal text-cocoa/80 leading-relaxed mb-8 max-w-md">Hand-wrapped in seed paper you can plant, with a handwritten note. Choose a curated set or build your own little bundle.</p>
+      <div class="reveal grid sm:grid-cols-2 gap-4 max-w-md">
+        <div class="rounded-2xl bg-sand p-5">
+          <p class="font-display text-xl text-ink">Welcome Bundle</p>
+          <p class="text-sm text-cocoa/60 mt-1">Sleepsuit + swaddle + bonnet</p>
+          <p class="font-bold text-sageDk mt-3">$78</p>
+        </div>
+        <div class="rounded-2xl bg-blush/40 p-5">
+          <p class="font-display text-xl text-ink">Build-a-Box</p>
+          <p class="text-sm text-cocoa/60 mt-1">Pick any 3, save 15%</p>
+          <p class="font-bold text-sageDk mt-3">from $60</p>
+        </div>
+      </div>
+      <a href="#shop" data-magnetic class="reveal inline-block mt-8 rounded-full bg-honey text-cream font-bold px-7 py-3.5 shadow-lg shadow-honey/30">Send a gift</a>
+    </div>
+    <div class="order-1 lg:order-2 relative" data-parallax="-0.04">
+      <div class="rounded-[2rem] img-soft overflow-hidden aspect-[5/6] shadow-2xl shadow-blush/40">
+        <img src="https://images.unsplash.com/photo-1522771930-8e5be1c4d7c3?auto=format&fit=crop&w=1600&q=80" alt="Gift bundle" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUBSCRIPTION ============ -->
+<section class="py-24 sm:py-28 bg-sand relative overflow-hidden">
+  <div class="floaty bob-fast top-10 left-[10%] text-honey text-3xl">✦</div>
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 relative z-10">
+    <div class="rounded-[2.5rem] bg-cream border border-sand shadow-xl p-8 sm:p-12 grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Grow Club</span>
+        <h2 class="reveal font-display text-3xl sm:text-4xl text-ink mt-3 mb-4">A new size, right on time</h2>
+        <p class="reveal text-cocoa/80 mb-6">Babies grow fast. Our subscription ships the next size up before they outgrow the last — pause or skip anytime.</p>
+        <ul class="reveal space-y-3 text-sm text-cocoa/80">
+          <li class="flex gap-3"><span class="text-sageDk font-bold">✓</span> 20% off every box</li>
+          <li class="flex gap-3"><span class="text-sageDk font-bold">✓</span> Free returns &amp; size swaps</li>
+          <li class="flex gap-3"><span class="text-sageDk font-bold">✓</span> Donate outgrown sets to families in need</li>
+        </ul>
+      </div>
+      <div class="reveal rounded-3xl bg-sageDk text-cream p-8 text-center">
+        <p class="text-sm font-semibold opacity-80">Starting at</p>
+        <p class="font-display text-5xl my-2">$45<span class="text-lg font-body">/box</span></p>
+        <p class="text-sm opacity-80 mb-6">Ships every 8 weeks</p>
+        <a href="#shop" data-magnetic class="block rounded-full bg-honey text-cream font-bold py-3.5">Join the Grow Club</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / VALUES ============ -->
+<section id="about" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">About us</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3">Made small, made thoughtfully</h2>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6">
+      <div class="reveal rounded-3xl bg-sand p-8 text-center">
+        <p class="font-display text-4xl text-sageDk" data-count="100">0</p>
+        <p class="font-bold text-ink mt-2">% recyclable packaging</p>
+        <p class="text-sm text-cocoa/60 mt-2">Seed paper that blooms into wildflowers.</p>
+      </div>
+      <div class="reveal rounded-3xl bg-blush/40 p-8 text-center">
+        <p class="font-display text-4xl text-sageDk" data-count="5000">0</p>
+        <p class="font-bold text-ink mt-2">sets donated</p>
+        <p class="text-sm text-cocoa/60 mt-2">For every Grow Club box, we give back.</p>
+      </div>
+      <div class="reveal rounded-3xl bg-sage/25 p-8 text-center">
+        <p class="font-display text-4xl text-sageDk" data-count="0">0</p>
+        <p class="font-bold text-ink mt-2">grams of plastic</p>
+        <p class="text-sm text-cocoa/60 mt-2">Across our entire packaging line.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 sm:py-32 bg-sageDk text-cream relative overflow-hidden">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 relative z-10">
+    <div class="text-center mb-16">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-cream/70">Kind words</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl mt-3">From our little community</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-cream/10 backdrop-blur border border-cream/15 p-7">
+        <p class="text-blush mb-3">★★★★★</p>
+        <blockquote class="text-cream/90 leading-relaxed">"The softest thing my daughter owns. You can feel the difference the moment you unfold it."</blockquote>
+        <figcaption class="mt-5 text-sm font-bold">Amara T. <span class="font-normal text-cream/60">— Portland</span></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream/10 backdrop-blur border border-cream/15 p-7">
+        <p class="text-blush mb-3">★★★★★</p>
+        <blockquote class="text-cream/90 leading-relaxed">"The Grow Club is genius. A new size shows up just as we need it — zero stress, zero waste."</blockquote>
+        <figcaption class="mt-5 text-sm font-bold">Jonas &amp; Priya <span class="font-normal text-cream/60">— Bristol</span></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream/10 backdrop-blur border border-cream/15 p-7">
+        <p class="text-blush mb-3">★★★★★</p>
+        <blockquote class="text-cream/90 leading-relaxed">"Gifted the Welcome Bundle to my sister. The seed-paper wrapping made her cry — happy tears!"</blockquote>
+        <figcaption class="mt-5 text-sm font-bold">Lena M. <span class="font-normal text-cream/60">— Austin</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-32 relative">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-sageDk">Good to know</span>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink mt-3">Questions, answered gently</h2>
+    </div>
+    <div class="space-y-4" id="faq-list">
+      <div class="faq-item reveal rounded-2xl bg-sand border border-sand overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-bold text-ink">Is the cotton really 100% organic?</span>
+          <span class="faq-plus text-sageDk text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/75">Yes — every garment is made from GOTS-certified organic cotton, traceable from the farm to your doorstep. No blends, no shortcuts.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-sand border border-sand overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-bold text-ink">How should I wash Little Meadow clothes?</span>
+          <span class="faq-plus text-sageDk text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/75">A gentle 30°C cycle with a mild, fragrance-free detergent keeps them soft for years. Skip fabric softener — the organic fibres stay plush on their own.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-sand border border-sand overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-bold text-ink">Can I pause or cancel the Grow Club?</span>
+          <span class="faq-plus text-sageDk text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/75">Anytime, from your account in one tap. Skip a box, change the size, or pause for as long as you like — no fees, ever.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-sand border border-sand overflow-hidden">
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-bold text-ink">What's your returns policy?</span>
+          <span class="faq-plus text-sageDk text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/75">Free returns and size swaps within 60 days. Outgrown already? Send it back and we'll donate it to a family in need on your behalf.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8">
+    <div class="relative rounded-[2.5rem] bg-blush/50 border border-blush p-10 sm:p-16 text-center overflow-hidden">
+      <div class="floaty bob top-6 left-[10%] text-honey text-3xl">✦</div>
+      <div class="floaty bob-slow bottom-8 left-[84%] text-sageDk text-4xl">✦</div>
+      <h2 class="reveal font-display text-4xl sm:text-6xl text-ink leading-tight">Start their story softly.</h2>
+      <p class="reveal text-cocoa/75 mt-5 max-w-md mx-auto">Join 38,000 families dressing their little ones in clothes that are kind — to skin, and to the world they'll grow up in.</p>
+      <form class="reveal mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false">
+        <input type="email" placeholder="you@email.com" class="flex-1 rounded-full px-5 py-3.5 bg-cream border border-sand text-ink placeholder:text-cocoa/40 focus:outline-none focus:ring-2 focus:ring-sageDk" />
+        <button data-magnetic class="rounded-full bg-sageDk text-cream font-bold px-7 py-3.5">Get 10% off</button>
+      </form>
+      <p class="reveal text-xs text-cocoa/50 mt-3">Welcome gift on your first order. No spam, just softness.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-cream/80 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-14">
+      <div class="md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="inline-grid place-items-center w-9 h-9 rounded-full bg-sage text-ink font-display text-lg">m</span>
+          <span class="font-display text-xl text-cream">Little Meadow</span>
+        </div>
+        <p class="text-sm text-cream/60 max-w-xs">Organic baby clothing &amp; essentials, softly made and kind to the planet.</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-4">Shop</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#shop" class="hover:text-cream underline-sweep">Bestsellers</a></li>
+          <li><a href="#collections" class="hover:text-cream underline-sweep">Newborn</a></li>
+          <li><a href="#collections" class="hover:text-cream underline-sweep">Toddler</a></li>
+          <li><a href="#gifting" class="hover:text-cream underline-sweep">Gifting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-4">Company</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#about" class="hover:text-cream underline-sweep">Our story</a></li>
+          <li><a href="#materials" class="hover:text-cream underline-sweep">Materials</a></li>
+          <li><a href="#faq" class="hover:text-cream underline-sweep">Sustainability</a></li>
+          <li><a href="#faq" class="hover:text-cream underline-sweep">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-4">Stay in the loop</h4>
+        <p class="text-sm text-cream/60 mb-3">Gentle updates, new drops, no clutter.</p>
+        <div class="flex gap-3">
+          <a href="#" class="w-9 h-9 rounded-full bg-cream/10 grid place-items-center hover:bg-sage hover:text-ink transition-colors" aria-label="Instagram">◎</a>
+          <a href="#" class="w-9 h-9 rounded-full bg-cream/10 grid place-items-center hover:bg-sage hover:text-ink transition-colors" aria-label="Pinterest">✦</a>
+          <a href="#" class="w-9 h-9 rounded-full bg-cream/10 grid place-items-center hover:bg-sage hover:text-ink transition-colors" aria-label="TikTok">♪</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-cream/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
+      <p>© 2026 Little Meadow Organics. Grown with care.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-cream">Privacy</a>
+        <a href="#" class="hover:text-cream">Terms</a>
+        <a href="#" class="hover:text-cream">Shipping</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ===== Custom cursor ===== */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    });
+    (function loop(){
+      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a,button,[data-magnetic],.product-card').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+    });
+  } else {
+    document.querySelectorAll('.cursor-dot,.cursor-ring').forEach(e=>e.style.display='none');
+  }
+
+  /* ===== Nav shrink on scroll ===== */
+  const pill = document.getElementById('nav-pill');
+  addEventListener('scroll', () => {
+    if (scrollY > 30) pill.classList.add('shadow-lg','bg-cream/95');
+    else pill.classList.remove('shadow-lg','bg-cream/95');
+  });
+
+  /* ===== Magnetic buttons ===== */
+  if (!reduce) {
+    document.querySelectorAll('[data-magnetic]').forEach(el=>{
+      el.addEventListener('mousemove', e=>{
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${x*0.3}px,${y*0.4}px)`;
+      });
+      el.addEventListener('mouseleave', ()=> el.style.transform = '');
+    });
+  }
+
+  /* ===== Hero tilt ===== */
+  const heroImg = document.getElementById('hero-img');
+  if (heroImg && !reduce) {
+    heroImg.addEventListener('mousemove', e=>{
+      const r = heroImg.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      heroImg.style.transform = `perspective(900px) rotateY(${px*8}deg) rotateX(${-py*8}deg)`;
+    });
+    heroImg.addEventListener('mouseleave', ()=> heroImg.style.transform = '');
+  }
+
+  /* ===== FAQ accordion ===== */
+  document.querySelectorAll('.faq-head').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ===== GSAP ===== */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Headline words
+    gsap.set('.word > span', { yPercent: 110 });
+    gsap.to('.word > span', { yPercent: 0, duration: 1, ease: 'power3.out', stagger: 0.08, delay: 0.15 });
+
+    // Reveals
+    gsap.utils.toArray('.reveal').forEach(el=>{
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // Parallax
+    gsap.utils.toArray('[data-parallax]').forEach(el=>{
+      const sp = parseFloat(el.dataset.parallax);
+      gsap.to(el, {
+        yPercent: sp * 100,
+        ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    // Count ups
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      const target = +el.dataset.count;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: ()=> gsap.to(obj, {
+          v: target, duration: 1.8, ease: 'power2.out',
+          onUpdate: ()=> el.textContent = Math.round(obj.v).toLocaleString()
+        })
+      });
+    });
+  } else {
+    document.querySelectorAll('[data-count]').forEach(el=> el.textContent = (+el.dataset.count).toLocaleString());
+  }
+})();
+</script>
+</body>
+</html>

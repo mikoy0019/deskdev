@@ -1,0 +1,255 @@
+{
+  "name": "[deskdev] daily-activity-digest",
+  "nodes": [
+    {
+      "id": "289b4c93-92c2-475e-b0c5-bf104e36e100",
+      "name": "Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 18,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "id": "fab41cdb-7b6e-4106-889f-47ed15358d2e",
+      "name": "Completed Today",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/tasks?select=title,completed_at,assignee:profiles!assignee_id(full_name),client:clients(name)&completed_at=gte.{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd') }}T00:00:00%2B08:00&order=completed_at.desc",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi"
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "id": "b94104ba-1f1c-4347-88ac-b6447e84498e",
+      "name": "Hours Today",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/time_entries?select=minutes,user:profiles(full_name)&entry_date=eq.{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd') }}",
+        "options": {
+          "timeout": 30000
+        },
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi"
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "id": "57e5184d-6953-4c06-80eb-beb7dd382d6c",
+      "name": "Build Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Recipients come from profiles (the Recipients node), never a hardcoded\n// personal address: the mail follows whoever holds the role today, and a\n// deactivated account (profiles.deactivated_at, migration 032) stops getting\n// it. The company inbox is used only when nobody qualifies.\nconst FALLBACK_TO = 'nixgensolutions@gmail.com';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst people = $('Recipients').all().map(i => i.json).flat()\n  .filter(p => p && p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\nconst can = (p, feature, level) => p.role === 'admin'\n  || (p.permissions || {})[feature] === 'edit'\n  || (level === 'view' && (p.permissions || {})[feature] === 'view');\nconst addressOf = (list) => [...new Set(list.map(p => String(p.email).trim().toLowerCase()))].join(',');\nconst TO = addressOf(people.filter(p => p.role === 'admin')) || FALLBACK_TO;\n\nconst done = $(\"Completed Today\").all().map(i=>i.json).flat().filter(t => t && t.title);\nconst hours = $(\"Hours Today\").all().map(i=>i.json).flat().filter(e => e && typeof e.minutes === 'number');\nconst totalMin = hours.reduce((s,e)=>s+(e.minutes||0),0);\nconst hm = m => `${Math.floor(m/60)}h ${m%60}m`;\nconst byUser = {};\nfor (const e of hours) { const u = e.user?.full_name||\"Unknown\"; byUser[u]=(byUser[u]||0)+e.minutes; }\nlet body = `DeskDev — daily activity, ${new Date().toLocaleDateString(\"en-PH\",{timeZone:\"Asia/Manila\"})}\\n\\n`;\nbody += `Tasks completed today: ${done.length}\\n`;\nbody += done.map(t=>`  • ${t.title} — ${t.client?.name||\"No client\"} (${t.assignee?.full_name||\"—\"})`).join(\"\\n\") || \"  (none)\";\nbody += `\\n\\nHours logged today: ${hm(totalMin)}\\n`;\nbody += Object.entries(byUser).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`  • ${k}: ${hm(v)}`).join(\"\\n\") || \"  (none)\";\nbody += `\\n\\n— DeskDev Studio`;\nreturn [{ json: { to: TO, subject: `Daily activity — ${done.length} done, ${hm(totalMin)} logged`, body } }];\n"
+      }
+    },
+    {
+      "id": "d27e69d2-8724-44fb-9006-68af98fb31a5",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "webhookId": "0d051661-67a2-4aa2-ae34-3430a9c7ae16",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'daily-activity-digest', workflow: $workflow.name, status: 'ok', execution_id: String($execution.id), detail: { subject: $('Build Digest').first().json.subject } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        1320,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Completed Today": {
+      "main": [
+        [
+          {
+            "node": "Hours Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hours Today": {
+      "main": [
+        [
+          {
+            "node": "Build Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Completed Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

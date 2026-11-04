@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forgeline Academy — Engineering Bootcamp That Hires</title>
+<meta name="description" content="Forgeline Academy — an outcome-driven software engineering bootcamp. Ship real code, get hired by real companies. Average grad salary $128k." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#07090F',
+          panel: '#0D111C',
+          panel2: '#121728',
+          line: '#1E2435',
+          mist: '#8A93A8',
+          chalk: '#E7ECF6',
+          volt: '#6EE7A8',
+          voltdeep: '#22C77E',
+          flux: '#7C8CFF',
+          ember: '#FF7A59',
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { background:#07090F; color:#E7ECF6; }
+  body { font-family:'Inter',sans-serif; overflow-x:hidden; }
+  ::selection { background:#6EE7A8; color:#07090F; }
+  .font-display { font-family:'Space Grotesk',sans-serif; }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(124,140,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,140,255,0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .glow-volt { box-shadow:0 0 0 1px rgba(110,231,168,0.25), 0 18px 60px -18px rgba(34,199,126,0.55); }
+  .text-grad { background:linear-gradient(100deg,#6EE7A8 0%,#7C8CFF 60%,#FF7A59 120%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .card-line { border:1px solid #1E2435; background:linear-gradient(180deg,#0D111C 0%,#0A0E18 100%); }
+  .marquee { animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform:translateX(0);} to { transform:translateX(-50%);} }
+  .marquee-wrap:hover .marquee { animation-play-state:paused; }
+  .reveal { opacity:0; transform:translateY(28px); }
+  .caret::after { content:'▋'; color:#6EE7A8; animation:blink 1s steps(1) infinite; margin-left:2px; }
+  @keyframes blink { 50% { opacity:0; } }
+  .tilt { transform-style:preserve-3d; transition:transform .15s ease; }
+  .accordion-body { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .dot-grid { background-image:radial-gradient(rgba(124,140,255,0.18) 1px, transparent 1px); background-size:22px 22px; }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation:none; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    .caret::after { animation:none; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body class="bg-ink text-chalk antialiased selection:bg-volt">
+
+<!-- ===== NAV ===== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-[72px] flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-9 h-9 rounded-lg bg-volt text-ink font-mono font-bold text-lg shadow-[0_0_24px_-4px_rgba(110,231,168,0.7)]">&gt;_</span>
+      <span class="font-display font-bold text-lg tracking-tight">Forgeline<span class="text-volt">.</span></span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8 text-sm text-mist font-medium">
+      <a href="#outcomes" class="hover:text-chalk transition">Outcomes</a>
+      <a href="#curriculum" class="hover:text-chalk transition">Curriculum</a>
+      <a href="#how" class="hover:text-chalk transition">How it works</a>
+      <a href="#instructors" class="hover:text-chalk transition">Instructors</a>
+      <a href="#tuition" class="hover:text-chalk transition">Tuition</a>
+      <a href="#faq" class="hover:text-chalk transition">FAQ</a>
+    </div>
+    <a href="#apply" id="navApply" class="magnetic relative inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-volt text-ink text-sm font-semibold hover:bg-voltdeep transition">
+      Apply now
+      <span class="w-1.5 h-1.5 rounded-full bg-ink/70"></span>
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ===== HERO ===== -->
+<section class="relative grid-bg pt-36 pb-24 overflow-hidden">
+  <div class="absolute -top-40 -right-40 w-[34rem] h-[34rem] rounded-full bg-volt/10 blur-[120px]"></div>
+  <div class="absolute top-1/2 -left-40 w-[30rem] h-[30rem] rounded-full bg-flux/10 blur-[120px]"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center relative">
+    <div class="lg:col-span-7">
+      <div class="reveal inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-panel/60 text-xs font-mono text-mist mb-7">
+        <span class="w-2 h-2 rounded-full bg-volt animate-pulse"></span>
+        Cohort 14 enrolling · starts Sept 8
+      </div>
+      <h1 class="font-display font-bold leading-[0.98] tracking-tight text-[2.7rem] sm:text-6xl lg:text-[4.4rem]">
+        <span class="reveal block">Learn to ship.</span>
+        <span class="reveal block text-grad">Get hired in 6 months.</span>
+        <span class="reveal block">No CS degree required.</span>
+      </h1>
+      <p class="reveal mt-7 text-mist text-lg max-w-xl leading-relaxed">
+        Forgeline is a full-stack engineering bootcamp built around one thing — the offer letter. You build production software, pair with senior mentors, and interview with companies that actually hire our grads.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#apply" id="heroApply" class="magnetic inline-flex items-center gap-2 px-7 py-4 rounded-full bg-volt text-ink font-semibold text-base hover:bg-voltdeep transition glow-volt">
+          Apply for Cohort 14 →
+        </a>
+        <a href="#curriculum" class="inline-flex items-center gap-2 px-7 py-4 rounded-full border border-line text-chalk font-medium hover:border-volt/50 hover:text-volt transition">
+          See the curriculum
+        </a>
+      </div>
+      <!-- outcome stats -->
+      <div class="reveal mt-12 grid grid-cols-3 gap-6 max-w-lg">
+        <div>
+          <div class="font-display text-3xl sm:text-4xl font-bold text-chalk"><span class="count" data-to="94" data-suffix="%">0</span></div>
+          <div class="text-xs text-mist mt-1">hired within 180 days</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl sm:text-4xl font-bold text-chalk">$<span class="count" data-to="128" data-suffix="k">0</span></div>
+          <div class="text-xs text-mist mt-1">avg starting salary</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl sm:text-4xl font-bold text-chalk"><span class="count" data-to="4.9" data-dec="1">0</span><span class="text-volt">★</span></div>
+          <div class="text-xs text-mist mt-1">2,100+ grad rating</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- code-typing terminal -->
+    <div class="lg:col-span-5 reveal">
+      <div class="card-line rounded-2xl overflow-hidden glow-volt">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-line bg-panel2">
+          <span class="w-3 h-3 rounded-full bg-ember/80"></span>
+          <span class="w-3 h-3 rounded-full bg-volt/70"></span>
+          <span class="w-3 h-3 rounded-full bg-flux/70"></span>
+          <span class="ml-3 font-mono text-xs text-mist">~/forgeline/ship.ts</span>
+        </div>
+        <pre class="font-mono text-[13px] leading-relaxed p-5 text-mist"><code><span class="text-flux">async function</span> <span class="text-volt">getHired</span>() {
+  <span class="text-flux">const</span> you = <span class="text-flux">await</span> learn(<span class="text-ember">'fundamentals'</span>);
+  you.build(<span class="text-ember">'real projects'</span>);
+  you.pairWith(<span class="text-ember">'senior mentors'</span>);
+  <span class="text-flux">const</span> offer = <span id="typeTarget" class="text-volt caret"></span>
+}</code></pre>
+      </div>
+      <div class="mt-4 flex items-center gap-3 text-xs font-mono text-mist">
+        <span class="px-2 py-1 rounded bg-panel border border-line">TypeScript</span>
+        <span class="px-2 py-1 rounded bg-panel border border-line">React</span>
+        <span class="px-2 py-1 rounded bg-panel border border-line">Node</span>
+        <span class="px-2 py-1 rounded bg-panel border border-line">Postgres</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HIRING PARTNERS MARQUEE ===== -->
+<section class="py-10 border-y border-line bg-panel/40">
+  <p class="text-center text-xs font-mono uppercase tracking-[0.25em] text-mist mb-6">Grads now build at</p>
+  <div class="marquee-wrap overflow-hidden">
+    <div class="marquee flex items-center gap-14 whitespace-nowrap w-max">
+      <!-- duplicated set for seamless loop -->
+      <div class="flex items-center gap-14 whitespace-nowrap text-mist/70 font-display font-semibold text-xl">
+        <span>Northwind Labs</span><span>Vellum AI</span><span>Brightforge</span><span>Cobalt Systems</span><span>Pixelhaus</span><span>Meridian Cloud</span><span>Drafthouse</span><span>Quanta Pay</span>
+      </div>
+      <div class="flex items-center gap-14 whitespace-nowrap text-mist/70 font-display font-semibold text-xl" aria-hidden="true">
+        <span>Northwind Labs</span><span>Vellum AI</span><span>Brightforge</span><span>Cobalt Systems</span><span>Pixelhaus</span><span>Meridian Cloud</span><span>Drafthouse</span><span>Quanta Pay</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== OUTCOMES / STATS ===== -->
+<section id="outcomes" class="py-24 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-volt font-mono text-sm mb-3">// outcomes, not vibes</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">We measure success in offer letters.</h2>
+      <p class="reveal text-mist mt-4 text-lg">Every number below is reported in our public outcomes audit. If you don't get hired, our income-share kicks in — we only win when you do.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal card-line rounded-2xl p-6">
+        <div class="font-display text-4xl font-bold text-volt"><span class="count" data-to="2147">0</span></div>
+        <p class="text-mist text-sm mt-2">graduates placed since 2019</p>
+      </div>
+      <div class="reveal card-line rounded-2xl p-6">
+        <div class="font-display text-4xl font-bold text-flux">$<span class="count" data-to="128" data-suffix="k">0</span></div>
+        <p class="text-mist text-sm mt-2">median first-year salary</p>
+      </div>
+      <div class="reveal card-line rounded-2xl p-6">
+        <div class="font-display text-4xl font-bold text-ember"><span class="count" data-to="94" data-suffix="%">0</span></div>
+        <p class="text-mist text-sm mt-2">placed within 180 days</p>
+      </div>
+      <div class="reveal card-line rounded-2xl p-6">
+        <div class="font-display text-4xl font-bold text-chalk"><span class="count" data-to="310" data-suffix="+">0</span></div>
+        <p class="text-mist text-sm mt-2">hiring partner companies</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CURRICULUM / TRACKS ===== -->
+<section id="curriculum" class="py-24 bg-panel/30 border-y border-line relative dot-grid">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div class="max-w-2xl">
+        <p class="reveal text-volt font-mono text-sm mb-3">// the curriculum</p>
+        <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Pick your track. Build the proof.</h2>
+      </div>
+      <p class="reveal text-mist max-w-sm">Three specializations, one foundation. Every track ships a portfolio of production projects — not toy apps.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- card 1 -->
+      <article class="course-card reveal tilt card-line rounded-2xl p-7 hover:border-volt/40 transition group cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs px-3 py-1 rounded-full bg-volt/10 text-volt border border-volt/20">24 weeks</span>
+          <span class="text-mist text-2xl group-hover:text-volt group-hover:translate-x-1 transition-transform">→</span>
+        </div>
+        <h3 class="font-display text-2xl font-bold mt-6">Full-Stack Engineer</h3>
+        <p class="text-mist text-sm mt-3 leading-relaxed">TypeScript, React, Node, Postgres, and the deployment pipeline. The complete loop from idea to production.</p>
+        <ul class="mt-5 space-y-2 text-sm text-mist/90 font-mono">
+          <li class="flex gap-2"><span class="text-volt">▹</span> Component architecture &amp; state</li>
+          <li class="flex gap-2"><span class="text-volt">▹</span> REST &amp; GraphQL APIs</li>
+          <li class="flex gap-2"><span class="text-volt">▹</span> SQL, migrations, indexing</li>
+          <li class="flex gap-2"><span class="text-volt">▹</span> CI/CD + cloud deploy</li>
+        </ul>
+      </article>
+      <!-- card 2 -->
+      <article class="course-card reveal tilt card-line rounded-2xl p-7 hover:border-flux/40 transition group cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs px-3 py-1 rounded-full bg-flux/10 text-flux border border-flux/20">26 weeks</span>
+          <span class="text-mist text-2xl group-hover:text-flux group-hover:translate-x-1 transition-transform">→</span>
+        </div>
+        <h3 class="font-display text-2xl font-bold mt-6">AI / ML Engineer</h3>
+        <p class="text-mist text-sm mt-3 leading-relaxed">Python, model fine-tuning, RAG systems, and shipping LLM-powered products that survive real traffic.</p>
+        <ul class="mt-5 space-y-2 text-sm text-mist/90 font-mono">
+          <li class="flex gap-2"><span class="text-flux">▹</span> Python &amp; data pipelines</li>
+          <li class="flex gap-2"><span class="text-flux">▹</span> Embeddings &amp; vector search</li>
+          <li class="flex gap-2"><span class="text-flux">▹</span> Fine-tuning &amp; evals</li>
+          <li class="flex gap-2"><span class="text-flux">▹</span> Production inference at scale</li>
+        </ul>
+      </article>
+      <!-- card 3 -->
+      <article class="course-card reveal tilt card-line rounded-2xl p-7 hover:border-ember/40 transition group cursor-pointer">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs px-3 py-1 rounded-full bg-ember/10 text-ember border border-ember/20">22 weeks</span>
+          <span class="text-mist text-2xl group-hover:text-ember group-hover:translate-x-1 transition-transform">→</span>
+        </div>
+        <h3 class="font-display text-2xl font-bold mt-6">Platform / DevOps</h3>
+        <p class="text-mist text-sm mt-3 leading-relaxed">Containers, infrastructure-as-code, observability, and the reliability skills companies fight to hire.</p>
+        <ul class="mt-5 space-y-2 text-sm text-mist/90 font-mono">
+          <li class="flex gap-2"><span class="text-ember">▹</span> Docker &amp; Kubernetes</li>
+          <li class="flex gap-2"><span class="text-ember">▹</span> Terraform &amp; IaC</li>
+          <li class="flex gap-2"><span class="text-ember">▹</span> Monitoring &amp; on-call</li>
+          <li class="flex gap-2"><span class="text-ember">▹</span> Security &amp; cost control</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS / TIMELINE ===== -->
+<section id="how" class="py-24 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16">
+      <p class="reveal text-volt font-mono text-sm mb-3">// the path</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Six months, four phases, one offer.</h2>
+    </div>
+
+    <div class="relative">
+      <!-- timeline line -->
+      <div id="timelineLine" class="hidden md:block absolute left-[19px] top-2 bottom-2 w-px bg-line origin-top"></div>
+      <div class="space-y-10">
+        <div class="timeline-step reveal relative md:pl-16">
+          <span class="hidden md:grid place-items-center absolute left-0 top-0 w-10 h-10 rounded-full bg-panel2 border border-volt/40 text-volt font-mono text-sm">01</span>
+          <h3 class="font-display text-2xl font-bold">Foundations <span class="text-mist text-base font-normal font-mono">· weeks 1–6</span></h3>
+          <p class="text-mist mt-2 max-w-2xl">Programming fundamentals, the command line, version control, and how the web actually works. You write code from day one.</p>
+        </div>
+        <div class="timeline-step reveal relative md:pl-16">
+          <span class="hidden md:grid place-items-center absolute left-0 top-0 w-10 h-10 rounded-full bg-panel2 border border-flux/40 text-flux font-mono text-sm">02</span>
+          <h3 class="font-display text-2xl font-bold">Core build <span class="text-mist text-base font-normal font-mono">· weeks 7–16</span></h3>
+          <p class="text-mist mt-2 max-w-2xl">Deep track specialization. You ship three production-grade projects with code review from senior engineers on every pull request.</p>
+        </div>
+        <div class="timeline-step reveal relative md:pl-16">
+          <span class="hidden md:grid place-items-center absolute left-0 top-0 w-10 h-10 rounded-full bg-panel2 border border-ember/40 text-ember font-mono text-sm">03</span>
+          <h3 class="font-display text-2xl font-bold">Capstone <span class="text-mist text-base font-normal font-mono">· weeks 17–22</span></h3>
+          <p class="text-mist mt-2 max-w-2xl">A real client project for a partner company. Your capstone goes in your portfolio and onto your résumé as actual shipped work.</p>
+        </div>
+        <div class="timeline-step reveal relative md:pl-16">
+          <span class="hidden md:grid place-items-center absolute left-0 top-0 w-10 h-10 rounded-full bg-panel2 border border-volt/40 text-volt font-mono text-sm">04</span>
+          <h3 class="font-display text-2xl font-bold">Hire loop <span class="text-mist text-base font-normal font-mono">· weeks 23–26</span></h3>
+          <p class="text-mist mt-2 max-w-2xl">Mock interviews, salary negotiation coaching, and warm intros to 310+ hiring partners. We run it until you sign.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== INSTRUCTORS ===== -->
+<section id="instructors" class="py-24 bg-panel/30 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-volt font-mono text-sm mb-3">// who teaches you</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Mentors who shipped at scale.</h2>
+      <p class="reveal text-mist mt-4 text-lg">Not lecturers — working engineers who review your code like a real team would.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <article class="reveal card-line rounded-2xl overflow-hidden group">
+        <div class="aspect-[4/3] bg-gradient-to-br from-volt/20 to-flux/10 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Instructor at work" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-xl font-bold">Dara Okonkwo</h3>
+          <p class="text-volt font-mono text-xs mt-1">Lead, Full-Stack Track</p>
+          <p class="text-mist text-sm mt-3">Ex-staff engineer. Built payment infra serving 40M users. Teaches the systems thinking behind clean code.</p>
+        </div>
+      </article>
+      <article class="reveal card-line rounded-2xl overflow-hidden group">
+        <div class="aspect-[4/3] bg-gradient-to-br from-flux/20 to-ember/10 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Mentors collaborating" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-xl font-bold">Mateo Rivas</h3>
+          <p class="text-flux font-mono text-xs mt-1">Lead, AI / ML Track</p>
+          <p class="text-mist text-sm mt-3">Shipped LLM products at scale. Obsessed with evals and making models behave in production, not just demos.</p>
+        </div>
+      </article>
+      <article class="reveal card-line rounded-2xl overflow-hidden group">
+        <div class="aspect-[4/3] bg-gradient-to-br from-ember/20 to-volt/10 relative overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Engineer pairing" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-xl font-bold">Priya Shah</h3>
+          <p class="text-ember font-mono text-xs mt-1">Lead, Platform / DevOps</p>
+          <p class="text-mist text-sm mt-3">Ran reliability for a 9-figure platform. Teaches the on-call calm that turns juniors into trusted engineers.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal rounded-2xl overflow-hidden card-line relative">
+      <div class="aspect-[4/3] bg-gradient-to-br from-flux/20 via-panel to-volt/10">
+        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cohort working together" class="w-full h-full object-cover" />
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-volt font-mono text-sm mb-3">// why we exist</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Talent is everywhere. Access isn't.</h2>
+      <p class="reveal text-mist mt-5 text-lg leading-relaxed">Forgeline started in 2019 when three engineers got tired of watching brilliant, self-taught people get screened out by a degree filter. We built the training that closes the gap between raw potential and a signed offer.</p>
+      <p class="reveal text-mist mt-4 leading-relaxed">No prerequisites. No gatekeeping. Just a brutal, supportive, outcome-obsessed program — and a network of companies that trust the bar we set.</p>
+      <div class="reveal mt-8 grid grid-cols-2 gap-6 max-w-md">
+        <div><div class="font-display text-3xl font-bold text-grad"><span class="count" data-to="2019">0</span></div><p class="text-mist text-sm mt-1">founded</p></div>
+        <div><div class="font-display text-3xl font-bold text-grad"><span class="count" data-to="14">0</span></div><p class="text-mist text-sm mt-1">cohorts run</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="py-24 bg-panel/30 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-volt font-mono text-sm mb-3">// grad stories</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">From applicant to engineer.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal card-line rounded-2xl p-7">
+        <div class="text-volt font-mono text-sm mb-3">$84k → $135k</div>
+        <blockquote class="text-chalk leading-relaxed">"I was a barista who coded at night. Six months later I had two offers. Forgeline didn't just teach me React — it taught me how to think like an engineer."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-volt to-flux grid place-items-center font-display font-bold text-ink">J</span>
+          <div><div class="font-semibold text-sm">Jordan Avery</div><div class="text-mist text-xs font-mono">Full-Stack · now at Brightforge</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal card-line rounded-2xl p-7">
+        <div class="text-flux font-mono text-sm mb-3">career switch</div>
+        <blockquote class="text-chalk leading-relaxed">"I left teaching at 34 with zero tech background. The mentorship was relentless in the best way. My capstone literally became my interview talking point."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-flux to-ember grid place-items-center font-display font-bold text-ink">L</span>
+          <div><div class="font-semibold text-sm">Lena Castellano</div><div class="text-mist text-xs font-mono">AI/ML · now at Vellum AI</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal card-line rounded-2xl p-7">
+        <div class="text-ember font-mono text-sm mb-3">hired in 41 days</div>
+        <blockquote class="text-chalk leading-relaxed">"The hire loop is unreal. Mock interviews until I stopped freezing, then warm intros to companies that already trusted the program. Signed before graduation."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-ember to-volt grid place-items-center font-display font-bold text-ink">K</span>
+          <div><div class="font-semibold text-sm">Kwame Boateng</div><div class="text-mist text-xs font-mono">Platform · now at Meridian Cloud</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TUITION / FINANCING ===== -->
+<section id="tuition" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-volt font-mono text-sm mb-3">// tuition</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Pay when it works — or before.</h2>
+      <p class="reveal text-mist mt-4 text-lg">Two ways to enroll. Both come with the same job guarantee.</p>
+    </div>
+    <div class="grid lg:grid-cols-2 gap-6">
+      <div class="reveal card-line rounded-2xl p-8">
+        <h3 class="font-display text-2xl font-bold">Upfront</h3>
+        <p class="text-mist text-sm mt-2">Best value. Lock your seat and save.</p>
+        <div class="mt-6 font-display text-5xl font-bold">$<span class="count" data-to="14500">0</span></div>
+        <p class="text-mist text-sm mt-1 font-mono">one-time · save $3,500</p>
+        <ul class="mt-6 space-y-3 text-sm text-mist">
+          <li class="flex gap-2"><span class="text-volt">✓</span> Full track access + capstone</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> 1:1 mentorship &amp; code review</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> Lifetime career support</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> Job guarantee or full refund</li>
+        </ul>
+        <a href="#apply" class="magnetic mt-8 inline-flex w-full justify-center px-6 py-3.5 rounded-full border border-line text-chalk font-semibold hover:border-volt/50 hover:text-volt transition">Choose upfront</a>
+      </div>
+      <div class="reveal card-line rounded-2xl p-8 relative glow-volt border-volt/30">
+        <span class="absolute top-6 right-6 text-xs font-mono px-3 py-1 rounded-full bg-volt text-ink font-semibold">most popular</span>
+        <h3 class="font-display text-2xl font-bold">Income Share</h3>
+        <p class="text-mist text-sm mt-2">$0 upfront. Pay only after you're hired above $60k.</p>
+        <div class="mt-6 font-display text-5xl font-bold text-grad"><span class="count" data-to="12" data-suffix="%">0</span></div>
+        <p class="text-mist text-sm mt-1 font-mono">of salary · 24 months · capped at $19k</p>
+        <ul class="mt-6 space-y-3 text-sm text-mist">
+          <li class="flex gap-2"><span class="text-volt">✓</span> Everything in Upfront</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> Nothing due until you earn</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> No payment below $60k salary</li>
+          <li class="flex gap-2"><span class="text-volt">✓</span> Hard cap — never pay more than $19k</li>
+        </ul>
+        <a href="#apply" class="magnetic mt-8 inline-flex w-full justify-center px-6 py-3.5 rounded-full bg-volt text-ink font-semibold hover:bg-voltdeep transition">Apply with $0 down</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="py-24 bg-panel/30 border-y border-line">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="mb-14 text-center">
+      <p class="reveal text-volt font-mono text-sm mb-3">// questions</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-bold tracking-tight">Things people ask before applying.</h2>
+    </div>
+    <div class="space-y-3" id="faqList">
+      <div class="reveal card-line rounded-xl overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold text-lg">Do I need a degree or prior experience?</span>
+          <span class="faq-ico text-volt text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-mist">No. About 60% of our grads came in with zero professional coding background. We start from fundamentals and assume nothing — just bring the work ethic.</p></div>
+      </div>
+      <div class="reveal card-line rounded-xl overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold text-lg">Is it full-time or can I work alongside it?</span>
+          <span class="faq-ico text-volt text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-mist">Both. The immersive track is full-time (40+ hrs/week). The flex track runs evenings and weekends over 9 months so you can keep your job while you train.</p></div>
+      </div>
+      <div class="reveal card-line rounded-xl overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold text-lg">How does the job guarantee work?</span>
+          <span class="faq-ico text-volt text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-mist">If you complete the program, stay active in the hire loop, and aren't placed in an engineering role within 12 months, you get a full tuition refund. On Income Share, you simply never pay.</p></div>
+      </div>
+      <div class="reveal card-line rounded-xl overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold text-lg">What's the admissions process?</span>
+          <span class="faq-ico text-volt text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-mist">A short application, a logic-and-aptitude challenge (no coding required), and a 20-minute conversation. We admit for grit and curiosity, not pedigree.</p></div>
+      </div>
+      <div class="reveal card-line rounded-xl overflow-hidden">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold text-lg">Where are graduates hired?</span>
+          <span class="faq-ico text-volt text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-mist">Across 310+ partner companies — from fast-moving startups to enterprise platform teams. Most placements are remote-friendly or in our partner hubs.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section id="apply" class="py-28 relative overflow-hidden grid-bg">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-volt/5 to-transparent"></div>
+  <div class="absolute -bottom-32 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] rounded-full bg-volt/10 blur-[130px]"></div>
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 text-center relative">
+    <p class="reveal text-volt font-mono text-sm mb-4">// cohort 14 · seats are limited</p>
+    <h2 class="reveal font-display text-4xl sm:text-6xl font-bold tracking-tight leading-[1.02]">Your offer letter starts with one click.</h2>
+    <p class="reveal text-mist mt-6 text-lg max-w-xl mx-auto">Applications for the September cohort close in 18 days. $0 down with Income Share. No risk but the one you take by waiting.</p>
+    <div class="reveal mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a href="#" id="finalApply" class="magnetic inline-flex items-center gap-2 px-8 py-4 rounded-full bg-volt text-ink font-bold text-lg hover:bg-voltdeep transition glow-volt">
+        Apply for Cohort 14 →
+      </a>
+      <a href="#curriculum" class="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-line text-chalk font-medium hover:border-volt/50 transition">
+        Download syllabus
+      </a>
+    </div>
+    <p class="reveal mt-6 text-xs font-mono text-mist">94% placement · $128k median · job guarantee</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-line bg-panel/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-1">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-volt text-ink font-mono font-bold text-lg">&gt;_</span>
+        <span class="font-display font-bold text-lg">Forgeline<span class="text-volt">.</span></span>
+      </a>
+      <p class="text-mist text-sm mt-4 max-w-xs">The outcome-driven engineering bootcamp. We win when you get hired.</p>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4 text-sm">Program</h4>
+      <ul class="space-y-2 text-sm text-mist">
+        <li><a href="#curriculum" class="hover:text-volt transition">Curriculum</a></li>
+        <li><a href="#how" class="hover:text-volt transition">How it works</a></li>
+        <li><a href="#tuition" class="hover:text-volt transition">Tuition</a></li>
+        <li><a href="#outcomes" class="hover:text-volt transition">Outcomes report</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4 text-sm">Company</h4>
+      <ul class="space-y-2 text-sm text-mist">
+        <li><a href="#about" class="hover:text-volt transition">About</a></li>
+        <li><a href="#instructors" class="hover:text-volt transition">Instructors</a></li>
+        <li><a href="#faq" class="hover:text-volt transition">FAQ</a></li>
+        <li><a href="#" class="hover:text-volt transition">Hire our grads</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4 text-sm">Stay in the loop</h4>
+      <form class="flex gap-2" onsubmit="return false;">
+        <input type="email" placeholder="you@email.com" class="flex-1 min-w-0 px-4 py-2.5 rounded-full bg-panel border border-line text-sm text-chalk placeholder:text-mist focus:outline-none focus:border-volt/50" />
+        <button class="px-4 py-2.5 rounded-full bg-volt text-ink text-sm font-semibold hover:bg-voltdeep transition">Join</button>
+      </form>
+      <p class="text-mist text-xs mt-3 font-mono">Cohort drops, no spam.</p>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-mist font-mono">
+      <span>© 2026 Forgeline Academy. All rights reserved.</span>
+      <span class="flex gap-5"><a href="#" class="hover:text-volt transition">Privacy</a><a href="#" class="hover:text-volt transition">Terms</a><a href="#" class="hover:text-volt transition">Outcomes Audit</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) {
+      nav.classList.add('bg-ink/80','backdrop-blur-xl','border-b','border-line');
+    } else {
+      nav.classList.remove('bg-ink/80','backdrop-blur-xl','border-b','border-line');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- Code typing accent ---- */
+  const typeTarget = document.getElementById('typeTarget');
+  if (typeTarget) {
+    const str = "await interview('your dream company');";
+    if (reduced) {
+      typeTarget.textContent = str;
+      typeTarget.classList.remove('caret');
+    } else {
+      let i = 0;
+      const tick = () => {
+        if (i <= str.length) {
+          typeTarget.textContent = str.slice(0, i);
+          i++;
+          setTimeout(tick, 55);
+        }
+      };
+      setTimeout(tick, 900);
+    }
+  }
+
+  /* ---- Magnetic CTAs ---- */
+  if (!reduced && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+      el.style.transition = 'transform .2s ease';
+    });
+
+    /* ---- Card tilt ---- */
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${px * 6}deg) rotateX(${-py * 6}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  }
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const ico = btn.querySelector('.faq-ico');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-ico').forEach(i => { i.style.transform = 'rotate(0deg)'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        ico.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  /* ---- GSAP ---- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduced) {
+      /* staged reveals */
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      /* hero stagger */
+      gsap.set('.reveal', { opacity: 0, y: 28 });
+      gsap.to('section:first-of-type .reveal', {
+        opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', stagger: 0.08, delay: 0.15
+      });
+
+      /* container parallax on hero blobs */
+      gsap.utils.toArray('.grid-bg').forEach(sec => {
+        gsap.to(sec.querySelectorAll('.blur-\\[120px\\], .blur-\\[130px\\]'), {
+          yPercent: 18, ease: 'none',
+          scrollTrigger: { trigger: sec, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      /* timeline line draw */
+      const line = document.getElementById('timelineLine');
+      if (line) {
+        gsap.fromTo(line, { scaleY: 0 }, {
+          scaleY: 1, ease: 'none',
+          scrollTrigger: { trigger: line, start: 'top 80%', end: 'bottom 70%', scrub: true }
+        });
+      }
+      gsap.utils.toArray('.timeline-step').forEach((s, i) => {
+        gsap.from(s, {
+          x: -20, opacity: 0, duration: 0.6, ease: 'power2.out',
+          scrollTrigger: { trigger: s, start: 'top 85%' }
+        });
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    }
+
+    /* count-ups (run regardless of motion pref, just no easing flourish) */
+    document.querySelectorAll('.count').forEach(el => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.dec || '0', 10);
+      const suffix = el.dataset.suffix || '';
+      const fmt = v => {
+        let n = dec ? v.toFixed(dec) : Math.round(v).toLocaleString();
+        return n + suffix;
+      };
+      if (reduced) { el.textContent = fmt(to); return; }
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          gsap.to(obj, {
+            v: to, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => { el.textContent = fmt(obj.v); }
+          });
+        }
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

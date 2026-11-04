@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ironcrest Roofing — Built to Outlast the Storm</title>
+<meta name="description" content="Ironcrest Roofing — premium residential roofing, repairs, and storm restoration. Workmanship that outlasts the weather." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          slate: {
+            950: '#0b0f17',
+            900: '#121826',
+            850: '#19202f',
+            800: '#1f2937',
+          },
+          ember: {
+            400: '#ff9b47',
+            500: '#f97316',
+            600: '#ea5a0c',
+            700: '#c2470b',
+          },
+          steel: '#94a3b8',
+        },
+        fontFamily: {
+          display: ['Archivo', 'system-ui', 'sans-serif'],
+          body: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          ember: '0 18px 50px -12px rgba(249,115,22,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0b0f17;
+    color: #e2e8f0;
+  }
+  .font-display { font-family: 'Archivo', sans-serif; }
+
+  /* Diagonal slate texture */
+  .shingle-grid {
+    background-image:
+      linear-gradient(135deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+      linear-gradient(225deg, rgba(255,255,255,0.03) 25%, transparent 25%);
+    background-size: 28px 28px;
+  }
+  .ember-text {
+    background: linear-gradient(120deg, #ff9b47, #f97316 60%, #ea5a0c);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass {
+    background: rgba(18,24,38,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scroll-x 28s linear infinite; }
+  @keyframes scroll-x { to { transform: translateX(-50%); } }
+  .marquee:hover { animation-play-state: paused; }
+
+  /* Before/After slider */
+  .ba-after { clip-path: inset(0 0 0 50%); }
+  .ba-handle { left: 50%; }
+
+  /* Tilt */
+  .tilt-inner { transform-style: preserve-3d; transition: transform 0.18s ease-out; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .magnetic { transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-ember-500 selection:text-slate-950">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="glass border-b border-white/5">
+    <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-[72px] flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ember-500 shadow-ember">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-950" fill="currentColor"><path d="M12 2 1 11h3v9h6v-6h4v6h6v-9h3z"/></svg>
+        </span>
+        <span class="font-display font-800 tracking-tight text-lg">IRON<span class="ember-text">CREST</span></span>
+      </a>
+      <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-steel">
+        <a href="#services" class="hover:text-white transition">Services</a>
+        <a href="#why" class="hover:text-white transition">Why Us</a>
+        <a href="#process" class="hover:text-white transition">Process</a>
+        <a href="#projects" class="hover:text-white transition">Projects</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="tel:+18005550199" class="hidden sm:block text-sm font-semibold text-slate-200 hover:text-ember-400 transition">(800) 555-0199</a>
+        <a href="#quote" id="nav-cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-ember-500 px-5 py-2.5 text-sm font-bold text-slate-950 shadow-ember hover:bg-ember-400 transition">
+          Free Quote
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
+  <div id="hero-bg" class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950"></div>
+    <img src="https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Residential roof against sky"
+         class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/70"></div>
+    <div class="absolute inset-0 shingle-grid opacity-60"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center">
+    <div class="lg:col-span-7">
+      <span class="reveal inline-flex items-center gap-2 rounded-full border border-ember-500/40 bg-ember-500/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-ember-400 uppercase">
+        <span class="w-1.5 h-1.5 rounded-full bg-ember-400 animate-pulse"></span> Licensed · Bonded · Storm-Ready
+      </span>
+      <h1 class="reveal mt-6 font-display font-900 leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
+        Built to outlast<br />the <span class="ember-text">storm.</span>
+      </h1>
+      <p class="reveal mt-6 max-w-xl text-lg text-steel leading-relaxed">
+        Ironcrest installs, repairs, and restores residential roofs that hold the line against wind, hail, and time — backed by a 50-year workmanship guarantee.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#quote" id="hero-cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-ember-500 px-7 py-4 font-bold text-slate-950 shadow-ember hover:bg-ember-400 transition">
+          Get my free quote
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#projects" class="inline-flex items-center gap-2 rounded-full border border-white/15 px-7 py-4 font-semibold text-slate-200 hover:bg-white/5 transition">
+          See recent work
+        </a>
+      </div>
+      <div class="reveal mt-10 flex items-center gap-6 text-sm text-steel">
+        <div class="flex items-center gap-1 text-ember-400">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+        </div>
+        <span><span class="text-white font-semibold">4.9</span> from 1,200+ homeowners</span>
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 reveal">
+      <div id="quote" class="tilt-card glass rounded-3xl border border-white/10 p-7 shadow-2xl">
+        <div class="tilt-inner">
+          <h3 class="font-display font-700 text-2xl">Free roof inspection</h3>
+          <p class="text-sm text-steel mt-1">No-obligation estimate within 24 hours.</p>
+          <form onsubmit="return false" class="mt-6 space-y-4">
+            <input type="text" placeholder="Full name" class="w-full rounded-xl bg-slate-900/80 border border-white/10 px-4 py-3 text-sm placeholder:text-slate-500 focus:border-ember-500 focus:outline-none transition" />
+            <div class="grid grid-cols-2 gap-3">
+              <input type="tel" placeholder="Phone" class="w-full rounded-xl bg-slate-900/80 border border-white/10 px-4 py-3 text-sm placeholder:text-slate-500 focus:border-ember-500 focus:outline-none transition" />
+              <input type="text" placeholder="ZIP" class="w-full rounded-xl bg-slate-900/80 border border-white/10 px-4 py-3 text-sm placeholder:text-slate-500 focus:border-ember-500 focus:outline-none transition" />
+            </div>
+            <select class="w-full rounded-xl bg-slate-900/80 border border-white/10 px-4 py-3 text-sm text-slate-300 focus:border-ember-500 focus:outline-none transition">
+              <option>What do you need?</option>
+              <option>New roof installation</option>
+              <option>Repair / leak</option>
+              <option>Storm / hail damage</option>
+              <option>Inspection only</option>
+            </select>
+            <button class="magnetic w-full rounded-xl bg-ember-500 py-3.5 font-bold text-slate-950 shadow-ember hover:bg-ember-400 transition">
+              Request my quote
+            </button>
+          </form>
+          <p class="mt-4 text-center text-xs text-slate-500">We respect your privacy. No spam, ever.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative border-y border-white/5 bg-slate-900/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl sm:text-5xl ember-text" data-count="8400" data-suffix="+">0</div>
+      <p class="mt-2 text-sm text-steel">Roofs installed</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl sm:text-5xl ember-text" data-count="27" data-suffix=" yrs">0</div>
+      <p class="mt-2 text-sm text-steel">In business</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl sm:text-5xl ember-text" data-count="4.9" data-decimals="1">0</div>
+      <p class="mt-2 text-sm text-steel">Average rating</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display font-900 text-4xl sm:text-5xl ember-text" data-count="50" data-suffix="-yr">0</div>
+      <p class="mt-2 text-sm text-steel">Workmanship guarantee</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BEFORE / AFTER ============ -->
+<section class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">The Ironcrest difference</p>
+      <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">From weathered to weatherproof.</h2>
+      <p class="mt-4 text-steel text-lg">Drag the handle to see what 27 years of craftsmanship looks like on a real restoration.</p>
+    </div>
+
+    <div id="ba" class="reveal mt-12 relative select-none rounded-3xl overflow-hidden border border-white/10 aspect-[16/9] cursor-ew-resize">
+      <!-- before -->
+      <div class="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900">
+        <img src="https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Roof before restoration"
+             class="w-full h-full object-cover" />
+        <span class="absolute top-5 left-5 rounded-full bg-slate-950/80 px-4 py-1.5 text-xs font-bold tracking-wide">BEFORE</span>
+      </div>
+      <!-- after -->
+      <div class="ba-after absolute inset-0 bg-gradient-to-br from-ember-700 to-slate-900">
+        <img src="https://images.unsplash.com/photo-1591588582259-e675bd2e6088?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Roof after restoration"
+             class="w-full h-full object-cover" />
+        <span class="absolute top-5 right-5 rounded-full bg-ember-500 px-4 py-1.5 text-xs font-bold tracking-wide text-slate-950">AFTER</span>
+      </div>
+      <!-- handle -->
+      <div class="ba-handle absolute top-0 bottom-0 w-1 bg-ember-500 -translate-x-1/2">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-12 h-12 rounded-full bg-ember-500 shadow-ember text-slate-950">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES MARQUEE ============ -->
+<section class="py-6 border-y border-white/5 bg-ember-500/5 overflow-hidden">
+  <div class="marquee">
+    <div class="flex items-center gap-8 pr-8 font-display font-800 text-2xl text-slate-400 whitespace-nowrap">
+      <span>Asphalt Shingle</span><span class="text-ember-500">◆</span>
+      <span>Metal Roofing</span><span class="text-ember-500">◆</span>
+      <span>Storm Restoration</span><span class="text-ember-500">◆</span>
+      <span>Leak Repair</span><span class="text-ember-500">◆</span>
+      <span>Gutter Systems</span><span class="text-ember-500">◆</span>
+      <span>Flat &amp; Low-Slope</span><span class="text-ember-500">◆</span>
+    </div>
+    <div class="flex items-center gap-8 pr-8 font-display font-800 text-2xl text-slate-400 whitespace-nowrap" aria-hidden="true">
+      <span>Asphalt Shingle</span><span class="text-ember-500">◆</span>
+      <span>Metal Roofing</span><span class="text-ember-500">◆</span>
+      <span>Storm Restoration</span><span class="text-ember-500">◆</span>
+      <span>Leak Repair</span><span class="text-ember-500">◆</span>
+      <span>Gutter Systems</span><span class="text-ember-500">◆</span>
+      <span>Flat &amp; Low-Slope</span><span class="text-ember-500">◆</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES GRID ============ -->
+<section id="services" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">What we do</p>
+      <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">Every roof, every season.</h2>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Roof Replacement</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">Full tear-off and re-roof with premium architectural shingles or standing-seam metal, installed by certified crews.</p>
+      </article>
+
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2l-2 7h5l-9 13 2-9H5z"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Storm Restoration</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">Hail and wind damage assessed, documented, and restored — plus full insurance-claim support from start to payout.</p>
+      </article>
+
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Leak Repair</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">Fast, precise diagnosis of leaks, flashing failures, and ventilation issues — sealed before the next downpour.</p>
+      </article>
+
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M6 7v13h12V7M9 11v5M15 11v5"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Gutter Systems</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">Seamless aluminum gutters and leaf-guard systems that move water away and protect your foundation.</p>
+      </article>
+
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Inspections</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">26-point roof health checks with photo reports — for maintenance, real-estate, or pre-storm peace of mind.</p>
+      </article>
+
+      <article class="svc reveal group relative rounded-2xl border border-white/10 bg-slate-900/50 p-7 overflow-hidden hover:border-ember-500/50 transition">
+        <div class="svc-glow absolute -top-24 -right-24 w-48 h-48 rounded-full bg-ember-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        <div class="grid place-items-center w-12 h-12 rounded-xl bg-ember-500/15 text-ember-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Metal Roofing</h3>
+        <p class="mt-2 text-sm text-steel leading-relaxed">Standing-seam and stone-coated steel systems engineered to last 50+ years with class-A fire ratings.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section id="why" class="py-24 sm:py-32 bg-slate-900/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="rounded-3xl overflow-hidden border border-white/10 aspect-[4/5] bg-gradient-to-br from-slate-800 to-slate-950">
+        <img src="https://images.unsplash.com/photo-1591588582259-e675bd2e6088?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Roofing crew at work"
+             class="w-full h-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:right-8 glass rounded-2xl border border-white/10 px-6 py-5 shadow-2xl">
+        <div class="font-display font-900 text-3xl ember-text">100%</div>
+        <p class="text-xs text-steel mt-1 max-w-[140px]">Of inspections done in person — never drone-only.</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-ember-400 font-semibold text-sm uppercase tracking-widest">Why homeowners pick Ironcrest</p>
+      <h2 class="reveal mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">No shortcuts. No surprises.</h2>
+      <div class="mt-10 space-y-7">
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center shrink-0 w-11 h-11 rounded-xl bg-ember-500/15 text-ember-400">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-700 text-lg">Fixed, written pricing</h3>
+            <p class="text-sm text-steel mt-1">The number we quote is the number you pay. No mid-project upcharges, no vague "allowances."</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center shrink-0 w-11 h-11 rounded-xl bg-ember-500/15 text-ember-400">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-700 text-lg">Manufacturer-certified crews</h3>
+            <p class="text-sm text-steel mt-1">Factory-trained installers mean your warranty is backed by both us and the shingle maker.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center shrink-0 w-11 h-11 rounded-xl bg-ember-500/15 text-ember-400">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-700 text-lg">Same-crew accountability</h3>
+            <p class="text-sm text-steel mt-1">We never subcontract your roof to strangers. The team that starts your job finishes it.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center shrink-0 w-11 h-11 rounded-xl bg-ember-500/15 text-ember-400">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          </span>
+          <div>
+            <h3 class="font-display font-700 text-lg">Clean-site guarantee</h3>
+            <p class="text-sm text-steel mt-1">Magnetic nail sweeps and full debris haul-off. Your yard looks better than we found it.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">How it works</p>
+      <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">Four steps to a stronger roof.</h2>
+    </div>
+
+    <div class="mt-16 grid md:grid-cols-4 gap-8">
+      <div class="reveal relative">
+        <div class="font-display font-900 text-6xl text-ember-500/20">01</div>
+        <h3 class="font-display font-700 text-xl mt-2">Inspect</h3>
+        <p class="text-sm text-steel mt-2">We climb up, document every detail, and hand you an honest photo report.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display font-900 text-6xl text-ember-500/20">02</div>
+        <h3 class="font-display font-700 text-xl mt-2">Quote</h3>
+        <p class="text-sm text-steel mt-2">A clear, fixed estimate with material options — no pressure, no fine print.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display font-900 text-6xl text-ember-500/20">03</div>
+        <h3 class="font-display font-700 text-xl mt-2">Install</h3>
+        <p class="text-sm text-steel mt-2">Certified crews complete most homes in a single day, weather permitting.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display font-900 text-6xl text-ember-500/20">04</div>
+        <h3 class="font-display font-700 text-xl mt-2">Guarantee</h3>
+        <p class="text-sm text-steel mt-2">Final walkthrough, magnet sweep, and a 50-year workmanship warranty in hand.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECENT PROJECTS ============ -->
+<section id="projects" class="py-24 sm:py-32 bg-slate-900/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 reveal">
+      <div class="max-w-2xl">
+        <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">Recent work</p>
+        <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">Roofs we're proud of.</h2>
+      </div>
+      <a href="#quote" class="inline-flex items-center gap-2 text-ember-400 font-semibold hover:text-ember-500 transition">
+        Start your project
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal group relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-950">
+        <img src="https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Cedar Heights re-roof"
+             class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+        <figcaption class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-slate-950 to-transparent">
+          <p class="text-xs text-ember-400 font-semibold">ASPHALT · CEDAR HEIGHTS</p>
+          <h3 class="font-display font-700 text-lg">Full architectural re-roof</h3>
+        </figcaption>
+      </figure>
+      <figure class="reveal group relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-950">
+        <img src="https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Maple Grove metal roof"
+             class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+        <figcaption class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-slate-950 to-transparent">
+          <p class="text-xs text-ember-400 font-semibold">METAL · MAPLE GROVE</p>
+          <h3 class="font-display font-700 text-lg">Standing-seam install</h3>
+        </figcaption>
+      </figure>
+      <figure class="reveal group relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/3] bg-gradient-to-br from-slate-800 to-slate-950">
+        <img src="https://images.unsplash.com/photo-1591588582259-e675bd2e6088?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Riverside storm restoration"
+             class="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
+        <figcaption class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-slate-950 to-transparent">
+          <p class="text-xs text-ember-400 font-semibold">STORM · RIVERSIDE</p>
+          <h3 class="font-display font-700 text-lg">Hail damage restoration</h3>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-ember-400 font-semibold text-sm uppercase tracking-widest">Our story</p>
+      <h2 class="reveal mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">A family crew since 1998.</h2>
+      <p class="reveal mt-6 text-steel text-lg leading-relaxed">
+        Ironcrest started with one truck, one ladder, and a simple promise: do the roof right, treat the homeowner like a neighbor. Twenty-seven years later we've grown into the region's most-trusted residential roofer — but that promise hasn't changed.
+      </p>
+      <p class="reveal mt-4 text-steel leading-relaxed">
+        We're still family-owned. Our installers are still certified, full-time, and accountable. And we still show up when we say we will — because your home deserves nothing less.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap gap-8">
+        <div>
+          <div class="font-display font-900 text-3xl ember-text">A+</div>
+          <p class="text-sm text-steel mt-1">BBB rating</p>
+        </div>
+        <div>
+          <div class="font-display font-900 text-3xl ember-text">Fully</div>
+          <p class="text-sm text-steel mt-1">Insured &amp; bonded</p>
+        </div>
+        <div>
+          <div class="font-display font-900 text-3xl ember-text">Local</div>
+          <p class="text-sm text-steel mt-1">Owned &amp; operated</p>
+        </div>
+      </div>
+    </div>
+    <div class="reveal rounded-3xl overflow-hidden border border-white/10 aspect-square bg-gradient-to-br from-ember-700/40 to-slate-950">
+      <img src="https://images.unsplash.com/photo-1632759145351-1d592919f522?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'" alt="Ironcrest roofing team"
+           class="w-full h-full object-cover" />
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 sm:py-32 bg-slate-900/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">Homeowner reviews</p>
+      <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">Trusted on every street.</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6">
+      <blockquote class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-7">
+        <div class="flex gap-1 text-ember-400 mb-4">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+        </div>
+        <p class="text-slate-200 leading-relaxed">"Hail wrecked our roof in May. Ironcrest handled the entire insurance claim and had us re-roofed in a day. Spotless cleanup too."</p>
+        <footer class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-ember-500/20 text-ember-400 font-bold">DM</span>
+          <div><p class="font-semibold text-sm">Dana Marsh</p><p class="text-xs text-steel">Cedar Heights</p></div>
+        </footer>
+      </blockquote>
+
+      <blockquote class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-7">
+        <div class="flex gap-1 text-ember-400 mb-4">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+        </div>
+        <p class="text-slate-200 leading-relaxed">"The fixed quote was exactly what we paid — to the dollar. After two bad contractor experiences, that honesty meant everything."</p>
+        <footer class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-ember-500/20 text-ember-400 font-bold">RT</span>
+          <div><p class="font-semibold text-sm">Reggie Tran</p><p class="text-xs text-steel">Maple Grove</p></div>
+        </footer>
+      </blockquote>
+
+      <blockquote class="reveal rounded-2xl border border-white/10 bg-slate-900/60 p-7">
+        <div class="flex gap-1 text-ember-400 mb-4">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2l3 6.5 7 .6-5.3 4.7L18.3 21 12 17.3 5.7 21l1.6-7.2L2 9.1l7-.6z"/></svg>
+        </div>
+        <p class="text-slate-200 leading-relaxed">"Standing-seam metal roof looks incredible and the crew was respectful, on-time, and tidy every single day. Worth every penny."</p>
+        <footer class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-ember-500/20 text-ember-400 font-bold">PK</span>
+          <div><p class="font-semibold text-sm">Priya Kohl</p><p class="text-xs text-steel">Riverside</p></div>
+        </footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-32">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center reveal">
+      <p class="text-ember-400 font-semibold text-sm uppercase tracking-widest">Good questions</p>
+      <h2 class="mt-3 font-display font-800 text-4xl sm:text-5xl tracking-tight">Roofing, answered.</h2>
+    </div>
+
+    <div class="mt-12 space-y-4">
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-lg">How long does a roof replacement take?</span>
+          <span class="faq-icon shrink-0 text-ember-400 transition-transform duration-300 text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel leading-relaxed">Most residential homes are completed in a single day. Larger or steeply pitched roofs may take two. We always give you a firm timeline before we start.</p></div>
+      </div>
+
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-lg">Do you handle insurance claims?</span>
+          <span class="faq-icon shrink-0 text-ember-400 transition-transform duration-300 text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel leading-relaxed">Yes — for storm and hail damage we document everything, meet your adjuster on-site, and manage the claim from first inspection through final payout.</p></div>
+      </div>
+
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-lg">What does the warranty cover?</span>
+          <span class="faq-icon shrink-0 text-ember-400 transition-transform duration-300 text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel leading-relaxed">Our 50-year workmanship guarantee covers installation. Your materials carry a separate manufacturer warranty — and because we're certified, those terms are enhanced.</p></div>
+      </div>
+
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-lg">Is the inspection really free?</span>
+          <span class="faq-icon shrink-0 text-ember-400 transition-transform duration-300 text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel leading-relaxed">Completely free, with no obligation. You get a photo report and a written estimate whether or not you choose to move forward with us.</p></div>
+      </div>
+
+      <div class="faq-item reveal rounded-2xl border border-white/10 bg-slate-900/50 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-lg">Do you offer financing?</span>
+          <span class="faq-icon shrink-0 text-ember-400 transition-transform duration-300 text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-steel leading-relaxed">We do. Flexible monthly plans with options for $0 down and same-as-cash periods are available for qualified homeowners.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="reveal relative rounded-[2rem] overflow-hidden border border-ember-500/30 bg-gradient-to-br from-ember-600 via-ember-700 to-slate-950 p-10 sm:p-16">
+      <div class="absolute inset-0 shingle-grid opacity-30"></div>
+      <div class="relative max-w-2xl">
+        <h2 class="font-display font-900 text-4xl sm:text-6xl tracking-tight text-slate-950">Your roof shouldn't wait for the next storm.</h2>
+        <p class="mt-5 text-lg text-slate-900/90 max-w-xl">Book your free inspection today and get a fixed, no-pressure quote within 24 hours.</p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a href="#quote" class="magnetic inline-flex items-center gap-2 rounded-full bg-slate-950 px-8 py-4 font-bold text-white hover:bg-slate-900 transition">
+            Get my free quote
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="tel:+18005550199" class="inline-flex items-center gap-2 rounded-full border-2 border-slate-950/40 px-8 py-4 font-bold text-slate-950 hover:bg-slate-950/10 transition">
+            Call (800) 555-0199
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-white/5 bg-slate-900/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-1">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-ember-500">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-slate-950" fill="currentColor"><path d="M12 2 1 11h3v9h6v-6h4v6h6v-9h3z"/></svg>
+        </span>
+        <span class="font-display font-800 tracking-tight text-lg">IRON<span class="ember-text">CREST</span></span>
+      </a>
+      <p class="mt-4 text-sm text-steel max-w-xs">Premium residential roofing, repair, and storm restoration. Built to outlast the storm since 1998.</p>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-sm uppercase tracking-widest text-slate-400">Services</h4>
+      <ul class="mt-4 space-y-2 text-sm text-steel">
+        <li><a href="#services" class="hover:text-ember-400 transition">Roof Replacement</a></li>
+        <li><a href="#services" class="hover:text-ember-400 transition">Storm Restoration</a></li>
+        <li><a href="#services" class="hover:text-ember-400 transition">Leak Repair</a></li>
+        <li><a href="#services" class="hover:text-ember-400 transition">Metal Roofing</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-sm uppercase tracking-widest text-slate-400">Company</h4>
+      <ul class="mt-4 space-y-2 text-sm text-steel">
+        <li><a href="#about" class="hover:text-ember-400 transition">About</a></li>
+        <li><a href="#projects" class="hover:text-ember-400 transition">Projects</a></li>
+        <li><a href="#process" class="hover:text-ember-400 transition">Process</a></li>
+        <li><a href="#faq" class="hover:text-ember-400 transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-sm uppercase tracking-widest text-slate-400">Contact</h4>
+      <ul class="mt-4 space-y-2 text-sm text-steel">
+        <li><a href="tel:+18005550199" class="hover:text-ember-400 transition">(800) 555-0199</a></li>
+        <li><a href="mailto:hello@ironcrest.example" class="hover:text-ember-400 transition">hello@ironcrest.example</a></li>
+        <li>Mon–Sat · 7am–7pm</li>
+        <li>Serving the greater metro area</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      <p>© 2026 Ironcrest Roofing Co. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-steel transition">Privacy</a>
+        <a href="#" class="hover:text-steel transition">Terms</a>
+        <a href="#" class="hover:text-steel transition">Licensing</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.classList.add('shadow-lg');
+    else nav.classList.remove('shadow-lg');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Before / After slider ---------- */
+  const ba = document.getElementById('ba');
+  if (ba) {
+    const after = ba.querySelector('.ba-after');
+    const handle = ba.querySelector('.ba-handle');
+    let dragging = false;
+    const setPos = (clientX) => {
+      const r = ba.getBoundingClientRect();
+      let pct = ((clientX - r.left) / r.width) * 100;
+      pct = Math.max(2, Math.min(98, pct));
+      after.style.clipPath = `inset(0 0 0 ${pct}%)`;
+      handle.style.left = pct + '%';
+    };
+    const start = () => (dragging = true);
+    const end = () => (dragging = false);
+    const move = (e) => {
+      if (!dragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setPos(x);
+    };
+    ba.addEventListener('mousedown', (e) => { start(); setPos(e.clientX); });
+    ba.addEventListener('touchstart', (e) => { start(); setPos(e.touches[0].clientX); }, { passive: true });
+    window.addEventListener('mousemove', move);
+    window.addEventListener('touchmove', move, { passive: true });
+    window.addEventListener('mouseup', end);
+    window.addEventListener('touchend', end);
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => (el.style.transform = 'translate(0,0)'));
+    });
+
+    /* ---------- Tilt 3D on quote card ---------- */
+    document.querySelectorAll('.tilt-card').forEach((card) => {
+      const inner = card.querySelector('.tilt-inner');
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - 0.5) * -8;
+        const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
+        inner.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        inner.style.transform = 'perspective(900px) rotateX(0) rotateY(0)';
+      });
+    });
+
+    /* ---------- Service card hover lift ---------- */
+    document.querySelectorAll('.svc').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - 0.5) * -5;
+        const ry = ((e.clientX - r.left) / r.width - 0.5) * 5;
+        card.style.transform = `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', () => (card.style.transform = ''));
+    });
+  }
+
+  /* ---------- GSAP reveals + count-ups + parallax ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduceMotion) {
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+
+      /* hero parallax */
+      gsap.to('#hero-bg img', {
+        yPercent: 18, ease: 'none',
+        scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true },
+      });
+
+      /* count-ups */
+      document.querySelectorAll('[data-count]').forEach((el) => {
+        const target = parseFloat(el.dataset.count);
+        const decimals = parseInt(el.dataset.decimals || '0', 10);
+        const suffix = el.dataset.suffix || '';
+        const obj = { v: 0 };
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => gsap.to(obj, {
+            v: target, duration: 2, ease: 'power2.out',
+            onUpdate: () => {
+              el.textContent = obj.v.toLocaleString(undefined, {
+                minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+              }) + suffix;
+            },
+          }),
+        });
+      });
+    } else {
+      /* reduced motion: render final values immediately */
+      document.querySelectorAll('[data-count]').forEach((el) => {
+        const decimals = parseInt(el.dataset.decimals || '0', 10);
+        el.textContent = parseFloat(el.dataset.count).toLocaleString(undefined, {
+          minimumFractionDigits: decimals, maximumFractionDigits: decimals,
+        }) + (el.dataset.suffix || '');
+      });
+    }
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NOVAFORM — Digital Agency &amp; 3D Experience Studio</title>
+<meta name="description" content="NOVAFORM is a creative digital agency crafting immersive 3D web experiences, brand systems, and interactive products for ambitious companies." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@300;400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#07070b',
+          carbon: '#0c0d14',
+          slate2: '#15161f',
+          mist:   '#9aa0b5',
+          chalk:  '#eef0f7',
+          lime:   '#c8ff3d',   /* accent */
+          violet2:'#7c5cff',
+          aqua:   '#46e8d0'
+        },
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          grotesk: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          mono:    ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --accent:#c8ff3d; --violet:#7c5cff; --aqua:#46e8d0; }
+  html, body { background:#07070b; }
+  body { overflow-x:hidden; cursor:none; }
+  ::selection { background:var(--accent); color:#07070b; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position:fixed; top:0; left:0; pointer-events:none; z-index:9999;
+    border-radius:9999px; transform:translate(-50%,-50%); will-change:transform;
+  }
+  .cursor-dot  { width:6px; height:6px; background:var(--accent); }
+  .cursor-ring { width:42px; height:42px; border:1px solid rgba(200,255,61,.45);
+                 transition:width .25s ease, height .25s ease, background .25s ease, border-color .25s ease; }
+  .cursor-ring.is-hover { width:70px; height:70px; background:rgba(200,255,61,.08); border-color:rgba(200,255,61,.7); }
+
+  /* Masked headline reveal */
+  .reveal-line { overflow:hidden; display:block; }
+  .reveal-line > span { display:block; transform:translateY(110%); }
+
+  /* Marquee */
+  .marquee-track { display:flex; width:max-content; animation:scrollx 30s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state:paused; }
+  @keyframes scrollx { to { transform:translateX(-50%); } }
+
+  .glow-ring { box-shadow:0 0 0 1px rgba(255,255,255,.06), 0 30px 80px -40px rgba(124,92,255,.5); }
+  .grain:before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .hairline { border-top:1px solid rgba(255,255,255,.07); }
+  .chip { border:1px solid rgba(255,255,255,.12); }
+  .grad-text {
+    background:linear-gradient(100deg,#eef0f7 0%,#c8ff3d 45%,#7c5cff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .card-hover { transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s; }
+  .card-hover:hover { transform:translateY(-6px); border-color:rgba(200,255,61,.4); }
+
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+  .acc.open .acc-body { max-height:280px; }
+  .acc.open .acc-plus { transform:rotate(45deg); }
+
+  @media (max-width:768px){ body{ cursor:auto; } .cursor-dot,.cursor-ring{ display:none; } }
+
+  @media (prefers-reduced-motion: reduce){
+    .marquee-track{ animation:none; }
+    .reveal-line > span{ transform:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body class="grain bg-ink text-chalk font-grotesk antialiased selection:bg-lime">
+
+<!-- Cursor -->
+<div class="cursor-ring" id="cRing"></div>
+<div class="cursor-dot"  id="cDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between
+              backdrop-blur-md bg-ink/40 border-b border-white/5">
+    <a href="#top" data-cursor class="flex items-center gap-2 group">
+      <span class="w-8 h-8 rounded-lg bg-lime grid place-items-center text-ink font-display font-extrabold text-lg group-hover:rotate-12 transition">N</span>
+      <span class="font-display font-extrabold tracking-tight text-lg">NOVAFORM</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-8 text-sm text-mist font-mono">
+      <li><a data-cursor href="#services" class="hover:text-chalk transition">Services</a></li>
+      <li><a data-cursor href="#work" class="hover:text-chalk transition">Work</a></li>
+      <li><a data-cursor href="#process" class="hover:text-chalk transition">Process</a></li>
+      <li><a data-cursor href="#faq" class="hover:text-chalk transition">FAQ</a></li>
+    </ul>
+    <a data-cursor href="#contact"
+       class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-lime text-ink text-sm font-semibold hover:bg-chalk transition">
+      Start a project
+    </a>
+    <button id="navToggle" class="md:hidden text-chalk" aria-label="Menu">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </nav>
+  <div id="mobileMenu" class="md:hidden hidden bg-carbon/95 backdrop-blur border-b border-white/5">
+    <div class="px-6 py-5 flex flex-col gap-4 text-mist font-mono">
+      <a href="#services" class="mobnav">Services</a>
+      <a href="#work" class="mobnav">Work</a>
+      <a href="#process" class="mobnav">Process</a>
+      <a href="#faq" class="mobnav">FAQ</a>
+      <a href="#contact" class="text-lime">Start a project →</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center overflow-hidden">
+  <!-- 3D canvas -->
+  <canvas id="webgl" class="absolute inset-0 w-full h-full"></canvas>
+  <!-- vignette -->
+  <div class="absolute inset-0 pointer-events-none"
+       style="background:radial-gradient(120% 80% at 70% 30%, transparent 40%, #07070b 92%);"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto w-full px-5 sm:px-8 pt-28">
+    <div class="max-w-3xl">
+      <div class="flex items-center gap-3 mb-7 text-xs font-mono text-mist">
+        <span class="w-2 h-2 rounded-full bg-aqua animate-pulse"></span>
+        AVAILABLE FOR SELECT PROJECTS · Q3 2026
+      </div>
+      <h1 class="font-display font-extrabold leading-[0.95] tracking-tight
+                 text-5xl sm:text-7xl lg:text-8xl">
+        <span class="reveal-line"><span>We design</span></span>
+        <span class="reveal-line"><span class="grad-text">dimensional</span></span>
+        <span class="reveal-line"><span>brand worlds.</span></span>
+      </h1>
+      <p id="heroSub" class="mt-8 max-w-xl text-lg text-mist leading-relaxed">
+        NOVAFORM is a creative digital agency building immersive 3D experiences,
+        identity systems, and interactive products for companies that refuse to blend in.
+      </p>
+      <div id="heroCtas" class="mt-10 flex flex-wrap items-center gap-4">
+        <a data-cursor href="#work" id="magnetic"
+           class="relative inline-flex items-center gap-3 px-7 py-4 rounded-full bg-lime text-ink font-semibold overflow-hidden">
+          <span class="relative z-10">View selected work</span>
+          <svg class="relative z-10" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a data-cursor href="#contact"
+           class="inline-flex items-center gap-2 px-6 py-4 rounded-full chip text-chalk hover:bg-white/5 transition">
+          Let's talk
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-mist">
+    <span class="text-[10px] font-mono tracking-[0.3em]">SCROLL</span>
+    <span class="w-px h-10 bg-gradient-to-b from-lime to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="py-6 border-y border-white/5 bg-carbon overflow-hidden marquee">
+  <div class="marquee-track items-center gap-12 text-4xl sm:text-5xl font-display font-extrabold text-chalk/90">
+    <span class="flex items-center gap-12">
+      <span>3D / WEBGL</span><span class="text-lime">✺</span>
+      <span>BRAND SYSTEMS</span><span class="text-violet2">✺</span>
+      <span>MOTION DESIGN</span><span class="text-aqua">✺</span>
+      <span>PRODUCT UX</span><span class="text-lime">✺</span>
+      <span>CREATIVE DEV</span><span class="text-violet2">✺</span>
+    </span>
+    <span class="flex items-center gap-12" aria-hidden="true">
+      <span>3D / WEBGL</span><span class="text-lime">✺</span>
+      <span>BRAND SYSTEMS</span><span class="text-violet2">✺</span>
+      <span>MOTION DESIGN</span><span class="text-aqua">✺</span>
+      <span>PRODUCT UX</span><span class="text-lime">✺</span>
+      <span>CREATIVE DEV</span><span class="text-violet2">✺</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="max-w-7xl mx-auto px-5 sm:px-8 py-24 sm:py-32">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14" data-reveal>
+    <div>
+      <p class="font-mono text-xs text-lime tracking-[0.3em] mb-4">01 — CAPABILITIES</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl leading-tight max-w-2xl">
+        Full-stack creative, from concept to ship.
+      </h2>
+    </div>
+    <p class="text-mist max-w-sm">A compact, senior team that takes ownership end-to-end — strategy, design, and engineering under one roof.</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <!-- card -->
+    <div data-reveal class="card-hover rounded-2xl bg-carbon border border-white/8 p-7 group">
+      <div class="w-12 h-12 rounded-xl bg-lime/10 text-lime grid place-items-center mb-6 group-hover:scale-110 transition">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M3 7l9 5 9-5"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-xl mb-2">3D & WebGL</h3>
+      <p class="text-mist text-sm leading-relaxed">Real-time interactive scenes, product configurators, and shader-driven hero moments built on Three.js & WebGPU.</p>
+    </div>
+    <div data-reveal class="card-hover rounded-2xl bg-carbon border border-white/8 p-7 group">
+      <div class="w-12 h-12 rounded-xl bg-violet2/10 text-violet2 grid place-items-center mb-6 group-hover:scale-110 transition">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-xl mb-2">Brand Systems</h3>
+      <p class="text-mist text-sm leading-relaxed">Identity, voice, and scalable design languages — from naming and logos to living component libraries.</p>
+    </div>
+    <div data-reveal class="card-hover rounded-2xl bg-carbon border border-white/8 p-7 group">
+      <div class="w-12 h-12 rounded-xl bg-aqua/10 text-aqua grid place-items-center mb-6 group-hover:scale-110 transition">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-xl mb-2">Motion Design</h3>
+      <p class="text-mist text-sm leading-relaxed">Cinematic launch films, micro-interactions, and scroll choreography that make products feel alive.</p>
+    </div>
+    <div data-reveal class="card-hover rounded-2xl bg-carbon border border-white/8 p-7 group">
+      <div class="w-12 h-12 rounded-xl bg-lime/10 text-lime grid place-items-center mb-6 group-hover:scale-110 transition">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-xl mb-2">Product UX</h3>
+      <p class="text-mist text-sm leading-relaxed">Research-led interfaces and design systems for SaaS, fintech, and consumer apps that need to convert.</p>
+    </div>
+    <div data-reveal class="card-hover rounded-2xl bg-carbon border border-white/8 p-7 group">
+      <div class="w-12 h-12 rounded-xl bg-violet2/10 text-violet2 grid place-items-center mb-6 group-hover:scale-110 transition">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-xl mb-2">Creative Dev</h3>
+      <p class="text-mist text-sm leading-relaxed">Production-grade front-end with framer-smooth performance — Next.js, GSAP, and custom engines.</p>
+    </div>
+    <div data-reveal class="card-hover rounded-2xl bg-gradient-to-br from-lime/10 to-violet2/10 border border-lime/20 p-7 flex flex-col justify-between">
+      <div>
+        <h3 class="font-display font-bold text-xl mb-2">Have something wild?</h3>
+        <p class="text-mist text-sm leading-relaxed">If it lives at the edge of what the web can do, we want to build it.</p>
+      </div>
+      <a data-cursor href="#contact" class="mt-6 inline-flex items-center gap-2 text-lime font-semibold text-sm">Pitch us →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SELECTED WORK ============ -->
+<section id="work" class="max-w-7xl mx-auto px-5 sm:px-8 py-24 sm:py-32">
+  <div class="mb-14" data-reveal>
+    <p class="font-mono text-xs text-lime tracking-[0.3em] mb-4">02 — SELECTED WORK</p>
+    <h2 class="font-display font-extrabold text-4xl sm:text-6xl">Recent worlds we built.</h2>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <!-- featured w image -->
+    <article data-reveal class="group rounded-3xl overflow-hidden relative border border-white/8 lg:col-span-2">
+      <div class="relative h-[340px] sm:h-[440px] bg-gradient-to-br from-slate2 to-ink overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Abstract retro tech still life"
+             class="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-55 group-hover:scale-105 transition-all duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent"></div>
+        <div class="absolute bottom-0 p-8 sm:p-10">
+          <span class="chip rounded-full px-3 py-1 text-xs font-mono text-mist">3D Configurator · 2026</span>
+          <h3 class="mt-4 font-display font-extrabold text-3xl sm:text-5xl max-w-xl">Orbital — a real-time product playground</h3>
+          <p class="mt-3 text-mist max-w-lg">A browser-native configurator letting customers spin, light, and customize hardware in true 3D.</p>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal class="group rounded-3xl overflow-hidden relative border border-white/8 card-hover">
+      <div class="h-[300px] bg-gradient-to-br from-violet2/30 to-ink p-8 flex flex-col justify-between">
+        <span class="chip rounded-full px-3 py-1 text-xs font-mono text-mist w-max">Brand + Web · 2025</span>
+        <div>
+          <h3 class="font-display font-extrabold text-3xl">Halcyon Studios</h3>
+          <p class="mt-2 text-mist text-sm">Full rebrand and immersive site for a film-tech startup. +210% engaged sessions.</p>
+        </div>
+      </div>
+    </article>
+
+    <article data-reveal class="group rounded-3xl overflow-hidden relative border border-white/8 card-hover">
+      <div class="h-[300px] bg-gradient-to-br from-aqua/25 to-ink p-8 flex flex-col justify-between">
+        <span class="chip rounded-full px-3 py-1 text-xs font-mono text-mist w-max">Motion · 2025</span>
+        <div>
+          <h3 class="font-display font-extrabold text-3xl">Vanta Pay</h3>
+          <p class="mt-2 text-mist text-sm">Launch film and animated UI kit for a next-gen payments platform.</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STATS ============ -->
+<section id="about" class="relative py-24 sm:py-32 bg-carbon border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div data-reveal>
+      <p class="font-mono text-xs text-lime tracking-[0.3em] mb-4">03 — WHO WE ARE</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl leading-tight">
+        A small studio with an <span class="grad-text">oversized</span> imagination.
+      </h2>
+      <p class="mt-6 text-mist text-lg leading-relaxed max-w-xl">
+        We're a remote-first collective of designers, technologists, and motion artists.
+        No bloated account teams — you work directly with the people building your project.
+        Fewer clients, deeper craft.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <span class="chip rounded-full px-4 py-2 text-sm text-mist font-mono">Remote-first</span>
+        <span class="chip rounded-full px-4 py-2 text-sm text-mist font-mono">Senior-only</span>
+        <span class="chip rounded-full px-4 py-2 text-sm text-mist font-mono">Award-winning</span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-5" data-reveal>
+      <div class="rounded-2xl bg-ink border border-white/8 p-7 glow-ring">
+        <div class="font-display font-extrabold text-5xl text-lime"><span class="count" data-to="142">0</span>+</div>
+        <p class="mt-2 text-mist text-sm">Projects shipped</p>
+      </div>
+      <div class="rounded-2xl bg-ink border border-white/8 p-7">
+        <div class="font-display font-extrabold text-5xl text-violet2"><span class="count" data-to="18">0</span></div>
+        <p class="mt-2 text-mist text-sm">Awards & honors</p>
+      </div>
+      <div class="rounded-2xl bg-ink border border-white/8 p-7">
+        <div class="font-display font-extrabold text-5xl text-aqua"><span class="count" data-to="31">0</span></div>
+        <p class="mt-2 text-mist text-sm">Countries reached</p>
+      </div>
+      <div class="rounded-2xl bg-ink border border-white/8 p-7">
+        <div class="font-display font-extrabold text-5xl text-chalk"><span class="count" data-to="9">0</span></div>
+        <p class="mt-2 text-mist text-sm">Years in motion</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="max-w-7xl mx-auto px-5 sm:px-8 py-24 sm:py-32">
+  <div class="mb-14" data-reveal>
+    <p class="font-mono text-xs text-lime tracking-[0.3em] mb-4">04 — HOW WE WORK</p>
+    <h2 class="font-display font-extrabold text-4xl sm:text-6xl">Four phases, zero chaos.</h2>
+  </div>
+  <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/8 rounded-2xl overflow-hidden border border-white/8">
+    <div data-reveal class="bg-carbon p-8 hover:bg-slate2 transition">
+      <span class="font-mono text-lime text-sm">/01</span>
+      <h3 class="font-display font-bold text-2xl mt-4 mb-3">Discover</h3>
+      <p class="text-mist text-sm leading-relaxed">Workshops, audits, and research to map the territory and define what success actually means.</p>
+    </div>
+    <div data-reveal class="bg-carbon p-8 hover:bg-slate2 transition">
+      <span class="font-mono text-violet2 text-sm">/02</span>
+      <h3 class="font-display font-bold text-2xl mt-4 mb-3">Design</h3>
+      <p class="text-mist text-sm leading-relaxed">Concepts, directions, and prototypes — we explore boldly, then converge fast.</p>
+    </div>
+    <div data-reveal class="bg-carbon p-8 hover:bg-slate2 transition">
+      <span class="font-mono text-aqua text-sm">/03</span>
+      <h3 class="font-display font-bold text-2xl mt-4 mb-3">Build</h3>
+      <p class="text-mist text-sm leading-relaxed">Production engineering with weekly demos. Performance and accessibility baked in.</p>
+    </div>
+    <div data-reveal class="bg-carbon p-8 hover:bg-slate2 transition">
+      <span class="font-mono text-lime text-sm">/04</span>
+      <h3 class="font-display font-bold text-2xl mt-4 mb-3">Launch</h3>
+      <p class="text-mist text-sm leading-relaxed">Ship, measure, and iterate. We stick around to make the launch land.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="max-w-7xl mx-auto px-5 sm:px-8 py-12 sm:py-20">
+  <div class="grid lg:grid-cols-3 gap-5">
+    <blockquote data-reveal class="rounded-2xl bg-carbon border border-white/8 p-8">
+      <div class="text-lime text-3xl mb-4">"</div>
+      <p class="text-chalk text-lg leading-relaxed">NOVAFORM turned an abstract brief into a 3D experience that made our investors lean forward. Genuinely best-in-class.</p>
+      <footer class="mt-6 text-sm text-mist font-mono">— Dara M., Founder · Orbital</footer>
+    </blockquote>
+    <blockquote data-reveal class="rounded-2xl bg-gradient-to-br from-violet2/15 to-carbon border border-white/8 p-8">
+      <div class="text-violet2 text-3xl mb-4">"</div>
+      <p class="text-chalk text-lg leading-relaxed">Fast, opinionated, and deeply talented. They shipped a launch site that outperformed our paid campaigns.</p>
+      <footer class="mt-6 text-sm text-mist font-mono">— Idris K., CMO · Vanta Pay</footer>
+    </blockquote>
+    <blockquote data-reveal class="rounded-2xl bg-carbon border border-white/8 p-8">
+      <div class="text-aqua text-3xl mb-4">"</div>
+      <p class="text-chalk text-lg leading-relaxed">The motion work alone paid for the engagement. People actually screenshot our website now.</p>
+      <footer class="mt-6 text-sm text-mist font-mono">— Lena V., Head of Brand · Halcyon</footer>
+    </blockquote>
+  </div>
+</section>
+
+<!-- ============ CLIENTS ============ -->
+<section class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+  <p class="text-center font-mono text-xs text-mist tracking-[0.3em] mb-10" data-reveal>TRUSTED BY AMBITIOUS TEAMS</p>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 items-center opacity-70" data-reveal>
+    <div class="font-display font-extrabold text-xl text-center text-mist">ORBITAL</div>
+    <div class="font-display font-extrabold text-xl text-center text-mist">Halcyon</div>
+    <div class="font-display font-extrabold text-xl text-center text-mist">VANTA</div>
+    <div class="font-display font-extrabold text-xl text-center text-mist">Nimbus</div>
+    <div class="font-display font-extrabold text-xl text-center text-mist">QUARK</div>
+    <div class="font-display font-extrabold text-xl text-center text-mist">Polaris</div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="max-w-3xl mx-auto px-5 sm:px-8 py-24 sm:py-32">
+  <div class="mb-12 text-center" data-reveal>
+    <p class="font-mono text-xs text-lime tracking-[0.3em] mb-4">05 — QUESTIONS</p>
+    <h2 class="font-display font-extrabold text-4xl sm:text-6xl">Good to know.</h2>
+  </div>
+  <div class="space-y-3" id="faqList">
+    <div class="acc rounded-2xl bg-carbon border border-white/8 overflow-hidden" data-reveal>
+      <button data-cursor class="acc-head w-full flex items-center justify-between gap-4 p-6 text-left">
+        <span class="font-display font-bold text-lg">How long does a typical project take?</span>
+        <span class="acc-plus text-lime text-2xl transition-transform shrink-0">+</span>
+      </button>
+      <div class="acc-body"><p class="px-6 pb-6 text-mist leading-relaxed">Most engagements run 4–10 weeks depending on scope. 3D-heavy builds and full rebrands sit at the longer end. We'll give you a precise timeline after a discovery call.</p></div>
+    </div>
+    <div class="acc rounded-2xl bg-carbon border border-white/8 overflow-hidden" data-reveal>
+      <button data-cursor class="acc-head w-full flex items-center justify-between gap-4 p-6 text-left">
+        <span class="font-display font-bold text-lg">Do you work with early-stage startups?</span>
+        <span class="acc-plus text-lime text-2xl transition-transform shrink-0">+</span>
+      </button>
+      <div class="acc-body"><p class="px-6 pb-6 text-mist leading-relaxed">Yes — about half our clients are pre-Series B. We scope tightly to your stage and budget so you ship something exceptional without overbuilding.</p></div>
+    </div>
+    <div class="acc rounded-2xl bg-carbon border border-white/8 overflow-hidden" data-reveal>
+      <button data-cursor class="acc-head w-full flex items-center justify-between gap-4 p-6 text-left">
+        <span class="font-display font-bold text-lg">Will the 3D work run well on mobile?</span>
+        <span class="acc-plus text-lime text-2xl transition-transform shrink-0">+</span>
+      </button>
+      <div class="acc-body"><p class="px-6 pb-6 text-mist leading-relaxed">Always. We build adaptive scenes that scale geometry and effects by device, and gracefully fall back for reduced-motion and low-power hardware.</p></div>
+    </div>
+    <div class="acc rounded-2xl bg-carbon border border-white/8 overflow-hidden" data-reveal>
+      <button data-cursor class="acc-head w-full flex items-center justify-between gap-4 p-6 text-left">
+        <span class="font-display font-bold text-lg">What do you need from us to start?</span>
+        <span class="acc-plus text-lime text-2xl transition-transform shrink-0">+</span>
+      </button>
+      <div class="acc-body"><p class="px-6 pb-6 text-mist leading-relaxed">A rough brief, your goals, and a point of contact. We handle the rest — from kickoff workshop to final handoff with documentation.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="contact" class="relative max-w-7xl mx-auto px-5 sm:px-8 py-24 sm:py-32">
+  <div data-reveal class="relative rounded-[2rem] overflow-hidden border border-lime/20 bg-gradient-to-br from-slate2 via-carbon to-ink p-10 sm:p-20 text-center glow-ring">
+    <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[480px] h-[480px] rounded-full bg-violet2/20 blur-3xl pointer-events-none"></div>
+    <div class="relative">
+      <p class="font-mono text-xs text-lime tracking-[0.3em] mb-6">06 — LET'S BUILD</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-7xl leading-[0.95]">
+        Got a world<br/>worth building?
+      </h2>
+      <p class="mt-6 text-mist text-lg max-w-xl mx-auto">Tell us what you're dreaming up. We reply to every serious inquiry within two business days.</p>
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a data-cursor href="mailto:studio@novaform.design"
+           class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-lime text-ink font-semibold hover:bg-chalk transition">
+          studio@novaform.design
+        </a>
+        <a data-cursor href="#top"
+           class="inline-flex items-center gap-2 px-7 py-4 rounded-full chip text-chalk hover:bg-white/5 transition">
+          Book a call
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-white/8 bg-carbon">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-8 h-8 rounded-lg bg-lime grid place-items-center text-ink font-display font-extrabold text-lg">N</span>
+          <span class="font-display font-extrabold text-lg">NOVAFORM</span>
+        </div>
+        <p class="text-mist max-w-sm text-sm leading-relaxed">A creative digital agency designing dimensional brand worlds. Remote-first, globally curious, relentlessly crafted.</p>
+      </div>
+      <div>
+        <h4 class="font-mono text-xs text-mist tracking-[0.2em] mb-4">EXPLORE</h4>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a data-cursor href="#services" class="hover:text-lime transition">Services</a></li>
+          <li><a data-cursor href="#work" class="hover:text-lime transition">Work</a></li>
+          <li><a data-cursor href="#process" class="hover:text-lime transition">Process</a></li>
+          <li><a data-cursor href="#faq" class="hover:text-lime transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-mono text-xs text-mist tracking-[0.2em] mb-4">SOCIAL</h4>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a data-cursor href="#" class="hover:text-lime transition">Instagram</a></li>
+          <li><a data-cursor href="#" class="hover:text-lime transition">Dribbble</a></li>
+          <li><a data-cursor href="#" class="hover:text-lime transition">LinkedIn</a></li>
+          <li><a data-cursor href="#" class="hover:text-lime transition">X / Twitter</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="hairline mt-12 pt-6 flex flex-col sm:flex-row justify-between gap-4 text-xs text-mist font-mono">
+      <span>© 2026 NOVAFORM Studio. All rights reserved.</span>
+      <span>Designed &amp; built in the open · v3.0</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width:768px)').matches;
+
+  /* ---------- Mobile nav ---------- */
+  const tgl = document.getElementById('navToggle');
+  const menu = document.getElementById('mobileMenu');
+  if (tgl) tgl.addEventListener('click', ()=> menu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobnav, #mobileMenu a').forEach(a=>a.addEventListener('click',()=>menu.classList.add('hidden')));
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (!isMobile){
+    const dot = document.getElementById('cDot');
+    const ring = document.getElementById('cRing');
+    let mx=innerWidth/2, my=innerHeight/2, rx=mx, ry=my;
+    addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY;
+      dot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`; });
+    (function loop(){ rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18;
+      ring.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-cursor]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('is-hover'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('is-hover'));
+    });
+    // magnetic CTA
+    const mag = document.getElementById('magnetic');
+    if (mag){
+      mag.addEventListener('mousemove', e=>{
+        const r = mag.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width/2);
+        const y = e.clientY - (r.top + r.height/2);
+        mag.style.transform = `translate(${x*0.3}px, ${y*0.4}px)`;
+      });
+      mag.addEventListener('mouseleave', ()=> mag.style.transform='translate(0,0)');
+    }
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.acc').forEach(acc=>{
+    acc.querySelector('.acc-head').addEventListener('click',()=>{
+      const open = acc.classList.contains('open');
+      document.querySelectorAll('.acc').forEach(a=>a.classList.remove('open'));
+      if(!open) acc.classList.add('open');
+    });
+  });
+
+  /* ---------- GSAP reveals ---------- */
+  if (window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce){
+      // headline mask
+      gsap.to('.reveal-line > span', {
+        yPercent:0, duration:1.1, ease:'power4.out', stagger:0.12, delay:0.25
+      });
+      gsap.from('#heroSub', {opacity:0, y:30, duration:1, delay:0.9, ease:'power3.out'});
+      gsap.from('#heroCtas', {opacity:0, y:30, duration:1, delay:1.1, ease:'power3.out'});
+
+      // section reveals
+      gsap.utils.toArray('[data-reveal]').forEach(el=>{
+        gsap.from(el, {
+          opacity:0, y:46, duration:0.9, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 85%' }
+        });
+      });
+
+      // container parallax on work cards
+      gsap.utils.toArray('#work article').forEach((el,i)=>{
+        gsap.to(el, { yPercent:-6*(i%2?1:1.6), ease:'none',
+          scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }});
+      });
+    } else {
+      gsap.set('.reveal-line > span',{yPercent:0});
+    }
+
+    // count-ups
+    gsap.utils.toArray('.count').forEach(el=>{
+      const to = +el.dataset.to;
+      const obj = {v:0};
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+        if (reduce){ el.textContent=to; return; }
+        gsap.to(obj,{v:to,duration:1.6,ease:'power2.out',onUpdate:()=>el.textContent=Math.floor(obj.v)});
+      }});
+    });
+  }
+
+  /* ---------- THREE.JS HERO ---------- */
+  const canvas = document.getElementById('webgl');
+  let renderer, scene, camera, mesh, points, raf, onResize, onMove;
+  const pointer = { x:0, y:0, tx:0, ty:0 };
+
+  function initThree(){
+    if (reduce || !window.THREE || !canvas) return;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias:!isMobile, alpha:true, powerPreference:'high-performance' });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile?1.5:2));
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(50, canvas.clientWidth/canvas.clientHeight, 0.1, 100);
+      camera.position.z = 5.2;
+
+      // distorted icosphere wireframe
+      const detail = isMobile ? 3 : 5;
+      const geo = new THREE.IcosahedronGeometry(1.7, detail);
+      const base = geo.attributes.position.array.slice();
+      geo.userData.base = base;
+
+      const mat = new THREE.MeshBasicMaterial({ color:0xc8ff3d, wireframe:true, transparent:true, opacity:0.55 });
+      mesh = new THREE.Mesh(geo, mat);
+      scene.add(mesh);
+
+      // inner glow core
+      const core = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(1.2, 2),
+        new THREE.MeshBasicMaterial({ color:0x7c5cff, wireframe:true, transparent:true, opacity:0.18 })
+      );
+      mesh.add(core);
+
+      // particle field
+      const pCount = isMobile ? 380 : 900;
+      const pGeo = new THREE.BufferGeometry();
+      const pos = new Float32Array(pCount*3);
+      for (let i=0;i<pCount;i++){
+        const r = 3.2 + Math.random()*4;
+        const t = Math.random()*Math.PI*2, p = Math.acos(2*Math.random()-1);
+        pos[i*3]   = r*Math.sin(p)*Math.cos(t);
+        pos[i*3+1] = r*Math.sin(p)*Math.sin(t);
+        pos[i*3+2] = r*Math.cos(p);
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+      points = new THREE.Points(pGeo, new THREE.PointsMaterial({ color:0x46e8d0, size:0.03, transparent:true, opacity:0.6 }));
+      scene.add(points);
+
+      onMove = e=>{
+        const cx = (e.touches? e.touches[0].clientX : e.clientX);
+        const cy = (e.touches? e.touches[0].clientY : e.clientY);
+        pointer.tx = (cx/innerWidth - 0.5);
+        pointer.ty = (cy/innerHeight - 0.5);
+      };
+      addEventListener('mousemove', onMove, {passive:true});
+      addEventListener('touchmove', onMove, {passive:true});
+
+      onResize = ()=>{
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        renderer.setSize(w,h,false);
+        camera.aspect = w/h; camera.updateProjectionMatrix();
+      };
+      addEventListener('resize', onResize);
+
+      const clock = new THREE.Clock();
+      const pos2 = geo.attributes.position;
+      window.__novaAnimate = animate;
+      function animate(){
+        raf = requestAnimationFrame(animate);
+        const t = clock.getElapsedTime();
+        pointer.x += (pointer.tx - pointer.x)*0.05;
+        pointer.y += (pointer.ty - pointer.y)*0.05;
+
+        // vertex distortion
+        for (let i=0;i<pos2.count;i++){
+          const ix=i*3;
+          const bx=base[ix], by=base[ix+1], bz=base[ix+2];
+          const n = Math.sin(bx*2.4 + t*1.1) * Math.cos(by*2.4 + t*0.9) * 0.18
+                  + Math.sin(bz*3.1 + t*1.4) * 0.06;
+          const len = Math.sqrt(bx*bx+by*by+bz*bz) || 1;
+          const s = 1 + n;
+          pos2.array[ix]   = bx/len * 1.7 * s;
+          pos2.array[ix+1] = by/len * 1.7 * s;
+          pos2.array[ix+2] = bz/len * 1.7 * s;
+        }
+        pos2.needsUpdate = true;
+
+        mesh.rotation.y = t*0.18 + pointer.x*0.8;
+        mesh.rotation.x = pointer.y*0.6;
+        points.rotation.y = -t*0.04;
+        points.rotation.x = t*0.02;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+    } catch(err){ console.warn('WebGL hero disabled:', err); teardown(); }
+  }
+
+  function teardown(){
+    cancelAnimationFrame(raf);
+    if (onMove){ removeEventListener('mousemove',onMove); removeEventListener('touchmove',onMove); }
+    if (onResize) removeEventListener('resize', onResize);
+    try {
+      if (mesh){ mesh.geometry.dispose(); mesh.material.dispose(); }
+      if (points){ points.geometry.dispose(); points.material.dispose(); }
+      if (renderer){ renderer.dispose(); }
+    } catch(e){}
+    if (canvas) canvas.style.display = 'none';
+  }
+
+  if (reduce){ if(canvas) canvas.style.display='none'; }
+  else { initThree(); }
+
+  // pause when tab hidden, resume on focus
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.hidden){ cancelAnimationFrame(raf); }
+    else if (!reduce && renderer && window.__novaAnimate){ cancelAnimationFrame(raf); window.__novaAnimate(); }
+  });
+})();
+</script>
+</body>
+</html>

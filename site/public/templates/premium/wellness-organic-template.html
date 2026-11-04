@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdura &mdash; Botanical Skincare Rituals</title>
+<meta name="description" content="Verdura — slow, botanical skincare crafted from cold-pressed plant oils and adaptogenic herbs. Calm rituals for skin that feels alive." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sage:   { 50:'#f3f6f1', 100:'#e3ebdd', 200:'#c7d6bc', 300:'#a3bd93', 400:'#7f9f6c', 500:'#5f8050', 600:'#4a663e', 700:'#3b5132', 800:'#30412b', 900:'#283624' },
+          clay:   { 100:'#f2e6dd', 200:'#e4cdbb', 300:'#d2ab90', 400:'#c08a6b', 500:'#a96b4c', 600:'#8f543a', 700:'#73422f', 800:'#5d372a', 900:'#4e3025' },
+          cream:  '#f8f4ec',
+          sand:   '#ece3d4',
+          bark:   '#2c2620',
+          moss:   '#3b4a32'
+        },
+        fontFamily: {
+          serif: ['Fraunces','Georgia','serif'],
+          sans:  ['"Mulish"','system-ui','sans-serif']
+        },
+        keyframes: {
+          floaty:  { '0%,100%':{ transform:'translateY(0) rotate(0deg)' }, '50%':{ transform:'translateY(-26px) rotate(6deg)' } },
+          floaty2: { '0%,100%':{ transform:'translateY(0) rotate(0deg)' }, '50%':{ transform:'translateY(20px) rotate(-5deg)' } },
+          marquee: { '0%':{ transform:'translateX(0)' }, '100%':{ transform:'translateX(-50%)' } }
+        },
+        animation: {
+          floaty:  'floaty 13s ease-in-out infinite',
+          floaty2: 'floaty2 16s ease-in-out infinite',
+          marquee: 'marquee 32s linear infinite'
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Mulish:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  html,body{ background:#f8f4ec; color:#2c2620; }
+  ::selection{ background:#c7d6bc; color:#283624; }
+  body{ overflow-x:hidden; }
+
+  /* organic blob shapes */
+  .blob{ position:absolute; filter:blur(2px); opacity:.55; pointer-events:none; z-index:0; }
+  .blob-a{ border-radius:42% 58% 63% 37% / 41% 44% 56% 59%; }
+  .blob-b{ border-radius:63% 37% 30% 70% / 50% 45% 55% 50%; }
+  .blob-c{ border-radius:38% 62% 55% 45% / 60% 38% 62% 40%; }
+
+  .pill{ border-radius:999px; }
+  .organic-mask{ border-radius:46% 54% 58% 42% / 52% 44% 56% 48%; overflow:hidden; }
+  .organic-mask-2{ border-radius:58% 42% 47% 53% / 43% 56% 44% 57%; overflow:hidden; }
+
+  .soft-shadow{ box-shadow:0 22px 60px -28px rgba(59,74,50,.45); }
+  .soft-shadow-sm{ box-shadow:0 12px 34px -18px rgba(59,74,50,.4); }
+
+  .grain:before{
+    content:''; position:fixed; inset:0; z-index:60; pointer-events:none; opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .reveal{ opacity:0; transform:translateY(30px); }
+  .fallback-grad{ background:linear-gradient(135deg,#e3ebdd 0%,#e4cdbb 55%,#f8f4ec 100%); }
+
+  .accordion-body{ max-height:0; overflow:hidden; transition:max-height .5s ease; }
+  .accordion.open .accordion-body{ max-height:280px; }
+  .accordion.open .acc-icon{ transform:rotate(45deg); }
+  .acc-icon{ transition:transform .4s ease; }
+
+  .underline-link{ position:relative; }
+  .underline-link:after{ content:''; position:absolute; left:0; bottom:-3px; height:1px; width:0; background:#4a663e; transition:width .4s ease; }
+  .underline-link:hover:after{ width:100%; }
+
+  .ingredient:hover{ transform:translateY(-10px); }
+  .ingredient{ transition:transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s ease; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+    .reveal{ opacity:1 !important; transform:none !important; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased grain selection:bg-sage-200">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#" class="flex items-center gap-2.5 group">
+      <span class="w-9 h-9 rounded-full bg-sage-600 flex items-center justify-center text-cream font-serif text-lg group-hover:rotate-12 transition-transform">V</span>
+      <span class="font-serif text-2xl tracking-tight text-bark">Verdura</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-9 text-[15px] text-moss/90">
+      <a href="#benefits" class="underline-link">Why Botanical</a>
+      <a href="#rituals" class="underline-link">Rituals</a>
+      <a href="#ingredients" class="underline-link">Ingredients</a>
+      <a href="#story" class="underline-link">Our Story</a>
+      <a href="#faq" class="underline-link">FAQ</a>
+    </div>
+    <a href="#bundles" class="hidden sm:inline-flex items-center gap-2 bg-bark text-cream pill px-6 py-3 text-sm font-medium hover:bg-sage-700 transition-colors">
+      Shop Rituals
+    </a>
+    <button id="burger" class="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5" aria-label="Menu">
+      <span class="w-6 h-px bg-bark"></span><span class="w-6 h-px bg-bark"></span><span class="w-4 h-px bg-bark"></span>
+    </button>
+  </nav>
+  <div id="mobileMenu" class="lg:hidden hidden bg-cream/95 backdrop-blur border-t border-sand px-6 py-6 space-y-4 text-moss">
+    <a href="#benefits" class="block mobile-link">Why Botanical</a>
+    <a href="#rituals" class="block mobile-link">Rituals</a>
+    <a href="#ingredients" class="block mobile-link">Ingredients</a>
+    <a href="#story" class="block mobile-link">Our Story</a>
+    <a href="#faq" class="block mobile-link">FAQ</a>
+    <a href="#bundles" class="block mobile-link font-medium text-sage-700">Shop Rituals &rarr;</a>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="blob blob-a animate-floaty bg-sage-200 w-[34rem] h-[34rem] -top-40 -left-32"></div>
+  <div class="blob blob-b animate-floaty2 bg-clay-200 w-[28rem] h-[28rem] top-1/3 -right-24"></div>
+  <div class="blob blob-c animate-floaty bg-sage-100 w-72 h-72 bottom-10 left-1/4"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center w-full">
+    <div>
+      <span class="inline-flex items-center gap-2 text-xs tracking-[0.25em] uppercase text-sage-600 mb-6 reveal">
+        <span class="w-8 h-px bg-sage-400"></span> Cold-pressed &amp; small-batch
+      </span>
+      <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-bark mb-7 reveal">
+        Skincare that<br><em class="italic text-sage-600">slows you down</em>.
+      </h1>
+      <p class="text-lg text-moss/80 max-w-md mb-9 leading-relaxed reveal">
+        Verdura is a quiet ritual of cold-pressed plant oils and adaptogenic herbs &mdash; formulated to let skin breathe, soften, and come back to itself.
+      </p>
+      <div class="flex flex-wrap items-center gap-4 reveal">
+        <a href="#bundles" class="bg-sage-600 text-cream pill px-8 py-4 font-medium hover:bg-sage-700 transition-colors soft-shadow-sm">Shop the ritual</a>
+        <a href="#rituals" class="inline-flex items-center gap-2 text-bark pill px-6 py-4 border border-bark/15 hover:border-bark/40 transition-colors">
+          <span class="w-9 h-9 rounded-full bg-clay-200 flex items-center justify-center">&#9658;</span>
+          See how it works
+        </a>
+      </div>
+      <div class="flex items-center gap-7 mt-12 reveal">
+        <div><div class="font-serif text-3xl text-sage-700"><span class="count" data-to="92">0</span>%</div><p class="text-xs text-moss/60 mt-1">plant-derived</p></div>
+        <div class="w-px h-10 bg-sand"></div>
+        <div><div class="font-serif text-3xl text-sage-700"><span class="count" data-to="0">0</span></div><p class="text-xs text-moss/60 mt-1">synthetic fragrance</p></div>
+        <div class="w-px h-10 bg-sand"></div>
+        <div><div class="font-serif text-3xl text-sage-700"><span class="count" data-to="14">0</span>k</div><p class="text-xs text-moss/60 mt-1">happy rituals</p></div>
+      </div>
+    </div>
+
+    <div class="relative reveal">
+      <div class="organic-mask soft-shadow aspect-[4/5] fallback-grad" data-parallax="0.12">
+        <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1600&q=80"
+             alt="Botanical skincare bottle on natural surface" class="w-full h-full object-cover"
+             onerror="this.style.display='none'">
+      </div>
+      <div class="absolute -bottom-6 -left-6 bg-cream pill soft-shadow-sm px-5 py-4 flex items-center gap-3 z-20">
+        <span class="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center text-sage-700">&#127807;</span>
+        <div><p class="text-sm font-medium text-bark">Vegan &amp; cruelty-free</p><p class="text-xs text-moss/60">Certified 2024</p></div>
+      </div>
+      <div class="absolute -top-5 -right-3 w-24 h-24 organic-mask-2 fallback-grad animate-floaty2 hidden sm:block">
+        <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=1600&q=80"
+             alt="Green leaf" class="w-full h-full object-cover" onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST STRIP / MARQUEE ============ -->
+<section class="bg-sage-700 text-cream/90 py-5 overflow-hidden">
+  <div class="flex w-max animate-marquee whitespace-nowrap">
+    <div class="flex items-center gap-12 px-6 font-serif text-lg italic">
+      <span>Clean formula</span><span class="text-sage-300">&#10022;</span>
+      <span>No sulfates or parabens</span><span class="text-sage-300">&#10022;</span>
+      <span>Cold-pressed oils</span><span class="text-sage-300">&#10022;</span>
+      <span>Recyclable glass</span><span class="text-sage-300">&#10022;</span>
+      <span>Dermatologist tested</span><span class="text-sage-300">&#10022;</span>
+      <span>Slow beauty</span><span class="text-sage-300">&#10022;</span>
+    </div>
+    <div class="flex items-center gap-12 px-6 font-serif text-lg italic" aria-hidden="true">
+      <span>Clean formula</span><span class="text-sage-300">&#10022;</span>
+      <span>No sulfates or parabens</span><span class="text-sage-300">&#10022;</span>
+      <span>Cold-pressed oils</span><span class="text-sage-300">&#10022;</span>
+      <span>Recyclable glass</span><span class="text-sage-300">&#10022;</span>
+      <span>Dermatologist tested</span><span class="text-sage-300">&#10022;</span>
+      <span>Slow beauty</span><span class="text-sage-300">&#10022;</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENEFITS / WHY NATURAL ============ -->
+<section id="benefits" class="relative py-28 overflow-hidden">
+  <div class="blob blob-b animate-floaty2 bg-clay-100 w-96 h-96 top-10 -left-24 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="max-w-2xl mb-16 reveal">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-600">Why botanical</span>
+      <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4 leading-tight">Your skin already knows what to do. We simply give it room.</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal bg-cream pill rounded-[2rem] p-8 soft-shadow-sm border border-sand/60">
+        <span class="w-14 h-14 rounded-full bg-sage-100 flex items-center justify-center text-2xl mb-6">&#128167;</span>
+        <h3 class="font-serif text-xl text-bark mb-2">Deep, lasting moisture</h3>
+        <p class="text-sm text-moss/70 leading-relaxed">Cold-pressed squalane and jojoba mirror skin&rsquo;s own lipids for hydration that holds.</p>
+      </div>
+      <div class="reveal bg-sage-600 text-cream rounded-[2rem] p-8 soft-shadow-sm">
+        <span class="w-14 h-14 rounded-full bg-cream/15 flex items-center justify-center text-2xl mb-6">&#127807;</span>
+        <h3 class="font-serif text-xl mb-2">Calm, balanced barrier</h3>
+        <p class="text-sm text-cream/80 leading-relaxed">Adaptogenic herbs soothe redness and help skin adapt to daily stress.</p>
+      </div>
+      <div class="reveal bg-cream pill rounded-[2rem] p-8 soft-shadow-sm border border-sand/60">
+        <span class="w-14 h-14 rounded-full bg-clay-200 flex items-center justify-center text-2xl mb-6">&#10024;</span>
+        <h3 class="font-serif text-xl text-bark mb-2">Quiet, real glow</h3>
+        <p class="text-sm text-moss/70 leading-relaxed">No glitter, no filters &mdash; just nourished skin that catches the light on its own.</p>
+      </div>
+      <div class="reveal bg-cream pill rounded-[2rem] p-8 soft-shadow-sm border border-sand/60">
+        <span class="w-14 h-14 rounded-full bg-sage-100 flex items-center justify-center text-2xl mb-6">&#9851;</span>
+        <h3 class="font-serif text-xl text-bark mb-2">Kind to the earth</h3>
+        <p class="text-sm text-moss/70 leading-relaxed">Refillable glass, compostable mailers, and ingredients grown with regenerative farms.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RITUAL / PRODUCT GRID ============ -->
+<section id="rituals" class="relative py-28 bg-sand/50 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-14">
+      <div class="reveal">
+        <span class="text-xs tracking-[0.25em] uppercase text-sage-600">The collection</span>
+        <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4">A small, considered ritual.</h2>
+      </div>
+      <a href="#bundles" class="reveal underline-link text-moss hidden sm:inline-block">View full shop &rarr;</a>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- card 1 -->
+      <article class="reveal group">
+        <div class="organic-mask aspect-[3/4] fallback-grad soft-shadow-sm mb-5 relative">
+          <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1600&q=80"
+               alt="Facial serum bottle" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+               onerror="this.style.display='none'">
+          <span class="absolute top-4 left-4 bg-cream/90 text-bark text-xs pill px-3 py-1">Bestseller</span>
+        </div>
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-bark">Restore Serum</h3>
+            <p class="text-sm text-moss/70 mt-1">Squalane &middot; bakuchiol &middot; sea fennel</p>
+          </div>
+          <span class="font-serif text-xl text-sage-700">$54</span>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="reveal group">
+        <div class="organic-mask-2 aspect-[3/4] fallback-grad soft-shadow-sm mb-5 relative">
+          <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=1600&q=80"
+               alt="Cream jar with botanicals" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+               onerror="this.style.display='none'">
+        </div>
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-bark">Dew Cream</h3>
+            <p class="text-sm text-moss/70 mt-1">Shea &middot; ashwagandha &middot; oat</p>
+          </div>
+          <span class="font-serif text-xl text-sage-700">$48</span>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="reveal group">
+        <div class="organic-mask aspect-[3/4] fallback-grad soft-shadow-sm mb-5 relative">
+          <img src="https://images.unsplash.com/photo-1545205597-3d9d02c29597?auto=format&fit=crop&w=1600&q=80"
+               alt="Botanical cleansing oil" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+               onerror="this.style.display='none'">
+          <span class="absolute top-4 left-4 bg-clay-400/90 text-cream text-xs pill px-3 py-1">New</span>
+        </div>
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-serif text-2xl text-bark">Quiet Cleansing Oil</h3>
+            <p class="text-sm text-moss/70 mt-1">Jojoba &middot; chamomile &middot; rosehip</p>
+          </div>
+          <span class="font-serif text-xl text-sage-700">$42</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INGREDIENTS / ABOUT STORY ============ -->
+<section id="ingredients" class="relative py-28 overflow-hidden">
+  <div class="blob blob-c animate-floaty bg-sage-100 w-[30rem] h-[30rem] -bottom-32 -right-24 opacity-50"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div id="story">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-600 reveal">Rooted in plants</span>
+      <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4 leading-tight reveal">Every ingredient earns its place.</h2>
+      <p class="text-moss/80 mt-6 leading-relaxed max-w-md reveal">
+        We started Verdura on a small herb farm, frustrated by skincare that promised the world and hid a lab of fillers. So we stripped it back &mdash; to a short list of plants we could trace, name, and trust.
+      </p>
+      <div class="mt-10 space-y-4">
+        <div class="ingredient reveal bg-cream rounded-[1.75rem] p-6 border border-sand/60 soft-shadow-sm flex items-center gap-5">
+          <span class="w-14 h-14 rounded-full bg-sage-100 flex items-center justify-center text-2xl shrink-0">&#127807;</span>
+          <div><h3 class="font-serif text-xl text-bark">Sea Fennel</h3><p class="text-sm text-moss/70">Coastal antioxidant that visibly firms and refines texture.</p></div>
+        </div>
+        <div class="ingredient reveal bg-cream rounded-[1.75rem] p-6 border border-sand/60 soft-shadow-sm flex items-center gap-5">
+          <span class="w-14 h-14 rounded-full bg-clay-200 flex items-center justify-center text-2xl shrink-0">&#127810;</span>
+          <div><h3 class="font-serif text-xl text-bark">Cold-Pressed Squalane</h3><p class="text-sm text-moss/70">Olive-derived lipid that locks moisture without any grease.</p></div>
+        </div>
+        <div class="ingredient reveal bg-cream rounded-[1.75rem] p-6 border border-sand/60 soft-shadow-sm flex items-center gap-5">
+          <span class="w-14 h-14 rounded-full bg-sage-100 flex items-center justify-center text-2xl shrink-0">&#127811;</span>
+          <div><h3 class="font-serif text-xl text-bark">Ashwagandha</h3><p class="text-sm text-moss/70">Adaptogen that calms reactive, stressed skin over time.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative reveal">
+      <div class="organic-mask-2 aspect-[4/5] fallback-grad soft-shadow" data-parallax="0.1">
+        <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=1600&q=80"
+             alt="Botanical ingredients laid on linen" class="w-full h-full object-cover" onerror="this.style.display='none'">
+      </div>
+      <div class="absolute -bottom-7 -right-4 bg-sage-600 text-cream rounded-[1.5rem] p-6 max-w-[14rem] soft-shadow-sm z-20">
+        <p class="font-serif text-lg leading-snug">&ldquo;Eight ingredients. Zero you can&rsquo;t pronounce.&rdquo;</p>
+        <p class="text-xs text-cream/70 mt-3">&mdash; our formulation promise</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW-TO / RITUAL STEPS ============ -->
+<section class="relative py-28 bg-moss text-cream overflow-hidden">
+  <div class="blob blob-a animate-floaty bg-sage-700 w-[28rem] h-[28rem] -top-24 -right-24 opacity-50"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="max-w-2xl mb-16 reveal">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-300">The three-minute ritual</span>
+      <h2 class="font-serif text-4xl lg:text-5xl mt-4 leading-tight">A pause, morning and night.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="reveal">
+        <div class="font-serif text-5xl text-sage-300/70 mb-4">01</div>
+        <h3 class="font-serif text-2xl mb-2">Cleanse, slowly</h3>
+        <p class="text-cream/75 leading-relaxed text-sm">Warm the cleansing oil between palms and breathe. Massage upward, then melt away with a soft cloth.</p>
+      </div>
+      <div class="reveal">
+        <div class="font-serif text-5xl text-sage-300/70 mb-4">02</div>
+        <h3 class="font-serif text-2xl mb-2">Restore</h3>
+        <p class="text-cream/75 leading-relaxed text-sm">Press three drops of serum into damp skin. Let the squalane and bakuchiol do their quiet work.</p>
+      </div>
+      <div class="reveal">
+        <div class="font-serif text-5xl text-sage-300/70 mb-4">03</div>
+        <h3 class="font-serif text-2xl mb-2">Seal &amp; soften</h3>
+        <p class="text-cream/75 leading-relaxed text-sm">Finish with Dew Cream to lock it all in. Notice the calm. That&rsquo;s the whole point.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-28 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-xl mx-auto mb-16 reveal">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-600">Loved quietly</span>
+      <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4">Words from the ritual.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal bg-cream rounded-[2rem] p-8 border border-sand/60 soft-shadow-sm">
+        <div class="text-clay-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-lg text-bark leading-relaxed">&ldquo;My skin stopped reacting to everything. It finally just feels calm and soft &mdash; like it&rsquo;s mine again.&rdquo;</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-sage-200 flex items-center justify-center font-serif text-sage-700">M</span>
+          <div><p class="text-sm font-medium text-bark">Maren L.</p><p class="text-xs text-moss/60">Restore Serum</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal bg-sage-600 text-cream rounded-[2rem] p-8 soft-shadow-sm">
+        <div class="text-clay-200 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-lg leading-relaxed">&ldquo;The cleansing oil turned my rushed routine into the part of the day I look forward to most.&rdquo;</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-cream/20 flex items-center justify-center font-serif">J</span>
+          <div><p class="text-sm font-medium">Jonah P.</p><p class="text-xs text-cream/70">Quiet Cleansing Oil</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal bg-cream rounded-[2rem] p-8 border border-sand/60 soft-shadow-sm">
+        <div class="text-clay-400 mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-lg text-bark leading-relaxed">&ldquo;Eight ingredients and my dermatologist approved every one. That&rsquo;s never happened before.&rdquo;</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-clay-200 flex items-center justify-center font-serif text-clay-700">S</span>
+          <div><p class="text-sm font-medium text-bark">Sofia R.</p><p class="text-xs text-moss/60">The Full Ritual</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BUNDLES / PRICING ============ -->
+<section id="bundles" class="relative py-28 bg-sand/50 overflow-hidden">
+  <div class="blob blob-b animate-floaty2 bg-clay-100 w-96 h-96 -bottom-24 left-1/3 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center max-w-xl mx-auto mb-16 reveal">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-600">Build your ritual</span>
+      <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4">Choose your pace.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-7 items-stretch">
+      <!-- single -->
+      <div class="reveal bg-cream rounded-[2.25rem] p-9 border border-sand/60 soft-shadow-sm flex flex-col">
+        <h3 class="font-serif text-2xl text-bark">The Starter</h3>
+        <p class="text-sm text-moss/70 mt-2">One hero product to begin.</p>
+        <div class="font-serif text-5xl text-bark mt-6">$42</div>
+        <ul class="text-sm text-moss/75 space-y-3 mt-7 flex-1">
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Pick any single product</li>
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Travel-size botanical sample</li>
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Printed ritual card</li>
+        </ul>
+        <a href="#" class="mt-8 text-center pill border border-bark/20 py-3.5 text-bark hover:bg-bark hover:text-cream transition-colors">Add to bag</a>
+      </div>
+      <!-- full ritual (featured) -->
+      <div class="reveal bg-sage-600 text-cream rounded-[2.25rem] p-9 soft-shadow flex flex-col relative scale-[1.03]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-clay-300 text-bark text-xs pill px-4 py-1 font-medium">Most loved</span>
+        <h3 class="font-serif text-2xl">The Full Ritual</h3>
+        <p class="text-sm text-cream/80 mt-2">Cleanse, restore &amp; seal.</p>
+        <div class="font-serif text-5xl mt-6">$118 <span class="text-base text-cream/60 line-through align-middle">$144</span></div>
+        <ul class="text-sm text-cream/85 space-y-3 mt-7 flex-1">
+          <li class="flex gap-2"><span class="text-clay-200">&#10003;</span> All three core products</li>
+          <li class="flex gap-2"><span class="text-clay-200">&#10003;</span> Linen ritual pouch</li>
+          <li class="flex gap-2"><span class="text-clay-200">&#10003;</span> Free carbon-neutral shipping</li>
+          <li class="flex gap-2"><span class="text-clay-200">&#10003;</span> Refill reminders &amp; 10% off refills</li>
+        </ul>
+        <a href="#" class="mt-8 text-center pill bg-cream text-sage-700 py-3.5 font-medium hover:bg-clay-100 transition-colors">Shop the ritual</a>
+      </div>
+      <!-- subscription -->
+      <div class="reveal bg-cream rounded-[2.25rem] p-9 border border-sand/60 soft-shadow-sm flex flex-col">
+        <h3 class="font-serif text-2xl text-bark">The Refill Club</h3>
+        <p class="text-sm text-moss/70 mt-2">Never run out, save the glass.</p>
+        <div class="font-serif text-5xl text-bark mt-6">$98<span class="text-base text-moss/50">/mo</span></div>
+        <ul class="text-sm text-moss/75 space-y-3 mt-7 flex-1">
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Full ritual, refilled monthly</li>
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Compostable refill pods</li>
+          <li class="flex gap-2"><span class="text-sage-600">&#10003;</span> Pause or skip anytime</li>
+        </ul>
+        <a href="#" class="mt-8 text-center pill border border-bark/20 py-3.5 text-bark hover:bg-bark hover:text-cream transition-colors">Subscribe</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-28 overflow-hidden">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="text-center mb-14 reveal">
+      <span class="text-xs tracking-[0.25em] uppercase text-sage-600">Good to know</span>
+      <h2 class="font-serif text-4xl lg:text-5xl text-bark mt-4">Questions, answered.</h2>
+    </div>
+    <div class="space-y-4">
+      <div class="accordion reveal bg-cream rounded-[1.5rem] border border-sand/60 overflow-hidden">
+        <button class="acc-toggle w-full flex items-center justify-between gap-4 px-7 py-6 text-left">
+          <span class="font-serif text-lg text-bark">Is Verdura suitable for sensitive skin?</span>
+          <span class="acc-icon text-2xl text-sage-600 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-moss/75 text-sm leading-relaxed">Yes. Every formula is fragrance-free, dermatologist-tested, and built around soothing adaptogens. We still recommend a patch test &mdash; skin is personal.</p></div>
+      </div>
+      <div class="accordion reveal bg-cream rounded-[1.5rem] border border-sand/60 overflow-hidden">
+        <button class="acc-toggle w-full flex items-center justify-between gap-4 px-7 py-6 text-left">
+          <span class="font-serif text-lg text-bark">How long until I see results?</span>
+          <span class="acc-icon text-2xl text-sage-600 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-moss/75 text-sm leading-relaxed">Most people feel softer, calmer skin within a few days. Visible changes in texture and tone typically settle in around the 4&ndash;6 week mark with consistent use.</p></div>
+      </div>
+      <div class="accordion reveal bg-cream rounded-[1.5rem] border border-sand/60 overflow-hidden">
+        <button class="acc-toggle w-full flex items-center justify-between gap-4 px-7 py-6 text-left">
+          <span class="font-serif text-lg text-bark">What makes your packaging different?</span>
+          <span class="acc-icon text-2xl text-sage-600 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-moss/75 text-sm leading-relaxed">Bottles are refillable glass, mailers are compostable, and refill pods cut packaging waste by over 80%. Send back five empties and we&rsquo;ll plant a tree on a partner farm.</p></div>
+      </div>
+      <div class="accordion reveal bg-cream rounded-[1.5rem] border border-sand/60 overflow-hidden">
+        <button class="acc-toggle w-full flex items-center justify-between gap-4 px-7 py-6 text-left">
+          <span class="font-serif text-lg text-bark">Can I pause or cancel the Refill Club?</span>
+          <span class="acc-icon text-2xl text-sage-600 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-moss/75 text-sm leading-relaxed">Anytime, with one tap. Skip a month, change your cadence, or cancel &mdash; no emails, no friction, no guilt.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 overflow-hidden">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10 relative z-10">
+    <div class="relative rounded-[3rem] bg-sage-700 text-cream px-8 py-20 sm:px-16 text-center overflow-hidden soft-shadow">
+      <div class="blob blob-c animate-floaty bg-sage-600 w-96 h-96 -top-32 -left-20 opacity-60"></div>
+      <div class="blob blob-a animate-floaty2 bg-moss w-80 h-80 -bottom-28 -right-16 opacity-60"></div>
+      <div class="relative z-10">
+        <span class="text-xs tracking-[0.25em] uppercase text-sage-300 reveal">Begin gently</span>
+        <h2 class="font-serif text-4xl sm:text-6xl mt-5 leading-[1.05] reveal">Give your skin<br>a quieter life.</h2>
+        <p class="text-cream/80 max-w-md mx-auto mt-6 reveal">Free shipping over $60 &middot; 30-day calm-skin promise &middot; compostable everything.</p>
+        <div class="flex flex-wrap justify-center gap-4 mt-10 reveal">
+          <a href="#bundles" class="bg-cream text-sage-700 pill px-9 py-4 font-medium hover:bg-clay-100 transition-colors">Shop the ritual</a>
+          <a href="#rituals" class="pill px-9 py-4 border border-cream/30 hover:bg-cream/10 transition-colors">Explore products</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-bark text-cream/80 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-1">
+        <a href="#" class="flex items-center gap-2.5 mb-5">
+          <span class="w-9 h-9 rounded-full bg-sage-600 flex items-center justify-center text-cream font-serif">V</span>
+          <span class="font-serif text-2xl text-cream">Verdura</span>
+        </a>
+        <p class="text-sm text-cream/60 leading-relaxed max-w-xs">Slow, botanical skincare made in small batches on our herb farm. Calm rituals for skin that feels alive.</p>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm">Shop</h4>
+        <ul class="space-y-2.5 text-sm text-cream/60">
+          <li><a href="#rituals" class="hover:text-cream transition-colors">Serums</a></li>
+          <li><a href="#rituals" class="hover:text-cream transition-colors">Creams</a></li>
+          <li><a href="#rituals" class="hover:text-cream transition-colors">Cleansers</a></li>
+          <li><a href="#bundles" class="hover:text-cream transition-colors">Ritual bundles</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm">Company</h4>
+        <ul class="space-y-2.5 text-sm text-cream/60">
+          <li><a href="#story" class="hover:text-cream transition-colors">Our story</a></li>
+          <li><a href="#ingredients" class="hover:text-cream transition-colors">Ingredients</a></li>
+          <li><a href="#" class="hover:text-cream transition-colors">Sustainability</a></li>
+          <li><a href="#faq" class="hover:text-cream transition-colors">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm">Stay close</h4>
+        <p class="text-sm text-cream/60 mb-4">Notes on slow beauty, no noise.</p>
+        <form class="flex gap-2" onsubmit="return false">
+          <input type="email" placeholder="you@email.com" class="flex-1 bg-cream/10 border border-cream/15 pill px-4 py-2.5 text-sm text-cream placeholder-cream/40 focus:outline-none focus:border-sage-400">
+          <button class="bg-sage-600 text-cream pill px-5 py-2.5 text-sm hover:bg-sage-500 transition-colors">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="border-t border-cream/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/45">
+      <p>&copy; 2026 Verdura Botanicals. Grown, pressed &amp; bottled with care.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-cream transition-colors">Privacy</a>
+        <a href="#" class="hover:text-cream transition-colors">Terms</a>
+        <a href="#" class="hover:text-cream transition-colors">Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  // Nav background on scroll
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.classList.add('bg-cream/85','backdrop-blur','soft-shadow-sm');
+    else nav.classList.remove('bg-cream/85','backdrop-blur','soft-shadow-sm');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  // Accordion
+  document.querySelectorAll('.acc-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const acc = btn.closest('.accordion');
+      const isOpen = acc.classList.contains('open');
+      document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
+      if (!isOpen) acc.classList.add('open');
+    });
+  });
+
+  // Motion (guarded)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 1, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // Gentle parallax
+    gsap.utils.toArray('[data-parallax]').forEach((el) => {
+      const amt = parseFloat(el.getAttribute('data-parallax')) * 120;
+      gsap.fromTo(el, { y: -amt }, {
+        y: amt, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    // Count-ups
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = +el.getAttribute('data-to');
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.8, ease: 'power1.out',
+          onUpdate: () => { el.textContent = Math.round(obj.v); }
+        })
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach(el => { el.textContent = el.getAttribute('data-to'); });
+  }
+</script>
+</body>
+</html>

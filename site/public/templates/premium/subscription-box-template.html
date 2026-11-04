@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Snackbloom — A Joyful Monthly Box of Curated Treats</title>
+<meta name="description" content="Snackbloom delivers a hand-curated box of small-batch snacks, sips & surprises to your door every month. Pick your vibe, we do the rest." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fredoka', 'system-ui', 'sans-serif'],
+          body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          cream: '#FFF7EC',
+          ink: '#2A1A3E',
+          grape: '#7C3AED',
+          bubble: '#FF5DA2',
+          tangerine: '#FF8A3D',
+          lime: '#5BD68C',
+          sky: '#3DC6FF',
+          sunny: '#FFD23F',
+        },
+        boxShadow: {
+          pop: '0 18px 0 -6px rgba(42,26,62,0.14)',
+          card: '0 22px 50px -22px rgba(124,58,237,0.45)',
+          ring: '0 0 0 4px rgba(255,93,162,0.18)',
+        },
+        borderRadius: {
+          blob: '38% 62% 56% 44% / 47% 38% 62% 53%',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --grape:#7C3AED; --bubble:#FF5DA2; --tang:#FF8A3D; }
+  html, body { overflow-x: hidden; }
+  body { background: #FFF7EC; color: #2A1A3E; font-family: 'Plus Jakarta Sans', sans-serif; }
+  ::selection { background: #FF5DA2; color: #fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 11px; }
+  ::-webkit-scrollbar-track { background: #FFF7EC; }
+  ::-webkit-scrollbar-thumb { background: #7C3AED; border-radius: 10px; border: 2px solid #FFF7EC; }
+
+  .font-display { font-family: 'Fredoka', sans-serif; }
+
+  /* ---- The unboxing box (CSS built) ---- */
+  .box-stage { perspective: 1200px; }
+  .box {
+    position: relative;
+    width: 280px; height: 230px;
+    transform-style: preserve-3d;
+    margin: 0 auto;
+  }
+  .box-body {
+    position: absolute; inset: 0; top: 36px;
+    background: linear-gradient(160deg, #FF5DA2, #7C3AED);
+    border-radius: 18px;
+    box-shadow: inset 0 -22px 40px rgba(0,0,0,.18), 0 30px 50px -20px rgba(124,58,237,.55);
+    overflow: hidden;
+  }
+  .box-body::after {
+    content: "snackbloom";
+    position: absolute; left: 0; right: 0; top: 54%;
+    text-align: center; transform: translateY(-50%);
+    font-family: 'Fredoka', sans-serif; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.92); font-size: 22px;
+  }
+  .box-tape {
+    position: absolute; left: 50%; top: 36px; bottom: 0; width: 30px;
+    transform: translateX(-50%);
+    background: repeating-linear-gradient(45deg, rgba(255,255,255,.35) 0 8px, rgba(255,255,255,.12) 8px 16px);
+  }
+  .box-lid {
+    position: absolute; left: -6px; right: -6px; top: 0; height: 56px;
+    background: linear-gradient(160deg, #FFD23F, #FF8A3D);
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(255,138,61,.4);
+    transform-origin: top center;
+    transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+    z-index: 6;
+  }
+  .box-flap {
+    position: absolute; top: 30px; left: 14px; right: 14px; height: 30px;
+    background: linear-gradient(#7C3AED, #5b28b8);
+    border-radius: 6px 6px 30px 30px;
+    transform-origin: top center;
+    transition: transform .55s cubic-bezier(.34,1.56,.64,1);
+    z-index: 4;
+  }
+  /* Items inside */
+  .box-item {
+    position: absolute; left: 50%; bottom: 70px;
+    width: 46px; height: 46px; border-radius: 12px;
+    transform: translate(-50%, 60px) scale(.6);
+    opacity: 0; z-index: 5;
+    box-shadow: 0 10px 18px rgba(0,0,0,.18);
+    transition: transform .6s cubic-bezier(.34,1.56,.64,1), opacity .4s ease;
+  }
+  .box.open .box-lid { transform: translateY(-44px) rotateX(-122deg); }
+  .box.open .box-flap { transform: rotateX(124deg); }
+  .box.open .box-item { opacity: 1; }
+  .box.open .item-1 { transform: translate(-118%, -42px) rotate(-16deg) scale(1); transition-delay:.05s; }
+  .box.open .item-2 { transform: translate(-50%, -86px) rotate(6deg) scale(1.05); transition-delay:.12s; }
+  .box.open .item-3 { transform: translate(18%, -38px) rotate(15deg) scale(1); transition-delay:.18s; }
+  .box.open .item-4 { transform: translate(-86%, -8px) rotate(-8deg) scale(.92); transition-delay:.24s; }
+  .box.open .item-5 { transform: translate(2%, -2px) rotate(10deg) scale(.92); transition-delay:.3s; }
+
+  /* Floating confetti */
+  .confetti { position: absolute; border-radius: 3px; opacity: .85; will-change: transform; }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollx 26s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Wobble shapes */
+  .blob { border-radius: 38% 62% 56% 44% / 47% 38% 62% 53%; }
+  .float-soft { animation: floaty 6s ease-in-out infinite; }
+  @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-16px) } }
+
+  /* Magnetic CTA */
+  .magnetic { transition: transform .2s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Tilt cards */
+  .tilt { transition: transform .25s ease, box-shadow .25s ease; transform-style: preserve-3d; }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .faq.active .faq-body { max-height: 240px; }
+  .faq.active .faq-plus { transform: rotate(45deg); }
+
+  /* Reveal default state */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* gradient text */
+  .grad-text { background: linear-gradient(120deg, #FF5DA2, #FF8A3D 45%, #7C3AED); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* sticker dashed border */
+  .sticker { border: 2.5px dashed rgba(42,26,62,.25); }
+
+  /* count chip */
+  .chip { backdrop-filter: blur(6px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .box-item { opacity: 1 !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased selection:bg-bubble">
+
+<!-- decorative bg shapes -->
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+  <div class="blob float-soft absolute -top-20 -left-16 h-72 w-72 bg-bubble/20"></div>
+  <div class="blob float-soft absolute top-1/3 -right-24 h-80 w-80 bg-sky/20" style="animation-delay:-2s"></div>
+  <div class="blob float-soft absolute bottom-10 left-1/4 h-64 w-64 bg-sunny/20" style="animation-delay:-4s"></div>
+</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="mx-auto max-w-7xl px-4 sm:px-6 mt-3">
+    <div class="flex items-center justify-between rounded-full border border-ink/10 bg-cream/80 px-4 py-2.5 shadow-card backdrop-blur-md chip">
+      <a href="#top" class="flex items-center gap-2 font-display text-xl font-700 text-ink">
+        <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-bubble to-grape text-white text-lg">✦</span>
+        Snack<span class="text-grape">bloom</span>
+      </a>
+      <ul class="hidden items-center gap-7 text-sm font-600 text-ink/70 md:flex">
+        <li><a href="#how" class="hover:text-grape transition">How it works</a></li>
+        <li><a href="#inside" class="hover:text-grape transition">What's inside</a></li>
+        <li><a href="#plans" class="hover:text-grape transition">Plans</a></li>
+        <li><a href="#gift" class="hover:text-grape transition">Gifting</a></li>
+        <li><a href="#faq" class="hover:text-grape transition">FAQ</a></li>
+      </ul>
+      <a href="#plans" class="magnetic inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-700 text-cream shadow-pop hover:bg-grape transition">
+        Subscribe <span>→</span>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative px-4 sm:px-6 pt-32 pb-20 sm:pt-40">
+  <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
+    <!-- copy -->
+    <div>
+      <span class="sticker inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-xs font-700 uppercase tracking-wider text-grape">
+        🎉 New drops every full moon
+      </span>
+      <h1 class="mt-5 font-display text-5xl font-700 leading-[1.02] text-ink sm:text-6xl lg:text-7xl">
+        <span id="hl-1" class="inline-block">A box of</span><br />
+        <span id="hl-2" class="inline-block grad-text">little joys,</span><br />
+        <span id="hl-3" class="inline-block">every month.</span>
+      </h1>
+      <p class="mt-6 max-w-md text-lg text-ink/70">
+        Snackbloom hand-curates small-batch snacks, sips &amp; surprises from makers you'll love — then ships the whole happy bundle straight to your door.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#plans" id="hero-cta" class="magnetic group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-bubble to-tangerine px-7 py-4 text-base font-700 text-white shadow-card">
+          Start my box
+          <span class="transition-transform group-hover:translate-x-1">→</span>
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 rounded-full border-2 border-ink/15 px-6 py-3.5 text-base font-700 text-ink hover:border-grape hover:text-grape transition">
+          See how it works
+        </a>
+      </div>
+      <!-- count-ups -->
+      <div class="mt-10 grid max-w-md grid-cols-3 gap-4">
+        <div class="rounded-2xl bg-white/70 p-4 text-center shadow-card">
+          <div class="count font-display text-3xl font-700 text-grape" data-to="248000">0</div>
+          <p class="mt-1 text-xs font-600 text-ink/55">boxes shipped</p>
+        </div>
+        <div class="rounded-2xl bg-white/70 p-4 text-center shadow-card">
+          <div class="count font-display text-3xl font-700 text-bubble" data-to="31500" data-suffix="+">0</div>
+          <p class="mt-1 text-xs font-600 text-ink/55">happy members</p>
+        </div>
+        <div class="rounded-2xl bg-white/70 p-4 text-center shadow-card">
+          <div class="count font-display text-3xl font-700 text-tangerine" data-to="92" data-suffix="%">0</div>
+          <p class="mt-1 text-xs font-600 text-ink/55">re-subscribe</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- box visual -->
+    <div class="relative">
+      <div class="absolute inset-0 -z-10 mx-auto h-80 w-80 self-center blob bg-gradient-to-br from-sunny/50 to-bubble/40 blur-2xl float-soft"></div>
+      <div class="box-stage relative grid place-items-center py-10">
+        <div id="hero-box" class="box float-soft">
+          <div class="box-body"></div>
+          <div class="box-tape"></div>
+          <div class="box-flap"></div>
+          <span class="box-item item-1 bg-lime"></span>
+          <span class="box-item item-2 bg-sunny"></span>
+          <span class="box-item item-3 bg-sky"></span>
+          <span class="box-item item-4 bg-bubble"></span>
+          <span class="box-item item-5 bg-tangerine"></span>
+          <div class="box-lid"></div>
+        </div>
+        <button id="open-btn" class="magnetic mt-6 rounded-full bg-ink px-5 py-2.5 text-sm font-700 text-cream shadow-pop hover:bg-grape transition">
+          Tap to peek inside 👀
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee-wrap relative overflow-hidden border-y-2 border-ink/10 bg-ink py-4">
+  <div class="marquee text-cream font-display text-xl font-600 uppercase tracking-wide">
+    <span class="flex shrink-0">
+      <span class="mx-6">🍫 Small-batch makers</span><span class="mx-6 text-sunny">✦</span>
+      <span class="mx-6">🌿 Always cruelty-free</span><span class="mx-6 text-bubble">✦</span>
+      <span class="mx-6">📦 Free shipping</span><span class="mx-6 text-sky">✦</span>
+      <span class="mx-6">🎁 Skip or pause anytime</span><span class="mx-6 text-lime">✦</span>
+      <span class="mx-6">♻️ Plastic-free packaging</span><span class="mx-6 text-tangerine">✦</span>
+    </span>
+    <span class="flex shrink-0" aria-hidden="true">
+      <span class="mx-6">🍫 Small-batch makers</span><span class="mx-6 text-sunny">✦</span>
+      <span class="mx-6">🌿 Always cruelty-free</span><span class="mx-6 text-bubble">✦</span>
+      <span class="mx-6">📦 Free shipping</span><span class="mx-6 text-sky">✦</span>
+      <span class="mx-6">🎁 Skip or pause anytime</span><span class="mx-6 text-lime">✦</span>
+      <span class="mx-6">♻️ Plastic-free packaging</span><span class="mx-6 text-tangerine">✦</span>
+    </span>
+  </div>
+</div>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="font-display text-sm font-600 uppercase tracking-widest text-bubble">Three happy steps</p>
+      <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">As easy as pick, ship, enjoy</h2>
+      <p class="mt-4 text-ink/65">No commitments, no nonsense. Build your taste profile once and let the magic land on your doorstep.</p>
+    </div>
+
+    <div class="mt-14 grid gap-6 md:grid-cols-3">
+      <!-- step 1 -->
+      <div class="reveal tilt group relative overflow-hidden rounded-3xl border border-ink/10 bg-white/80 p-8 shadow-card">
+        <span class="absolute -right-4 -top-6 font-display text-8xl font-700 text-grape/10">1</span>
+        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-grape/15 text-3xl">🎯</div>
+        <h3 class="mt-5 font-display text-2xl font-600 text-ink">Pick your vibe</h3>
+        <p class="mt-2 text-ink/65">Sweet tooth, savory cravings, or a wild-card mix? Tell us your flavor mood and any allergies.</p>
+      </div>
+      <!-- step 2 -->
+      <div class="reveal tilt group relative overflow-hidden rounded-3xl border border-ink/10 bg-white/80 p-8 shadow-card">
+        <span class="absolute -right-4 -top-6 font-display text-8xl font-700 text-bubble/10">2</span>
+        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-bubble/15 text-3xl">📦</div>
+        <h3 class="mt-5 font-display text-2xl font-600 text-ink">We curate &amp; ship</h3>
+        <p class="mt-2 text-ink/65">Our taste team hand-packs 6–9 surprises from rising makers and ships it free, every month.</p>
+      </div>
+      <!-- step 3 -->
+      <div class="reveal tilt group relative overflow-hidden rounded-3xl border border-ink/10 bg-white/80 p-8 shadow-card">
+        <span class="absolute -right-4 -top-6 font-display text-8xl font-700 text-tangerine/10">3</span>
+        <div class="grid h-16 w-16 place-items-center rounded-2xl bg-tangerine/15 text-3xl">🎉</div>
+        <h3 class="mt-5 font-display text-2xl font-600 text-ink">Unbox the joy</h3>
+        <p class="mt-2 text-ink/65">Rip the tape, discover your treats, and rate your favorites so next month gets even better.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT'S INSIDE ============ -->
+<section id="inside" class="relative px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl">
+    <div class="reveal flex flex-col items-end justify-between gap-4 sm:flex-row sm:items-center">
+      <div>
+        <p class="font-display text-sm font-600 uppercase tracking-widest text-sky">A peek inside</p>
+        <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">This month's bloom</h2>
+      </div>
+      <p class="max-w-sm text-ink/60">A snapshot of what June members are unwrapping. Yours will be a fresh surprise.</p>
+    </div>
+
+    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- featured image card -->
+      <article class="reveal tilt group relative overflow-hidden rounded-3xl shadow-card sm:col-span-2 lg:row-span-2">
+        <div class="absolute inset-0 bg-gradient-to-br from-grape via-bubble to-tangerine"></div>
+        <img src="https://images.unsplash.com/photo-1607344645866-009c320b63e0?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Curated snack box flatlay" loading="lazy"
+             class="absolute inset-0 h-full w-full object-cover mix-blend-luminosity opacity-80 transition duration-500 group-hover:scale-105" />
+        <div class="relative flex h-full min-h-[300px] flex-col justify-end p-8">
+          <span class="sticker w-max rounded-full bg-white/90 px-3 py-1 text-xs font-700 text-grape">★ Member favorite</span>
+          <h3 class="mt-3 font-display text-3xl font-700 text-white">The "Golden Hour" mix</h3>
+          <p class="mt-1 max-w-md text-white/80">Honey-roast cashews, yuzu gummies, matcha cocoa rounds &amp; a hibiscus sparkler.</p>
+        </div>
+      </article>
+
+      <!-- item cards -->
+      <article class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-6 shadow-card">
+        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-lime/25 text-3xl">🍪</div>
+        <h3 class="mt-4 font-display text-xl font-600 text-ink">Brown-butter biscuits</h3>
+        <p class="mt-1 text-sm text-ink/60">From a two-person bakery in Lisbon.</p>
+      </article>
+      <article class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-6 shadow-card">
+        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-sky/25 text-3xl">🧋</div>
+        <h3 class="mt-4 font-display text-xl font-600 text-ink">Cold-brew tea cube</h3>
+        <p class="mt-1 text-sm text-ink/60">Just drop, wait, and sip — zero fuss.</p>
+      </article>
+      <article class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-6 shadow-card">
+        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-sunny/30 text-3xl">🍿</div>
+        <h3 class="mt-4 font-display text-xl font-600 text-ink">Maple-miso popcorn</h3>
+        <p class="mt-1 text-sm text-ink/60">Sweet-savory and dangerously snackable.</p>
+      </article>
+      <article class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-6 shadow-card">
+        <div class="grid h-14 w-14 place-items-center rounded-2xl bg-bubble/20 text-3xl">🎁</div>
+        <h3 class="mt-4 font-display text-xl font-600 text-ink">A tiny extra</h3>
+        <p class="mt-1 text-sm text-ink/60">Sticker, recipe card, or a maker note.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLANS / PRICING ============ -->
+<section id="plans" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="font-display text-sm font-600 uppercase tracking-widest text-tangerine">Pick a size</p>
+      <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">Plans that flex with your appetite</h2>
+      <p class="mt-4 text-ink/65">Every plan ships free, cancels anytime, and gets better the longer you bloom with us.</p>
+    </div>
+
+    <div class="mt-14 grid items-stretch gap-6 lg:grid-cols-3">
+      <!-- Nibble -->
+      <div class="reveal tilt flex flex-col rounded-3xl border border-ink/10 bg-white/85 p-8 shadow-card">
+        <h3 class="font-display text-2xl font-600 text-ink">Nibble</h3>
+        <p class="mt-1 text-sm text-ink/60">Just a taste of the fun.</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display text-5xl font-700 text-ink">$24</span>
+          <span class="mb-2 text-ink/55">/month</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-lime">✓</span> 4–5 curated treats</li>
+          <li class="flex gap-2"><span class="text-lime">✓</span> Free shipping</li>
+          <li class="flex gap-2"><span class="text-lime">✓</span> Skip or pause anytime</li>
+          <li class="flex gap-2 text-ink/35"><span>–</span> Member shop discounts</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 rounded-full border-2 border-ink/15 px-6 py-3 text-center font-700 text-ink hover:border-grape hover:text-grape transition">Choose Nibble</a>
+      </div>
+
+      <!-- Bloom (featured) -->
+      <div class="reveal tilt relative flex flex-col rounded-3xl border-2 border-grape bg-gradient-to-b from-grape to-[#5b28b8] p-8 text-white shadow-card lg:-mt-4 lg:mb-4">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-sunny px-4 py-1 text-xs font-700 uppercase tracking-wide text-ink shadow-pop">Most loved</span>
+        <h3 class="font-display text-2xl font-600">Bloom</h3>
+        <p class="mt-1 text-sm text-white/70">The full happy experience.</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display text-5xl font-700">$39</span>
+          <span class="mb-2 text-white/65">/month</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-sm text-white/85">
+          <li class="flex gap-2"><span class="text-sunny">✓</span> 6–9 curated treats</li>
+          <li class="flex gap-2"><span class="text-sunny">✓</span> Free priority shipping</li>
+          <li class="flex gap-2"><span class="text-sunny">✓</span> Member shop discounts</li>
+          <li class="flex gap-2"><span class="text-sunny">✓</span> Early-access maker drops</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 rounded-full bg-white px-6 py-3 text-center font-700 text-grape shadow-pop hover:bg-sunny hover:text-ink transition">Choose Bloom</a>
+      </div>
+
+      <!-- Garden -->
+      <div class="reveal tilt flex flex-col rounded-3xl border border-ink/10 bg-white/85 p-8 shadow-card">
+        <h3 class="font-display text-2xl font-600 text-ink">Garden</h3>
+        <p class="mt-1 text-sm text-ink/60">For serious snack royalty.</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display text-5xl font-700 text-ink">$59</span>
+          <span class="mb-2 text-ink/55">/month</span>
+        </div>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-lime">✓</span> 10–12 premium treats</li>
+          <li class="flex gap-2"><span class="text-lime">✓</span> Free priority shipping</li>
+          <li class="flex gap-2"><span class="text-lime">✓</span> Member shop discounts</li>
+          <li class="flex gap-2"><span class="text-lime">✓</span> Quarterly bonus box 🎉</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 rounded-full border-2 border-ink/15 px-6 py-3 text-center font-700 text-ink hover:border-grape hover:text-grape transition">Choose Garden</a>
+      </div>
+    </div>
+    <p class="reveal mt-6 text-center text-sm text-ink/50">Prefer to commit? Annual plans save 20% — that's basically two free boxes. 🌸</p>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section id="why" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div class="reveal">
+        <p class="font-display text-sm font-600 uppercase tracking-widest text-lime">Why Snackbloom</p>
+        <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">Curated by humans who really love snacks</h2>
+        <p class="mt-4 text-ink/65">We taste hundreds of products so you only meet the good ones. No mystery filler, no household brands — just genuinely exciting makers and a box that feels like a gift to yourself.</p>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          <div class="rounded-2xl bg-white/80 p-5 shadow-card">
+            <div class="text-2xl">🌿</div>
+            <h3 class="mt-2 font-display text-lg font-600 text-ink">Maker-first</h3>
+            <p class="mt-1 text-sm text-ink/60">85% of our boxes feature independent, family-run brands.</p>
+          </div>
+          <div class="rounded-2xl bg-white/80 p-5 shadow-card">
+            <div class="text-2xl">♻️</div>
+            <h3 class="mt-2 font-display text-lg font-600 text-ink">Planet-kind</h3>
+            <p class="mt-1 text-sm text-ink/60">Plastic-free, recyclable packaging — every single month.</p>
+          </div>
+          <div class="rounded-2xl bg-white/80 p-5 shadow-card">
+            <div class="text-2xl">🧪</div>
+            <h3 class="mt-2 font-display text-lg font-600 text-ink">Allergy-smart</h3>
+            <p class="mt-1 text-sm text-ink/60">Filter out nuts, gluten, dairy &amp; more in one tap.</p>
+          </div>
+          <div class="rounded-2xl bg-white/80 p-5 shadow-card">
+            <div class="text-2xl">💌</div>
+            <h3 class="mt-2 font-display text-lg font-600 text-ink">No lock-in</h3>
+            <p class="mt-1 text-sm text-ink/60">Skip, pause, or cancel in two clicks. Forever.</p>
+          </div>
+        </div>
+      </div>
+      <!-- stacked boxes visual -->
+      <div class="reveal relative grid place-items-center">
+        <div class="absolute inset-0 -z-10 mx-auto h-72 w-72 self-center blob bg-gradient-to-br from-sky/40 to-lime/40 blur-2xl"></div>
+        <div class="relative h-[360px] w-full max-w-sm">
+          <div class="float-soft absolute left-6 top-4 grid h-40 w-48 place-items-center rounded-3xl bg-gradient-to-br from-bubble to-grape text-white font-display text-2xl font-700 shadow-card -rotate-6">June 🌸</div>
+          <div class="float-soft absolute right-4 top-24 grid h-40 w-48 place-items-center rounded-3xl bg-gradient-to-br from-sunny to-tangerine text-ink font-display text-2xl font-700 shadow-card rotate-6" style="animation-delay:-2s">May ☀️</div>
+          <div class="float-soft absolute bottom-2 left-12 grid h-40 w-48 place-items-center rounded-3xl bg-gradient-to-br from-sky to-lime text-ink font-display text-2xl font-700 shadow-card rotate-3" style="animation-delay:-4s">Apr 🌱</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-5xl reveal rounded-[2.5rem] border border-ink/10 bg-gradient-to-br from-ink to-[#3d2659] p-10 text-cream shadow-card sm:p-14">
+    <div class="grid items-center gap-10 md:grid-cols-[1.4fr_1fr]">
+      <div>
+        <p class="font-display text-sm font-600 uppercase tracking-widest text-sunny">Our little story</p>
+        <h2 class="mt-2 font-display text-3xl font-700 sm:text-4xl">It started with one sad office snack drawer</h2>
+        <p class="mt-4 text-cream/75">In 2021, our founders were tired of the same stale vending choices. So they began swapping homemade treats and discoveries from tiny makers. Friends wanted in. Friends-of-friends wanted in. Snackbloom is that snack drawer — grown up, curated with care, and delivered to thousands of doors.</p>
+        <p class="mt-4 text-cream/75">We're a small team of taste-obsessed humans on a mission: make joy a monthly habit and put more money in the pockets of brilliant small makers.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-2xl bg-white/10 p-5 text-center"><div class="font-display text-3xl font-700 text-sunny">2021</div><p class="mt-1 text-xs text-cream/60">founded</p></div>
+        <div class="rounded-2xl bg-white/10 p-5 text-center"><div class="font-display text-3xl font-700 text-bubble">640+</div><p class="mt-1 text-xs text-cream/60">makers supported</p></div>
+        <div class="rounded-2xl bg-white/10 p-5 text-center"><div class="font-display text-3xl font-700 text-sky">17</div><p class="mt-1 text-xs text-cream/60">countries shipped</p></div>
+        <div class="rounded-2xl bg-white/10 p-5 text-center"><div class="font-display text-3xl font-700 text-lime">0</div><p class="mt-1 text-xs text-cream/60">boring snacks</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="love" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl">
+    <div class="reveal mx-auto max-w-2xl text-center">
+      <p class="font-display text-sm font-600 uppercase tracking-widest text-bubble">Member love</p>
+      <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">Unboxing smiles, on repeat</h2>
+    </div>
+    <div class="mt-14 grid gap-6 md:grid-cols-3">
+      <figure class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-7 shadow-card">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-ink/75">"The one piece of mail I'm actually excited about. The maple-miso popcorn ruined every other popcorn for me."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-grape/20 font-display font-700 text-grape">RJ</span>
+          <div><div class="font-600 text-ink">Rina J.</div><div class="text-xs text-ink/50">Bloom member · 14 boxes</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-7 shadow-card md:-mt-4">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-ink/75">"I gifted my mum a Garden plan and now we text each other photos of our boxes every month. Pure serotonin."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-bubble/20 font-display font-700 text-bubble">TO</span>
+          <div><div class="font-600 text-ink">Theo O.</div><div class="text-xs text-ink/50">Garden member · 9 boxes</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal tilt rounded-3xl border border-ink/10 bg-white/85 p-7 shadow-card">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-ink/75">"Discovered three new favorite brands I'd never have found on my own. Worth every cent — and shipping's free!"</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-tangerine/20 font-display font-700 text-tangerine">MA</span>
+          <div><div class="font-600 text-ink">Mara A.</div><div class="text-xs text-ink/50">Nibble member · 6 boxes</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GIFT OPTIONS ============ -->
+<section id="gift" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-7xl reveal rounded-[2.5rem] bg-gradient-to-br from-sunny via-tangerine to-bubble p-10 shadow-card sm:p-14">
+    <div class="grid items-center gap-10 lg:grid-cols-2">
+      <div>
+        <span class="sticker inline-flex rounded-full bg-white/80 px-4 py-1.5 text-xs font-700 uppercase tracking-wide text-grape">🎁 Gifting made joyful</span>
+        <h2 class="mt-4 font-display text-4xl font-700 text-ink sm:text-5xl">Send a smile, no wrapping required</h2>
+        <p class="mt-4 max-w-md text-ink/75">Pick a length, add a hand-written-style note, and we'll deliver a little surprise every month. The perfect "thinking of you", birthday, or just-because.</p>
+        <a href="#plans" class="magnetic mt-7 inline-flex items-center gap-2 rounded-full bg-ink px-7 py-4 font-700 text-cream shadow-pop hover:bg-grape transition">Send a gift box →</a>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-3xl bg-white/85 p-6 text-center shadow-card">
+          <div class="font-display text-2xl font-700 text-grape">3 mo</div>
+          <p class="mt-1 text-sm text-ink/60">Taster gift</p>
+          <p class="mt-3 font-display text-lg font-600 text-ink">$108</p>
+        </div>
+        <div class="rounded-3xl bg-ink p-6 text-center text-cream shadow-card">
+          <div class="font-display text-2xl font-700 text-sunny">6 mo</div>
+          <p class="mt-1 text-sm text-cream/70">Most gifted</p>
+          <p class="mt-3 font-display text-lg font-600">$210</p>
+        </div>
+        <div class="rounded-3xl bg-white/85 p-6 text-center shadow-card">
+          <div class="font-display text-2xl font-700 text-bubble">12 mo</div>
+          <p class="mt-1 text-sm text-ink/60">The big love</p>
+          <p class="mt-3 font-display text-lg font-600 text-ink">$396</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="px-4 sm:px-6 py-24">
+  <div class="mx-auto max-w-3xl">
+    <div class="reveal text-center">
+      <p class="font-display text-sm font-600 uppercase tracking-widest text-sky">Good to know</p>
+      <h2 class="mt-2 font-display text-4xl font-700 text-ink sm:text-5xl">Questions, answered</h2>
+    </div>
+
+    <div class="mt-12 space-y-4">
+      <div class="faq reveal rounded-2xl border border-ink/10 bg-white/85 shadow-card">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-600 text-ink">When does my box ship?</span>
+          <span class="faq-plus grid h-7 w-7 shrink-0 place-items-center rounded-full bg-grape/15 text-grape text-xl transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/65">Boxes ship in the first week of every month. Subscribe before the 25th and your first box catches the very next drop — otherwise it lands the month after.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-ink/10 bg-white/85 shadow-card">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-600 text-ink">Can I skip or cancel?</span>
+          <span class="faq-plus grid h-7 w-7 shrink-0 place-items-center rounded-full bg-bubble/15 text-bubble text-xl transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/65">Always. Skip an individual month, pause for a while, or cancel entirely from your dashboard in two clicks — no emails, no hoops, no hard feelings.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-ink/10 bg-white/85 shadow-card">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-600 text-ink">What about allergies?</span>
+          <span class="faq-plus grid h-7 w-7 shrink-0 place-items-center rounded-full bg-tangerine/15 text-tangerine text-xl transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/65">During sign-up you can flag nuts, gluten, dairy, soy and more. We tailor your curation around them and label every item clearly. (Items are made in shared facilities, so we can't guarantee zero traces.)</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-ink/10 bg-white/85 shadow-card">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-600 text-ink">Do you ship internationally?</span>
+          <span class="faq-plus grid h-7 w-7 shrink-0 place-items-center rounded-full bg-lime/20 text-lime text-xl transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/65">We currently ship to 17 countries with free domestic shipping and flat-rate international. Pop your postcode in at checkout to see your options.</p></div>
+      </div>
+      <div class="faq reveal rounded-2xl border border-ink/10 bg-white/85 shadow-card">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display text-lg font-600 text-ink">Can I choose what's inside?</span>
+          <span class="faq-plus grid h-7 w-7 shrink-0 place-items-center rounded-full bg-sky/20 text-sky text-xl transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink/65">The surprise is half the fun, so contents stay a secret — but your taste profile and monthly ratings shape every future box, so it keeps getting more "you".</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="px-4 sm:px-6 pb-24">
+  <div class="reveal relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-grape via-bubble to-tangerine p-10 text-center text-white shadow-card sm:p-16">
+    <div class="confetti-host pointer-events-none absolute inset-0"></div>
+    <h2 class="relative font-display text-4xl font-700 sm:text-6xl">Ready to bloom?</h2>
+    <p class="relative mx-auto mt-4 max-w-lg text-lg text-white/85">Join 31,500+ members getting a monthly hit of joy. Your first box is one happy click away.</p>
+    <div class="relative mt-8 flex flex-wrap items-center justify-center gap-4">
+      <a href="#plans" class="magnetic rounded-full bg-white px-8 py-4 font-700 text-grape shadow-pop hover:bg-sunny hover:text-ink transition">Start my box 🌸</a>
+      <a href="#gift" class="magnetic rounded-full border-2 border-white/60 px-7 py-3.5 font-700 text-white hover:bg-white/10 transition">Gift one instead</a>
+    </div>
+    <p class="relative mt-5 text-sm text-white/70">Free shipping · Skip anytime · 30-day happiness promise</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t-2 border-ink/10 bg-cream px-4 sm:px-6 py-14">
+  <div class="mx-auto max-w-7xl">
+    <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div>
+        <a href="#top" class="flex items-center gap-2 font-display text-2xl font-700 text-ink">
+          <span class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-bubble to-grape text-white">✦</span>
+          Snack<span class="text-grape">bloom</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm text-ink/60">A joyful box of small-batch snacks, sips &amp; surprises — delivered to your door every month.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" aria-label="Instagram" class="grid h-10 w-10 place-items-center rounded-full bg-ink/5 text-ink hover:bg-grape hover:text-white transition">◎</a>
+          <a href="#" aria-label="TikTok" class="grid h-10 w-10 place-items-center rounded-full bg-ink/5 text-ink hover:bg-bubble hover:text-white transition">♪</a>
+          <a href="#" aria-label="X" class="grid h-10 w-10 place-items-center rounded-full bg-ink/5 text-ink hover:bg-sky hover:text-white transition">✕</a>
+        </div>
+      </div>
+      <div>
+        <h3 class="font-display font-600 text-ink">Shop</h3>
+        <ul class="mt-4 space-y-2 text-sm text-ink/60">
+          <li><a href="#plans" class="hover:text-grape transition">Plans</a></li>
+          <li><a href="#gift" class="hover:text-grape transition">Gift boxes</a></li>
+          <li><a href="#inside" class="hover:text-grape transition">This month</a></li>
+          <li><a href="#" class="hover:text-grape transition">Member shop</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-display font-600 text-ink">Company</h3>
+        <ul class="mt-4 space-y-2 text-sm text-ink/60">
+          <li><a href="#about" class="hover:text-grape transition">Our story</a></li>
+          <li><a href="#" class="hover:text-grape transition">Become a maker</a></li>
+          <li><a href="#" class="hover:text-grape transition">Careers</a></li>
+          <li><a href="#faq" class="hover:text-grape transition">Help center</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-display font-600 text-ink">Get joy in your inbox</h3>
+        <p class="mt-4 text-sm text-ink/60">Sneak peeks, maker stories &amp; the odd discount.</p>
+        <form class="mt-3 flex gap-2" onsubmit="return false;">
+          <input type="email" required placeholder="you@email.com" class="w-full rounded-full border border-ink/15 bg-white px-4 py-2.5 text-sm text-ink outline-none focus:border-grape focus:shadow-ring" />
+          <button class="magnetic rounded-full bg-ink px-4 py-2.5 text-sm font-700 text-cream hover:bg-grape transition">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col items-center justify-between gap-3 border-t border-ink/10 pt-6 text-sm text-ink/50 sm:flex-row">
+      <p>© 2026 Snackbloom Co. Crafted with snacks &amp; love.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-grape transition">Privacy</a>
+        <a href="#" class="hover:text-grape transition">Terms</a>
+        <a href="#" class="hover:text-grape transition">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.querySelector('div > div')?.classList.add('shadow-card');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Box open: hover + button + scroll ---------- */
+  const box = document.getElementById('hero-box');
+  const openBtn = document.getElementById('open-btn');
+  let pinned = false;
+  const setOpen = (v) => box.classList.toggle('open', v);
+  box.addEventListener('mouseenter', () => { if (!pinned) setOpen(true); });
+  box.addEventListener('mouseleave', () => { if (!pinned) setOpen(false); });
+  openBtn.addEventListener('click', () => {
+    pinned = !pinned; setOpen(pinned);
+    openBtn.textContent = pinned ? 'Close the box 📦' : 'Tap to peek inside 👀';
+  });
+
+  /* ---------- Confetti generator ---------- */
+  const colors = ['#FF5DA2', '#FF8A3D', '#5BD68C', '#3DC6FF', '#FFD23F', '#7C3AED'];
+  function spawnConfetti(host, count) {
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('span');
+      c.className = 'confetti';
+      const size = 6 + Math.random() * 10;
+      c.style.width = size + 'px';
+      c.style.height = (size * (0.5 + Math.random())) + 'px';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.top = Math.random() * 100 + '%';
+      c.style.background = colors[(Math.random() * colors.length) | 0];
+      c.style.transform = `rotate(${Math.random() * 360}deg)`;
+      host.appendChild(c);
+      if (!reduce && window.gsap) {
+        gsap.to(c, {
+          y: '+=' + (20 + Math.random() * 40),
+          x: '+=' + (-20 + Math.random() * 40),
+          rotation: '+=' + (180 + Math.random() * 180),
+          duration: 3 + Math.random() * 3,
+          repeat: -1, yoyo: true, ease: 'sine.inOut',
+          delay: Math.random() * 2,
+        });
+      }
+    }
+  }
+  document.querySelectorAll('.confetti-host').forEach((h) => spawnConfetti(h, 24));
+
+  /* ---------- Magnetic CTAs ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width / 2;
+        const my = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${mx * 0.25}px, ${my * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+
+    /* ---------- Tilt cards ---------- */
+    document.querySelectorAll('.tilt').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(900px) rotateX(${py * -6}deg) rotateY(${px * 8}deg) translateY(-4px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq');
+      const open = item.classList.contains('active');
+      document.querySelectorAll('.faq').forEach((f) => f.classList.remove('active'));
+      if (!open) item.classList.add('active');
+    });
+  });
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      /* headline springy stagger */
+      gsap.from(['#hl-1', '#hl-2', '#hl-3'], {
+        y: 50, opacity: 0, rotateX: -40, duration: 0.9,
+        ease: 'back.out(1.7)', stagger: 0.12, delay: 0.15,
+      });
+
+      /* hero box scroll-reactive open */
+      ScrollTrigger.create({
+        trigger: '#top',
+        start: 'top top', end: 'bottom top', scrub: true,
+        onUpdate: (self) => {
+          if (!pinned) setOpen(self.progress > 0.12 && self.progress < 0.9);
+        },
+      });
+
+      /* section reveals */
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          y: 0, opacity: 1, duration: 0.85, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 86%' },
+        });
+      });
+
+      /* parallax decorative blobs */
+      gsap.utils.toArray('.blob').forEach((b, i) => {
+        gsap.to(b, {
+          yPercent: i % 2 ? 24 : -24,
+          ease: 'none',
+          scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 1 },
+        });
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    }
+
+    /* count-ups (run for all, ignore motion pref for value display) */
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = +el.dataset.to;
+      const suffix = el.dataset.suffix || '';
+      const fmt = (n) => Math.round(n).toLocaleString() + suffix;
+      if (reduce) { el.textContent = fmt(to); return; }
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 2, ease: 'power2.out',
+          onUpdate: () => { el.textContent = fmt(obj.v); },
+        }),
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach((e) => { e.style.opacity = 1; e.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach((e) => {
+      e.textContent = (+e.dataset.to).toLocaleString() + (e.dataset.suffix || '');
+    });
+  }
+})();
+</script>
+</body>
+</html>

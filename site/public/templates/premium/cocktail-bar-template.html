@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Velluto &mdash; Craft Cocktail Lounge</title>
+<meta name="description" content="Velluto is an upscale craft cocktail bar & lounge — art-deco glamour, low light, and liquid artistry poured nightly." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0a0807',
+          coal:   '#13100d',
+          char:   '#1d1814',
+          gold:   '#c9a35b',
+          amber:  '#e6b86a',
+          champ:  '#f2e3c2',
+          wine:   '#5a1f2b',
+          smoke:  '#a79b88',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans:  ['"Jost"', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #0a0807;
+    color: #f2e3c2;
+    cursor: none;
+  }
+  @media (hover: none) { body { cursor: auto; } }
+
+  ::selection { background: #c9a35b; color: #0a0807; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot  { width: 7px;  height: 7px;  background: #e6b86a; }
+  .cursor-ring { width: 38px; height: 38px; border: 1px solid rgba(201,163,91,.7); transition: width .25s, height .25s, background .25s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(201,163,91,.08); }
+  @media (hover: none) { .cursor-dot, .cursor-ring { display: none; } }
+
+  /* Gold shimmer */
+  .shimmer {
+    background: linear-gradient(100deg, #c9a35b 20%, #f7eccb 42%, #f7eccb 48%, #c9a35b 70%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% center; } }
+
+  /* Masked headline lines */
+  .line-mask { overflow: hidden; display: block; }
+  .line-inner { display: block; transform: translateY(110%); }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee-track:hover .marquee { animation-play-state: paused; }
+
+  /* Hairline */
+  .hair { height: 1px; background: linear-gradient(90deg, transparent, rgba(201,163,91,.5), transparent); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  /* Reveal base */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .grain::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5; opacity: .04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line-inner { transform: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .marquee, .shimmer { animation: none !important; }
+    .cursor-dot, .cursor-ring { display: none !important; }
+    body { cursor: auto !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased grain selection:bg-gold">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- NAV -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#top" class="font-serif text-2xl tracking-[0.25em] text-champ">VELLUTO</a>
+    <nav class="hidden md:flex items-center gap-9 text-[13px] tracking-[0.18em] uppercase text-smoke">
+      <a href="#about"   class="hover:text-amber transition">House</a>
+      <a href="#menu"    class="hover:text-amber transition">Cocktails</a>
+      <a href="#space"   class="hover:text-amber transition">The Room</a>
+      <a href="#events"  class="hover:text-amber transition">Private Hire</a>
+      <a href="#visit"   class="hover:text-amber transition">Visit</a>
+    </nav>
+    <a href="#reserve" data-magnetic class="reserve-btn relative inline-flex items-center gap-2 border border-gold/60 text-champ text-[12px] tracking-[0.22em] uppercase px-6 py-3 rounded-full overflow-hidden">
+      <span class="relative z-10">Reserve</span>
+      <span class="absolute inset-0 bg-gold/15 scale-x-0 origin-left transition-transform duration-500 reserve-fill"></span>
+    </a>
+  </div>
+  <div class="hair opacity-40"></div>
+</header>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="relative min-h-screen flex items-center overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-coal via-ink to-ink"></div>
+  <div class="absolute inset-0 hero-img-wrap overflow-hidden">
+    <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Signature cocktail in a dim lounge"
+         class="hero-img w-full h-[120%] object-cover object-center opacity-50" />
+    <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full pt-24">
+    <p class="hero-eyebrow text-[12px] tracking-[0.45em] uppercase text-gold mb-6 reveal">Est. MMXIV &middot; After Dark</p>
+    <h1 class="font-serif leading-[0.92] text-champ text-[clamp(3rem,11vw,9.5rem)]">
+      <span class="line-mask"><span class="line-inner">The art of</span></span>
+      <span class="line-mask"><span class="line-inner italic shimmer">the slow pour.</span></span>
+    </h1>
+    <p class="mt-8 max-w-xl text-smoke text-lg font-light reveal">
+      A low-lit room of brass, velvet and candle glow — where every cocktail is composed like a small, dangerous love letter.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center gap-5 reveal">
+      <a href="#reserve" data-magnetic class="reserve-btn relative inline-flex items-center gap-3 bg-gold text-ink text-[12px] tracking-[0.22em] uppercase px-8 py-4 rounded-full overflow-hidden font-medium">
+        <span class="relative z-10">Reserve a Table</span>
+        <span class="relative z-10">&rarr;</span>
+        <span class="absolute inset-0 bg-amber scale-x-0 origin-left transition-transform duration-500 reserve-fill"></span>
+      </a>
+      <a href="#menu" class="text-champ text-[13px] tracking-[0.2em] uppercase border-b border-gold/40 pb-1 hover:border-gold transition">View the Menu</a>
+    </div>
+  </div>
+
+  <!-- floating drink card -->
+  <div class="hidden lg:block absolute right-10 bottom-16 z-10 reveal">
+    <div class="w-64 border border-gold/25 bg-coal/60 backdrop-blur-sm p-6 rounded-sm">
+      <p class="text-[11px] tracking-[0.3em] uppercase text-gold mb-3">Tonight&rsquo;s Pour</p>
+      <h3 class="font-serif text-3xl text-champ italic">Smoke &amp; Saffron</h3>
+      <p class="text-smoke text-sm mt-2 font-light">Mezcal, saffron honey, charred orange, a breath of applewood.</p>
+      <p class="text-amber mt-4 text-sm tracking-widest">— 19</p>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-smoke text-[11px] tracking-[0.3em] uppercase flex flex-col items-center gap-2 reveal">
+    <span>Scroll</span>
+    <span class="block w-px h-10 bg-gradient-to-b from-gold to-transparent"></span>
+  </div>
+</section>
+
+<!-- INTRO / ABOUT -->
+<section id="about" class="relative py-28 lg:py-40 bg-coal">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-14 items-center">
+    <div class="lg:col-span-5 reveal">
+      <div class="relative parallax-frame overflow-hidden rounded-sm border border-gold/20">
+        <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Bartender finishing a cocktail"
+             class="parallax-img w-full h-[34rem] object-cover opacity-80" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-6 reveal">The House of Velluto</p>
+      <h2 class="font-serif text-champ text-[clamp(2rem,5vw,4rem)] leading-tight reveal">
+        We don&rsquo;t serve drinks.<br/>
+        <span class="italic text-amber">We serve evenings.</span>
+      </h2>
+      <p class="mt-7 text-smoke text-lg font-light max-w-xl reveal">
+        Hidden behind an unmarked brass door, Velluto is a sanctuary for the unhurried. Our bartenders are part chemist, part storyteller — pulling rare spirits, house tinctures, and hand-cut ice into something that tastes like a secret.
+      </p>
+      <div class="mt-12 grid grid-cols-3 gap-6 max-w-lg">
+        <div class="reveal"><span class="count font-serif text-5xl text-amber" data-target="120">0</span><p class="text-smoke text-xs tracking-widest uppercase mt-2">Spirits Curated</p></div>
+        <div class="reveal"><span class="count font-serif text-5xl text-amber" data-target="40">0</span><span class="font-serif text-5xl text-amber">+</span><p class="text-smoke text-xs tracking-widest uppercase mt-2">Signature Serves</p></div>
+        <div class="reveal"><span class="count font-serif text-5xl text-amber" data-target="11">0</span><p class="text-smoke text-xs tracking-widest uppercase mt-2">Years After Dark</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-track relative py-7 border-y border-gold/20 bg-ink overflow-hidden">
+  <div class="marquee text-champ/80">
+    <div class="flex items-center shrink-0">
+      <span class="font-serif italic text-3xl px-8">Negroni Sbagliato</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Smoke &amp; Saffron</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Velvet Aviation</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Midnight Paloma</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Gilded Sour</span><span class="text-gold">&#10022;</span>
+    </div>
+    <div class="flex items-center shrink-0" aria-hidden="true">
+      <span class="font-serif italic text-3xl px-8">Negroni Sbagliato</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Smoke &amp; Saffron</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Velvet Aviation</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Midnight Paloma</span><span class="text-gold">&#10022;</span>
+      <span class="font-serif italic text-3xl px-8">Gilded Sour</span><span class="text-gold">&#10022;</span>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNATURE COCKTAILS MENU -->
+<section id="menu" class="relative py-28 lg:py-40 bg-coal">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16">
+      <div>
+        <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-5 reveal">The Liquid List</p>
+        <h2 class="font-serif text-champ text-[clamp(2rem,6vw,4.5rem)] leading-none reveal">Signature Cocktails</h2>
+      </div>
+      <p class="text-smoke max-w-sm font-light reveal">Rotated seasonally. Built to order. Ask your bartender for a serve composed around your mood.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-px bg-gold/15 border border-gold/15">
+      <!-- card -->
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">Smoke &amp; Saffron</h3>
+          <span class="font-serif text-2xl text-gold">19</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Mezcal &middot; saffron honey &middot; charred orange &middot; applewood smoke</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Smoky &middot; Floral</span>
+      </article>
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">Velvet Aviation</h3>
+          <span class="font-serif text-2xl text-gold">17</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Gin &middot; crème de violette &middot; maraschino &middot; bergamot mist</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Bright &middot; Aromatic</span>
+      </article>
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">Gilded Sour</h3>
+          <span class="font-serif text-2xl text-gold">18</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Bourbon &middot; aged amaro &middot; lemon oleo &middot; edible gold &middot; silk foam</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Rich &middot; Velvety</span>
+      </article>
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">Midnight Paloma</h3>
+          <span class="font-serif text-2xl text-gold">16</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Tequila blanco &middot; blood grapefruit &middot; black salt &middot; soda</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Tart &middot; Long</span>
+      </article>
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">Negroni Sbagliato</h3>
+          <span class="font-serif text-2xl text-gold">15</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Bitter red &middot; sweet vermouth &middot; prosecco &middot; orange peel</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Bittersweet &middot; Effervescent</span>
+      </article>
+      <article class="menu-card group relative bg-char p-8 lg:p-10 transition-colors duration-500 hover:bg-ink reveal">
+        <div class="flex justify-between items-start gap-4">
+          <h3 class="font-serif text-3xl text-champ group-hover:text-amber transition">The Unmarked Door</h3>
+          <span class="font-serif text-2xl text-gold">21</span>
+        </div>
+        <p class="text-smoke font-light mt-3">Bartender&rsquo;s choice &middot; off-menu &middot; composed around your mood</p>
+        <span class="block mt-6 text-[11px] tracking-[0.3em] uppercase text-gold/70">Wildcard &middot; Reserve Only</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- THE SPACE / GALLERY -->
+<section id="space" class="relative py-28 lg:py-40 bg-ink overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-5 reveal">The Room</p>
+      <h2 class="font-serif text-champ text-[clamp(2rem,6vw,4.5rem)] leading-none reveal">A space made for staying</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-4 md:gap-6">
+      <div class="parallax-frame relative overflow-hidden rounded-sm border border-gold/15 h-[26rem] md:translate-y-0 reveal">
+        <img src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Velvet lounge seating"
+             class="parallax-img w-full h-[120%] object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+        <span class="absolute bottom-5 left-5 font-serif italic text-2xl text-champ">The Velvet Booths</span>
+      </div>
+      <div class="parallax-frame relative overflow-hidden rounded-sm border border-gold/15 h-[26rem] md:translate-y-8 reveal">
+        <img src="https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="The brass bar"
+             class="parallax-img w-full h-[120%] object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+        <span class="absolute bottom-5 left-5 font-serif italic text-2xl text-champ">The Brass Bar</span>
+      </div>
+      <div class="parallax-frame relative overflow-hidden rounded-sm border border-gold/15 h-[26rem] md:translate-y-0 reveal">
+        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Candlelit table"
+             class="parallax-img w-full h-[120%] object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+        <span class="absolute bottom-5 left-5 font-serif italic text-2xl text-champ">Candle Corner</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS & PRIVATE HIRE -->
+<section id="events" class="relative py-28 lg:py-40 bg-coal">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-5 reveal">Events &amp; Private Hire</p>
+      <h2 class="font-serif text-champ text-[clamp(2rem,5vw,4rem)] leading-tight reveal">Take the whole room.<br/><span class="italic text-amber">Make it yours.</span></h2>
+      <p class="mt-7 text-smoke text-lg font-light max-w-lg reveal">From intimate birthdays to brand launches, Velluto hosts after-hours soirées with bespoke menus, a private bartender, and a soundtrack tuned to your evening.</p>
+      <a href="#reserve" data-magnetic class="reserve-btn relative inline-flex items-center gap-3 mt-10 border border-gold/60 text-champ text-[12px] tracking-[0.22em] uppercase px-8 py-4 rounded-full overflow-hidden reveal">
+        <span class="relative z-10">Enquire About Hire</span>
+        <span class="absolute inset-0 bg-gold/15 scale-x-0 origin-left transition-transform duration-500 reserve-fill"></span>
+      </a>
+    </div>
+    <div class="space-y-5">
+      <div class="border border-gold/20 bg-char p-7 rounded-sm reveal">
+        <div class="flex justify-between items-baseline"><h3 class="font-serif text-2xl text-champ">The Snug</h3><span class="text-gold text-sm tracking-widest">Up to 12</span></div>
+        <p class="text-smoke font-light mt-2">A curtained alcove for celebrations that should stay a little secret.</p>
+      </div>
+      <div class="border border-gold/20 bg-char p-7 rounded-sm reveal">
+        <div class="flex justify-between items-baseline"><h3 class="font-serif text-2xl text-champ">The Mezzanine</h3><span class="text-gold text-sm tracking-widest">Up to 40</span></div>
+        <p class="text-smoke font-light mt-2">Overlooks the bar — ideal for launches, tastings and standing receptions.</p>
+      </div>
+      <div class="border border-gold/20 bg-char p-7 rounded-sm reveal">
+        <div class="flex justify-between items-baseline"><h3 class="font-serif text-2xl text-champ">Full Buyout</h3><span class="text-gold text-sm tracking-widest">Up to 90</span></div>
+        <p class="text-smoke font-light mt-2">The entire lounge, your guest list, our masterclass cocktail programme.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS / LOCATION -->
+<section id="visit" class="relative py-28 lg:py-40 bg-ink">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-3 gap-12">
+    <div class="reveal">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-6">Opening Hours</p>
+      <ul class="space-y-3 text-champ font-light">
+        <li class="flex justify-between border-b border-gold/15 pb-2"><span>Tue &ndash; Wed</span><span class="text-smoke">6pm &ndash; 12am</span></li>
+        <li class="flex justify-between border-b border-gold/15 pb-2"><span>Thu</span><span class="text-smoke">6pm &ndash; 1am</span></li>
+        <li class="flex justify-between border-b border-gold/15 pb-2"><span>Fri &ndash; Sat</span><span class="text-smoke">5pm &ndash; 2am</span></li>
+        <li class="flex justify-between border-b border-gold/15 pb-2"><span>Sun</span><span class="text-smoke">5pm &ndash; 11pm</span></li>
+        <li class="flex justify-between"><span>Mon</span><span class="text-smoke">Closed</span></li>
+      </ul>
+    </div>
+    <div class="reveal">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-6">Find Us</p>
+      <p class="font-serif text-2xl text-champ leading-relaxed">14 Lantern Mews<br/>Behind the unmarked brass door<br/>Old Town Quarter</p>
+      <p class="text-smoke font-light mt-5">Ring twice. We&rsquo;ll let you in.</p>
+      <a href="#" class="inline-block mt-6 text-amber text-[13px] tracking-[0.2em] uppercase border-b border-gold/40 pb-1 hover:border-gold transition">Open in Maps &rarr;</a>
+    </div>
+    <div class="reveal">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-6">House Notes</p>
+      <ul class="space-y-4 text-smoke font-light">
+        <li><span class="text-champ">Dress:</span> Smart. No effort goes unnoticed.</li>
+        <li><span class="text-champ">Age:</span> 21 &amp; over, always.</li>
+        <li><span class="text-champ">Walk-ins:</span> Welcome at the bar, table reservations advised.</li>
+        <li><span class="text-champ">Phones:</span> On silent. The room thanks you.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="relative py-28 lg:py-36 bg-coal overflow-hidden">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-10 reveal">Whispers</p>
+    <div class="grid md:grid-cols-3 gap-10">
+      <figure class="reveal">
+        <p class="font-serif italic text-2xl text-champ leading-relaxed">&ldquo;The closest a drink has come to a love affair.&rdquo;</p>
+        <figcaption class="text-smoke text-xs tracking-[0.25em] uppercase mt-5">&mdash; Atlas Review</figcaption>
+      </figure>
+      <figure class="reveal">
+        <p class="font-serif italic text-2xl text-champ leading-relaxed">&ldquo;Time forgets to pass behind that brass door.&rdquo;</p>
+        <figcaption class="text-smoke text-xs tracking-[0.25em] uppercase mt-5">&mdash; The Nightly</figcaption>
+      </figure>
+      <figure class="reveal">
+        <p class="font-serif italic text-2xl text-champ leading-relaxed">&ldquo;Velvet, candlelight, and the best Sour in the city.&rdquo;</p>
+        <figcaption class="text-smoke text-xs tracking-[0.25em] uppercase mt-5">&mdash; Lumière Guide</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- RESERVATIONS -->
+<section id="reserve" class="relative py-28 lg:py-40 bg-ink">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-12">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-5 reveal">Reservations</p>
+      <h2 class="font-serif text-champ text-[clamp(2rem,6vw,4.5rem)] leading-none reveal">Hold a table</h2>
+      <p class="text-smoke font-light mt-5 reveal">Tell us when. We&rsquo;ll have the candle lit.</p>
+    </div>
+    <form class="grid sm:grid-cols-2 gap-5 reveal" onsubmit="event.preventDefault(); this.reset(); document.getElementById('resOk').classList.remove('hidden');">
+      <input required type="text" placeholder="Name" class="bg-char border border-gold/25 px-5 py-4 text-champ placeholder:text-smoke/60 focus:border-gold outline-none transition" />
+      <input required type="email" placeholder="Email" class="bg-char border border-gold/25 px-5 py-4 text-champ placeholder:text-smoke/60 focus:border-gold outline-none transition" />
+      <input required type="date" class="bg-char border border-gold/25 px-5 py-4 text-champ placeholder:text-smoke/60 focus:border-gold outline-none transition [color-scheme:dark]" />
+      <select class="bg-char border border-gold/25 px-5 py-4 text-champ focus:border-gold outline-none transition">
+        <option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option>
+      </select>
+      <textarea rows="3" placeholder="Occasion or requests (optional)" class="sm:col-span-2 bg-char border border-gold/25 px-5 py-4 text-champ placeholder:text-smoke/60 focus:border-gold outline-none transition"></textarea>
+      <button data-magnetic class="reserve-btn sm:col-span-2 relative bg-gold text-ink text-[12px] tracking-[0.25em] uppercase py-4 rounded-full overflow-hidden font-medium">
+        <span class="relative z-10">Request Reservation</span>
+        <span class="absolute inset-0 bg-amber scale-x-0 origin-left transition-transform duration-500 reserve-fill"></span>
+      </button>
+      <p id="resOk" class="hidden sm:col-span-2 text-center text-amber tracking-widest text-sm">Thank you — we&rsquo;ll confirm by email shortly.</p>
+    </form>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="relative py-28 lg:py-36 bg-coal">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="text-[12px] tracking-[0.4em] uppercase text-gold mb-5 reveal">Before You Arrive</p>
+      <h2 class="font-serif text-champ text-[clamp(2rem,5vw,3.5rem)] leading-none reveal">Questions</h2>
+    </div>
+    <div class="divide-y divide-gold/15 border-y border-gold/15">
+      <div class="faq-item reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-champ">Do I need a reservation?</span>
+          <span class="faq-plus text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke font-light pb-6">Walk-ins are always welcome at the bar. For a booth or table, especially Thursday through Saturday, we strongly recommend reserving ahead.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-champ">Is there a dress code?</span>
+          <span class="faq-plus text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke font-light pb-6">Smart attire. We don&rsquo;t enforce labels — we simply ask that you dress for the evening you hope to have.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-champ">Can you make non-alcoholic serves?</span>
+          <span class="faq-plus text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke font-light pb-6">Absolutely. Our zero-proof list is composed with the same care — house shrubs, distilled botanicals, and clarified juices.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-champ">Do you cater to allergies?</span>
+          <span class="faq-plus text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke font-light pb-6">Yes — please note any allergies in your reservation or tell your bartender. We&rsquo;ll adapt any serve accordingly.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="relative py-32 lg:py-44 bg-ink overflow-hidden">
+  <div class="absolute inset-0 opacity-30">
+    <img src="https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'" alt="" class="w-full h-full object-cover" />
+    <div class="absolute inset-0 bg-ink/80"></div>
+  </div>
+  <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+    <h2 class="font-serif text-champ text-[clamp(2.5rem,8vw,6rem)] leading-[0.95] reveal">
+      The night is<br/><span class="italic shimmer">young enough.</span>
+    </h2>
+    <p class="text-smoke font-light text-lg mt-7 reveal">Reserve your table at Velluto and let the slow pour begin.</p>
+    <a href="#reserve" data-magnetic class="reserve-btn relative inline-flex items-center gap-3 mt-10 bg-gold text-ink text-[12px] tracking-[0.25em] uppercase px-10 py-5 rounded-full overflow-hidden font-medium reveal">
+      <span class="relative z-10">Reserve a Table</span>
+      <span class="relative z-10">&rarr;</span>
+      <span class="absolute inset-0 bg-amber scale-x-0 origin-left transition-transform duration-500 reserve-fill"></span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="bg-coal border-t border-gold/20 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid md:grid-cols-4 gap-10">
+    <div>
+      <p class="font-serif text-2xl tracking-[0.25em] text-champ mb-4">VELLUTO</p>
+      <p class="text-smoke font-light text-sm max-w-xs">Craft cocktail bar &amp; lounge. The art of the slow pour, nightly.</p>
+    </div>
+    <div>
+      <p class="text-[11px] tracking-[0.3em] uppercase text-gold mb-4">Explore</p>
+      <ul class="space-y-2 text-smoke text-sm">
+        <li><a href="#menu" class="hover:text-amber transition">Cocktails</a></li>
+        <li><a href="#space" class="hover:text-amber transition">The Room</a></li>
+        <li><a href="#events" class="hover:text-amber transition">Private Hire</a></li>
+        <li><a href="#reserve" class="hover:text-amber transition">Reservations</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-[11px] tracking-[0.3em] uppercase text-gold mb-4">Find Us</p>
+      <p class="text-smoke text-sm font-light leading-relaxed">14 Lantern Mews<br/>Old Town Quarter<br/>hello@velluto.bar</p>
+    </div>
+    <div>
+      <p class="text-[11px] tracking-[0.3em] uppercase text-gold mb-4">Follow</p>
+      <ul class="space-y-2 text-smoke text-sm">
+        <li><a href="#" class="hover:text-amber transition">Instagram</a></li>
+        <li><a href="#" class="hover:text-amber transition">Threads</a></li>
+        <li><a href="#" class="hover:text-amber transition">Newsletter</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="hair my-10 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col sm:flex-row justify-between items-center gap-3 text-smoke/60 text-xs tracking-widest uppercase">
+    <span>&copy; <span id="yr"></span> Velluto Lounge</span>
+    <span>Drink curiously. Drink kindly.</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ---- Custom cursor ---- */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!reduce && window.matchMedia('(hover: hover)').matches) {
+    let rx = 0, ry = 0, mx = 0, my = 0;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    const ringLoop = () => {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(ringLoop);
+    };
+    ringLoop();
+    document.querySelectorAll('a, button, [data-magnetic], .menu-card').forEach((el) => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  } else { dot.style.display = 'none'; ring.style.display = 'none'; }
+
+  /* ---- Nav scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-ink/85','backdrop-blur-md','shadow-lg','shadow-black/40');
+    else nav.classList.remove('bg-ink/85','backdrop-blur-md','shadow-lg','shadow-black/40');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- Reserve fill buttons ---- */
+  document.querySelectorAll('.reserve-btn').forEach((btn) => {
+    const fill = btn.querySelector('.reserve-fill');
+    if (!fill) return;
+    btn.addEventListener('mouseenter', () => { fill.style.transform = 'scaleX(1)'; });
+    btn.addEventListener('mouseleave', () => { fill.style.transform = 'scaleX(0)'; });
+  });
+
+  /* ---- Magnetic buttons ---- */
+  if (!reduce && window.matchMedia('(hover: hover)').matches) {
+    document.querySelectorAll('[data-magnetic]').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; el.style.transition = 'transform .4s'; });
+      el.addEventListener('mouseenter', () => { el.style.transition = 'transform .1s'; });
+    });
+  }
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-q').forEach((q) => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---- GSAP ---- */
+  if (typeof gsap !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // Hero headline mask reveal
+      gsap.to('.line-inner', {
+        y: '0%', duration: 1.3, ease: 'power4.out', stagger: 0.12, delay: 0.25,
+      });
+      // Hero eyebrow + supporting reveals (intro group)
+      gsap.utils.toArray('section:first-of-type .reveal').forEach((el, i) => {
+        gsap.to(el, { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.6 + i * 0.12 });
+      });
+
+      // Hero image subtle zoom-out parallax
+      gsap.fromTo('.hero-img', { scale: 1.15, yPercent: -4 }, {
+        scale: 1, yPercent: 4, ease: 'none',
+        scrollTrigger: { trigger: '.hero-img-wrap', start: 'top top', end: 'bottom top', scrub: true },
+      });
+
+      // Generic reveals
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        if (el.closest('section:first-of-type')) return; // hero handled above
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+
+      // Parallax drink imagery
+      gsap.utils.toArray('.parallax-img').forEach((img) => {
+        gsap.fromTo(img, { yPercent: -8 }, {
+          yPercent: 8, ease: 'none',
+          scrollTrigger: { trigger: img.closest('.parallax-frame'), start: 'top bottom', end: 'bottom top', scrub: true },
+        });
+      });
+
+      // Count-ups
+      gsap.utils.toArray('.count').forEach((el) => {
+        const target = +el.dataset.target;
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => {
+            gsap.to({ v: 0 }, {
+              v: target, duration: 1.8, ease: 'power2.out',
+              onUpdate: function () { el.textContent = Math.round(this.targets()[0].v); },
+            });
+          },
+        });
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+      gsap.set('.line-inner', { y: '0%' });
+      document.querySelectorAll('.count').forEach((el) => { el.textContent = el.dataset.target; });
+    }
+  }
+})();
+</script>
+</body>
+</html>

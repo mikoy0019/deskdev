@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VÉRO — Considered Eyewear</title>
+<meta name="description" content="VÉRO is a direct-to-consumer eyewear house. Precision acetate frames, ultra-thin lenses, and a home try-on program. Editorial, minimal, made to be worn." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#16140F',
+          paper:  '#F4F1EA',
+          mist:   '#E7E2D6',
+          stone:  '#9C958A',
+          accent: '#C8633F', // burnt amber
+          accentDeep: '#A24E2F',
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans:  ['Inter', 'sans-serif'],
+        },
+        letterSpacing: {
+          tightest: '-0.04em',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #F4F1EA;
+    color: #16140F;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
+  @media (hover: none), (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none !important; }
+  }
+
+  ::selection { background: #C8633F; color: #F4F1EA; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    pointer-events: none; border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #F4F1EA; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1px solid #F4F1EA;
+    transition: width .25s ease, height .25s ease, background .25s ease, opacity .25s ease;
+  }
+  .cursor-ring.is-active { width: 64px; height: 64px; background: rgba(244,241,234,.12); }
+
+  /* Clip reveal wrapper */
+  .reveal-clip { clip-path: inset(0 0 100% 0); }
+
+  .char { display: inline-block; will-change: transform; }
+  .line-mask { overflow: hidden; display: block; }
+
+  /* Marquee */
+  .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+
+  /* Collection rail */
+  .rail { scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+
+  /* Tilt frame */
+  .tilt-3d { transform-style: preserve-3d; will-change: transform; }
+  .tilt-inner { transform: translateZ(40px); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.22,1,.36,1); }
+  .faq-item.open .faq-body { max-height: 280px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  .grain {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .35;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  }
+
+  .link-underline { position: relative; }
+  .link-underline::after {
+    content: ''; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: right;
+    transition: transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .link-underline:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal-clip { clip-path: none !important; }
+    .marquee-track { animation: none !important; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<div class="grain"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <div class="mx-auto max-w-[1400px] px-6 md:px-10 flex items-center justify-between h-20">
+    <nav class="hidden md:flex items-center gap-8 text-[13px] tracking-wide text-ink/80 flex-1">
+      <a href="#bestsellers" class="link-underline">Shop</a>
+      <a href="#collections" class="link-underline">Collections</a>
+      <a href="#tryon" class="link-underline">Try-On</a>
+      <a href="#about" class="link-underline">About</a>
+    </nav>
+
+    <a href="#top" class="font-serif text-2xl md:text-[26px] tracking-tightest font-500 select-none flex-1 text-center">VÉRO</a>
+
+    <div class="flex items-center gap-5 flex-1 justify-end text-[13px] tracking-wide">
+      <a href="#" class="hidden sm:inline link-underline">Account</a>
+      <button class="relative flex items-center gap-2 group" aria-label="Cart">
+        <span class="link-underline">Cart</span>
+        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-accent text-paper text-[10px] font-medium">2</span>
+      </button>
+    </div>
+  </div>
+  <div class="h-px w-full bg-ink/10"></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-end pt-28 pb-16 md:pb-24 overflow-hidden">
+  <div class="mx-auto max-w-[1400px] px-6 md:px-10 w-full grid md:grid-cols-12 gap-8 items-end">
+
+    <!-- Left text -->
+    <div class="md:col-span-5 relative z-10">
+      <p class="text-[12px] tracking-[0.25em] uppercase text-stone mb-6 reveal-fade">Eyewear, considered</p>
+      <h1 class="font-serif font-light text-[15vw] md:text-[7.5vw] leading-[0.92] tracking-tightest">
+        <span class="line-mask"><span class="hero-line block">See</span></span>
+        <span class="line-mask"><span class="hero-line block">clearly,<span class="text-accent italic">*</span></span></span>
+        <span class="line-mask"><span class="hero-line block">live</span></span>
+        <span class="line-mask"><span class="hero-line block">sharply.</span></span>
+      </h1>
+      <p class="mt-8 max-w-sm text-ink/65 text-[15px] leading-relaxed reveal-fade">
+        Italian acetate, ultra-thin lenses, and frames cut for real faces. Designed in studio, shipped direct — no markup, no middle.
+      </p>
+      <div class="mt-10 flex items-center gap-6 reveal-fade">
+        <a href="#bestsellers" id="shopCta" data-mag class="relative inline-flex items-center justify-center px-9 py-4 rounded-full bg-ink text-paper text-[13px] tracking-wide overflow-hidden group">
+          <span data-mag-inner class="relative z-10 flex items-center gap-2">Shop the collection
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.3"/></svg>
+          </span>
+        </a>
+        <a href="#tryon" class="text-[13px] tracking-wide link-underline">Try at home</a>
+      </div>
+    </div>
+
+    <!-- Right product -->
+    <div class="md:col-span-7 relative" data-parallax-wrap>
+      <div class="reveal-clip relative aspect-[4/5] md:aspect-[5/5] rounded-[2px] overflow-hidden bg-gradient-to-br from-mist to-stone/40">
+        <img data-parallax src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=1600&q=80"
+             alt="Model wearing VÉRO eyewear" class="w-full h-[112%] object-cover -mt-[6%]"
+             onerror="this.style.display='none'">
+      </div>
+      <div class="absolute -bottom-5 left-4 md:-left-8 bg-paper/95 backdrop-blur px-5 py-4 rounded-[2px] shadow-sm border border-ink/5">
+        <p class="font-serif text-lg leading-none">The Halden</p>
+        <p class="text-[12px] text-stone mt-1">Optical · Amber Tortoise</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="border-y border-ink/10 py-5 bg-ink text-paper marquee-wrap overflow-hidden">
+  <div class="marquee-track items-center text-[13px] tracking-[0.2em] uppercase">
+    <span class="flex items-center">
+      <span class="px-8">Free home try-on</span><span class="text-accent">✦</span>
+      <span class="px-8">Anti-reflective lenses</span><span class="text-accent">✦</span>
+      <span class="px-8">Carbon-neutral shipping</span><span class="text-accent">✦</span>
+      <span class="px-8">Two-year warranty</span><span class="text-accent">✦</span>
+      <span class="px-8">Made from Italian acetate</span><span class="text-accent">✦</span>
+    </span>
+    <span class="flex items-center" aria-hidden="true">
+      <span class="px-8">Free home try-on</span><span class="text-accent">✦</span>
+      <span class="px-8">Anti-reflective lenses</span><span class="text-accent">✦</span>
+      <span class="px-8">Carbon-neutral shipping</span><span class="text-accent">✦</span>
+      <span class="px-8">Two-year warranty</span><span class="text-accent">✦</span>
+      <span class="px-8">Made from Italian acetate</span><span class="text-accent">✦</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ STATS COUNT-UP ============ -->
+<section class="mx-auto max-w-[1400px] px-6 md:px-10 py-20 md:py-28 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6">
+  <div class="stat">
+    <p class="font-serif text-5xl md:text-6xl font-light"><span class="count" data-to="42">0</span><span class="text-accent">k</span></p>
+    <p class="text-[13px] text-stone mt-2 tracking-wide">Faces fitted</p>
+  </div>
+  <div class="stat">
+    <p class="font-serif text-5xl md:text-6xl font-light"><span class="count" data-to="6">0</span></p>
+    <p class="text-[13px] text-stone mt-2 tracking-wide">Day delivery</p>
+  </div>
+  <div class="stat">
+    <p class="font-serif text-5xl md:text-6xl font-light"><span class="count" data-to="98">0</span><span class="text-accent">%</span></p>
+    <p class="text-[13px] text-stone mt-2 tracking-wide">Would re-order</p>
+  </div>
+  <div class="stat">
+    <p class="font-serif text-5xl md:text-6xl font-light"><span class="count" data-to="120">0</span><span class="text-accent">+</span></p>
+    <p class="text-[13px] text-stone mt-2 tracking-wide">Frame styles</p>
+  </div>
+</section>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="bestsellers" class="mx-auto max-w-[1400px] px-6 md:px-10 pb-24">
+  <div class="flex items-end justify-between mb-12 flex-wrap gap-4">
+    <div>
+      <p class="text-[12px] tracking-[0.25em] uppercase text-stone mb-3 reveal-fade">Most wanted</p>
+      <h2 class="font-serif font-light text-5xl md:text-7xl tracking-tightest reveal-fade">Bestsellers</h2>
+    </div>
+    <a href="#" class="text-[13px] tracking-wide link-underline reveal-fade">View all frames →</a>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+    <!-- card -->
+    <article class="product group reveal-fade">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-mist to-stone/30">
+        <img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+             src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1600&q=80" alt="The Halden frame" onerror="this.style.display='none'">
+        <img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 scale-105"
+             src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=1600&q=80" alt="The Halden on model" onerror="this.style.display='none'">
+        <span class="absolute top-4 left-4 text-[11px] tracking-wide bg-paper/90 px-3 py-1 rounded-full">New</span>
+      </div>
+      <div class="flex items-baseline justify-between mt-4">
+        <h3 class="font-serif text-xl">The Halden</h3>
+        <p class="text-[15px]">$145</p>
+      </div>
+      <p class="text-[13px] text-stone mt-1">Amber Tortoise · Optical</p>
+    </article>
+
+    <article class="product group reveal-fade">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-mist to-stone/30">
+        <img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+             src="https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=1600&q=80" alt="The Marlowe frame" onerror="this.style.display='none'">
+        <img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 scale-105"
+             src="https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1600&q=80" alt="The Marlowe on model" onerror="this.style.display='none'">
+      </div>
+      <div class="flex items-baseline justify-between mt-4">
+        <h3 class="font-serif text-xl">The Marlowe</h3>
+        <p class="text-[15px]">$160</p>
+      </div>
+      <p class="text-[13px] text-stone mt-1">Matte Onyx · Sun</p>
+    </article>
+
+    <article class="product group reveal-fade">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-mist to-stone/30">
+        <img class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0"
+             src="https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1600&q=80" alt="The Esme frame" onerror="this.style.display='none'">
+        <img class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 scale-105"
+             src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1600&q=80" alt="The Esme on model" onerror="this.style.display='none'">
+        <span class="absolute top-4 left-4 text-[11px] tracking-wide bg-accent text-paper px-3 py-1 rounded-full">Limited</span>
+      </div>
+      <div class="flex items-baseline justify-between mt-4">
+        <h3 class="font-serif text-xl">The Esme</h3>
+        <p class="text-[15px]">$155</p>
+      </div>
+      <p class="text-[13px] text-stone mt-1">Honey Crystal · Optical</p>
+    </article>
+  </div>
+</section>
+
+<!-- ============ COLLECTIONS RAIL ============ -->
+<section id="collections" class="py-24 bg-ink text-paper overflow-hidden">
+  <div class="mx-auto max-w-[1400px] px-6 md:px-10 flex items-end justify-between mb-12 flex-wrap gap-4">
+    <div>
+      <p class="text-[12px] tracking-[0.25em] uppercase text-paper/50 mb-3">Curated edits</p>
+      <h2 class="font-serif font-light text-5xl md:text-7xl tracking-tightest">Collections</h2>
+    </div>
+    <p class="text-paper/50 text-[13px] tracking-wide max-w-xs">Drag, scroll, or swipe to explore the rail.</p>
+  </div>
+
+  <div class="rail flex gap-6 overflow-x-auto px-6 md:px-10 pb-4 cursor-grab" id="rail">
+    <!-- rail item -->
+    <a href="#" class="group shrink-0 w-[78vw] sm:w-[46vw] lg:w-[30vw]">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-stone/40 to-ink/60">
+        <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             src="https://images.unsplash.com/photo-1574258495973-f010dfbb5371?auto=format&fit=crop&w=1600&q=80" alt="The Studio collection" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <p class="text-[11px] tracking-[0.2em] uppercase text-paper/60">01</p>
+          <h3 class="font-serif text-3xl mt-1">The Studio</h3>
+        </div>
+      </div>
+    </a>
+    <a href="#" class="group shrink-0 w-[78vw] sm:w-[46vw] lg:w-[30vw]">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-stone/40 to-ink/60">
+        <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             src="https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1600&q=80" alt="The Coastline collection" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <p class="text-[11px] tracking-[0.2em] uppercase text-paper/60">02</p>
+          <h3 class="font-serif text-3xl mt-1">The Coastline</h3>
+        </div>
+      </div>
+    </a>
+    <a href="#" class="group shrink-0 w-[78vw] sm:w-[46vw] lg:w-[30vw]">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-stone/40 to-ink/60">
+        <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             src="https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=1600&q=80" alt="The Archive collection" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <p class="text-[11px] tracking-[0.2em] uppercase text-paper/60">03</p>
+          <h3 class="font-serif text-3xl mt-1">The Archive</h3>
+        </div>
+      </div>
+    </a>
+    <a href="#" class="group shrink-0 w-[78vw] sm:w-[46vw] lg:w-[30vw]">
+      <div class="relative aspect-[4/5] overflow-hidden rounded-[2px] bg-gradient-to-br from-stone/40 to-ink/60">
+        <img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+             src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1600&q=80" alt="The Reader collection" onerror="this.style.display='none'">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent"></div>
+        <div class="absolute bottom-6 left-6">
+          <p class="text-[11px] tracking-[0.2em] uppercase text-paper/60">04</p>
+          <h3 class="font-serif text-3xl mt-1">The Reader</h3>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============ VIRTUAL TRY-ON FEATURE ============ -->
+<section id="tryon" class="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+  <div class="relative order-2 md:order-1" style="perspective: 1000px;">
+    <div class="tilt-3d reveal-clip relative aspect-[4/5] rounded-[2px] overflow-hidden bg-gradient-to-br from-mist to-stone/40" data-tilt>
+      <img class="tilt-inner w-full h-full object-cover" src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1600&q=80" alt="Virtual try-on preview" onerror="this.style.display='none'">
+      <div class="tilt-inner absolute bottom-5 left-5 right-5 flex items-center justify-between bg-paper/90 backdrop-blur px-4 py-3 rounded-[2px]">
+        <span class="text-[12px] tracking-wide">Live preview · The Marlowe</span>
+        <span class="w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="order-1 md:order-2">
+    <p class="text-[12px] tracking-[0.25em] uppercase text-stone mb-5 reveal-fade">Virtual try-on</p>
+    <h2 class="font-serif font-light text-5xl md:text-6xl leading-[1.02] tracking-tightest reveal-fade">See every<br>frame on <span class="italic text-accent">you.</span></h2>
+    <p class="mt-7 text-ink/65 leading-relaxed max-w-md reveal-fade">
+      Open your camera and our fit engine maps each frame to your face in real time — measuring bridge width, temple length, and lens height so the size is right before it ships.
+    </p>
+    <ul class="mt-8 space-y-3 text-[15px]">
+      <li class="flex items-center gap-3 reveal-fade"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Real-time face mapping</li>
+      <li class="flex items-center gap-3 reveal-fade"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Pupillary distance auto-measure</li>
+      <li class="flex items-center gap-3 reveal-fade"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Compare up to four frames side by side</li>
+    </ul>
+    <a href="#" data-mag class="mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full border border-ink text-[13px] tracking-wide hover:bg-ink hover:text-paper transition-colors duration-300">
+      <span data-mag-inner>Launch the mirror</span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ LENS / MATERIAL ============ -->
+<section class="bg-mist/60 py-24 md:py-32 border-y border-ink/10">
+  <div class="mx-auto max-w-[1400px] px-6 md:px-10">
+    <div class="max-w-2xl mb-16">
+      <p class="text-[12px] tracking-[0.25em] uppercase text-stone mb-4 reveal-fade">Lens & material</p>
+      <h2 class="font-serif font-light text-5xl md:text-7xl tracking-tightest reveal-fade">Built from<br>better stuff.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-x-10 gap-y-12">
+      <div class="reveal-fade">
+        <span class="font-serif text-3xl text-accent">01</span>
+        <h3 class="font-serif text-2xl mt-4 mb-3">Italian acetate</h3>
+        <p class="text-ink/60 text-[15px] leading-relaxed">Plant-based, hand-polished cotton acetate — warmer to the touch and richer in colour than injected plastic.</p>
+      </div>
+      <div class="reveal-fade">
+        <span class="font-serif text-3xl text-accent">02</span>
+        <h3 class="font-serif text-2xl mt-4 mb-3">Ultra-thin lenses</h3>
+        <p class="text-ink/60 text-[15px] leading-relaxed">High-index 1.67 lenses with anti-reflective, anti-scratch, and full UV coatings included as standard — never an upsell.</p>
+      </div>
+      <div class="reveal-fade">
+        <span class="font-serif text-3xl text-accent">03</span>
+        <h3 class="font-serif text-2xl mt-4 mb-3">Titanium cores</h3>
+        <p class="text-ink/60 text-[15px] leading-relaxed">Spring-flex titanium hinges and a memory wire core keep frames true to shape for years, not months.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOME TRY-ON PROGRAM ============ -->
+<section class="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32 grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+  <div>
+    <p class="text-[12px] tracking-[0.25em] uppercase text-stone mb-5 reveal-fade">Home try-on</p>
+    <h2 class="font-serif font-light text-5xl md:text-6xl tracking-tightest leading-[1.02] reveal-fade">Five frames.<br>Five days.<br>Zero cost.</h2>
+    <p class="mt-7 text-ink/65 leading-relaxed max-w-md reveal-fade">Choose any five styles and we'll ship them to your door — try them in your own light, at your own mirror. Send them back free, then order the ones you love.</p>
+    <div class="mt-10 grid grid-cols-3 gap-4 max-w-md">
+      <div class="reveal-fade"><p class="font-serif text-4xl text-accent">1</p><p class="text-[13px] text-stone mt-1">Pick five</p></div>
+      <div class="reveal-fade"><p class="font-serif text-4xl text-accent">2</p><p class="text-[13px] text-stone mt-1">Try at home</p></div>
+      <div class="reveal-fade"><p class="font-serif text-4xl text-accent">3</p><p class="text-[13px] text-stone mt-1">Keep favorites</p></div>
+    </div>
+    <a href="#" data-mag class="mt-10 inline-flex items-center gap-2 px-8 py-4 rounded-full bg-accent text-paper text-[13px] tracking-wide hover:bg-accentDeep transition-colors duration-300">
+      <span data-mag-inner>Start your try-on box</span>
+    </a>
+  </div>
+  <div class="relative" data-parallax-wrap>
+    <div class="reveal-clip aspect-[4/5] rounded-[2px] overflow-hidden bg-gradient-to-br from-mist to-stone/40">
+      <img data-parallax class="w-full h-[112%] object-cover -mt-[6%]" src="https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1600&q=80" alt="Home try-on box" onerror="this.style.display='none'">
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="bg-ink text-paper py-28 md:py-36">
+  <div class="mx-auto max-w-[1100px] px-6 md:px-10 text-center">
+    <p class="text-[12px] tracking-[0.25em] uppercase text-paper/50 mb-8 reveal-fade">Our story</p>
+    <p class="font-serif font-light text-3xl md:text-[40px] leading-[1.3] tracking-tight">
+      <span class="about-reveal">We started VÉRO because eyewear had become a luxury tax — </span>
+      <span class="about-reveal text-accent">the same frames, marked up tenfold</span>
+      <span class="about-reveal"> between the factory and the face. So we cut the line. We design in our own studio, cast our own acetate, and ship straight to you. The craft stays. The markup goes.</span>
+    </p>
+    <div class="mt-12 flex items-center justify-center gap-3 text-[13px] tracking-wide text-paper/60">
+      <span>Mara Vélez</span><span class="text-accent">·</span><span>Founder & Creative Director</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="mx-auto max-w-[1400px] px-6 md:px-10 py-24 md:py-32">
+  <div class="flex items-end justify-between mb-14 flex-wrap gap-4">
+    <h2 class="font-serif font-light text-5xl md:text-7xl tracking-tightest reveal-fade">Worn & loved</h2>
+    <p class="text-[13px] text-stone tracking-wide reveal-fade">4.9 / 5 · 8,200+ reviews</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <figure class="border border-ink/10 rounded-[2px] p-8 reveal-fade">
+      <div class="text-accent mb-5 text-sm tracking-[0.3em]">★★★★★</div>
+      <blockquote class="font-serif text-xl leading-snug">"The Halden fits like it was cut for my face. I've stopped wearing anything else."</blockquote>
+      <figcaption class="mt-6 text-[13px] text-stone">Lena R. · Verified buyer</figcaption>
+    </figure>
+    <figure class="border border-ink/10 rounded-[2px] p-8 reveal-fade">
+      <div class="text-accent mb-5 text-sm tracking-[0.3em]">★★★★★</div>
+      <blockquote class="font-serif text-xl leading-snug">"Home try-on sold me. Five frames, no pressure, kept three. The lenses are crystal."</blockquote>
+      <figcaption class="mt-6 text-[13px] text-stone">Daniel O. · Verified buyer</figcaption>
+    </figure>
+    <figure class="border border-ink/10 rounded-[2px] p-8 reveal-fade">
+      <div class="text-accent mb-5 text-sm tracking-[0.3em]">★★★★★</div>
+      <blockquote class="font-serif text-xl leading-snug">"Half the price of my old optician, twice the quality. The acetate feels expensive."</blockquote>
+      <figcaption class="mt-6 text-[13px] text-stone">Priya N. · Verified buyer</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="bg-mist/60 border-y border-ink/10 py-24 md:py-32">
+  <div class="mx-auto max-w-[900px] px-6 md:px-10">
+    <h2 class="font-serif font-light text-5xl md:text-7xl tracking-tightest mb-14 reveal-fade">Questions</h2>
+    <div class="divide-y divide-ink/15 border-t border-ink/15">
+      <div class="faq-item reveal-fade">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-serif text-xl md:text-2xl pr-6">How does the home try-on box work?</span>
+          <span class="faq-plus text-2xl text-accent transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-ink/65 leading-relaxed max-w-2xl">Pick any five frames, we ship them free with a prepaid return label. Keep them for five days, then send back whatever you don't want. You only pay for the frames you keep — with your prescription added at checkout.</p></div>
+      </div>
+      <div class="faq-item reveal-fade">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-serif text-xl md:text-2xl pr-6">Can I use my own prescription?</span>
+          <span class="faq-plus text-2xl text-accent transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-ink/65 leading-relaxed max-w-2xl">Absolutely. Upload a photo of your prescription or enter it manually. We cut single-vision, progressive, and blue-light lenses in-house, all with anti-reflective coating included.</p></div>
+      </div>
+      <div class="faq-item reveal-fade">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-serif text-xl md:text-2xl pr-6">What's your return policy?</span>
+          <span class="faq-plus text-2xl text-accent transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-ink/65 leading-relaxed max-w-2xl">Thirty-day, no-questions returns on every order, plus a two-year warranty against manufacturing defects. If the fit isn't right, we'll remake or refund.</p></div>
+      </div>
+      <div class="faq-item reveal-fade">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-serif text-xl md:text-2xl pr-6">Do you ship internationally?</span>
+          <span class="faq-plus text-2xl text-accent transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-ink/65 leading-relaxed max-w-2xl">We ship to 40+ countries with carbon-neutral delivery. Try-on boxes are currently available in the US, UK, and EU, with more regions added each season.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 md:py-44 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-mist to-stone/40"></div>
+  <img class="absolute inset-0 w-full h-full object-cover opacity-40" src="https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=1600&q=80" alt="" onerror="this.style.display='none'">
+  <div class="relative mx-auto max-w-[1100px] px-6 md:px-10 text-center">
+    <h2 class="font-serif font-light text-[13vw] md:text-[8vw] leading-[0.95] tracking-tightest reveal-fade">Find your<br>frame.</h2>
+    <p class="mt-8 text-ink/70 max-w-md mx-auto reveal-fade">Start with a free home try-on. Five frames, five days, on us.</p>
+    <a href="#bestsellers" data-mag class="mt-12 inline-flex items-center gap-3 px-10 py-5 rounded-full bg-ink text-paper text-[14px] tracking-wide">
+      <span data-mag-inner class="flex items-center gap-2">Shop VÉRO
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M8 2l5 5-5 5" stroke="currentColor" stroke-width="1.3"/></svg>
+      </span>
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-paper pt-20 pb-10">
+  <div class="mx-auto max-w-[1400px] px-6 md:px-10">
+    <div class="grid md:grid-cols-12 gap-10 pb-16 border-b border-paper/15">
+      <div class="md:col-span-5">
+        <p class="font-serif text-4xl tracking-tightest mb-5">VÉRO</p>
+        <p class="text-paper/60 text-[15px] max-w-sm leading-relaxed">Considered eyewear, designed in studio and shipped direct. Better frames, fairer prices, free home try-on.</p>
+        <form class="mt-8 flex max-w-sm border-b border-paper/30 pb-2" onsubmit="return false">
+          <input type="email" placeholder="Email for early drops" class="bg-transparent flex-1 text-[14px] placeholder-paper/40 outline-none" />
+          <button class="text-[13px] tracking-wide link-underline">Join →</button>
+        </form>
+      </div>
+      <div class="md:col-span-2 md:col-start-7">
+        <p class="text-[12px] tracking-[0.2em] uppercase text-paper/40 mb-5">Shop</p>
+        <ul class="space-y-3 text-[14px] text-paper/70">
+          <li><a href="#" class="link-underline">Optical</a></li>
+          <li><a href="#" class="link-underline">Sunglasses</a></li>
+          <li><a href="#" class="link-underline">Readers</a></li>
+          <li><a href="#" class="link-underline">Accessories</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[12px] tracking-[0.2em] uppercase text-paper/40 mb-5">Company</p>
+        <ul class="space-y-3 text-[14px] text-paper/70">
+          <li><a href="#about" class="link-underline">About</a></li>
+          <li><a href="#" class="link-underline">Stores</a></li>
+          <li><a href="#" class="link-underline">Careers</a></li>
+          <li><a href="#" class="link-underline">Journal</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[12px] tracking-[0.2em] uppercase text-paper/40 mb-5">Support</p>
+        <ul class="space-y-3 text-[14px] text-paper/70">
+          <li><a href="#" class="link-underline">Try-On</a></li>
+          <li><a href="#" class="link-underline">Shipping</a></li>
+          <li><a href="#" class="link-underline">Returns</a></li>
+          <li><a href="#" class="link-underline">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-[12px] text-paper/40 tracking-wide">
+      <p>© 2026 VÉRO Eyewear. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="link-underline">Privacy</a>
+        <a href="#" class="link-underline">Terms</a>
+        <a href="#" class="link-underline">Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  if (fine && !reduce) {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`; });
+    (function loop(){ rx += (mx-rx)*0.18; ry += (my-ry)*0.18; ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
+    document.querySelectorAll('a, button, [data-mag], .product').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('is-active'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('is-active'));
+    });
+  }
+
+  if (reduce) {
+    document.querySelectorAll('.reveal-fade, .reveal-clip, .hero-line, .about-reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; el.style.clipPath = 'none'; });
+    return;
+  }
+
+  if (typeof gsap === 'undefined') { document.querySelectorAll('.reveal-fade, .hero-line, .about-reveal').forEach(el=>el.style.opacity=1); return; }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Nav background on scroll ---------- */
+  ScrollTrigger.create({
+    start: 'top -60', end: 99999,
+    onUpdate: self => {
+      const nav = document.getElementById('nav');
+      if (self.scroll() > 60) nav.classList.add('bg-paper/85','backdrop-blur'); else nav.classList.remove('bg-paper/85','backdrop-blur');
+    }
+  });
+
+  /* ---------- Hero headline lines ---------- */
+  gsap.set('.hero-line', { yPercent: 110 });
+  gsap.to('.hero-line', { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.08, delay: 0.15 });
+
+  /* ---------- Generic fade reveals ---------- */
+  gsap.utils.toArray('.reveal-fade').forEach(el => {
+    gsap.fromTo(el, { y: 34, opacity: 0 }, {
+      y: 0, opacity: 1, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  /* ---------- Clip reveals ---------- */
+  gsap.utils.toArray('.reveal-clip').forEach(el => {
+    gsap.fromTo(el, { clipPath: 'inset(0 0 100% 0)' }, {
+      clipPath: 'inset(0 0 0% 0)', duration: 1.3, ease: 'power4.out',
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    });
+  });
+
+  /* ---------- About word reveal ---------- */
+  gsap.utils.toArray('.about-reveal').forEach(el => {
+    gsap.fromTo(el, { opacity: 0.18 }, {
+      opacity: 1, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top 85%', end: 'top 45%', scrub: true }
+    });
+  });
+
+  /* ---------- Container parallax on product shots ---------- */
+  gsap.utils.toArray('[data-parallax]').forEach(img => {
+    gsap.to(img, {
+      yPercent: -10, ease: 'none',
+      scrollTrigger: { trigger: img.closest('[data-parallax-wrap]') || img, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  /* ---------- Count-ups ---------- */
+  gsap.utils.toArray('.count').forEach(el => {
+    const to = +el.dataset.to;
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => {
+        const obj = { v: 0 };
+        gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out', onUpdate: () => { el.textContent = Math.round(obj.v); } });
+      }
+    });
+  });
+
+  /* ---------- Magnetic CTAs ---------- */
+  if (fine) {
+    document.querySelectorAll('[data-mag]').forEach(btn => {
+      const inner = btn.querySelector('[data-mag-inner]') || btn;
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        gsap.to(btn, { x: x*0.35, y: y*0.4, duration: 0.5, ease: 'power3.out' });
+        gsap.to(inner, { x: x*0.18, y: y*0.2, duration: 0.5, ease: 'power3.out' });
+      });
+      btn.addEventListener('mouseleave', () => {
+        gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+        gsap.to(inner, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+      });
+    });
+  }
+
+  /* ---------- Tilt-3D frame ---------- */
+  if (fine) {
+    document.querySelectorAll('[data-tilt]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        gsap.to(el, { rotateY: px * 12, rotateX: -py * 12, duration: 0.6, ease: 'power3.out', transformPerspective: 1000 });
+      });
+      el.addEventListener('mouseleave', () => gsap.to(el, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power3.out' }));
+    });
+  }
+
+  /* ---------- Collection rail drag ---------- */
+  const rail = document.getElementById('rail');
+  if (rail) {
+    let down = false, startX, scrollL;
+    rail.addEventListener('mousedown', e => { down = true; rail.classList.add('cursor-grabbing'); startX = e.pageX; scrollL = rail.scrollLeft; });
+    window.addEventListener('mouseup', () => { down = false; rail.classList.remove('cursor-grabbing'); });
+    rail.addEventListener('mousemove', e => { if (!down) return; e.preventDefault(); rail.scrollLeft = scrollL - (e.pageX - startX) * 1.4; });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-trigger').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

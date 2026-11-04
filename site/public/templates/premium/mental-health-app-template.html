@@ -1,0 +1,774 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Serenova â€” Meditation & Therapy for a Quieter Mind</title>
+<meta name="description" content="Serenova is a calm meditation and therapy app. Breathe, sleep, focus, and heal with guided sessions designed for a quieter mind." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          lavender: { 50:'#f6f4ff', 100:'#ece8ff', 200:'#dad1ff', 300:'#bfaefb', 400:'#a487f3', 500:'#8a66e8', 600:'#7350cf' },
+          sky: { 50:'#eef7ff', 100:'#dcefff', 200:'#bfe1ff', 300:'#94ccff', 400:'#67b2fb', 500:'#4196ec' },
+          sage: { 50:'#f1f8f3', 100:'#e0f0e5', 200:'#c2e0cd', 300:'#9bcaac', 400:'#72b08a', 500:'#549670' },
+          mist: '#faf9ff',
+          ink: '#2b2540',
+          quiet: '#6c6485',
+        },
+        boxShadow: {
+          soft: '0 20px 60px -25px rgba(115,80,207,0.35)',
+          glow: '0 0 80px -10px rgba(138,102,232,0.45)',
+          phone: '0 40px 90px -30px rgba(43,37,64,0.45)',
+        },
+        borderRadius: { '4xl': '2.2rem', '5xl': '2.8rem' },
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: radial-gradient(1200px 700px at 80% -10%, #ece8ff 0%, transparent 55%),
+                radial-gradient(1000px 600px at -10% 20%, #dcefff 0%, transparent 50%),
+                radial-gradient(900px 600px at 50% 120%, #e0f0e5 0%, transparent 55%),
+                #faf9ff;
+    color: #2b2540;
+  }
+  .font-display { font-family: 'Fraunces', serif; letter-spacing: -0.01em; }
+  .text-balance { text-wrap: balance; }
+
+  /* aurora soft blobs */
+  .blob { position: absolute; border-radius: 9999px; filter: blur(60px); opacity: 0.55; pointer-events: none; }
+
+  /* breathing circle */
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.82); opacity: 0.55; }
+    50%      { transform: scale(1.08); opacity: 1; }
+  }
+  @keyframes breatheGlow {
+    0%, 100% { transform: scale(0.7); opacity: 0.25; }
+    50%      { transform: scale(1.15); opacity: 0.55; }
+  }
+  .breathe-core { animation: breathe 8s ease-in-out infinite; }
+  .breathe-glow { animation: breatheGlow 8s ease-in-out infinite; }
+  .breathe-ring { animation: breathe 8s ease-in-out infinite; animation-delay: -1s; }
+
+  @keyframes floaty { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-14px) } }
+  .floaty { animation: floaty 6s ease-in-out infinite; }
+  .floaty-slow { animation: floaty 9s ease-in-out infinite; }
+
+  @keyframes drift { 0%{ transform: translate(0,0) } 50%{ transform: translate(20px,-18px) } 100%{ transform: translate(0,0) } }
+  .drift { animation: drift 16s ease-in-out infinite; }
+
+  .glass { background: rgba(255,255,255,0.6); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.7); }
+  .glass-dark { background: rgba(43,37,64,0.55); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); }
+
+  .reveal { opacity: 0; transform: translateY(30px); }
+  .word { display: inline-block; opacity: 0; transform: translateY(0.5em); }
+
+  .magnetic { will-change: transform; }
+  .nav-link { position: relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:#8a66e8; transition: width .35s ease; }
+  .nav-link:hover::after { width:100%; }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.4,0,.2,1); }
+
+  ::selection { background:#dad1ff; color:#2b2540; }
+
+  /* gentle gradient wave divider */
+  .wave-fill { fill: #faf9ff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .word { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased selection:bg-lavender-200">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="mt-4 glass rounded-full px-5 sm:px-7 py-3 flex items-center justify-between shadow-soft">
+      <a href="#home" class="flex items-center gap-2.5 group">
+        <span class="relative grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-lavender-400 to-sky-400 shadow-glow">
+          <span class="w-3.5 h-3.5 rounded-full bg-white/90 breathe-core"></span>
+        </span>
+        <span class="font-display text-xl text-ink">Serenova</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-8 text-sm text-quiet">
+        <a href="#benefits" class="nav-link hover:text-ink transition">Benefits</a>
+        <a href="#sessions" class="nav-link hover:text-ink transition">Sessions</a>
+        <a href="#how" class="nav-link hover:text-ink transition">How it works</a>
+        <a href="#pricing" class="nav-link hover:text-ink transition">Pricing</a>
+        <a href="#faq" class="nav-link hover:text-ink transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline text-sm text-quiet hover:text-ink transition">Sign in</a>
+        <a href="#cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-ink text-white text-sm px-5 py-2.5 shadow-soft hover:shadow-glow transition-all">
+          Start free
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="home" class="relative pt-36 sm:pt-44 pb-24 overflow-hidden">
+  <div class="blob drift w-[520px] h-[520px] bg-lavender-200 -top-24 -left-24"></div>
+  <div class="blob drift w-[480px] h-[480px] bg-sky-200 top-10 -right-24" style="animation-delay:-6s"></div>
+  <div class="blob drift w-[420px] h-[420px] bg-sage-200 bottom-0 left-1/3" style="animation-delay:-10s"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <!-- copy -->
+    <div>
+      <div class="reveal inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs text-quiet mb-7">
+        <span class="w-2 h-2 rounded-full bg-sage-400 animate-pulse"></span>
+        Now with AI therapy companion Â· 14-day free trial
+      </div>
+
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-ink mb-7" id="hero-headline">
+        <span class="block">Find your way</span>
+        <span class="block">back to a</span>
+        <span class="block italic text-transparent bg-clip-text bg-gradient-to-r from-lavender-500 via-sky-500 to-sage-400">quieter mind.</span>
+      </h1>
+
+      <p class="reveal text-lg text-quiet max-w-md mb-9 leading-relaxed">
+        Serenova blends guided meditation, sleep stories, and on-demand therapy into one calm space â€” so you can breathe slower and feel lighter, a few minutes at a time.
+      </p>
+
+      <div class="reveal flex flex-col sm:flex-row gap-4 mb-10">
+        <a href="#cta" class="magnetic group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-lavender-500 to-sky-500 text-white px-7 py-4 font-medium shadow-soft hover:shadow-glow transition-all">
+          Begin breathing
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#how" class="inline-flex items-center justify-center gap-2 rounded-full glass px-7 py-4 font-medium text-ink hover:bg-white transition">
+          <svg class="w-4 h-4 text-lavender-500" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Watch the calm
+        </a>
+      </div>
+
+      <div class="reveal flex items-center gap-8">
+        <div>
+          <div class="font-display text-3xl text-ink"><span class="count" data-target="2400000">0</span><span class="text-lavender-500">+</span></div>
+          <div class="text-xs text-quiet mt-1">Minutes meditated today</div>
+        </div>
+        <div class="w-px h-10 bg-lavender-200"></div>
+        <div>
+          <div class="font-display text-3xl text-ink"><span class="count" data-target="180000">0</span><span class="text-lavender-500">+</span></div>
+          <div class="text-xs text-quiet mt-1">Calmer members</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- breathing + phone -->
+    <div class="relative flex justify-center lg:justify-end">
+      <!-- breathing circle behind phone -->
+      <div class="absolute inset-0 grid place-items-center pointer-events-none">
+        <div class="breathe-glow w-[440px] h-[440px] rounded-full bg-gradient-to-br from-lavender-300 via-sky-300 to-sage-300 opacity-40"></div>
+      </div>
+      <div class="absolute inset-0 grid place-items-center pointer-events-none">
+        <div class="breathe-ring w-[340px] h-[340px] rounded-full border border-lavender-300/60"></div>
+      </div>
+
+      <!-- phone mockup -->
+      <div class="floaty relative w-[280px] sm:w-[310px] rounded-[2.8rem] bg-ink p-3 shadow-phone z-10">
+        <div class="rounded-[2.3rem] overflow-hidden bg-gradient-to-b from-lavender-50 via-mist to-sky-50 h-[600px] relative">
+          <!-- notch -->
+          <div class="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-6 bg-ink rounded-full z-20"></div>
+          <!-- status -->
+          <div class="px-6 pt-9 flex items-center justify-between text-[11px] text-quiet">
+            <span>9:41</span>
+            <span class="flex gap-1 items-center"><span class="w-4 h-2 rounded-sm bg-quiet/40"></span></span>
+          </div>
+          <!-- app body -->
+          <div class="px-6 pt-5">
+            <p class="text-xs text-quiet">Good evening, Maya</p>
+            <h3 class="font-display text-2xl text-ink mt-1">Let's unwind tonight</h3>
+
+            <!-- breathing widget -->
+            <div class="mt-6 rounded-3xl bg-gradient-to-br from-lavender-400 to-sky-400 p-6 text-white relative overflow-hidden">
+              <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/20 breathe-core"></div>
+              <p class="text-xs/relaxed text-white/80">Breathe with me</p>
+              <p class="font-display text-xl mt-1">Inhale Â· 4 Â· Hold Â· 7</p>
+              <div class="mt-4 grid place-items-center">
+                <div class="breathe-core w-16 h-16 rounded-full bg-white/30 grid place-items-center">
+                  <div class="w-8 h-8 rounded-full bg-white"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- list -->
+            <p class="text-xs text-quiet mt-6 mb-3">Continue your journey</p>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 rounded-2xl bg-white/70 p-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sage-300 to-sky-300"></div>
+                <div class="flex-1"><p class="text-sm text-ink font-medium">Ocean of calm</p><p class="text-[11px] text-quiet">12 min Â· Sleep</p></div>
+                <span class="text-lavender-500">â–¶</span>
+              </div>
+              <div class="flex items-center gap-3 rounded-2xl bg-white/70 p-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-lavender-300 to-lavender-400"></div>
+                <div class="flex-1"><p class="text-sm text-ink font-medium">Letting go of worry</p><p class="text-[11px] text-quiet">8 min Â· Anxiety</p></div>
+                <span class="text-lavender-500">â–¶</span>
+              </div>
+            </div>
+          </div>
+          <!-- tab bar -->
+          <div class="absolute bottom-4 inset-x-4 glass rounded-2xl py-3 flex justify-around text-quiet text-lg">
+            <span class="text-lavender-500">â—Ž</span><span>â™¡</span><span>â˜¾</span><span>â—·</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- floating cards -->
+      <div class="floaty-slow absolute -left-2 sm:left-2 top-20 glass rounded-2xl px-4 py-3 shadow-soft z-20" style="animation-delay:-2s">
+        <p class="text-[11px] text-quiet">Heart rate</p>
+        <p class="font-display text-lg text-ink">62 <span class="text-xs text-sage-400">bpm â†“</span></p>
+      </div>
+      <div class="floaty absolute -right-2 sm:right-0 bottom-24 glass rounded-2xl px-4 py-3 shadow-soft z-20" style="animation-delay:-4s">
+        <p class="text-[11px] text-quiet">Streak</p>
+        <p class="font-display text-lg text-ink">21 days ðŸŒ™</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST STRIP ============ -->
+<section class="relative py-10 border-y border-lavender-100/70 bg-white/40">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <p class="reveal text-center text-xs uppercase tracking-[0.25em] text-quiet mb-7">Trusted by calm-seekers at</p>
+    <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-5 opacity-70">
+      <span class="font-display text-xl text-ink/70">Nimbus</span>
+      <span class="font-display text-xl text-ink/70">Solace Health</span>
+      <span class="font-display text-xl text-ink/70">Pebble</span>
+      <span class="font-display text-xl text-ink/70">Northwind</span>
+      <span class="font-display text-xl text-ink/70">Lull</span>
+      <span class="font-display text-xl text-ink/70">Aria</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENEFITS ============ -->
+<section id="benefits" class="relative py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16">
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">WHY LUMORA</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight text-balance">A gentler relationship with your own mind.</h2>
+      <p class="reveal text-quiet mt-5 text-lg">Small, science-backed practices that fit between meetings, before bed, or in the quiet moments you almost skip.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-lavender-300 to-lavender-500 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">â˜</div>
+        <h3 class="font-display text-xl text-ink mb-2">Calm your racing thoughts</h3>
+        <p class="text-quiet text-sm leading-relaxed">Guided breathwork and grounding sessions to soften anxiety in under five minutes.</p>
+      </div>
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-300 to-sky-500 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">â˜¾</div>
+        <h3 class="font-display text-xl text-ink mb-2">Sleep deeper, wake softer</h3>
+        <p class="text-quiet text-sm leading-relaxed">Dreamy sleep stories and soundscapes engineered to slow you into rest.</p>
+      </div>
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sage-300 to-sage-500 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">â€</div>
+        <h3 class="font-display text-xl text-ink mb-2">Real therapy, on your terms</h3>
+        <p class="text-quiet text-sm leading-relaxed">Message a licensed therapist or talk to your AI companion whenever it gets heavy.</p>
+      </div>
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-lavender-300 to-sky-400 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">â—Ž</div>
+        <h3 class="font-display text-xl text-ink mb-2">Focus without the noise</h3>
+        <p class="text-quiet text-sm leading-relaxed">Flow-state soundscapes and short resets that keep you present, not scattered.</p>
+      </div>
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-300 to-sage-400 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">â™¡</div>
+        <h3 class="font-display text-xl text-ink mb-2">Track how you really feel</h3>
+        <p class="text-quiet text-sm leading-relaxed">Gentle mood check-ins reveal patterns â€” without judgement or pressure.</p>
+      </div>
+      <div class="reveal group glass rounded-4xl p-7 hover:-translate-y-1.5 transition-all duration-500 hover:shadow-soft">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sage-300 to-lavender-400 grid place-items-center text-white text-2xl mb-5 group-hover:scale-110 transition">âœ¦</div>
+        <h3 class="font-display text-xl text-ink mb-2">Build a kinder routine</h3>
+        <p class="text-quiet text-sm leading-relaxed">Personalised journeys that adapt to your mood, your goals, and your pace.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURED SESSIONS ============ -->
+<section id="sessions" class="relative py-28 bg-white/40 border-y border-lavender-100/70">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div class="max-w-xl">
+        <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">FEATURED PROGRAMS</p>
+        <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight">Sessions for every shade of feeling.</h2>
+      </div>
+      <a href="#cta" class="reveal text-sm text-ink font-medium hover:text-lavender-500 transition inline-flex items-center gap-2">
+        Explore the full library
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <article class="reveal group rounded-4xl overflow-hidden shadow-soft hover:-translate-y-2 transition-all duration-500">
+        <div class="h-48 bg-gradient-to-br from-lavender-400 via-lavender-300 to-sky-300 relative">
+          <div class="absolute inset-0 grid place-items-center text-white/90 text-5xl breathe-core">â˜¾</div>
+          <span class="absolute top-4 left-4 text-[11px] glass-dark text-white px-3 py-1 rounded-full">7-day program</span>
+        </div>
+        <div class="bg-white p-6">
+          <h3 class="font-display text-lg text-ink">Deep Sleep Reset</h3>
+          <p class="text-quiet text-sm mt-1.5">Drift off in minutes with layered soundscapes.</p>
+          <div class="flex items-center gap-2 mt-4 text-xs text-quiet"><span>ðŸŒ™ 12 min avg</span><span>Â·</span><span>â˜… 4.9</span></div>
+        </div>
+      </article>
+      <article class="reveal group rounded-4xl overflow-hidden shadow-soft hover:-translate-y-2 transition-all duration-500">
+        <div class="h-48 bg-gradient-to-br from-sky-400 via-sky-300 to-sage-300 relative">
+          <div class="absolute inset-0 grid place-items-center text-white/90 text-5xl breathe-core" style="animation-delay:-2s">â˜</div>
+          <span class="absolute top-4 left-4 text-[11px] glass-dark text-white px-3 py-1 rounded-full">Anxiety relief</span>
+        </div>
+        <div class="bg-white p-6">
+          <h3 class="font-display text-lg text-ink">Untangle the Worry</h3>
+          <p class="text-quiet text-sm mt-1.5">Grounding practices for overwhelming days.</p>
+          <div class="flex items-center gap-2 mt-4 text-xs text-quiet"><span>ðŸŒ¿ 6 min avg</span><span>Â·</span><span>â˜… 4.8</span></div>
+        </div>
+      </article>
+      <article class="reveal group rounded-4xl overflow-hidden shadow-soft hover:-translate-y-2 transition-all duration-500">
+        <div class="h-48 bg-gradient-to-br from-sage-400 via-sage-300 to-lavender-300 relative">
+          <div class="absolute inset-0 grid place-items-center text-white/90 text-5xl breathe-core" style="animation-delay:-4s">â—Ž</div>
+          <span class="absolute top-4 left-4 text-[11px] glass-dark text-white px-3 py-1 rounded-full">Focus</span>
+        </div>
+        <div class="bg-white p-6">
+          <h3 class="font-display text-lg text-ink">Quiet Focus Flow</h3>
+          <p class="text-quiet text-sm mt-1.5">Stay present through long, demanding work.</p>
+          <div class="flex items-center gap-2 mt-4 text-xs text-quiet"><span>âœ¦ 25 min</span><span>Â·</span><span>â˜… 4.9</span></div>
+        </div>
+      </article>
+      <article class="reveal group rounded-4xl overflow-hidden shadow-soft hover:-translate-y-2 transition-all duration-500">
+        <div class="h-48 bg-gradient-to-br from-lavender-400 via-sky-300 to-sage-300 relative">
+          <div class="absolute inset-0 grid place-items-center text-white/90 text-5xl breathe-core" style="animation-delay:-6s">â€</div>
+          <span class="absolute top-4 left-4 text-[11px] glass-dark text-white px-3 py-1 rounded-full">Morning</span>
+        </div>
+        <div class="bg-white p-6">
+          <h3 class="font-display text-lg text-ink">Soft Awakening</h3>
+          <p class="text-quiet text-sm mt-1.5">Begin the day grounded, slow, and kind.</p>
+          <div class="flex items-center gap-2 mt-4 text-xs text-quiet"><span>â˜€ 8 min</span><span>Â·</span><span>â˜… 5.0</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="relative py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-20 items-center">
+    <div>
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">HOW IT WORKS</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight mb-12">Three soft steps to a calmer you.</h2>
+
+      <div class="space-y-8">
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-lavender-400 to-lavender-500 text-white grid place-items-center font-display text-lg shadow-soft">1</div>
+          <div>
+            <h3 class="font-display text-xl text-ink mb-1.5">Tell us how you feel</h3>
+            <p class="text-quiet leading-relaxed">A 30-second check-in tunes Serenova to your mood and energy right now.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-500 text-white grid place-items-center font-display text-lg shadow-soft">2</div>
+          <div>
+            <h3 class="font-display text-xl text-ink mb-1.5">Get a personal journey</h3>
+            <p class="text-quiet leading-relaxed">We hand-pick breathwork, sessions, and a therapist match made for you.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-sage-400 to-sage-500 text-white grid place-items-center font-display text-lg shadow-soft">3</div>
+          <div>
+            <h3 class="font-display text-xl text-ink mb-1.5">Practice a little, often</h3>
+            <p class="text-quiet leading-relaxed">Tiny daily moments compound. Serenova adapts as you grow calmer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- visual with breathing circle -->
+    <div class="relative">
+      <div class="absolute inset-0 grid place-items-center pointer-events-none">
+        <div class="breathe-glow w-80 h-80 rounded-full bg-gradient-to-br from-lavender-300 to-sky-300 opacity-40"></div>
+      </div>
+      <div class="reveal relative glass rounded-5xl p-10 shadow-soft">
+        <div class="grid place-items-center">
+          <div class="relative w-56 h-56 grid place-items-center">
+            <div class="breathe-ring absolute inset-0 rounded-full border-2 border-lavender-300/60"></div>
+            <div class="breathe-glow absolute inset-6 rounded-full bg-gradient-to-br from-lavender-300 to-sky-300 opacity-50"></div>
+            <div class="breathe-core w-28 h-28 rounded-full bg-gradient-to-br from-lavender-400 to-sky-400 grid place-items-center text-white">
+              <span class="text-sm tracking-wide">breathe</span>
+            </div>
+          </div>
+          <p class="mt-8 text-center text-quiet text-sm max-w-xs">Inhale for four. Hold for seven. Exhale for eight. Let the circle lead â€” your nervous system follows.</p>
+        </div>
+      </div>
+      <div class="floaty absolute -bottom-5 -right-3 glass rounded-2xl px-4 py-3 shadow-soft">
+        <p class="text-[11px] text-quiet">Avg. session</p>
+        <p class="font-display text-lg text-ink">4 min calmer</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-28 bg-white/40 border-y border-lavender-100/70 overflow-hidden">
+  <div class="blob w-96 h-96 bg-sage-200 -bottom-20 -left-20 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center relative">
+    <div class="reveal relative rounded-5xl overflow-hidden shadow-soft bg-gradient-to-br from-lavender-200 to-sky-200 aspect-[4/5] max-w-md">
+      <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           alt="Calm sunrise over still water"
+           class="w-full h-full object-cover mix-blend-luminosity opacity-90" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/30 to-transparent"></div>
+      <div class="absolute bottom-6 left-6 right-6 glass-dark rounded-2xl p-5 text-white">
+        <p class="font-display text-lg">"We built Serenova for the version of us that couldn't slow down."</p>
+        <p class="text-xs text-white/70 mt-2">â€” The Serenova founders</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">OUR STORY</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight mb-6">Calm shouldn't feel like one more task.</h2>
+      <p class="reveal text-quiet text-lg leading-relaxed mb-5">
+        Serenova began with a simple frustration: wellness apps that demanded more effort than they gave back. So we made something softer â€” a space that meets you where you are, asks little, and gives a lot.
+      </p>
+      <p class="reveal text-quiet leading-relaxed mb-8">
+        Every session is crafted with clinical psychologists and sound designers, then refined with real members. No streaks-shaming. No guilt. Just a steady, gentle hand toward feeling like yourself again.
+      </p>
+      <div class="reveal grid grid-cols-3 gap-6">
+        <div><div class="font-display text-3xl text-ink"><span class="count" data-target="1200">0</span>+</div><p class="text-xs text-quiet mt-1">Guided sessions</p></div>
+        <div><div class="font-display text-3xl text-ink"><span class="count" data-target="48">0</span></div><p class="text-xs text-quiet mt-1">Licensed therapists</p></div>
+        <div><div class="font-display text-3xl text-ink"><span class="count" data-target="94">0</span>%</div><p class="text-xs text-quiet mt-1">Feel calmer in a week</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="testimonials" class="relative py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16">
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">QUIET VOICES</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight">Loved by people learning to slow down.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal glass rounded-4xl p-8 shadow-soft">
+        <div class="text-lavender-400 text-xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-ink leading-relaxed">"I've tried every meditation app. Serenova is the first one that didn't feel like homework. The breathing circle alone gets me to sleep."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-6">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-lavender-300 to-sky-300"></div>
+          <div><p class="text-sm font-medium text-ink">Priya N.</p><p class="text-xs text-quiet">Nurse Â· 6 months in</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-4xl p-8 shadow-soft md:mt-8">
+        <div class="text-lavender-400 text-xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-ink leading-relaxed">"Being able to message a real therapist between sessions changed everything for my anxiety. It feels personal, not robotic."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-6">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-sage-300 to-lavender-300"></div>
+          <div><p class="text-sm font-medium text-ink">Marcus T.</p><p class="text-xs text-quiet">Designer Â· 1 year in</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-4xl p-8 shadow-soft">
+        <div class="text-lavender-400 text-xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-ink leading-relaxed">"The mood tracking quietly showed me patterns I'd ignored for years. Now my evenings actually feel like rest."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-6">
+          <div class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-300 to-sage-300"></div>
+          <div><p class="text-sm font-medium text-ink">Hana K.</p><p class="text-xs text-quiet">Teacher Â· 3 months in</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="relative py-28 bg-white/40 border-y border-lavender-100/70">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mx-auto text-center mb-16">
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">SIMPLE, KIND PRICING</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight">Start free. Stay as long as it serves you.</h2>
+      <p class="reveal text-quiet mt-4">No lock-ins. Cancel any time, no questions asked.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+      <!-- free -->
+      <div class="reveal glass rounded-4xl p-8 flex flex-col">
+        <h3 class="font-display text-2xl text-ink">Breathe</h3>
+        <p class="text-quiet text-sm mt-1">For dipping a toe into calm.</p>
+        <div class="mt-6 mb-6"><span class="font-display text-5xl text-ink">$0</span><span class="text-quiet">/mo</span></div>
+        <ul class="space-y-3 text-sm text-quiet flex-1">
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> 5 guided sessions / week</li>
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Daily breathing circle</li>
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Basic mood check-ins</li>
+        </ul>
+        <a href="#cta" class="mt-8 text-center rounded-full glass border border-lavender-200 py-3 text-ink font-medium hover:bg-white transition">Get started</a>
+      </div>
+
+      <!-- plus (highlighted) -->
+      <div class="reveal relative rounded-4xl p-8 flex flex-col bg-gradient-to-br from-ink to-lavender-600 text-white shadow-glow scale-[1.03]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] bg-white text-ink px-4 py-1 rounded-full font-medium">Most loved</span>
+        <h3 class="font-display text-2xl">Serene</h3>
+        <p class="text-white/70 text-sm mt-1">Full library, unlimited calm.</p>
+        <div class="mt-6 mb-6"><span class="font-display text-5xl">$12</span><span class="text-white/60">/mo</span></div>
+        <ul class="space-y-3 text-sm text-white/85 flex-1">
+          <li class="flex gap-2"><span class="text-sage-300">âœ“</span> Unlimited sessions & programs</li>
+          <li class="flex gap-2"><span class="text-sage-300">âœ“</span> Sleep stories & soundscapes</li>
+          <li class="flex gap-2"><span class="text-sage-300">âœ“</span> AI therapy companion 24/7</li>
+          <li class="flex gap-2"><span class="text-sage-300">âœ“</span> Advanced mood insights</li>
+        </ul>
+        <a href="#cta" class="mt-8 text-center rounded-full bg-white text-ink py-3 font-medium hover:bg-lavender-50 transition">Start 14-day free trial</a>
+      </div>
+
+      <!-- pro -->
+      <div class="reveal glass rounded-4xl p-8 flex flex-col">
+        <h3 class="font-display text-2xl text-ink">Restore</h3>
+        <p class="text-quiet text-sm mt-1">Calm plus real human care.</p>
+        <div class="mt-6 mb-6"><span class="font-display text-5xl text-ink">$39</span><span class="text-quiet">/mo</span></div>
+        <ul class="space-y-3 text-sm text-quiet flex-1">
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Everything in Serene</li>
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Licensed therapist messaging</li>
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Monthly 1:1 video session</li>
+          <li class="flex gap-2"><span class="text-sage-400">âœ“</span> Personalised care plan</li>
+        </ul>
+        <a href="#cta" class="mt-8 text-center rounded-full glass border border-lavender-200 py-3 text-ink font-medium hover:bg-white transition">Talk to someone</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-28">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="reveal text-sm font-medium text-lavender-500 mb-3 tracking-wide">GENTLE ANSWERS</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-ink leading-tight">Questions, answered calmly.</h2>
+    </div>
+
+    <div class="space-y-4" id="faq-list">
+      <div class="reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-7 py-5 text-left">
+          <span class="font-medium text-ink">Do I need any experience with meditation?</span>
+          <span class="faq-icon text-lavender-500 text-xl transition-transform duration-300">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-quiet leading-relaxed">None at all. Serenova is designed for absolute beginners â€” most people feel calmer in their very first session, just by following the breathing circle.</p></div>
+      </div>
+      <div class="reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-7 py-5 text-left">
+          <span class="font-medium text-ink">Is the therapy from real licensed professionals?</span>
+          <span class="faq-icon text-lavender-500 text-xl transition-transform duration-300">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-quiet leading-relaxed">Yes. On the Restore plan you're matched with licensed therapists. The AI companion supports you between sessions but never replaces human care.</p></div>
+      </div>
+      <div class="reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-7 py-5 text-left">
+          <span class="font-medium text-ink">How much time do I actually need each day?</span>
+          <span class="faq-icon text-lavender-500 text-xl transition-transform duration-300">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-quiet leading-relaxed">As little as three minutes. Serenova is built around tiny, repeatable moments â€” not hour-long commitments you'll dread and skip.</p></div>
+      </div>
+      <div class="reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-7 py-5 text-left">
+          <span class="font-medium text-ink">Can I cancel whenever I want?</span>
+          <span class="faq-icon text-lavender-500 text-xl transition-transform duration-300">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-quiet leading-relaxed">Always. Cancel in two taps, no guilt-trips or retention mazes. Your trial is free and you'll never be charged without a clear reminder first.</p></div>
+      </div>
+      <div class="reveal glass rounded-3xl overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-7 py-5 text-left">
+          <span class="font-medium text-ink">Is my data private?</span>
+          <span class="faq-icon text-lavender-500 text-xl transition-transform duration-300">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-7 pb-6 text-quiet leading-relaxed">Deeply. Your mood logs and conversations are encrypted and never sold. What you share with Serenova stays between you and Serenova.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="relative py-28">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8">
+    <div class="reveal relative rounded-5xl overflow-hidden bg-gradient-to-br from-lavender-500 via-sky-500 to-sage-400 p-12 sm:p-16 text-center text-white shadow-glow">
+      <div class="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/15 breathe-glow"></div>
+      <div class="absolute -bottom-20 -left-10 w-72 h-72 rounded-full bg-white/10 breathe-core"></div>
+      <div class="relative">
+        <div class="mx-auto w-16 h-16 rounded-full bg-white/25 grid place-items-center mb-7 breathe-core">
+          <div class="w-7 h-7 rounded-full bg-white"></div>
+        </div>
+        <h2 class="font-display text-4xl sm:text-6xl leading-tight mb-5 text-balance">Your quieter mind is one breath away.</h2>
+        <p class="text-white/85 text-lg max-w-xl mx-auto mb-9">Join 180,000 people learning to slow down. Start free for 14 days â€” no card needed to begin.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="#" class="magnetic inline-flex items-center justify-center gap-2 rounded-full bg-white text-ink px-8 py-4 font-medium shadow-soft hover:scale-[1.03] transition">
+            Start free
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#sessions" class="inline-flex items-center justify-center rounded-full glass-dark text-white px-8 py-4 font-medium hover:bg-white/10 transition">Browse sessions</a>
+        </div>
+        <p class="text-xs text-white/70 mt-6">No card Â· Cancel anytime Â· 4.9 â˜… on the App Store</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative pt-16 pb-10 border-t border-lavender-100/70 bg-white/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-5 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <a href="#home" class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center w-9 h-9 rounded-full bg-gradient-to-br from-lavender-400 to-sky-400">
+            <span class="w-3.5 h-3.5 rounded-full bg-white/90 breathe-core"></span>
+          </span>
+          <span class="font-display text-xl text-ink">Serenova</span>
+        </a>
+        <p class="text-quiet text-sm max-w-xs leading-relaxed">A calmer relationship with your mind â€” meditation, sleep, and therapy in one gentle space.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="#" class="w-9 h-9 grid place-items-center rounded-full glass text-quiet hover:text-ink transition">in</a>
+          <a href="#" class="w-9 h-9 grid place-items-center rounded-full glass text-quiet hover:text-ink transition">ig</a>
+          <a href="#" class="w-9 h-9 grid place-items-center rounded-full glass text-quiet hover:text-ink transition">x</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Product</h4>
+        <ul class="space-y-2.5 text-sm text-quiet">
+          <li><a href="#benefits" class="hover:text-ink transition">Benefits</a></li>
+          <li><a href="#sessions" class="hover:text-ink transition">Sessions</a></li>
+          <li><a href="#pricing" class="hover:text-ink transition">Pricing</a></li>
+          <li><a href="#" class="hover:text-ink transition">Mobile app</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm text-quiet">
+          <li><a href="#about" class="hover:text-ink transition">About</a></li>
+          <li><a href="#" class="hover:text-ink transition">Therapists</a></li>
+          <li><a href="#" class="hover:text-ink transition">Careers</a></li>
+          <li><a href="#" class="hover:text-ink transition">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Support</h4>
+        <ul class="space-y-2.5 text-sm text-quiet">
+          <li><a href="#faq" class="hover:text-ink transition">FAQ</a></li>
+          <li><a href="#" class="hover:text-ink transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-ink transition">Terms</a></li>
+          <li><a href="#" class="hover:text-ink transition">Crisis resources</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-lavender-100/70 text-xs text-quiet">
+      <p>Â© 2026 Serenova Wellness, Inc. Breathe easy.</p>
+      <p>If you're in crisis, please contact local emergency services or a helpline.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- NAV shrink on scroll ----
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) nav.classList.add('py-0','scale-[0.99]');
+    else nav.classList.remove('py-0','scale-[0.99]');
+  });
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      // close all
+      document.querySelectorAll('.accordion-body').forEach(b => b.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform='rotate(0deg)'; i.textContent='+'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ---- Hero headline word-by-word reveal ----
+    const headline = document.getElementById('hero-headline');
+    headline.querySelectorAll('span').forEach((line, i) => {
+      gsap.fromTo(line, { opacity: 0, y: 28, filter: 'blur(6px)' },
+        { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.1, delay: 0.2 + i * 0.18, ease: 'power3.out' });
+    });
+
+    // ---- Hero reveals ----
+    gsap.utils.toArray('#home .reveal').forEach((el, i) => {
+      gsap.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, delay: 0.6 + i * 0.12, ease: 'power2.out' });
+    });
+
+    // ---- Scroll reveals ----
+    gsap.utils.toArray('.reveal').forEach(el => {
+      if (el.closest('#home')) return;
+      gsap.fromTo(el, { opacity: 0, y: 36 }, {
+        opacity: 1, y: 0, duration: 1, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // ---- Count-ups ----
+    document.querySelectorAll('.count').forEach(el => {
+      const target = +el.dataset.target;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: target, duration: 2, ease: 'power2.out',
+          onUpdate: () => el.textContent = Math.floor(obj.v).toLocaleString()
+        })
+      });
+    });
+
+    // ---- Soft container parallax ----
+    gsap.utils.toArray('.blob').forEach(b => {
+      gsap.to(b, { yPercent: -18, ease: 'none', scrollTrigger: { trigger: b, start: 'top bottom', end: 'bottom top', scrub: 1 } });
+    });
+  } else {
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.target).toLocaleString());
+  }
+
+  // ---- Magnetic buttons (pointer) ----
+  if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.3}px)`;
+      });
+      el.addEventListener('mouseleave', () => el.style.transform = 'translate(0,0)');
+    });
+  }
+</script>
+</body>
+</html>
+

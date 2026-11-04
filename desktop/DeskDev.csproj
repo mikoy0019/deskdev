@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DeskDev for Windows: a native window around the DeskDev web app (WebView2,
+    the Edge engine built into Windows 10 and 11). .NET Framework 4.8 ships
+    with Windows, so the installer carries no runtime. README.md has the build.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>DeskDev</AssemblyName>
+    <RootNamespace>DeskDev.Desktop</RootNamespace>
+    <ApplicationIcon>DeskDev.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The real number comes from package.json through build.mjs (-p:Version=…). -->
+    <Version>0.0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Product>DeskDev</Product>
+    <Company>NixGen Solutions</Company>
+    <Description>DeskDev Studio for Windows</Description>
+    <Copyright>© NixGen Solutions</Copyright>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <!-- Lets the .NET SDK build for .NET Framework without the targeting pack installed. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DeskDev.ico" LogicalName="DeskDev.ico" />
+  </ItemGroup>
+
+</Project>

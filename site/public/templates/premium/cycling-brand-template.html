@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VELOCRON — Aerodynamic Performance Bicycles</title>
+<meta name="description" content="VELOCRON crafts carbon road and gravel machines engineered for raw speed. Configure your aero weapon." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          carbon: '#0a0b0d',
+          carbon2: '#111317',
+          slate1: '#1a1d23',
+          fog: '#9aa3b2',
+          volt: '#c6f53a',
+          volt2: '#a8e028',
+          ember: '#ff5a36',
+        },
+        fontFamily: {
+          display: ['Archivo', 'sans-serif'],
+          body: ['Space Grotesk', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { background:#0a0b0d; color:#e8ebf0; overflow-x:hidden; }
+  body { font-family:'Space Grotesk', sans-serif; }
+  ::selection { background:#c6f53a; color:#0a0b0d; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position:fixed; top:0; left:0; pointer-events:none; z-index:9999;
+    transform:translate(-50%,-50%); border-radius:9999px; mix-blend-mode:difference;
+  }
+  .cursor-dot { width:7px; height:7px; background:#c6f53a; }
+  .cursor-ring {
+    width:38px; height:38px; border:1.5px solid #c6f53a;
+    transition:width .25s ease, height .25s ease, background .25s ease, opacity .25s ease;
+  }
+  .cursor-ring.grow { width:74px; height:74px; background:rgba(198,245,58,.12); }
+  @media (max-width:1024px){ .cursor-dot,.cursor-ring{ display:none; } }
+
+  /* Speed lines */
+  .speedline {
+    position:absolute; height:1px; left:0;
+    background:linear-gradient(90deg, transparent, #c6f53a, transparent);
+    opacity:.0;
+  }
+
+  .grain {
+    position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .display { font-family:'Archivo', sans-serif; letter-spacing:-0.03em; line-height:0.92; }
+  .kicker { letter-spacing:0.35em; text-transform:uppercase; font-size:0.7rem; }
+
+  .gridlines {
+    background-image:linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+                     linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size:64px 64px;
+  }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollx 26s linear infinite; }
+  @keyframes scrollx { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* Models rail */
+  .rail { scrollbar-width:none; }
+  .rail::-webkit-scrollbar { display:none; }
+
+  .reveal { opacity:0; transform:translateY(40px); }
+  .clip-slant { clip-path:polygon(0 0, 100% 0, 100% 88%, 0 100%); }
+
+  .magnetic { will-change:transform; }
+  .tilt3d { transform-style:preserve-3d; will-change:transform; }
+
+  .hotspot-pulse::before {
+    content:''; position:absolute; inset:-10px; border-radius:9999px;
+    border:1px solid #c6f53a; animation:pulse 2s ease-out infinite;
+  }
+  @keyframes pulse { 0%{transform:scale(.6);opacity:.9} 100%{transform:scale(1.8);opacity:0} }
+
+  .accordion-body { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .glow-volt { box-shadow:0 0 0 1px rgba(198,245,58,.25), 0 18px 60px -18px rgba(198,245,58,.35); }
+  .text-stroke { -webkit-text-stroke:1px rgba(255,255,255,.18); color:transparent; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation:none; }
+    .hotspot-pulse::before { animation:none; }
+    .reveal { opacity:1 !important; transform:none !important; }
+  }
+</style>
+</head>
+<body class="font-body antialiased">
+
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ========================= NAV ========================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-[100] transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-center justify-between h-[72px]">
+      <a href="#" class="flex items-center gap-2 group" data-hover>
+        <span class="inline-block w-8 h-8 relative">
+          <span class="absolute inset-0 rotate-45 border-2 border-volt"></span>
+          <span class="absolute inset-[6px] bg-volt rotate-45"></span>
+        </span>
+        <span class="display text-xl font-900 tracking-tight">VELOCRON</span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-9 text-sm text-fog">
+        <a href="#models" class="hover:text-white transition" data-hover>Models</a>
+        <a href="#tech" class="hover:text-white transition" data-hover>Technology</a>
+        <a href="#ride" class="hover:text-white transition" data-hover>Ride</a>
+        <a href="#about" class="hover:text-white transition" data-hover>About</a>
+        <a href="#faq" class="hover:text-white transition" data-hover>FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#config" class="hidden sm:inline-flex items-center gap-2 text-xs kicker text-carbon bg-volt px-4 py-2.5 font-700 hover:bg-volt2 transition" data-hover>
+          Configure
+        </a>
+        <button id="menuBtn" class="lg:hidden w-10 h-10 grid place-items-center border border-white/15" aria-label="Menu">
+          <span class="block w-5 h-[2px] bg-white relative before:content-[''] before:absolute before:w-5 before:h-[2px] before:bg-white before:-top-1.5 after:content-[''] after:absolute after:w-5 after:h-[2px] after:bg-white after:top-1.5"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- mobile -->
+  <div id="mobileMenu" class="lg:hidden hidden bg-carbon2/95 backdrop-blur border-t border-white/5">
+    <div class="px-6 py-5 flex flex-col gap-4 text-fog">
+      <a href="#models" class="mobnav">Models</a>
+      <a href="#tech" class="mobnav">Technology</a>
+      <a href="#ride" class="mobnav">Ride</a>
+      <a href="#about" class="mobnav">About</a>
+      <a href="#faq" class="mobnav">FAQ</a>
+      <a href="#config" class="text-carbon bg-volt px-4 py-3 text-center font-700 kicker text-xs">Configure</a>
+    </div>
+  </div>
+</header>
+
+<!-- ========================= HERO ========================= -->
+<section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden gridlines">
+  <div class="absolute inset-0 bg-gradient-to-b from-carbon via-carbon2 to-carbon"></div>
+  <div class="absolute -right-40 top-0 w-[60vw] h-[60vw] rounded-full bg-volt/10 blur-[140px]"></div>
+  <!-- speed lines -->
+  <div class="absolute inset-0 pointer-events-none" id="speedlines"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center w-full">
+    <div class="lg:col-span-6 z-10">
+      <p class="kicker text-volt mb-5 reveal" data-rev>Aero Road · Carbon · 2026</p>
+      <h1 class="display text-[14vw] sm:text-7xl lg:text-[5.4rem] font-900 mb-6">
+        <span class="block overflow-hidden"><span class="block reveal" data-rev>CUT THE</span></span>
+        <span class="block overflow-hidden"><span class="block reveal text-volt" data-rev>WIND.</span></span>
+        <span class="block overflow-hidden"><span class="block text-stroke reveal" data-rev>OWN THE ROAD.</span></span>
+      </h1>
+      <p class="text-fog max-w-md text-base sm:text-lg mb-8 reveal" data-rev>
+        VELOCRON builds aerodynamic carbon machines obsessed with one number — your time. Wind-tunnel sculpted, hand-laid, race-ready.
+      </p>
+      <div class="flex flex-wrap items-center gap-4 reveal" data-rev>
+        <a href="#config" id="configMagnet" class="magnetic group relative inline-flex items-center gap-3 bg-volt text-carbon px-7 py-4 font-700 kicker text-xs overflow-hidden" data-hover>
+          <span class="relative z-10">Configure Your Build</span>
+          <span class="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+        </a>
+        <a href="#models" class="inline-flex items-center gap-2 text-sm text-fog hover:text-white transition border-b border-white/20 pb-1" data-hover>
+          Explore the Range
+        </a>
+      </div>
+    </div>
+
+    <!-- Bike image / tilt -->
+    <div class="lg:col-span-6 relative z-10">
+      <div id="heroTilt" class="tilt3d relative">
+        <div class="parallax-img relative rounded-2xl overflow-hidden bg-gradient-to-br from-slate1 to-carbon border border-white/10 aspect-[4/3]">
+          <img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="VELOCRON aero road bike"
+               class="w-full h-full object-cover scale-110" data-parallax />
+          <div class="absolute inset-0 bg-gradient-to-tr from-carbon/70 via-transparent to-transparent"></div>
+        </div>
+        <!-- floating spec chips -->
+        <div class="absolute -left-4 sm:-left-8 top-8 bg-carbon2/90 backdrop-blur border border-white/10 px-4 py-3 glow-volt" style="transform:translateZ(60px)">
+          <p class="kicker text-volt text-[0.6rem]">Frame Weight</p>
+          <p class="display text-2xl font-800"><span class="count" data-count="780">0</span>g</p>
+        </div>
+        <div class="absolute -right-3 sm:-right-6 bottom-10 bg-carbon2/90 backdrop-blur border border-white/10 px-4 py-3" style="transform:translateZ(40px)">
+          <p class="kicker text-volt text-[0.6rem]">Drag Saving</p>
+          <p class="display text-2xl font-800"><span class="count" data-count="11">0</span>%</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-fog text-xs kicker">
+    Scroll
+    <span class="w-px h-10 bg-gradient-to-b from-volt to-transparent"></span>
+  </div>
+</section>
+
+<!-- ========================= TRUST / STATS STRIP ========================= -->
+<section class="relative border-y border-white/8 bg-carbon2">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div class="reveal" data-rev>
+      <p class="display text-4xl sm:text-5xl font-900 text-volt"><span class="count" data-count="42">0</span></p>
+      <p class="kicker text-fog mt-2">Pro Wins '25</p>
+    </div>
+    <div class="reveal" data-rev>
+      <p class="display text-4xl sm:text-5xl font-900"><span class="count" data-count="1490">0</span></p>
+      <p class="kicker text-fog mt-2">Watts Tested</p>
+    </div>
+    <div class="reveal" data-rev>
+      <p class="display text-4xl sm:text-5xl font-900"><span class="count" data-count="68">0</span>k</p>
+      <p class="kicker text-fog mt-2">Riders Worldwide</p>
+    </div>
+    <div class="reveal" data-rev>
+      <p class="display text-4xl sm:text-5xl font-900 text-volt"><span class="count" data-count="9">0</span>yr</p>
+      <p class="kicker text-fog mt-2">Frame Warranty</p>
+    </div>
+  </div>
+  <!-- marquee -->
+  <div class="overflow-hidden border-t border-white/8 py-4 bg-carbon">
+    <div class="marquee gap-10 text-fog/40 display text-2xl font-800 uppercase">
+      <span>Aero Sculpted</span><span class="text-volt">✦</span><span>Hand-Laid Carbon</span><span class="text-volt">✦</span><span>Wind-Tunnel Proven</span><span class="text-volt">✦</span><span>Race Geometry</span><span class="text-volt">✦</span>
+      <span>Aero Sculpted</span><span class="text-volt">✦</span><span>Hand-Laid Carbon</span><span class="text-volt">✦</span><span>Wind-Tunnel Proven</span><span class="text-volt">✦</span><span>Race Geometry</span><span class="text-volt">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= MODELS RAIL ========================= -->
+<section id="models" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <p class="kicker text-volt mb-4 reveal" data-rev>The Range</p>
+        <h2 class="display text-5xl sm:text-6xl font-900 reveal" data-rev>Built for<br/>every <span class="text-volt">attack.</span></h2>
+      </div>
+      <p class="text-fog max-w-sm reveal" data-rev>From wind-cheating crit weapons to gravel destroyers — four platforms, one obsession. Drag the rail to explore.</p>
+    </div>
+  </div>
+
+  <div class="rail flex gap-6 overflow-x-auto px-5 sm:px-8 pb-6 max-w-[100vw] snap-x" id="modelsRail">
+    <!-- card template -->
+    <article class="model-card reveal snap-start shrink-0 w-[78vw] sm:w-[420px] group" data-rev data-hover>
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate1 to-carbon border border-white/10 aspect-[3/4]">
+        <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON AERION" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/20 to-transparent"></div>
+        <span class="absolute top-4 left-4 kicker text-[0.6rem] bg-volt text-carbon px-2.5 py-1 font-700">Aero Road</span>
+        <div class="absolute bottom-0 inset-x-0 p-6">
+          <h3 class="display text-3xl font-900">AERION RS</h3>
+          <p class="text-fog text-sm mt-1">Flat-out speed. Integrated everything.</p>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+            <span class="text-sm text-fog">from <span class="text-white font-600">$8,200</span></span>
+            <span class="kicker text-[0.6rem] text-volt group-hover:translate-x-1 inline-block transition">Configure →</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="model-card reveal snap-start shrink-0 w-[78vw] sm:w-[420px] group" data-rev data-hover>
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate1 to-carbon border border-white/10 aspect-[3/4]">
+        <img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON GRAVAL" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/20 to-transparent"></div>
+        <span class="absolute top-4 left-4 kicker text-[0.6rem] bg-ember text-carbon px-2.5 py-1 font-700">Gravel</span>
+        <div class="absolute bottom-0 inset-x-0 p-6">
+          <h3 class="display text-3xl font-900">TERRAN GX</h3>
+          <p class="text-fog text-sm mt-1">Where the road ends, it begins.</p>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+            <span class="text-sm text-fog">from <span class="text-white font-600">$6,400</span></span>
+            <span class="kicker text-[0.6rem] text-volt group-hover:translate-x-1 inline-block transition">Configure →</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="model-card reveal snap-start shrink-0 w-[78vw] sm:w-[420px] group" data-rev data-hover>
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate1 to-carbon border border-white/10 aspect-[3/4]">
+        <img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON CLIMB" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/20 to-transparent"></div>
+        <span class="absolute top-4 left-4 kicker text-[0.6rem] bg-white text-carbon px-2.5 py-1 font-700">Climber</span>
+        <div class="absolute bottom-0 inset-x-0 p-6">
+          <h3 class="display text-3xl font-900">VOLTA SL</h3>
+          <p class="text-fog text-sm mt-1">Sub-7kg. Gravity is optional.</p>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+            <span class="text-sm text-fog">from <span class="text-white font-600">$9,750</span></span>
+            <span class="kicker text-[0.6rem] text-volt group-hover:translate-x-1 inline-block transition">Configure →</span>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="model-card reveal snap-start shrink-0 w-[78vw] sm:w-[420px] group" data-rev data-hover>
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate1 to-carbon border border-white/10 aspect-[3/4]">
+        <img src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON ENDURO" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon via-carbon/20 to-transparent"></div>
+        <span class="absolute top-4 left-4 kicker text-[0.6rem] bg-volt text-carbon px-2.5 py-1 font-700">Endurance</span>
+        <div class="absolute bottom-0 inset-x-0 p-6">
+          <h3 class="display text-3xl font-900">PASSAGE E2</h3>
+          <p class="text-fog text-sm mt-1">All day comfort. No speed penalty.</p>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+            <span class="text-sm text-fog">from <span class="text-white font-600">$5,900</span></span>
+            <span class="kicker text-[0.6rem] text-volt group-hover:translate-x-1 inline-block transition">Configure →</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ========================= TECHNOLOGY / FRAME FEATURE + HOTSPOTS ========================= -->
+<section id="tech" class="relative py-24 sm:py-32 bg-carbon2 overflow-hidden clip-slant">
+  <div class="absolute left-0 top-1/2 w-[40vw] h-[40vw] rounded-full bg-volt/5 blur-[120px]"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="reveal" data-rev>
+      <p class="kicker text-volt mb-5">VX-7 Carbon Lab</p>
+      <h2 class="display text-5xl sm:text-6xl font-900 mb-6">The frame is<br/>the <span class="text-volt">engine.</span></h2>
+      <p class="text-fog text-lg mb-8 max-w-lg">
+        Our VX-7 layup nests aerospace-grade unidirectional fibers along the exact load paths of a 1,400-watt sprint. Stiffer where you push, compliant where the road bites.
+      </p>
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="border-l-2 border-volt pl-4">
+          <p class="display text-3xl font-800">42<span class="text-volt">%</span></p>
+          <p class="text-fog text-sm mt-1">Stiffer bottom bracket vs prior gen</p>
+        </div>
+        <div class="border-l-2 border-volt pl-4">
+          <p class="display text-3xl font-800">D-Form</p>
+          <p class="text-fog text-sm mt-1">Truncated airfoil tube shaping</p>
+        </div>
+        <div class="border-l-2 border-volt pl-4">
+          <p class="display text-3xl font-800">Hidden</p>
+          <p class="text-fog text-sm mt-1">Fully internal cable routing</p>
+        </div>
+        <div class="border-l-2 border-volt pl-4">
+          <p class="display text-3xl font-800">Tuned</p>
+          <p class="text-fog text-sm mt-1">Rider-weight specific layups</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- hotspot image -->
+    <div class="relative reveal" data-rev>
+      <div class="parallax-img relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/3] bg-gradient-to-br from-slate1 to-carbon">
+        <img src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON frame detail" class="w-full h-full object-cover" data-parallax />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon/60 to-transparent"></div>
+
+        <!-- hotspots -->
+        <button class="hotspot-pulse absolute top-[28%] left-[30%] w-3 h-3 rounded-full bg-volt group" data-hover>
+          <span class="absolute left-5 top-1/2 -translate-y-1/2 whitespace-nowrap bg-carbon/95 border border-white/10 px-3 py-1.5 text-xs opacity-0 group-hover:opacity-100 transition">Aero head tube</span>
+        </button>
+        <button class="hotspot-pulse absolute top-[62%] left-[55%] w-3 h-3 rounded-full bg-volt group" data-hover>
+          <span class="absolute left-5 top-1/2 -translate-y-1/2 whitespace-nowrap bg-carbon/95 border border-white/10 px-3 py-1.5 text-xs opacity-0 group-hover:opacity-100 transition">PowerCore BB</span>
+        </button>
+        <button class="hotspot-pulse absolute top-[44%] left-[72%] w-3 h-3 rounded-full bg-volt group" data-hover>
+          <span class="absolute right-5 top-1/2 -translate-y-1/2 whitespace-nowrap bg-carbon/95 border border-white/10 px-3 py-1.5 text-xs opacity-0 group-hover:opacity-100 transition">Dropped seatstays</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= SPEC HIGHLIGHTS ========================= -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="kicker text-volt mb-4 reveal" data-rev>Measured, Not Marketed</p>
+      <h2 class="display text-5xl sm:text-6xl font-900 reveal" data-rev>The numbers that<br/>matter at <span class="text-volt">speed.</span></h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/8 border border-white/8">
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">Aerodynamics</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="11">0</span>%</p>
+        <p class="text-fog text-sm mt-3">Less drag at 45 km/h vs round-tube frames, verified in the GST wind tunnel.</p>
+      </div>
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">System Weight</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="6">0</span>.<span class="count" data-count="8">0</span></p>
+        <p class="text-fog text-sm mt-3">Kilograms, complete build, VOLTA SL in size 54 — ready to climb.</p>
+      </div>
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">Stiffness</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="98">0</span></p>
+        <p class="text-fog text-sm mt-3">N/mm BB rigidity — every watt you pour in goes to the rear wheel.</p>
+      </div>
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">Tire Clearance</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="34">0</span>mm</p>
+        <p class="text-fog text-sm mt-3">Road. Up to 50mm on TERRAN GX for genuine all-road versatility.</p>
+      </div>
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">Compliance</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="22">0</span>%</p>
+        <p class="text-fog text-sm mt-3">More vertical give at the saddle for fatigue-free century days.</p>
+      </div>
+      <div class="bg-carbon p-8 reveal hover:bg-carbon2 transition" data-rev>
+        <p class="kicker text-volt mb-3">Build Options</p>
+        <p class="display text-5xl font-900"><span class="count" data-count="240">0</span>+</p>
+        <p class="text-fog text-sm mt-3">Configurable spec combinations — built to order, never off the shelf.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= RIDE / COMMUNITY ========================= -->
+<section id="ride" class="relative py-24 sm:py-32 bg-carbon2 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="parallax-img relative rounded-2xl overflow-hidden border border-white/10 aspect-[4/5] bg-gradient-to-br from-slate1 to-carbon reveal" data-rev>
+        <img src="https://images.unsplash.com/photo-1511994298241-608e28f14fde?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="VELOCRON riders" class="w-full h-full object-cover" data-parallax />
+        <div class="absolute inset-0 bg-gradient-to-t from-carbon via-transparent to-transparent"></div>
+        <div class="absolute bottom-6 left-6 right-6">
+          <p class="kicker text-volt mb-2">The Slipstream Club</p>
+          <p class="display text-2xl font-800">Ride together. Drop nobody.</p>
+        </div>
+      </div>
+      <div class="reveal" data-rev>
+        <p class="kicker text-volt mb-5">Community</p>
+        <h2 class="display text-5xl sm:text-6xl font-900 mb-6">More than a bike.<br/>A <span class="text-volt">pack.</span></h2>
+        <p class="text-fog text-lg mb-8 max-w-lg">
+          Every VELOCRON owner joins Slipstream — group rides in 40 cities, exclusive route maps, demo days, and a private telemetry feed where the fastest segments get bragging rights.
+        </p>
+        <ul class="space-y-4">
+          <li class="flex items-start gap-4">
+            <span class="mt-1 text-volt">◆</span>
+            <div><p class="font-600">Weekly chaingangs</p><p class="text-fog text-sm">Curated by pace, never by ego.</p></div>
+          </li>
+          <li class="flex items-start gap-4">
+            <span class="mt-1 text-volt">◆</span>
+            <div><p class="font-600">Lifetime fit support</p><p class="text-fog text-sm">Free dynamic bike fitting at any partner studio.</p></div>
+          </li>
+          <li class="flex items-start gap-4">
+            <span class="mt-1 text-volt">◆</span>
+            <div><p class="font-600">Crash replacement</p><p class="text-fog text-sm">30% off a new frame if you go down riding.</p></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= ABOUT ========================= -->
+<section id="about" class="relative py-24 sm:py-32 overflow-hidden gridlines">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="kicker text-volt mb-6 reveal" data-rev>Est. 2017 · Girona</p>
+    <h2 class="display text-4xl sm:text-6xl font-900 leading-tight reveal" data-rev>
+      We started in a <span class="text-volt">garage</span> with a borrowed wind tunnel pass and a stubborn belief: speed should be <span class="text-stroke">engineered, not bought.</span>
+    </h2>
+    <p class="text-fog text-lg mt-8 max-w-2xl mx-auto reveal" data-rev>
+      Today VELOCRON frames are designed in Catalunya and hand-laid in small batches. No mega-factory anonymity — every frame carries the initials of the technician who built it. We make fewer bikes than the giants. On purpose.
+    </p>
+    <div class="grid grid-cols-3 gap-6 mt-14 max-w-2xl mx-auto">
+      <div class="reveal" data-rev><p class="display text-4xl font-900 text-volt"><span class="count" data-count="9">0</span></p><p class="kicker text-fog mt-2">Years</p></div>
+      <div class="reveal" data-rev><p class="display text-4xl font-900 text-volt"><span class="count" data-count="3">0</span></p><p class="kicker text-fog mt-2">Tunnel Labs</p></div>
+      <div class="reveal" data-rev><p class="display text-4xl font-900 text-volt"><span class="count" data-count="100">0</span>%</p><p class="kicker text-fog mt-2">Hand-Laid</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= TESTIMONIALS ========================= -->
+<section class="relative py-24 sm:py-32 bg-carbon2">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-14">
+      <h2 class="display text-5xl sm:text-6xl font-900 reveal" data-rev>Ridden &<br/><span class="text-volt">respected.</span></h2>
+      <p class="text-fog hidden sm:block reveal" data-rev>Real riders. Real watts.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="bg-carbon border border-white/8 p-8 rounded-2xl reveal hover:-translate-y-1 transition" data-rev>
+        <div class="text-volt mb-4 text-lg">★★★★★</div>
+        <blockquote class="text-lg leading-relaxed">"The AERION RS is the first aero bike I've ridden that doesn't punish me on the climbs. It just disappears beneath you."</blockquote>
+        <figcaption class="mt-6 pt-6 border-t border-white/8">
+          <p class="font-600">Marta Riu</p><p class="text-fog text-sm">Cat 1 Crit Racer</p>
+        </figcaption>
+      </figure>
+      <figure class="bg-carbon border border-white/8 p-8 rounded-2xl reveal hover:-translate-y-1 transition md:mt-8" data-rev>
+        <div class="text-volt mb-4 text-lg">★★★★★</div>
+        <blockquote class="text-lg leading-relaxed">"Took my TERRAN GX across 300km of broken gravel. Zero fatigue cracks, zero complaints. This thing is a tank that flies."</blockquote>
+        <figcaption class="mt-6 pt-6 border-t border-white/8">
+          <p class="font-600">Devon Asante</p><p class="text-fog text-sm">Ultra-Endurance Rider</p>
+        </figcaption>
+      </figure>
+      <figure class="bg-carbon border border-white/8 p-8 rounded-2xl reveal hover:-translate-y-1 transition" data-rev>
+        <div class="text-volt mb-4 text-lg">★★★★★</div>
+        <blockquote class="text-lg leading-relaxed">"The configurator and fit support are unreal. Felt like a custom build at a production price. My VOLTA SL fits like a glove."</blockquote>
+        <figcaption class="mt-6 pt-6 border-t border-white/8">
+          <p class="font-600">Kenji Mori</p><p class="text-fog text-sm">Gran Fondo Champion</p>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= CONFIGURATOR CTA ========================= -->
+<section id="config" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-volt/15 via-carbon to-carbon"></div>
+  <div class="absolute -left-32 -bottom-32 w-[50vw] h-[50vw] rounded-full bg-volt/10 blur-[140px]"></div>
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal" data-rev>
+      <p class="kicker text-volt mb-5">The Configurator</p>
+      <h2 class="display text-5xl sm:text-7xl font-900 mb-6">Build it<br/>your <span class="text-volt">way.</span></h2>
+      <p class="text-fog text-lg mb-8 max-w-lg">Pick your platform, groupset, wheels, finish and fit. Watch weight and price update live. We build to order — your bike, your numbers.</p>
+      <a href="#" id="configMagnet2" class="magnetic inline-flex items-center gap-3 bg-volt text-carbon px-8 py-4 font-700 kicker text-xs" data-hover>
+        Launch Configurator →
+      </a>
+    </div>
+    <div class="reveal" data-rev>
+      <div class="bg-carbon2/80 backdrop-blur border border-white/10 rounded-2xl p-6 sm:p-8 glow-volt">
+        <div class="flex items-center justify-between mb-6">
+          <span class="kicker text-fog">Your Build</span>
+          <span class="kicker text-volt">AERION RS</span>
+        </div>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-center justify-between py-3 border-b border-white/8"><span class="text-fog">Groupset</span><span class="font-600">Electronic 12s</span></div>
+          <div class="flex items-center justify-between py-3 border-b border-white/8"><span class="text-fog">Wheels</span><span class="font-600">50mm Carbon Aero</span></div>
+          <div class="flex items-center justify-between py-3 border-b border-white/8"><span class="text-fog">Finish</span><span class="font-600">Volt / Carbon Raw</span></div>
+          <div class="flex items-center justify-between py-3 border-b border-white/8"><span class="text-fog">Est. Weight</span><span class="font-600 text-volt">7.1 kg</span></div>
+        </div>
+        <div class="flex items-end justify-between mt-6 pt-6 border-t border-white/10">
+          <div><p class="kicker text-fog mb-1">Build Total</p><p class="display text-4xl font-900">$9,840</p></div>
+          <span class="kicker text-[0.6rem] text-carbon bg-volt px-3 py-2 font-700">Reserve</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FAQ ========================= -->
+<section id="faq" class="relative py-24 sm:py-32 bg-carbon2">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="kicker text-volt mb-4 reveal" data-rev>Questions</p>
+      <h2 class="display text-5xl sm:text-6xl font-900 reveal" data-rev>Before you<br/><span class="text-volt">clip in.</span></h2>
+    </div>
+    <div class="divide-y divide-white/8 border-y border-white/8" id="faqList">
+      <div class="faq-item">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="display text-xl font-700">How long until my bike ships?</span>
+          <span class="faq-icon text-volt text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-fog pb-6 leading-relaxed">Built-to-order frames typically leave our Girona workshop within 3–4 weeks. Custom finishes add about 10 days. You'll get live build photos at each stage.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="display text-xl font-700">Can I demo before I commit?</span>
+          <span class="faq-icon text-volt text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-fog pb-6 leading-relaxed">Yes. We run demo days in 40 cities and every Slipstream partner studio carries a fleet. Book a ride, and your demo fee is credited toward a purchase.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="display text-xl font-700">What's covered by the warranty?</span>
+          <span class="faq-icon text-volt text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-fog pb-6 leading-relaxed">Every frame and fork carries a 9-year warranty against manufacturing defects, plus our crash-replacement program offering 30% off a new frame if you crash one riding.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="display text-xl font-700">Do you ship internationally?</span>
+          <span class="faq-icon text-volt text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-fog pb-6 leading-relaxed">We ship fully assembled and ride-ready to 38 countries. Customs and duties are calculated transparently at checkout — no surprise fees on arrival.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="display text-xl font-700">How do I get the right fit?</span>
+          <span class="faq-icon text-volt text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><p class="text-fog pb-6 leading-relaxed">The configurator includes a guided fit calculator, and every purchase includes a free professional dynamic bike fit at any partner studio worldwide — for the life of the bike.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= FINAL CTA ========================= -->
+<section class="relative py-28 sm:py-40 overflow-hidden gridlines">
+  <div class="absolute inset-0 bg-gradient-to-t from-volt/10 to-carbon"></div>
+  <div class="relative max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <p class="kicker text-volt mb-6 reveal" data-rev>Your next PR is waiting</p>
+    <h2 class="display text-6xl sm:text-8xl font-900 mb-8 reveal" data-rev>STOP<br/><span class="text-volt">DRIFTING.</span></h2>
+    <p class="text-fog text-lg mb-10 max-w-xl mx-auto reveal" data-rev>The wind doesn't care about your excuses. Build the machine that makes it your ally.</p>
+    <a href="#config" id="finalMagnet" class="magnetic inline-flex items-center gap-3 bg-volt text-carbon px-10 py-5 font-800 kicker text-sm reveal" data-rev data-hover>
+      Configure Your VELOCRON →
+    </a>
+  </div>
+</section>
+
+<!-- ========================= FOOTER ========================= -->
+<footer class="relative border-t border-white/8 bg-carbon pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-5 gap-10 mb-14">
+      <div class="md:col-span-2">
+        <a href="#" class="flex items-center gap-2 mb-5">
+          <span class="inline-block w-8 h-8 relative">
+            <span class="absolute inset-0 rotate-45 border-2 border-volt"></span>
+            <span class="absolute inset-[6px] bg-volt rotate-45"></span>
+          </span>
+          <span class="display text-xl font-900">VELOCRON</span>
+        </a>
+        <p class="text-fog text-sm max-w-xs">Aerodynamic carbon machines, hand-laid in Girona. Engineered for your fastest self.</p>
+      </div>
+      <div>
+        <p class="kicker text-volt mb-4">Bikes</p>
+        <ul class="space-y-2.5 text-sm text-fog">
+          <li><a href="#models" class="hover:text-white transition" data-hover>AERION RS</a></li>
+          <li><a href="#models" class="hover:text-white transition" data-hover>TERRAN GX</a></li>
+          <li><a href="#models" class="hover:text-white transition" data-hover>VOLTA SL</a></li>
+          <li><a href="#models" class="hover:text-white transition" data-hover>PASSAGE E2</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="kicker text-volt mb-4">Company</p>
+        <ul class="space-y-2.5 text-sm text-fog">
+          <li><a href="#about" class="hover:text-white transition" data-hover>About</a></li>
+          <li><a href="#ride" class="hover:text-white transition" data-hover>Slipstream Club</a></li>
+          <li><a href="#tech" class="hover:text-white transition" data-hover>Technology</a></li>
+          <li><a href="#faq" class="hover:text-white transition" data-hover>Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="kicker text-volt mb-4">Stay in the draft</p>
+        <p class="text-fog text-sm mb-4">Drops, demo days, and pro race recaps.</p>
+        <form class="flex" onsubmit="return false">
+          <input type="email" placeholder="you@email.com" class="bg-carbon2 border border-white/10 px-4 py-2.5 text-sm w-full focus:outline-none focus:border-volt" />
+          <button class="bg-volt text-carbon px-4 font-700 kicker text-xs" data-hover>Go</button>
+        </form>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/8 text-fog text-xs">
+      <p>© 2026 VELOCRON Cycles S.L. — Girona, Catalunya. All rights reserved.</p>
+      <div class="flex items-center gap-6">
+        <a href="#" class="hover:text-white transition" data-hover>Privacy</a>
+        <a href="#" class="hover:text-white transition" data-hover>Terms</a>
+        <a href="#" class="hover:text-white transition" data-hover>Instagram</a>
+        <a href="#" class="hover:text-white transition" data-hover>Strava</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Mobile menu ---------- */
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn && menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobnav, #mobileMenu a').forEach(a =>
+    a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-carbon/85','backdrop-blur','border-b','border-white/8');
+    else nav.classList.remove('bg-carbon/85','backdrop-blur','border-b','border-white/8');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-btn');
+    const body = item.querySelector('.accordion-body');
+    const icon = item.querySelector('.faq-icon');
+    btn.addEventListener('click', () => {
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => b.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform='rotate(0deg)'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(45deg)'; }
+    });
+  });
+
+  /* ---------- Custom cursor + magnetic + hover ---------- */
+  if (!reduce && window.matchMedia('(min-width:1025px)').matches) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx=innerWidth/2, my=innerHeight/2, rx=mx, ry=my;
+    window.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; dot.style.transform=`translate(${mx-3.5}px,${my-3.5}px)`; });
+    (function loop(){ rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18; ring.style.transform=`translate(${rx-19}px,${ry-19}px)`; requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-hover]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+    });
+    // magnetic buttons
+    document.querySelectorAll('.magnetic').forEach(btn=>{
+      btn.addEventListener('mousemove', e=>{
+        const r=btn.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+        btn.style.transform=`translate(${x*0.3}px,${y*0.4}px)`;
+      });
+      btn.addEventListener('mouseleave',()=>btn.style.transform='translate(0,0)');
+    });
+    // hero tilt 3D
+    const tilt=document.getElementById('heroTilt');
+    if(tilt){
+      const card=tilt;
+      card.style.transition='transform .15s ease-out';
+      card.addEventListener('mousemove', e=>{
+        const r=card.getBoundingClientRect();
+        const px=(e.clientX-r.left)/r.width-0.5, py=(e.clientY-r.top)/r.height-0.5;
+        card.style.transform=`perspective(900px) rotateY(${px*10}deg) rotateX(${-py*10}deg)`;
+      });
+      card.addEventListener('mouseleave',()=>card.style.transform='perspective(900px) rotateY(0) rotateX(0)');
+    }
+  }
+
+  /* ---------- Speed lines ---------- */
+  (function(){
+    const wrap=document.getElementById('speedlines');
+    if(!wrap||reduce) return;
+    for(let i=0;i<7;i++){
+      const l=document.createElement('div');
+      l.className='speedline';
+      l.style.top=(10+i*12)+'%';
+      l.style.width=(20+Math.random()*45)+'%';
+      wrap.appendChild(l);
+      if(window.gsap){
+        gsap.to(l,{opacity:.7,duration:.4,delay:i*0.12,repeat:-1,yoyo:true,repeatDelay:1.5+Math.random()});
+        gsap.fromTo(l,{x:'-30%'},{x:'140%',duration:2+Math.random(),delay:i*0.12,repeat:-1,repeatDelay:1.5+Math.random(),ease:'power1.in'});
+      }
+    }
+  })();
+
+  if (!window.gsap) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Reveals ---------- */
+  if(!reduce){
+    gsap.utils.toArray('[data-rev]').forEach(el=>{
+      gsap.fromTo(el,{y:42,opacity:0},{
+        y:0,opacity:1,duration:.9,ease:'power3.out',
+        scrollTrigger:{trigger:el,start:'top 88%'}
+      });
+    });
+  } else {
+    document.querySelectorAll('[data-rev]').forEach(el=>{el.style.opacity=1;el.style.transform='none';});
+  }
+
+  /* ---------- Container parallax on bike imagery ---------- */
+  if(!reduce){
+    gsap.utils.toArray('[data-parallax]').forEach(img=>{
+      gsap.fromTo(img,{yPercent:-8},{yPercent:8,ease:'none',
+        scrollTrigger:{trigger:img.closest('.parallax-img'),start:'top bottom',end:'bottom top',scrub:true}});
+    });
+  }
+
+  /* ---------- Count-ups ---------- */
+  document.querySelectorAll('.count').forEach(el=>{
+    const target=+el.dataset.count;
+    const obj={v:0};
+    ScrollTrigger.create({trigger:el,start:'top 90%',once:true,onEnter:()=>{
+      if(reduce){el.textContent=target;return;}
+      gsap.to(obj,{v:target,duration:1.6,ease:'power2.out',onUpdate:()=>{
+        el.textContent = target>=100 ? Math.round(obj.v).toLocaleString() : Math.round(obj.v);
+      }});
+    }});
+  });
+
+  /* ---------- Headline pop on load ---------- */
+  if(!reduce){
+    gsap.from('h1 .reveal',{yPercent:110,opacity:0,duration:1,stagger:0.12,ease:'power4.out',delay:.15});
+  }
+})();
+</script>
+</body>
+</html>

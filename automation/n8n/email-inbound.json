@@ -1,0 +1,277 @@
+{
+  "name": "[deskdev] email-inbound",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "in:inbox -from:me",
+          "readStatus": "both"
+        },
+        "options": {}
+      },
+      "id": "new-mail",
+      "name": "New mail",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Polls the studio inbox every 5 minutes; each message received since the last poll (read or not) runs once. Our own sent mail is excluded by the query."
+    },
+    {
+      "parameters": {
+        "jsCode": "// The Gmail Trigger hands over each new inbox message (simple: false, so the\n// parsed message with its text and HTML parts). Only what email_ingest\n// (migration 049) needs travels on; the database decides whether the sender\n// is someone DeskDev knows and stores nothing otherwise. Nothing here is\n// logged: Summarize keeps counts only.\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst MAX_BODY = 50000;\n\n// mailparser shape: { value: [{ address, name }], text }, or an array of them\n// when a header appears twice.\nconst entries = (field) => {\n  if (!field) return [];\n  const groups = Array.isArray(field) ? field : [field];\n  return groups.flatMap(g => (g && Array.isArray(g.value) ? g.value : []));\n};\nconst addresses = (field) => [...new Set(entries(field)\n  .map(a => String((a && a.address) || '').trim().toLowerCase())\n  .filter(a => EMAIL_RE.test(a)))].slice(0, 10);\n\nconst stripHtml = (html) => String(html || '')\n  .replace(/<(script|style|head)\\b[\\s\\S]*?<\\/\\1>/gi, ' ')\n  .replace(/<br\\s*\\/?>/gi, '\\n')\n  .replace(/<\\/(p|div|li|tr|h[1-6]|blockquote)>/gi, '\\n')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/&nbsp;/gi, ' ')\n  .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&quot;/gi, '\"').replace(/&#39;/gi, \"'\")\n  .replace(/&amp;/gi, '&')\n  .replace(/[ \\t]+/g, ' ')\n  .replace(/\\n[ \\t]+/g, '\\n')\n  .replace(/\\n{3,}/g, '\\n\\n')\n  .trim();\n\n// The thread already lives in DeskDev, so the quoted history under a reply is\n// cut (\"On … wrote:\", Outlook's \"-----Original Message-----\" / From:+Sent:).\n// Only when something is left above it; otherwise the text is kept whole.\nconst withoutQuote = (text) => {\n  const t = String(text || '').replace(/\\r\\n?/g, '\\n');\n  const marks = [\n    /\\n[ \\t>]*On [^\\n]{3,300}?(?:\\n[^\\n]{0,300}?)?wrote:[ \\t]*(?:\\n|$)/,\n    /\\n[ \\t]*-{2,}[ \\t]*Original Message[ \\t]*-{2,}/i,\n    /\\n[ \\t]*_{8,}[ \\t]*\\n[ \\t]*From:/,\n    /\\n[ \\t]*From:[^\\n]*\\n[ \\t]*(?:Sent|Date):/,\n  ];\n  let cut = -1;\n  for (const re of marks) {\n    const m = t.match(re);\n    if (m && (cut === -1 || m.index < cut)) cut = m.index;\n  }\n  const kept = cut > 0 ? t.slice(0, cut).trim() : '';\n  return kept || t.trim();\n};\n\nconst out = [];\nfor (const item of $input.all()) {\n  const m = item.json || {};\n  const from = entries(m.from)[0] || {};\n  const fromEmail = String(from.address || '').trim().toLowerCase();\n  if (!m.id || !EMAIL_RE.test(fromEmail)) continue;\n  const text = typeof m.text === 'string' && m.text.trim() ? m.text : stripHtml(m.html);\n  const received = new Date(m.date || Number(m.internalDate) || Date.now());\n  out.push({ json: {\n    gmail_message_id: String(m.id),\n    gmail_thread_id: m.threadId ? String(m.threadId) : null,\n    from_email: fromEmail,\n    from_name: String(from.name || '').replace(/[\\r\\n\\t]+/g, ' ').trim().slice(0, 120),\n    to_emails: addresses(m.to),\n    cc_emails: addresses(m.cc),\n    subject: String(m.subject || '').replace(/[\\r\\n\\t]+/g, ' ').trim().slice(0, 300),\n    body_text: withoutQuote(text).slice(0, MAX_BODY),\n    received_at: Number.isNaN(received.getTime()) ? new Date().toISOString() : received.toISOString(),\n  } });\n}\nreturn out;\n"
+      },
+      "id": "normalize",
+      "name": "Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/rpc/email_ingest",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_payload: $json }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "ingest",
+      "name": "Ingest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "email_ingest (049) matches the message to a lead, client or project by thread or sender, or stores nothing. One call per message; a failed call does not stop the others."
+    },
+    {
+      "parameters": {
+        "jsCode": "// One run-log row per poll that found mail: counts only, never addresses,\n// subjects or text. email_ingest answers {ok, matched, duplicate?, reason?};\n// a call that failed (Ingest continues on error) carries `error` instead.\nconst results = $('Ingest').all().map(i => i.json || {});\nconst seen = $('New mail').all().length;\nlet matched = 0;\nlet duplicates = 0;\nlet ignored = 0;\nlet failed = 0;\nfor (const r of results) {\n  if (r.error || r.ok !== true) failed++;\n  else if (r.duplicate) duplicates++;\n  else if (r.matched) matched++;\n  else ignored++;\n}\n// No message id or no readable sender: never sent to the database.\nconst skipped = Math.max(0, seen - results.length);\n// Every call failing means the database is not answering (or 049 is missing).\nconst status = results.length > 0 && failed === results.length ? 'error' : 'ok';\nreturn [{ json: { status, detail: { seen, matched, duplicates, ignored, skipped, failed } } }];\n"
+      },
+      "id": "summarize",
+      "name": "Summarize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'email-inbound', workflow: $workflow.name, status: $json.status, execution_id: String($execution.id), detail: $json.detail }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        880,
+        120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "hourly",
+      "name": "Hourly",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        240
+      ],
+      "notes": "The Gmail Trigger only runs when mail arrives, so a quiet inbox would read as stale. This hourly probe proves the Gmail credential still works and logs ok; if it fails, the error handler logs the failure."
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "q": "in:inbox"
+        }
+      },
+      "id": "check-gmail",
+      "name": "Check Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "alwaysOutputData": true,
+      "position": [
+        220,
+        240
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "5ba65a99-ffbd-4ad7-be41-f44dea2fb108"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gmail answered: the credential works. One ok row an hour keeps the health card honest.\nreturn [{ json: { status: 'ok', detail: { heartbeat: true } } }];\n"
+      },
+      "id": "heartbeat",
+      "name": "Heartbeat",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "New mail": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "Ingest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingest": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hourly": {
+      "main": [
+        [
+          {
+            "node": "Check Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Gmail": {
+      "main": [
+        [
+          {
+            "node": "Heartbeat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Heartbeat": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

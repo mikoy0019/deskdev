@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAISON NÖIR — Niche Luxury Fragrance House</title>
+<meta name="description" content="MAISON NÖIR — an independent perfumery composing rare, sensual fragrances from the world's most precious raw materials. Discover the collection." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          noir: '#0a0807',
+          ink: '#13100e',
+          ash: '#1d1815',
+          gold: '#c9a86a',
+          goldlt: '#e6cf9a',
+          blush: '#d9a8a0',
+          bone: '#ece4d8',
+          smoke: '#9a8f82',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans: ['Jost', 'sans-serif'],
+        },
+        letterSpacing: {
+          luxe: '0.35em',
+          wide2: '0.18em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; background: #0a0807; }
+  body { cursor: none; }
+  ::selection { background: #c9a86a; color: #0a0807; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 9px; }
+  ::-webkit-scrollbar-track { background: #0a0807; }
+  ::-webkit-scrollbar-thumb { background: #3a2f23; border-radius: 9px; }
+  ::-webkit-scrollbar-thumb:hover { background: #c9a86a; }
+
+  /* Gold shimmering text */
+  .gold-shimmer {
+    background: linear-gradient(100deg, #8a6f3e 0%, #e6cf9a 25%, #fff4d8 45%, #e6cf9a 60%, #8a6f3e 100%);
+    background-size: 250% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -250% center; } }
+
+  /* Masked reveal */
+  .reveal-mask { overflow: hidden; display: inline-block; }
+  .reveal-mask > * { display: inline-block; transform: translateY(110%); }
+
+  /* Scent mist particles */
+  .mist {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(201,168,106,0.16) 0%, rgba(217,168,160,0.06) 40%, transparent 70%);
+    filter: blur(14px);
+    animation: drift linear infinite;
+    opacity: 0;
+  }
+  @keyframes drift {
+    0%   { transform: translate(0,0) scale(0.7); opacity: 0; }
+    15%  { opacity: 0.9; }
+    85%  { opacity: 0.6; }
+    100% { transform: translate(var(--dx), -160px) scale(1.4); opacity: 0; }
+  }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 50%; mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 6px; height: 6px; background: #e6cf9a; transform: translate(-50%,-50%); }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1px solid rgba(201,168,106,0.7);
+    transform: translate(-50%,-50%); transition: width .3s, height .3s, background .3s, border-color .3s;
+  }
+  .cursor-ring.grow { width: 64px; height: 64px; background: rgba(201,168,106,0.12); border-color: transparent; }
+
+  /* Bottle tilt */
+  .tilt-wrap { perspective: 1200px; }
+  .tilt-inner { transition: transform .15s ease-out; transform-style: preserve-3d; }
+
+  /* Marquee */
+  .marquee-track { display: inline-flex; white-space: nowrap; animation: marquee 32s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+
+  .gold-line { height: 1px; background: linear-gradient(90deg, transparent, #c9a86a, transparent); }
+
+  .lift { transition: transform .6s cubic-bezier(.16,.84,.44,1), box-shadow .6s; }
+  .lift:hover { transform: translateY(-10px); }
+
+  .note-chip { transition: all .4s cubic-bezier(.16,.84,.44,1); }
+  .note-chip:hover { background: #c9a86a; color: #0a0807; transform: translateY(-3px); }
+
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    .reveal-mask > * { transform: none !important; }
+    .mist { display: none; }
+  }
+</style>
+</head>
+
+<body class="bg-noir text-bone font-sans antialiased selection:bg-gold">
+
+<!-- Custom cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <a href="#top" data-cursor class="font-serif text-2xl tracking-wide2 text-bone">
+      MAISON <span class="gold-shimmer font-medium">NÖIR</span>
+    </a>
+    <ul class="hidden lg:flex items-center gap-9 text-[11px] uppercase tracking-wide2 text-smoke">
+      <li><a data-cursor class="hover:text-gold transition" href="#collection">Collection</a></li>
+      <li><a data-cursor class="hover:text-gold transition" href="#notes">Scent Families</a></li>
+      <li><a data-cursor class="hover:text-gold transition" href="#story">The House</a></li>
+      <li><a data-cursor class="hover:text-gold transition" href="#discovery">Discovery</a></li>
+      <li><a data-cursor class="hover:text-gold transition" href="#gifting">Gifting</a></li>
+    </ul>
+    <div class="flex items-center gap-5">
+      <button data-cursor aria-label="Search" class="text-smoke hover:text-gold transition hidden sm:block">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      </button>
+      <button data-cursor aria-label="Cart" class="relative text-bone hover:text-gold transition">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>
+        <span class="absolute -top-2 -right-2 bg-gold text-noir text-[10px] w-4 h-4 rounded-full grid place-items-center font-semibold">2</span>
+      </button>
+      <button id="menuBtn" data-cursor class="lg:hidden text-bone" aria-label="Menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </nav>
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="lg:hidden hidden bg-ink/95 backdrop-blur-md border-t border-white/5">
+    <ul class="flex flex-col px-6 py-6 gap-5 text-sm uppercase tracking-wide2 text-bone">
+      <li><a class="hover:text-gold" href="#collection">Collection</a></li>
+      <li><a class="hover:text-gold" href="#notes">Scent Families</a></li>
+      <li><a class="hover:text-gold" href="#story">The House</a></li>
+      <li><a class="hover:text-gold" href="#discovery">Discovery</a></li>
+      <li><a class="hover:text-gold" href="#gifting">Gifting</a></li>
+    </ul>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- Mist field -->
+  <div id="mistField" class="absolute inset-0 -z-10"></div>
+  <!-- Radial glow -->
+  <div class="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_60%_40%,rgba(201,168,106,0.12),transparent_55%)]"></div>
+  <div class="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_at_20%_80%,rgba(217,168,160,0.07),transparent_50%)]"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <!-- Copy -->
+    <div class="order-2 lg:order-1">
+      <div class="reveal-mask mb-6"><span class="text-[11px] uppercase tracking-luxe text-gold">Niche Perfumery · Est. 2014 · Grasse</span></div>
+      <h1 class="font-serif leading-[0.95] text-5xl sm:text-6xl xl:text-7xl text-bone mb-7">
+        <span class="reveal-mask block"><span>The art of</span></span>
+        <span class="reveal-mask block"><span class="italic gold-shimmer">invisible</span></span>
+        <span class="reveal-mask block"><span>seduction.</span></span>
+      </h1>
+      <p data-fade class="text-smoke max-w-md text-base leading-relaxed mb-9">
+        Rare raw materials, slow-macerated and composed by hand. MAISON&nbsp;NÖIR builds fragrances
+        that unfold like a memory — never announced, always remembered.
+      </p>
+      <div data-fade class="flex flex-wrap items-center gap-5">
+        <a href="#collection" id="shopCta" data-cursor
+           class="relative inline-flex items-center gap-3 bg-gold text-noir px-9 py-4 text-[11px] uppercase tracking-wide2 font-semibold rounded-full overflow-hidden group">
+          <span class="relative z-10">Shop the Collection</span>
+          <svg class="relative z-10" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="absolute inset-0 bg-goldlt scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500"></span>
+        </a>
+        <a href="#story" data-cursor class="text-[11px] uppercase tracking-wide2 text-bone border-b border-gold/40 pb-1 hover:text-gold transition">
+          Our story
+        </a>
+      </div>
+      <div data-fade class="flex items-center gap-8 mt-12 text-smoke text-[11px] uppercase tracking-wide2">
+        <span><span class="text-gold font-serif text-xl mr-1">24</span>rare accords</span>
+        <span class="w-px h-6 bg-white/10"></span>
+        <span><span class="text-gold font-serif text-xl mr-1">100%</span>natural origin</span>
+        <span class="w-px h-6 bg-white/10"></span>
+        <span><span class="text-gold font-serif text-xl mr-1">∞</span>longevity</span>
+      </div>
+    </div>
+
+    <!-- Bottle -->
+    <div class="order-1 lg:order-2 flex justify-center" data-parallax>
+      <div class="tilt-wrap relative">
+        <div class="tilt-inner relative" id="heroBottle">
+          <div class="absolute -inset-10 bg-[radial-gradient(circle,rgba(201,168,106,0.22),transparent_65%)] blur-2xl"></div>
+          <div class="relative w-[280px] sm:w-[360px] aspect-[3/4] rounded-[2rem] overflow-hidden border border-white/10 bg-gradient-to-b from-ash to-noir shadow-2xl">
+            <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="MAISON NÖIR signature fragrance bottle"
+                 class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-noir/70 via-transparent to-transparent"></div>
+          </div>
+          <div class="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-ink/90 backdrop-blur border border-gold/30 px-6 py-3 rounded-full text-center whitespace-nowrap">
+            <p class="font-serif italic text-gold text-lg leading-none">Velours Obscur</p>
+            <p class="text-[9px] uppercase tracking-wide2 text-smoke mt-1">Extrait de Parfum · 50ml</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-smoke text-[10px] uppercase tracking-luxe">
+    <span>Scroll</span>
+    <span class="w-px h-10 bg-gradient-to-b from-gold to-transparent"></span>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="py-6 border-y border-white/5 bg-ink overflow-hidden">
+  <div class="marquee-track text-smoke">
+    <div class="flex items-center gap-10 px-5 font-serif italic text-2xl">
+      <span>Oud Royal</span><span class="text-gold">✦</span><span>Iris Pâle</span><span class="text-gold">✦</span>
+      <span>Cuir de Minuit</span><span class="text-gold">✦</span><span>Ambre Sauvage</span><span class="text-gold">✦</span>
+      <span>Velours Obscur</span><span class="text-gold">✦</span><span>Néroli Blanc</span><span class="text-gold">✦</span>
+    </div>
+    <div class="flex items-center gap-10 px-5 font-serif italic text-2xl" aria-hidden="true">
+      <span>Oud Royal</span><span class="text-gold">✦</span><span>Iris Pâle</span><span class="text-gold">✦</span>
+      <span>Cuir de Minuit</span><span class="text-gold">✦</span><span>Ambre Sauvage</span><span class="text-gold">✦</span>
+      <span>Velours Obscur</span><span class="text-gold">✦</span><span>Néroli Blanc</span><span class="text-gold">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COLLECTION ===================== -->
+<section id="collection" class="py-24 lg:py-32 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+    <div>
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">The Collection</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone leading-tight">Four chapters of <span class="italic gold-shimmer">desire</span></h2>
+    </div>
+    <p data-fade class="text-smoke max-w-sm text-sm leading-relaxed">Each extrait is bottled in numbered editions and aged a minimum of six months before release.</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- card template -->
+    <article data-fade class="group lift bg-ink border border-white/5 rounded-2xl overflow-hidden">
+      <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-ash to-noir">
+        <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Velours Obscur" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <span class="absolute top-3 left-3 bg-noir/70 backdrop-blur text-gold text-[9px] uppercase tracking-wide2 px-3 py-1 rounded-full">Signature</span>
+      </div>
+      <div class="p-5">
+        <h3 class="font-serif text-2xl text-bone">Velours Obscur</h3>
+        <p class="text-smoke text-xs mt-1">Amber · Oud · Black Plum</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-gold font-serif text-lg">$285</span>
+          <button data-cursor class="text-[10px] uppercase tracking-wide2 border border-gold/40 text-gold px-4 py-2 rounded-full hover:bg-gold hover:text-noir transition">Add</button>
+        </div>
+      </div>
+    </article>
+
+    <article data-fade class="group lift bg-ink border border-white/5 rounded-2xl overflow-hidden">
+      <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-ash to-noir">
+        <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Iris Pâle" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <span class="absolute top-3 left-3 bg-noir/70 backdrop-blur text-blush text-[9px] uppercase tracking-wide2 px-3 py-1 rounded-full">New</span>
+      </div>
+      <div class="p-5">
+        <h3 class="font-serif text-2xl text-bone">Iris Pâle</h3>
+        <p class="text-smoke text-xs mt-1">Iris · Suede · White Musk</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-gold font-serif text-lg">$240</span>
+          <button data-cursor class="text-[10px] uppercase tracking-wide2 border border-gold/40 text-gold px-4 py-2 rounded-full hover:bg-gold hover:text-noir transition">Add</button>
+        </div>
+      </div>
+    </article>
+
+    <article data-fade class="group lift bg-ink border border-white/5 rounded-2xl overflow-hidden">
+      <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-ash to-noir">
+        <img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cuir de Minuit" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+      </div>
+      <div class="p-5">
+        <h3 class="font-serif text-2xl text-bone">Cuir de Minuit</h3>
+        <p class="text-smoke text-xs mt-1">Leather · Saffron · Tobacco</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-gold font-serif text-lg">$310</span>
+          <button data-cursor class="text-[10px] uppercase tracking-wide2 border border-gold/40 text-gold px-4 py-2 rounded-full hover:bg-gold hover:text-noir transition">Add</button>
+        </div>
+      </div>
+    </article>
+
+    <article data-fade class="group lift bg-ink border border-white/5 rounded-2xl overflow-hidden">
+      <div class="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-ash to-noir">
+        <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Ambre Sauvage" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <span class="absolute top-3 left-3 bg-noir/70 backdrop-blur text-gold text-[9px] uppercase tracking-wide2 px-3 py-1 rounded-full">Limited</span>
+      </div>
+      <div class="p-5">
+        <h3 class="font-serif text-2xl text-bone">Ambre Sauvage</h3>
+        <p class="text-smoke text-xs mt-1">Amber · Incense · Vetiver</p>
+        <div class="flex items-center justify-between mt-4">
+          <span class="text-gold font-serif text-lg">$295</span>
+          <button data-cursor class="text-[10px] uppercase tracking-wide2 border border-gold/40 text-gold px-4 py-2 rounded-full hover:bg-gold hover:text-noir transition">Add</button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== SCENT FAMILIES / NOTES ===================== -->
+<section id="notes" class="py-24 lg:py-32 bg-ink border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">Olfactory Families</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone">Read the <span class="italic gold-shimmer">notes</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div data-fade class="bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="w-12 h-12 rounded-full bg-gold/10 grid place-items-center mb-6 text-gold font-serif text-xl">T</div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Top Notes</h3>
+        <p class="text-smoke text-sm mb-6 leading-relaxed">The first whisper — bright, fleeting, the opening movement of the composition.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Bergamot</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Pink Pepper</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Néroli</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Saffron</span>
+        </div>
+      </div>
+      <div data-fade class="bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="w-12 h-12 rounded-full bg-blush/10 grid place-items-center mb-6 text-blush font-serif text-xl">H</div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Heart Notes</h3>
+        <p class="text-smoke text-sm mb-6 leading-relaxed">The soul of the scent — where the character settles and begins to bloom on skin.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Iris</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Rose de Mai</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Jasmine</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Violet Leaf</span>
+        </div>
+      </div>
+      <div data-fade class="bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="w-12 h-12 rounded-full bg-gold/10 grid place-items-center mb-6 text-gold font-serif text-xl">B</div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Base Notes</h3>
+        <p class="text-smoke text-sm mb-6 leading-relaxed">The lingering memory — deep, resinous, the trail that follows you home.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Oud</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Amber</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Sandalwood</span>
+          <span class="note-chip cursor-default text-[11px] uppercase tracking-wide2 text-smoke border border-white/10 px-3 py-1.5 rounded-full">Vanilla</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STORY / ABOUT ===================== -->
+<section id="story" class="py-24 lg:py-32 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="grid lg:grid-cols-2 gap-14 items-center">
+    <div data-parallax class="relative">
+      <div class="relative rounded-[2rem] overflow-hidden border border-white/10 bg-gradient-to-b from-ash to-noir aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="The perfumer's atelier" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-noir/60 to-transparent"></div>
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:right-8 bg-ink border border-gold/30 rounded-2xl px-7 py-5 text-center">
+        <p class="font-serif text-4xl gold-shimmer leading-none">Vol. I</p>
+        <p class="text-[10px] uppercase tracking-wide2 text-smoke mt-2">Grasse Atelier</p>
+      </div>
+    </div>
+    <div>
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-5">The House</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone leading-tight mb-7">Composed in shadow,<br><span class="italic gold-shimmer">worn in light.</span></h2>
+      <p data-fade class="text-smoke leading-relaxed mb-5">
+        MAISON NÖIR began in a small atelier above the flower fields of Grasse, where our founding
+        nose refused the industrial pace of modern perfumery. No briefs. No focus groups. Only the
+        slow conversation between raw material and intuition.
+      </p>
+      <p data-fade class="text-smoke leading-relaxed mb-8">
+        Every formula is macerated for months, hand-bottled, and numbered. We make fragrance the way
+        it was made a century ago — patiently, and without apology.
+      </p>
+      <div data-fade class="grid grid-cols-3 gap-6">
+        <div><p class="font-serif text-3xl gold-shimmer">11</p><p class="text-[10px] uppercase tracking-wide2 text-smoke mt-1">Years</p></div>
+        <div><p class="font-serif text-3xl gold-shimmer">6mo</p><p class="text-[10px] uppercase tracking-wide2 text-smoke mt-1">Maceration</p></div>
+        <div><p class="font-serif text-3xl gold-shimmer">100%</p><p class="text-[10px] uppercase tracking-wide2 text-smoke mt-1">Hand-bottled</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CRAFTSMANSHIP ===================== -->
+<section class="py-24 lg:py-32 bg-ink border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">Craftsmanship</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone">From field to <span class="italic gold-shimmer">flacon</span></h2>
+    </div>
+    <div class="grid md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden">
+      <div data-fade class="bg-noir p-8">
+        <p class="font-serif text-5xl text-gold/30 mb-4">01</p>
+        <h3 class="font-serif text-xl text-bone mb-3">Sourcing</h3>
+        <p class="text-smoke text-sm leading-relaxed">Single-origin absolutes from family growers — Calabrian bergamot, Indian oud, Mysore sandalwood.</p>
+      </div>
+      <div data-fade class="bg-noir p-8">
+        <p class="font-serif text-5xl text-gold/30 mb-4">02</p>
+        <h3 class="font-serif text-xl text-bone mb-3">Composition</h3>
+        <p class="text-smoke text-sm leading-relaxed">Each accord is built drop by drop on the organ, balanced entirely by the nose and the hand.</p>
+      </div>
+      <div data-fade class="bg-noir p-8">
+        <p class="font-serif text-5xl text-gold/30 mb-4">03</p>
+        <h3 class="font-serif text-xl text-bone mb-3">Maceration</h3>
+        <p class="text-smoke text-sm leading-relaxed">The juice rests in darkness for six months, allowing molecules to marry into a single voice.</p>
+      </div>
+      <div data-fade class="bg-noir p-8">
+        <p class="font-serif text-5xl text-gold/30 mb-4">04</p>
+        <h3 class="font-serif text-xl text-bone mb-3">Bottling</h3>
+        <p class="text-smoke text-sm leading-relaxed">Filled, sealed, and numbered by hand in glass cast from a single mould in Normandy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DISCOVERY SET ===================== -->
+<section id="discovery" class="py-24 lg:py-32 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="relative grid lg:grid-cols-2 gap-12 items-center bg-gradient-to-br from-ash to-noir border border-gold/20 rounded-[2rem] p-8 lg:p-14 overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-72 h-72 bg-[radial-gradient(circle,rgba(201,168,106,0.18),transparent_70%)]"></div>
+    <div>
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">Discovery Set</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone leading-tight mb-6">Undecided? <span class="italic gold-shimmer">Begin here.</span></h2>
+      <p data-fade class="text-smoke leading-relaxed mb-8 max-w-md">
+        Four 2ml travel sprays of the full collection, presented in a magnetic black case. The
+        purchase value is credited toward any full bottle.
+      </p>
+      <ul data-fade class="space-y-3 mb-9 text-sm text-bone">
+        <li class="flex items-center gap-3"><span class="text-gold">✦</span> All four extraits, 2ml each</li>
+        <li class="flex items-center gap-3"><span class="text-gold">✦</span> Hand-bound scent journal</li>
+        <li class="flex items-center gap-3"><span class="text-gold">✦</span> $45 credited toward a full bottle</li>
+      </ul>
+      <div data-fade class="flex items-center gap-6">
+        <button data-cursor class="bg-gold text-noir px-9 py-4 text-[11px] uppercase tracking-wide2 font-semibold rounded-full hover:bg-goldlt transition">Order — $45</button>
+        <span class="text-smoke text-xs">Ships worldwide</span>
+      </div>
+    </div>
+    <div data-parallax class="relative">
+      <div class="rounded-[1.5rem] overflow-hidden border border-white/10 bg-gradient-to-b from-ash to-noir aspect-square">
+        <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="MAISON NÖIR discovery set" class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GIFTING ===================== -->
+<section id="gifting" class="py-24 lg:py-32 bg-ink border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div>
+        <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">The Art of Gifting</p>
+        <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone">A gift that <span class="italic gold-shimmer">lingers</span></h2>
+      </div>
+      <p data-fade class="text-smoke max-w-sm text-sm leading-relaxed">Every order arrives wrapped in black silk paper, wax-sealed, with a handwritten note of your choosing.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div data-fade class="lift bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="text-gold mb-5"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M3 12h18M12 8v13M12 8s-2-5-5-5-2 5 5 5M12 8s2-5 5-5 2 5-5 5"/></svg></div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Signature Wrap</h3>
+        <p class="text-smoke text-sm leading-relaxed">Black silk paper, gold wax seal, and a hand-tied ribbon — complimentary on every order.</p>
+      </div>
+      <div data-fade class="lift bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="text-gold mb-5"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 4h16v6a8 8 0 01-16 0z"/><path d="M12 18v3M8 21h8"/></svg></div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Engraving</h3>
+        <p class="text-smoke text-sm leading-relaxed">Add up to three initials, hand-engraved into the brass collar of any flacon.</p>
+      </div>
+      <div data-fade class="lift bg-noir/60 border border-white/5 rounded-2xl p-8">
+        <div class="text-gold mb-5"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 8v13H3V8M1 3h22v5H1zM12 3v18"/></svg></div>
+        <h3 class="font-serif text-2xl text-bone mb-2">Gift Cards</h3>
+        <p class="text-smoke text-sm leading-relaxed">Digital or letterpressed cards, delivered on the date you choose, in any amount.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-24 lg:py-32 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="text-center mb-16">
+    <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">Whispered Reviews</p>
+    <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone">In their <span class="italic gold-shimmer">words</span></h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <figure data-fade class="bg-ink border border-white/5 rounded-2xl p-8">
+      <div class="text-gold text-2xl mb-4">★★★★★</div>
+      <blockquote class="font-serif text-xl text-bone italic leading-relaxed mb-6">"Velours Obscur is the only scent strangers stop me to ask about. It feels like a secret I'm allowed to keep."</blockquote>
+      <figcaption class="text-smoke text-xs uppercase tracking-wide2">Amélie R. — Paris</figcaption>
+    </figure>
+    <figure data-fade class="bg-ink border border-white/5 rounded-2xl p-8">
+      <div class="text-gold text-2xl mb-4">★★★★★</div>
+      <blockquote class="font-serif text-xl text-bone italic leading-relaxed mb-6">"The maceration genuinely shows. Twelve hours in and Cuir de Minuit is still telling its story on my wrist."</blockquote>
+      <figcaption class="text-smoke text-xs uppercase tracking-wide2">Daniel K. — New York</figcaption>
+    </figure>
+    <figure data-fade class="bg-ink border border-white/5 rounded-2xl p-8">
+      <div class="text-gold text-2xl mb-4">★★★★★</div>
+      <blockquote class="font-serif text-xl text-bone italic leading-relaxed mb-6">"I bought the discovery set on a whim and have since replaced my entire collection. Quietly extraordinary."</blockquote>
+      <figcaption class="text-smoke text-xs uppercase tracking-wide2">Sofia M. — Milan</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section class="py-24 lg:py-32 bg-ink border-y border-white/5">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-4">Questions</p>
+      <h2 data-fade class="font-serif text-4xl lg:text-5xl text-bone">Before you <span class="italic gold-shimmer">choose</span></h2>
+    </div>
+    <div id="faq" class="divide-y divide-white/5 border-y border-white/5">
+      <div class="faq-item">
+        <button data-cursor class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bone">How long do the fragrances last?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke text-sm leading-relaxed pb-6">As true extraits de parfum (25–30% concentration), our fragrances are designed to last 10–14 hours on skin, with a soft sillage that stays close and intimate.</p></div>
+      </div>
+      <div class="faq-item">
+        <button data-cursor class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bone">Are the ingredients natural?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke text-sm leading-relaxed pb-6">Our compositions are 100% natural origin, blending single-source absolutes, essential oils, and sustainably harvested resins. We never use animal-derived materials.</p></div>
+      </div>
+      <div class="faq-item">
+        <button data-cursor class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bone">Do you ship internationally?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke text-sm leading-relaxed pb-6">Yes — we ship to over 60 countries with tracked, carbon-neutral delivery. Discovery sets ship within 48 hours; full bottles are dispatched within five business days.</p></div>
+      </div>
+      <div class="faq-item">
+        <button data-cursor class="faq-q w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-serif text-xl text-bone">What is your return policy?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="text-smoke text-sm leading-relaxed pb-6">Unopened bottles may be returned within 30 days. Because scent is personal, we recommend starting with a discovery set — its value is fully credited toward your first full bottle.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="relative py-28 lg:py-40 overflow-hidden text-center">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(201,168,106,0.14),transparent_60%)]"></div>
+  <div id="ctaMist" class="absolute inset-0 -z-10"></div>
+  <div class="max-w-3xl mx-auto px-6">
+    <p data-fade class="text-[11px] uppercase tracking-luxe text-gold mb-6">Join the House</p>
+    <h2 data-fade class="font-serif text-4xl sm:text-5xl lg:text-6xl text-bone leading-tight mb-8">Wear something <span class="italic gold-shimmer">unforgettable.</span></h2>
+    <p data-fade class="text-smoke max-w-md mx-auto mb-10">Subscribe for early access to limited editions, private events, and the occasional unmarked sample.</p>
+    <form data-fade class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false;">
+      <input type="email" placeholder="Your email" class="flex-1 bg-ink border border-white/10 rounded-full px-6 py-4 text-sm text-bone placeholder:text-smoke focus:outline-none focus:border-gold transition" />
+      <button data-cursor class="bg-gold text-noir px-8 py-4 text-[11px] uppercase tracking-wide2 font-semibold rounded-full hover:bg-goldlt transition whitespace-nowrap">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-noir border-t border-white/5 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-14">
+      <div>
+        <a href="#top" class="font-serif text-2xl tracking-wide2 text-bone">MAISON <span class="gold-shimmer font-medium">NÖIR</span></a>
+        <p class="text-smoke text-sm leading-relaxed mt-4 max-w-xs">Independent perfumery, composed by hand in Grasse since 2014.</p>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-wide2 text-gold mb-5">Shop</h4>
+        <ul class="space-y-3 text-sm text-smoke">
+          <li><a href="#collection" class="hover:text-gold transition">The Collection</a></li>
+          <li><a href="#discovery" class="hover:text-gold transition">Discovery Set</a></li>
+          <li><a href="#gifting" class="hover:text-gold transition">Gifting</a></li>
+          <li><a href="#notes" class="hover:text-gold transition">Scent Families</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-wide2 text-gold mb-5">House</h4>
+        <ul class="space-y-3 text-sm text-smoke">
+          <li><a href="#story" class="hover:text-gold transition">Our Story</a></li>
+          <li><a href="#" class="hover:text-gold transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-gold transition">Stockists</a></li>
+          <li><a href="#" class="hover:text-gold transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[11px] uppercase tracking-wide2 text-gold mb-5">Follow</h4>
+        <ul class="space-y-3 text-sm text-smoke">
+          <li><a href="#" class="hover:text-gold transition">Instagram</a></li>
+          <li><a href="#" class="hover:text-gold transition">Pinterest</a></li>
+          <li><a href="#" class="hover:text-gold transition">Journal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="gold-line mb-8"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] uppercase tracking-wide2 text-smoke">
+      <p>© 2026 Maison Nöir. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-gold transition">Privacy</a>
+        <a href="#" class="hover:text-gold transition">Terms</a>
+        <a href="#" class="hover:text-gold transition">Shipping</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  if (dot && ring && !reduce && window.matchMedia('(pointer:fine)').matches) {
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    (function loop() {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('[data-cursor], a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Scent mist particles ---------- */
+  function seedMist(container, count) {
+    if (!container || reduce) return;
+    for (let i = 0; i < count; i++) {
+      const m = document.createElement('span');
+      m.className = 'mist';
+      const size = 80 + Math.random() * 160;
+      m.style.width = size + 'px';
+      m.style.height = size + 'px';
+      m.style.left = Math.random() * 100 + '%';
+      m.style.bottom = (-20 + Math.random() * 40) + '%';
+      m.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+      m.style.animationDuration = (10 + Math.random() * 10) + 's';
+      m.style.animationDelay = (Math.random() * 8) + 's';
+      container.appendChild(m);
+    }
+  }
+  seedMist(document.getElementById('mistField'), 14);
+  seedMist(document.getElementById('ctaMist'), 8);
+
+  /* ---------- Mobile menu ---------- */
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (menuBtn) menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  mobileMenu && mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) nav.classList.add('bg-noir/80', 'backdrop-blur-md', 'border-b', 'border-white/5', 'shadow-lg');
+    else nav.classList.remove('bg-noir/80', 'backdrop-blur-md', 'border-b', 'border-white/5', 'shadow-lg');
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const body = item.querySelector('.faq-body');
+      const icon = item.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-body').forEach(b => b.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; i.textContent = '+'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  /* ---------- Magnetic Shop CTA + bottle tilt ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    const cta = document.getElementById('shopCta');
+    if (cta) {
+      cta.addEventListener('mousemove', e => {
+        const r = cta.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        cta.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      cta.addEventListener('mouseleave', () => cta.style.transform = 'translate(0,0)');
+    }
+    const bottle = document.getElementById('heroBottle');
+    if (bottle) {
+      const wrap = bottle.closest('.tilt-wrap');
+      wrap.addEventListener('mousemove', e => {
+        const r = wrap.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        bottle.style.transform = `rotateY(${x * 16}deg) rotateX(${-y * 16}deg) translateZ(20px)`;
+      });
+      wrap.addEventListener('mouseleave', () => bottle.style.transform = 'rotateY(0) rotateX(0)');
+    }
+  }
+
+  /* ---------- GSAP reveals ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // Masked headline reveal on load
+      gsap.to('.reveal-mask > *', {
+        y: '0%', duration: 1.1, ease: 'power4.out', stagger: 0.09, delay: 0.2
+      });
+
+      // Generic fade-up
+      gsap.utils.toArray('[data-fade]').forEach(el => {
+        gsap.from(el, {
+          opacity: 0, y: 40, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // Parallax on bottle imagery
+      gsap.utils.toArray('[data-parallax]').forEach(el => {
+        gsap.to(el, {
+          y: -60, ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 1 }
+        });
+      });
+    } else {
+      gsap.set('.reveal-mask > *', { y: '0%' });
+    }
+  }
+})();
+</script>
+</body>
+</html>

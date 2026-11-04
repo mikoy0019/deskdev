@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hearthly — Find the home that finds you</title>
+<meta name="description" content="Hearthly is the home-search platform that maps every listing, alerts you the moment your match hits the market, and helps you tour, finance, and close — all in one place." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0c1a26',
+          slate2: '#3c5566',
+          mist:   '#f3f7f9',
+          paper:  '#ffffff',
+          brand:  { 50:'#eef6ff',100:'#d9ebff',200:'#b6d8ff',300:'#83bdff',400:'#4a98ff',500:'#1f74f5',600:'#0f57d6',700:'#0e45ab',800:'#123c89',900:'#15366f' },
+          jade:   { 50:'#ecfdf5',100:'#d1fae7',200:'#a6f2d1',300:'#6ce4b5',400:'#33cd95',500:'#12b07c',600:'#078b64',700:'#076e52',800:'#085743',900:'#08483a' },
+        },
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"','system-ui','sans-serif'],
+          display: ['"Fraunces"','Georgia','serif'],
+        },
+        borderRadius: { '4xl':'2rem', '5xl':'2.75rem' },
+        boxShadow: {
+          soft: '0 18px 50px -24px rgba(15,87,214,0.35)',
+          card: '0 22px 60px -30px rgba(12,26,38,0.45)',
+          pin: '0 8px 20px -6px rgba(15,87,214,0.55)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#ffffff; color:#0c1a26; font-family:'Plus Jakarta Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection { background:#1f74f5; color:#fff; }
+
+  .display { font-family:'Fraunces',Georgia,serif; }
+  .grain { background-image:radial-gradient(circle at 1px 1px, rgba(12,26,38,0.05) 1px, transparent 0); background-size:22px 22px; }
+  .map-grid {
+    background-image:
+      linear-gradient(rgba(15,87,214,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15,87,214,0.07) 1px, transparent 1px);
+    background-size: 38px 38px;
+  }
+  .reveal { opacity:0; transform:translateY(26px); }
+  .gline { width:0; }
+
+  .pin { animation: bob 3.2s ease-in-out infinite; }
+  .pin:nth-child(2){ animation-delay:.4s } .pin:nth-child(3){ animation-delay:.8s }
+  .pin:nth-child(4){ animation-delay:1.2s } .pin:nth-child(5){ animation-delay:1.6s }
+  @keyframes bob { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-7px) } }
+  .ping::after {
+    content:''; position:absolute; inset:-6px; border-radius:9999px;
+    border:2px solid rgba(31,116,245,.5); animation:ping 2.4s cubic-bezier(0,0,.2,1) infinite;
+  }
+  @keyframes ping { 0%{ transform:scale(.6); opacity:.9 } 80%,100%{ transform:scale(2.1); opacity:0 } }
+
+  .tilt-wrap { perspective:1200px; }
+  .tilt { transition: transform .25s ease; transform-style:preserve-3d; }
+
+  .listing:hover { transform:translateY(-8px); }
+  .listing { transition: transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s ease; }
+
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .acc.open .acc-body { max-height:240px; }
+  .acc.open .acc-ico { transform:rotate(45deg); }
+  .acc-ico { transition:transform .35s ease; }
+
+  .magnetic { will-change:transform; }
+  .nav-link { position:relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:#1f74f5; transition:width .3s ease; }
+  .nav-link:hover::after { width:100%; }
+
+  .marquee { animation: slide 26s linear infinite; }
+  @keyframes slide { to { transform:translateX(-50%); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pin, .ping::after, .marquee { animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    .gline { width:auto !important; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- ======================= NAV ======================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <nav class="mt-4 flex items-center justify-between rounded-full border border-ink/5 bg-white/80 px-4 py-2.5 backdrop-blur-xl shadow-soft">
+      <a href="#top" class="flex items-center gap-2.5 pl-1">
+        <span class="relative grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white shadow-pin">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+        </span>
+        <span class="text-lg font-extrabold tracking-tight">Hearthly</span>
+      </a>
+      <div class="hidden items-center gap-8 text-sm font-semibold text-slate2 lg:flex">
+        <a href="#listings" class="nav-link hover:text-ink">Listings</a>
+        <a href="#how" class="nav-link hover:text-ink">How it works</a>
+        <a href="#features" class="nav-link hover:text-ink">Features</a>
+        <a href="#agents" class="nav-link hover:text-ink">For agents</a>
+        <a href="#faq" class="nav-link hover:text-ink">FAQ</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="#" class="hidden rounded-full px-4 py-2 text-sm font-semibold text-ink hover:bg-mist sm:block">Sign in</a>
+        <a href="#cta" id="navCta" class="magnetic rounded-full bg-ink px-4.5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-700">Start free</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ======================= HERO ======================= -->
+<section id="top" class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-24">
+  <div class="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-200/50 blur-3xl"></div>
+  <div class="pointer-events-none absolute top-40 -left-24 h-80 w-80 rounded-full bg-jade-200/40 blur-3xl"></div>
+
+  <div class="mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-[1.05fr_1fr]">
+    <!-- copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-brand-700">
+        <span class="h-1.5 w-1.5 rounded-full bg-jade-500"></span> Live in 240+ cities
+      </span>
+      <h1 class="reveal mt-6 text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl">
+        Find the home
+        <span class="block display font-medium italic text-brand-600" id="rotator">that finds you.</span>
+      </h1>
+      <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-slate2">
+        Hearthly maps every active listing, learns what you love, and pings you the instant your match hits the market — then walks you from tour to keys without the chaos.
+      </p>
+
+      <!-- search bar -->
+      <div class="reveal mt-8 rounded-3xl border border-ink/10 bg-white p-2 shadow-card">
+        <form class="flex flex-col gap-2 sm:flex-row" onsubmit="return false">
+          <label class="flex flex-1 items-center gap-2 rounded-2xl bg-mist px-4 py-3">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-brand-600" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input type="text" placeholder="City, neighborhood, or ZIP" class="w-full bg-transparent text-sm font-medium text-ink placeholder-slate2/70 outline-none" />
+          </label>
+          <div class="flex items-center gap-2">
+            <select class="rounded-2xl bg-mist px-4 py-3 text-sm font-semibold text-ink outline-none">
+              <option>Buy</option><option>Rent</option><option>Sold</option>
+            </select>
+            <button id="searchCta" class="magnetic flex items-center gap-2 rounded-2xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-pin transition hover:bg-brand-700">
+              Search
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="reveal mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate2">
+        <span class="font-semibold text-ink">Trending:</span>
+        <a href="#" class="rounded-full bg-mist px-3 py-1 hover:bg-brand-50">Austin lofts</a>
+        <a href="#" class="rounded-full bg-mist px-3 py-1 hover:bg-brand-50">Denver bungalows</a>
+        <a href="#" class="rounded-full bg-mist px-3 py-1 hover:bg-brand-50">Pet-friendly</a>
+      </div>
+    </div>
+
+    <!-- map + app mockup -->
+    <div class="tilt-wrap reveal">
+      <div id="tilt" class="tilt relative rounded-[2.2rem] border border-ink/10 bg-white p-3 shadow-card">
+        <!-- map mockup -->
+        <div class="relative overflow-hidden rounded-[1.7rem] map-grid bg-brand-50/60" style="aspect-ratio: 4/3;">
+          <!-- faux roads -->
+          <div class="absolute left-0 top-1/3 h-2 w-full -rotate-3 bg-white/80"></div>
+          <div class="absolute left-1/4 top-0 h-full w-2 rotate-2 bg-white/80"></div>
+          <div class="absolute left-2/3 top-0 h-full w-1.5 -rotate-1 bg-white/70"></div>
+          <div class="absolute bottom-1/4 left-0 h-1.5 w-full rotate-2 bg-white/70"></div>
+          <!-- park blob -->
+          <div class="absolute bottom-6 right-8 h-24 w-28 rounded-[40%_60%_55%_45%] bg-jade-200/70"></div>
+          <!-- water -->
+          <div class="absolute left-3 top-4 h-16 w-24 rounded-[55%_45%_60%_40%] bg-brand-200/60"></div>
+
+          <!-- pins -->
+          <button class="pin ping absolute left-[22%] top-[30%] grid h-9 w-9 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-brand-600 text-[11px] font-bold text-white shadow-pin">$840k</button>
+          <button class="pin absolute left-[55%] top-[24%] grid h-8 w-8 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-jade-500 text-[10px] font-bold text-white shadow-pin">$1.2M</button>
+          <button class="pin absolute left-[70%] top-[58%] grid h-9 w-9 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-brand-600 text-[11px] font-bold text-white shadow-pin">$615k</button>
+          <button class="pin absolute left-[38%] top-[66%] grid h-8 w-8 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-ink text-[10px] font-bold text-white shadow-pin">$430k</button>
+          <button class="pin absolute left-[84%] top-[34%] grid h-8 w-8 -translate-x-1/2 -translate-y-full place-items-center rounded-full rounded-bl-none bg-jade-500 text-[10px] font-bold text-white shadow-pin">$520k</button>
+
+          <!-- floating mini card -->
+          <div class="absolute bottom-4 left-4 w-44 overflow-hidden rounded-2xl bg-white shadow-card">
+            <div class="relative h-20 w-full bg-gradient-to-br from-brand-200 to-jade-200">
+              <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80" alt="Listing preview" class="h-full w-full object-cover" onerror="this.style.display='none'" />
+            </div>
+            <div class="p-2.5">
+              <p class="text-sm font-extrabold text-ink">$840,000</p>
+              <p class="text-[11px] text-slate2">4 bd · 3 ba · 2,140 sqft</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- app control bar -->
+        <div class="mt-3 flex items-center justify-between rounded-2xl bg-mist px-4 py-3">
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate2">
+            <span class="h-2 w-2 rounded-full bg-jade-500"></span> 1,284 homes in view
+          </div>
+          <div class="flex gap-1.5">
+            <span class="rounded-lg bg-white px-2.5 py-1 text-xs font-bold text-brand-700 shadow-sm">Map</span>
+            <span class="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate2">List</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TRUST / STATS ======================= -->
+<section class="border-y border-ink/5 bg-ink py-12 text-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <p class="reveal text-center text-xs font-bold uppercase tracking-[0.25em] text-white/50">Trusted by movers, agents &amp; lenders nationwide</p>
+    <div class="mt-9 grid grid-cols-2 gap-8 sm:grid-cols-4">
+      <div class="reveal text-center">
+        <p class="display text-4xl font-semibold sm:text-5xl"><span class="count" data-to="1900000" data-suffix="+">0</span></p>
+        <p class="mt-1 text-sm text-white/60">active listings mapped</p>
+      </div>
+      <div class="reveal text-center">
+        <p class="display text-4xl font-semibold sm:text-5xl"><span class="count" data-to="240" data-suffix="+">0</span></p>
+        <p class="mt-1 text-sm text-white/60">cities live</p>
+      </div>
+      <div class="reveal text-center">
+        <p class="display text-4xl font-semibold sm:text-5xl"><span class="count" data-to="3" data-suffix="M">0</span></p>
+        <p class="mt-1 text-sm text-white/60">happy home-seekers</p>
+      </div>
+      <div class="reveal text-center">
+        <p class="display text-4xl font-semibold sm:text-5xl"><span class="count" data-to="11" data-suffix=" days">0</span></p>
+        <p class="mt-1 text-sm text-white/60">avg. faster to close</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FEATURED LISTINGS ======================= -->
+<section id="listings" class="py-22 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+      <div>
+        <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Featured today</span>
+        <h2 class="reveal mt-3 max-w-xl text-4xl font-extrabold tracking-tight sm:text-5xl">Homes your saved searches just surfaced</h2>
+      </div>
+      <a href="#" class="reveal inline-flex items-center gap-2 rounded-full border border-ink/15 px-5 py-2.5 text-sm font-bold text-ink hover:border-brand-600 hover:text-brand-600">
+        Browse all 1.9M
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- Card 1 -->
+      <article class="listing reveal group overflow-hidden rounded-4xl border border-ink/8 bg-white shadow-card">
+        <div class="relative h-56 w-full overflow-hidden bg-gradient-to-br from-brand-200 to-brand-400">
+          <img src="https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1600&q=80" alt="Modern hillside home" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <span class="absolute left-4 top-4 rounded-full bg-jade-500 px-3 py-1 text-xs font-bold text-white shadow-pin">New · 2h</span>
+          <button class="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink backdrop-blur hover:text-brand-600">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline justify-between">
+            <p class="text-2xl font-extrabold tracking-tight">$840,000</p>
+            <span class="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">For sale</span>
+          </div>
+          <p class="mt-1 text-sm text-slate2">214 Mesa Verde Dr · Austin, TX</p>
+          <div class="mt-4 flex items-center gap-4 border-t border-ink/8 pt-4 text-sm font-semibold text-ink">
+            <span>4 bd</span><span class="text-ink/20">·</span><span>3 ba</span><span class="text-ink/20">·</span><span>2,140 sqft</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="listing reveal group overflow-hidden rounded-4xl border border-ink/8 bg-white shadow-card">
+        <div class="relative h-56 w-full overflow-hidden bg-gradient-to-br from-jade-200 to-jade-400">
+          <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1600&q=80" alt="Suburban family home" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <span class="absolute left-4 top-4 rounded-full bg-brand-600 px-3 py-1 text-xs font-bold text-white shadow-pin">Price drop</span>
+          <button class="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink backdrop-blur hover:text-brand-600">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline justify-between">
+            <p class="text-2xl font-extrabold tracking-tight">$615,000</p>
+            <span class="rounded-md bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-700">For sale</span>
+          </div>
+          <p class="mt-1 text-sm text-slate2">88 Larkspur Ln · Denver, CO</p>
+          <div class="mt-4 flex items-center gap-4 border-t border-ink/8 pt-4 text-sm font-semibold text-ink">
+            <span>3 bd</span><span class="text-ink/20">·</span><span>2 ba</span><span class="text-ink/20">·</span><span>1,680 sqft</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="listing reveal group overflow-hidden rounded-4xl border border-ink/8 bg-white shadow-card">
+        <div class="relative h-56 w-full overflow-hidden bg-gradient-to-br from-brand-300 to-jade-300">
+          <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80" alt="Coastal contemporary home" class="h-full w-full object-cover transition duration-700 group-hover:scale-105" onerror="this.style.display='none'" />
+          <span class="absolute left-4 top-4 rounded-full bg-ink px-3 py-1 text-xs font-bold text-white shadow-pin">Open Sun</span>
+          <button class="absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink backdrop-blur hover:text-brand-600">
+            <svg viewBox="0 0 24 24" class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-baseline justify-between">
+            <p class="text-2xl font-extrabold tracking-tight">$1,240,000</p>
+            <span class="rounded-md bg-jade-50 px-2 py-0.5 text-xs font-bold text-jade-700">New build</span>
+          </div>
+          <p class="mt-1 text-sm text-slate2">3 Tide Cove · Santa Cruz, CA</p>
+          <div class="mt-4 flex items-center gap-4 border-t border-ink/8 pt-4 text-sm font-semibold text-ink">
+            <span>5 bd</span><span class="text-ink/20">·</span><span>4 ba</span><span class="text-ink/20">·</span><span>3,020 sqft</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= HOW IT WORKS ======================= -->
+<section id="how" class="relative overflow-hidden bg-mist py-22 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-600">The Hearthly path</span>
+      <h2 class="reveal mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">Search, tour, close — in one calm flow</h2>
+      <p class="reveal mt-4 text-lg text-slate2">No spreadsheets, no missed alerts, no fifteen tabs. Just three steps from curious to keys.</p>
+    </div>
+
+    <div class="relative mt-16 grid gap-8 md:grid-cols-3">
+      <!-- connector line -->
+      <div class="absolute left-[16%] right-[16%] top-[34px] hidden h-0.5 md:block">
+        <div class="gline h-full bg-gradient-to-r from-brand-400 via-jade-400 to-brand-400"></div>
+      </div>
+
+      <div class="reveal relative rounded-4xl border border-ink/8 bg-white p-7 shadow-card">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-brand-600 text-lg font-extrabold text-white shadow-pin">1</span>
+        <h3 class="mt-5 text-xl font-extrabold">Search smarter</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate2">Draw your map, set the filters that matter, and let Hearthly learn your taste with every save and skip.</p>
+      </div>
+      <div class="reveal relative rounded-4xl border border-ink/8 bg-white p-7 shadow-card">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-jade-500 text-lg font-extrabold text-white shadow-pin">2</span>
+        <h3 class="mt-5 text-xl font-extrabold">Tour instantly</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate2">Book in-person or 3D tours in two taps. Your agent and calendar sync automatically — no phone tag.</p>
+      </div>
+      <div class="reveal relative rounded-4xl border border-ink/8 bg-white p-7 shadow-card">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-ink text-lg font-extrabold text-white shadow-pin">3</span>
+        <h3 class="mt-5 text-xl font-extrabold">Close with clarity</h3>
+        <p class="mt-2 text-sm leading-relaxed text-slate2">Offers, financing, and docs live in one timeline so you always know the next step — and who owns it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FEATURES ======================= -->
+<section id="features" class="py-22 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+      <div>
+        <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Built into every search</span>
+        <h2 class="reveal mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">Tools that do the chasing for you</h2>
+        <p class="reveal mt-4 text-lg text-slate2">Power features that used to need three apps and an agent on speed-dial — now native to your home search.</p>
+
+        <div class="mt-9 space-y-3">
+          <div class="reveal flex gap-4 rounded-3xl border border-ink/8 bg-white p-5 shadow-sm">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            </span>
+            <div>
+              <h3 class="font-extrabold">Precision filters</h3>
+              <p class="mt-1 text-sm text-slate2">Filter by commute time, school score, lot shape, even natural light — not just beds and baths.</p>
+            </div>
+          </div>
+          <div class="reveal flex gap-4 rounded-3xl border border-ink/8 bg-white p-5 shadow-sm">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-jade-50 text-jade-600">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            </span>
+            <div>
+              <h3 class="font-extrabold">Instant match alerts</h3>
+              <p class="mt-1 text-sm text-slate2">Get a ping the moment a home matching your taste lists — usually before it hits the big portals.</p>
+            </div>
+          </div>
+          <div class="reveal flex gap-4 rounded-3xl border border-ink/8 bg-white p-5 shadow-sm">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+            </span>
+            <div>
+              <h3 class="font-extrabold">Live mortgage calculator</h3>
+              <p class="mt-1 text-sm text-slate2">Real-time rates, taxes, and HOA folded into every listing so the monthly number is never a surprise.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- mortgage calc mock -->
+      <div class="reveal rounded-4xl border border-ink/10 bg-gradient-to-br from-brand-600 to-brand-800 p-1.5 shadow-card">
+        <div class="rounded-[1.6rem] bg-white p-7">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold uppercase tracking-wider text-slate2">Monthly estimate</p>
+            <span class="rounded-full bg-jade-50 px-3 py-1 text-xs font-bold text-jade-700">6.2% APR</span>
+          </div>
+          <p class="mt-3 display text-5xl font-semibold text-ink">$<span class="count" data-to="4180" data-suffix="">0</span><span class="text-2xl text-slate2">/mo</span></p>
+
+          <div class="mt-7 space-y-5">
+            <div>
+              <div class="flex justify-between text-sm font-semibold"><span class="text-slate2">Home price</span><span>$840,000</span></div>
+              <div class="mt-2 h-2 rounded-full bg-mist"><div class="h-full w-[72%] rounded-full bg-brand-600"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm font-semibold"><span class="text-slate2">Down payment · 20%</span><span>$168,000</span></div>
+              <div class="mt-2 h-2 rounded-full bg-mist"><div class="h-full w-[40%] rounded-full bg-jade-500"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sm font-semibold"><span class="text-slate2">Loan term</span><span>30 yr fixed</span></div>
+              <div class="mt-2 h-2 rounded-full bg-mist"><div class="h-full w-[85%] rounded-full bg-ink"></div></div>
+            </div>
+          </div>
+
+          <div class="mt-7 grid grid-cols-3 gap-3 border-t border-ink/8 pt-5 text-center">
+            <div><p class="text-xs text-slate2">Principal</p><p class="font-extrabold">$3,090</p></div>
+            <div><p class="text-xs text-slate2">Taxes</p><p class="font-extrabold">$720</p></div>
+            <div><p class="text-xs text-slate2">Insurance</p><p class="font-extrabold">$370</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ABOUT ======================= -->
+<section id="about" class="overflow-hidden bg-ink py-22 text-white sm:py-28">
+  <div class="mx-auto grid max-w-7xl items-center gap-14 px-5 sm:px-8 lg:grid-cols-2">
+    <div>
+      <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-300">Why we built Hearthly</span>
+      <h2 class="reveal mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">House hunting shouldn't feel like a second job.</h2>
+      <p class="reveal mt-5 text-lg leading-relaxed text-white/70">We started Hearthly after losing a home to a faster buyer — by 40 minutes. So we built the search engine we wished existed: one that watches the market for you, understands what "feels like home," and keeps every party moving in the same direction.</p>
+      <div class="reveal mt-8 grid grid-cols-2 gap-6">
+        <div class="rounded-3xl bg-white/5 p-5 ring-1 ring-white/10">
+          <p class="display text-3xl font-semibold text-jade-300"><span class="count" data-to="98" data-suffix="%">0</span></p>
+          <p class="mt-1 text-sm text-white/60">would recommend to a friend</p>
+        </div>
+        <div class="rounded-3xl bg-white/5 p-5 ring-1 ring-white/10">
+          <p class="display text-3xl font-semibold text-brand-300"><span class="count" data-to="48" data-suffix="k">0</span></p>
+          <p class="mt-1 text-sm text-white/60">tours booked each month</p>
+        </div>
+      </div>
+    </div>
+    <div class="reveal tilt-wrap">
+      <div class="relative overflow-hidden rounded-4xl ring-1 ring-white/10" style="aspect-ratio:4/5">
+        <div class="absolute inset-0 bg-gradient-to-br from-brand-700 to-jade-700"></div>
+        <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1600&q=80" alt="Couple receiving home keys" class="h-full w-full object-cover" onerror="this.style.display='none'" />
+        <div class="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/90 p-4 backdrop-blur">
+          <p class="text-sm font-bold text-ink">"We found it in 9 days."</p>
+          <p class="text-xs text-slate2">The Okafors · first-time buyers, Atlanta</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TESTIMONIALS ======================= -->
+<section class="py-22 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Loved by movers</span>
+      <h2 class="reveal mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">3 million searches, countless front doors</h2>
+    </div>
+
+    <div class="mt-14 grid gap-7 md:grid-cols-3">
+      <figure class="reveal rounded-4xl border border-ink/8 bg-white p-7 shadow-card">
+        <div class="flex gap-1 text-jade-500">★★★★★</div>
+        <blockquote class="mt-4 text-lg leading-relaxed text-ink">"The alert hit my phone at 7am, I toured by noon, and my offer was in before the open house. Hearthly literally bought me time."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-brand-100 font-extrabold text-brand-700">MR</span>
+          <div><p class="font-bold">Maya R.</p><p class="text-sm text-slate2">Bought in Seattle, WA</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-4xl border border-ink/8 bg-brand-600 p-7 text-white shadow-card">
+        <div class="flex gap-1 text-jade-300">★★★★★</div>
+        <blockquote class="mt-4 text-lg leading-relaxed">"I tried three other apps. Only Hearthly understood that I cared about morning light and a 20-minute commute more than square footage."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-white/15 font-extrabold">DL</span>
+          <div><p class="font-bold">Devin L.</p><p class="text-sm text-white/70">Rented in Chicago, IL</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-4xl border border-ink/8 bg-white p-7 shadow-card">
+        <div class="flex gap-1 text-jade-500">★★★★★</div>
+        <blockquote class="mt-4 text-lg leading-relaxed text-ink">"The mortgage breakdown on every listing kept us honest. We never fell for a home we couldn't actually afford."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-jade-100 font-extrabold text-jade-700">PT</span>
+          <div><p class="font-bold">Priya &amp; Tom</p><p class="text-sm text-slate2">Bought in Austin, TX</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FOR AGENTS CTA ======================= -->
+<section id="agents" class="bg-mist py-22 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="relative overflow-hidden rounded-5xl bg-gradient-to-br from-jade-600 to-brand-700 p-9 text-white shadow-card sm:p-14">
+      <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl"></div>
+      <div class="relative grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+        <div>
+          <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider">For agents &amp; brokers</span>
+          <h2 class="reveal mt-5 text-3xl font-extrabold tracking-tight sm:text-4xl">Get matched with buyers who are actually ready</h2>
+          <p class="reveal mt-4 max-w-xl text-white/80">List once, sync your MLS, and let Hearthly route warm, pre-qualified seekers straight to your calendar. No cold leads, no wasted Saturdays.</p>
+          <div class="reveal mt-8 flex flex-wrap gap-3">
+            <a href="#" class="magnetic rounded-full bg-white px-6 py-3 text-sm font-bold text-ink transition hover:bg-jade-50">Join as an agent</a>
+            <a href="#" class="rounded-full border border-white/40 px-6 py-3 text-sm font-bold text-white hover:bg-white/10">See agent pricing</a>
+          </div>
+        </div>
+        <div class="reveal grid grid-cols-2 gap-4">
+          <div class="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15">
+            <p class="display text-3xl font-semibold"><span class="count" data-to="3" data-suffix="x">0</span></p>
+            <p class="mt-1 text-sm text-white/70">more qualified showings</p>
+          </div>
+          <div class="rounded-3xl bg-white/10 p-5 ring-1 ring-white/15">
+            <p class="display text-3xl font-semibold"><span class="count" data-to="62" data-suffix="%">0</span></p>
+            <p class="mt-1 text-sm text-white/70">less admin time</p>
+          </div>
+          <div class="col-span-2 rounded-3xl bg-white p-5 text-ink">
+            <p class="text-sm font-bold">"My pipeline is full of people who already love the homes I list."</p>
+            <p class="mt-1 text-xs text-slate2">— Andre K., Broker · Phoenix</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section id="faq" class="py-22 sm:py-28">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="text-center">
+      <span class="reveal text-xs font-bold uppercase tracking-[0.2em] text-brand-600">Good to know</span>
+      <h2 class="reveal mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">Questions, answered</h2>
+    </div>
+
+    <div class="mt-12 space-y-3">
+      <div class="acc reveal cursor-pointer rounded-3xl border border-ink/10 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="text-lg font-bold">Is Hearthly free for home-seekers?</h3>
+          <span class="acc-ico grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </div>
+        <div class="acc-body"><p class="pt-4 text-slate2">Yes. Searching, saving, alerts, and tour booking are completely free. We earn from optional agent and lender partnerships — never from your data.</p></div>
+      </div>
+      <div class="acc reveal cursor-pointer rounded-3xl border border-ink/10 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="text-lg font-bold">How fresh are the listings?</h3>
+          <span class="acc-ico grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </div>
+        <div class="acc-body"><p class="pt-4 text-slate2">We sync directly with MLS feeds and partner brokerages, refreshing every few minutes. Many homes appear on Hearthly before they reach the larger portals.</p></div>
+      </div>
+      <div class="acc reveal cursor-pointer rounded-3xl border border-ink/10 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="text-lg font-bold">Can I bring my own agent?</h3>
+          <span class="acc-ico grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </div>
+        <div class="acc-body"><p class="pt-4 text-slate2">Absolutely. Invite your agent to your Hearthly workspace and they'll see your saves, tours, and timeline. Prefer a match? We'll connect you with a vetted local pro.</p></div>
+      </div>
+      <div class="acc reveal cursor-pointer rounded-3xl border border-ink/10 bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="text-lg font-bold">Which cities are live?</h3>
+          <span class="acc-ico grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></span>
+        </div>
+        <div class="acc-body"><p class="pt-4 text-slate2">We're live in 240+ metros across the US and adding new markets monthly. Drop your ZIP at sign-up and we'll tell you instantly — or notify you the day we launch nearby.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FINAL CTA ======================= -->
+<section id="cta" class="px-5 pb-22 sm:px-8 sm:pb-28">
+  <div class="mx-auto max-w-7xl">
+    <div class="relative overflow-hidden rounded-5xl bg-ink px-7 py-16 text-center text-white shadow-card sm:px-14 sm:py-20">
+      <div class="map-grid pointer-events-none absolute inset-0 opacity-30"></div>
+      <div class="pointer-events-none absolute -left-20 top-10 h-56 w-56 rounded-full bg-brand-600/40 blur-3xl"></div>
+      <div class="pointer-events-none absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-jade-500/40 blur-3xl"></div>
+      <div class="relative mx-auto max-w-2xl">
+        <h2 class="reveal display text-4xl font-medium leading-tight sm:text-6xl">Your next front door is already on the map.</h2>
+        <p class="reveal mt-5 text-lg text-white/70">Create a free account, draw your search, and let the right home come find you.</p>
+        <div class="reveal mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a href="#" class="magnetic w-full rounded-full bg-brand-600 px-8 py-4 text-base font-bold text-white shadow-pin transition hover:bg-brand-500 sm:w-auto">Start your free search</a>
+          <a href="#" class="w-full rounded-full border border-white/25 px-8 py-4 text-base font-bold text-white hover:bg-white/10 sm:w-auto">Book a demo</a>
+        </div>
+        <p class="reveal mt-5 text-sm text-white/50">No credit card · 240+ cities · cancel anytime</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FOOTER ======================= -->
+<footer class="border-t border-ink/10 bg-mist py-16">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div>
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white shadow-pin">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+          </span>
+          <span class="text-lg font-extrabold tracking-tight">Hearthly</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm text-slate2">The home-search platform that watches the market so you don't have to. Built for movers, agents, and lenders alike.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-white text-slate2 ring-1 ring-ink/10 hover:text-brand-600">𝕏</a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-white text-slate2 ring-1 ring-ink/10 hover:text-brand-600">in</a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-white text-slate2 ring-1 ring-ink/10 hover:text-brand-600">ig</a>
+        </div>
+      </div>
+      <div>
+        <p class="text-sm font-bold uppercase tracking-wider text-ink">Product</p>
+        <ul class="mt-4 space-y-2.5 text-sm text-slate2">
+          <li><a href="#listings" class="hover:text-brand-600">Listings</a></li>
+          <li><a href="#features" class="hover:text-brand-600">Features</a></li>
+          <li><a href="#how" class="hover:text-brand-600">How it works</a></li>
+          <li><a href="#cta" class="hover:text-brand-600">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-sm font-bold uppercase tracking-wider text-ink">Company</p>
+        <ul class="mt-4 space-y-2.5 text-sm text-slate2">
+          <li><a href="#about" class="hover:text-brand-600">About</a></li>
+          <li><a href="#agents" class="hover:text-brand-600">For agents</a></li>
+          <li><a href="#" class="hover:text-brand-600">Careers</a></li>
+          <li><a href="#" class="hover:text-brand-600">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-sm font-bold uppercase tracking-wider text-ink">Support</p>
+        <ul class="mt-4 space-y-2.5 text-sm text-slate2">
+          <li><a href="#faq" class="hover:text-brand-600">FAQ</a></li>
+          <li><a href="#" class="hover:text-brand-600">Help center</a></li>
+          <li><a href="#" class="hover:text-brand-600">Privacy</a></li>
+          <li><a href="#" class="hover:text-brand-600">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-ink/10 pt-7 text-sm text-slate2 sm:flex-row">
+      <p>© 2026 Hearthly, Inc. All rights reserved.</p>
+      <p>Made for people who'd rather be home.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.querySelector('nav').classList.add('shadow-card');
+    else nav.querySelector('nav').classList.remove('shadow-card');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Accordion ---------- */
+  document.querySelectorAll('.acc').forEach((acc) => {
+    acc.addEventListener('click', () => {
+      const open = acc.classList.contains('open');
+      document.querySelectorAll('.acc').forEach((a) => a.classList.remove('open'));
+      if (!open) acc.classList.add('open');
+    });
+  });
+
+  /* ---------- Headline rotator ---------- */
+  const rotator = document.getElementById('rotator');
+  const phrases = ['that finds you.', 'before everyone else.', 'that fits your life.', 'without the chaos.'];
+  if (rotator && !reduce) {
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % phrases.length;
+      rotator.style.transition = 'opacity .35s ease, transform .35s ease';
+      rotator.style.opacity = '0';
+      rotator.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        rotator.textContent = phrases[i];
+        rotator.style.opacity = '1';
+        rotator.style.transform = 'translateY(0)';
+      }, 350);
+    }, 2800);
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.3}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; el.style.transition = 'transform .35s ease'; });
+      el.addEventListener('mouseenter', () => { el.style.transition = 'transform .08s ease'; });
+    });
+  }
+
+  /* ---------- Tilt 3D ---------- */
+  if (!reduce) {
+    document.querySelectorAll('.tilt-wrap').forEach((wrap) => {
+      const card = wrap.querySelector('.tilt') || wrap.firstElementChild;
+      if (!card) return;
+      wrap.addEventListener('mousemove', (e) => {
+        const r = wrap.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `rotateY(${px * 9}deg) rotateX(${-py * 9}deg)`;
+      });
+      wrap.addEventListener('mouseleave', () => { card.style.transform = 'rotateY(0) rotateX(0)'; });
+    });
+  }
+
+  /* ---------- GSAP reveals + count-ups ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.85, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+
+      // grouped stagger for grids
+      gsap.utils.toArray('.listing').forEach((el, idx) => {
+        gsap.fromTo(el, { opacity: 0, y: 30 }, {
+          opacity: 1, y: 0, duration: 0.7, delay: (idx % 3) * 0.1, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 90%' },
+        });
+      });
+
+      // how-it-works connector line
+      gsap.utils.toArray('.gline').forEach((line) => {
+        gsap.to(line, {
+          width: '100%', duration: 1.1, ease: 'power2.out',
+          scrollTrigger: { trigger: line, start: 'top 85%' },
+        });
+      });
+
+      // hero container parallax
+      gsap.to('#tilt', {
+        yPercent: -6, ease: 'none',
+        scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true },
+      });
+    }
+
+    // Count-ups (run regardless of reduced motion, but instantly if reduced)
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseFloat(el.dataset.to);
+      const suffix = el.dataset.suffix || '';
+      const fmt = (n) => {
+        if (to >= 1000000) return (n / 1000000).toFixed(n < to ? 1 : 1).replace(/\.0$/, '') + 'M';
+        if (to >= 1000) return Math.round(n).toLocaleString();
+        return Math.round(n).toString();
+      };
+      if (reduce) { el.textContent = fmt(to) + suffix; return; }
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 92%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: () => { el.textContent = fmt(obj.v) + suffix; },
+        }),
+      });
+    });
+  } else {
+    // fallback: ensure everything visible
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach((el) => { el.textContent = el.dataset.to + (el.dataset.suffix || ''); });
+  }
+})();
+</script>
+</body>
+</html>

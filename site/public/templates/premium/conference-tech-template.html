@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HORIZON SUMMIT 2026 — The Convergence of Design &amp; Machine Intelligence</title>
+<meta name="description" content="HORIZON SUMMIT 2026 — three days where design, code, and machine intelligence collide. Aurora Bay Convergence Center, October 14–16, 2026." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#070512',
+          void:   '#0d0a1f',
+          panel:  '#15112e',
+          accent: '#7c4dff',
+          glow:   '#22d3ee',
+          ember:  '#ff5d8f',
+          gold:   '#ffd166',
+          mist:   '#b9b4d4',
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          body:    ['"Inter"', 'system-ui', 'sans-serif'],
+          mono:    ['"Space Mono"', 'monospace'],
+        },
+        boxShadow: {
+          glow: '0 0 60px -12px rgba(124,77,255,0.7)',
+          card: '0 30px 80px -40px rgba(0,0,0,0.9)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #070512;
+    color: #ece9fb;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: #7c4dff; color: #fff; }
+
+  /* Animated gradient hero */
+  .aurora {
+    background: linear-gradient(125deg, #070512, #1b0e3d, #2a1454, #07303a, #070512);
+    background-size: 300% 300%;
+    animation: auroraShift 18s ease infinite;
+  }
+  @keyframes auroraShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .grain::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; opacity: .06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-gradient {
+    background: linear-gradient(100deg, #22d3ee, #7c4dff 45%, #ff5d8f);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .glass {
+    background: rgba(21,17,46,0.55);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(124,77,255,0.18);
+  }
+
+  /* Marquee */
+  .marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* Speaker tilt */
+  .tilt { transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease; will-change: transform; }
+  .tilt .tilt-inner { transform: translateZ(40px); }
+
+  /* Magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(124,77,255,0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,77,255,0.08) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  }
+
+  .countdown-cell {
+    background: linear-gradient(180deg, rgba(124,77,255,0.18), rgba(34,211,238,0.06));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora, .marquee-track { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="relative grid place-items-center w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-glow shadow-glow">
+        <span class="font-display font-bold text-ink text-lg">H</span>
+      </span>
+      <span class="font-display font-bold tracking-tight text-lg">HORIZON<span class="text-glow">·</span>SUMMIT</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8 text-sm text-mist">
+      <a href="#about" class="hover:text-white transition">About</a>
+      <a href="#speakers" class="hover:text-white transition">Speakers</a>
+      <a href="#schedule" class="hover:text-white transition">Schedule</a>
+      <a href="#venue" class="hover:text-white transition">Venue</a>
+      <a href="#tickets" class="hover:text-white transition">Tickets</a>
+      <a href="#faq" class="hover:text-white transition">FAQ</a>
+    </div>
+    <a href="#tickets" id="navCta" class="magnetic hidden sm:inline-flex items-center gap-2 rounded-full bg-white text-ink font-semibold text-sm px-5 py-2.5 hover:bg-glow transition-colors">
+      Get Tickets
+      <span class="text-accent">→</span>
+    </a>
+    <button id="burger" class="lg:hidden text-2xl px-2">☰</button>
+  </nav>
+  <div id="mobileMenu" class="lg:hidden hidden glass mx-4 rounded-2xl px-6 py-5 text-mist space-y-3 text-sm">
+    <a href="#about" class="block">About</a>
+    <a href="#speakers" class="block">Speakers</a>
+    <a href="#schedule" class="block">Schedule</a>
+    <a href="#venue" class="block">Venue</a>
+    <a href="#tickets" class="block">Tickets</a>
+    <a href="#faq" class="block">FAQ</a>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="top" class="aurora grain relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-70"></div>
+  <div class="absolute -top-40 -left-40 w-[34rem] h-[34rem] rounded-full bg-accent/30 blur-[120px]" data-parallax="0.25"></div>
+  <div class="absolute -bottom-52 -right-32 w-[40rem] h-[40rem] rounded-full bg-glow/20 blur-[140px]" data-parallax="0.18"></div>
+  <div class="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-ember/20 blur-[110px]" data-parallax="0.32"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full">
+    <div class="flex flex-col items-center text-center">
+      <span class="reveal glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs sm:text-sm text-glow font-mono mb-7">
+        <span class="w-2 h-2 rounded-full bg-ember animate-pulse"></span>
+        OCT 14–16, 2026 · AURORA BAY · 3-DAY HYBRID PASS
+      </span>
+
+      <h1 class="font-display font-bold leading-[0.92] tracking-tight text-[15vw] sm:text-[11vw] lg:text-[9rem]">
+        <span class="kinetic block">HORIZON</span>
+        <span class="kinetic block text-gradient">SUMMIT</span>
+      </h1>
+
+      <p class="reveal mt-6 max-w-2xl text-mist text-base sm:text-lg">
+        Three days where <span class="text-white">design</span>, <span class="text-white">code</span>, and
+        <span class="text-white">machine intelligence</span> collide. Build the interfaces of the next decade
+        alongside the people inventing them.
+      </p>
+
+      <!-- COUNTDOWN -->
+      <div class="reveal mt-10 w-full max-w-2xl">
+        <p class="text-xs font-mono uppercase tracking-[0.3em] text-mist mb-3">Doors open in</p>
+        <div id="countdown" class="grid grid-cols-4 gap-2 sm:gap-4">
+          <div class="countdown-cell glass rounded-2xl py-4 sm:py-6">
+            <div data-cd="days" class="font-display font-bold text-3xl sm:text-5xl tabular-nums">00</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-mist mt-1">Days</div>
+          </div>
+          <div class="countdown-cell glass rounded-2xl py-4 sm:py-6">
+            <div data-cd="hours" class="font-display font-bold text-3xl sm:text-5xl tabular-nums">00</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-mist mt-1">Hours</div>
+          </div>
+          <div class="countdown-cell glass rounded-2xl py-4 sm:py-6">
+            <div data-cd="minutes" class="font-display font-bold text-3xl sm:text-5xl tabular-nums">00</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-mist mt-1">Minutes</div>
+          </div>
+          <div class="countdown-cell glass rounded-2xl py-4 sm:py-6">
+            <div data-cd="seconds" class="font-display font-bold text-3xl sm:text-5xl tabular-nums text-glow">00</div>
+            <div class="text-[10px] sm:text-xs uppercase tracking-widest text-mist mt-1">Seconds</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal mt-9 flex flex-col sm:flex-row items-center gap-4">
+        <a href="#tickets" id="heroCta" class="magnetic inline-flex items-center gap-2 rounded-full bg-white text-ink font-semibold px-8 py-4 text-base hover:bg-glow transition-colors shadow-glow">
+          Get Tickets · from $149
+          <span class="text-accent">→</span>
+        </a>
+        <a href="#speakers" class="inline-flex items-center gap-2 rounded-full border border-white/20 px-7 py-4 text-base hover:bg-white/5 transition">
+          View Speakers
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-mist text-xs font-mono flex flex-col items-center gap-2">
+    <span>SCROLL</span>
+    <span class="w-px h-8 bg-gradient-to-b from-glow to-transparent"></span>
+  </div>
+</section>
+
+<!-- ================= SPONSORS MARQUEE ================= -->
+<section class="relative py-8 border-y border-white/5 bg-void/80">
+  <p class="text-center text-xs font-mono uppercase tracking-[0.3em] text-mist mb-5">Backed by the builders</p>
+  <div class="marquee overflow-hidden">
+    <div class="marquee-track gap-16 px-8 text-mist/70 font-display font-semibold text-xl sm:text-2xl whitespace-nowrap">
+      <span>NEBULA&nbsp;LABS</span><span>VECTORFORGE</span><span>HALO&nbsp;OS</span><span>PIXELWELD</span>
+      <span>QUANTA&nbsp;CLOUD</span><span>SIGNALWORKS</span><span>NORTHWIND&nbsp;AI</span><span>GLYPHIC</span>
+      <span>NEBULA&nbsp;LABS</span><span>VECTORFORGE</span><span>HALO&nbsp;OS</span><span>PIXELWELD</span>
+      <span>QUANTA&nbsp;CLOUD</span><span>SIGNALWORKS</span><span>NORTHWIND&nbsp;AI</span><span>GLYPHIC</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">01 — The Convergence</span>
+        <h2 class="reveal font-display font-bold text-4xl sm:text-5xl lg:text-6xl mt-4 leading-tight">
+          Where the next interface gets <span class="text-gradient">drawn, coded &amp; trained.</span>
+        </h2>
+        <p class="reveal text-mist mt-6 text-lg leading-relaxed">
+          HORIZON SUMMIT is not another keynote-and-coffee event. It's a working studio: live design jams,
+          deep technical sessions, and on-stage model demos — built for the people shipping the future, not
+          just talking about it.
+        </p>
+        <div class="grid grid-cols-3 gap-4 mt-10">
+          <div class="reveal glass rounded-2xl p-5 text-center">
+            <div data-count="64" class="font-display font-bold text-3xl sm:text-4xl text-glow">0</div>
+            <div class="text-xs text-mist mt-1">Speakers</div>
+          </div>
+          <div class="reveal glass rounded-2xl p-5 text-center">
+            <div data-count="4200" data-suffix="+" class="font-display font-bold text-3xl sm:text-4xl text-accent">0</div>
+            <div class="text-xs text-mist mt-1">Attendees</div>
+          </div>
+          <div class="reveal glass rounded-2xl p-5 text-center">
+            <div data-count="92" class="font-display font-bold text-3xl sm:text-4xl text-ember">0</div>
+            <div class="text-xs text-mist mt-1">Talks</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal relative" data-parallax="0.12">
+        <div class="relative rounded-3xl overflow-hidden shadow-card bg-gradient-to-br from-accent/40 via-panel to-glow/30 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Conference audience"
+               class="w-full h-full object-cover mix-blend-luminosity opacity-90" loading="lazy" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+          <div class="absolute bottom-5 left-5 glass rounded-xl px-4 py-3">
+            <div class="text-xs text-mist font-mono">EDITION 06</div>
+            <div class="font-display font-semibold">Aurora Bay, Pacifica</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SPEAKERS ================= -->
+<section id="speakers" class="relative py-24 sm:py-32 bg-void/60 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">02 — The Voices</span>
+        <h2 class="reveal font-display font-bold text-4xl sm:text-5xl lg:text-6xl mt-4">Featured speakers</h2>
+      </div>
+      <p class="reveal text-mist max-w-sm">A hand-picked lineup of founders, researchers, and designers shaping what's next.</p>
+    </div>
+
+    <div id="speakerGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- card template repeated -->
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-accent/40 to-glow/20">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Dr. Lena Okafor</h3>
+            <p class="text-glow text-sm">Head of Interface Research · Halo OS</p>
+            <p class="text-mist text-xs mt-2">Designing for models that design back.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-ember/40 to-accent/20">
+            <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Mateo Russo</h3>
+            <p class="text-glow text-sm">Founder &amp; CTO · Vectorforge</p>
+            <p class="text-mist text-xs mt-2">Shipping latency-free generative UI.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-glow/40 to-ember/20">
+            <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Priya Anand</h3>
+            <p class="text-glow text-sm">Principal Designer · Glyphic</p>
+            <p class="text-mist text-xs mt-2">The grammar of motion systems.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-accent/40 to-ember/20">
+            <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Sora Tanaka</h3>
+            <p class="text-glow text-sm">Research Lead · Northwind AI</p>
+            <p class="text-mist text-xs mt-2">Agents that ship production code.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-ember/40 to-glow/20">
+            <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Idris Bello</h3>
+            <p class="text-glow text-sm">VP Platform · Quanta Cloud</p>
+            <p class="text-mist text-xs mt-2">Infra for real-time inference.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-glow/40 to-accent/20">
+            <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Clara Vossen</h3>
+            <p class="text-glow text-sm">Creative Director · Pixelweld</p>
+            <p class="text-mist text-xs mt-2">Brand systems at machine speed.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-accent/40 to-glow/20">
+            <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Nadia Kim</h3>
+            <p class="text-glow text-sm">Eng Director · Signalworks</p>
+            <p class="text-mist text-xs mt-2">Edge-rendered design tooling.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal tilt group glass rounded-3xl p-1.5 cursor-pointer">
+        <div class="tilt-inner">
+          <div class="relative rounded-[1.25rem] overflow-hidden aspect-[4/5] bg-gradient-to-br from-ember/40 to-accent/20">
+            <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Speaker" class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-display font-semibold text-lg">Theo Marchand</h3>
+            <p class="text-glow text-sm">Author · "Synthetic Interfaces"</p>
+            <p class="text-mist text-xs mt-2">Ethics of generative experience.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCHEDULE ================= -->
+<section id="schedule" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">03 — The Agenda</span>
+    <h2 class="reveal font-display font-bold text-4xl sm:text-5xl lg:text-6xl mt-4 mb-3">Three days, three tracks</h2>
+    <p class="reveal text-mist max-w-xl mb-10">Switch freely between Design, Engineering, and Frontier tracks — or follow one path end to end.</p>
+
+    <!-- Day tabs -->
+    <div id="dayTabs" class="flex gap-3 mb-8 flex-wrap">
+      <button data-day="0" class="day-tab rounded-full px-6 py-2.5 text-sm font-semibold border border-white/15 transition bg-accent text-white">Day 1 · Oct 14</button>
+      <button data-day="1" class="day-tab rounded-full px-6 py-2.5 text-sm font-semibold border border-white/15 transition text-mist hover:bg-white/5">Day 2 · Oct 15</button>
+      <button data-day="2" class="day-tab rounded-full px-6 py-2.5 text-sm font-semibold border border-white/15 transition text-mist hover:bg-white/5">Day 3 · Oct 16</button>
+    </div>
+
+    <div id="scheduleBody" class="space-y-3"></div>
+  </div>
+</section>
+
+<!-- ================= VENUE ================= -->
+<section id="venue" class="relative py-24 sm:py-32 bg-void/60 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal relative rounded-3xl overflow-hidden shadow-card aspect-[16/11] bg-gradient-to-br from-glow/30 via-panel to-accent/30" data-parallax="0.1">
+      <img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'" alt="Venue" class="w-full h-full object-cover opacity-90" loading="lazy" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"></div>
+      <div class="absolute bottom-5 left-5 glass rounded-xl px-4 py-3 font-mono text-xs">
+        37.7749° N, 122.4194° W
+      </div>
+    </div>
+    <div>
+      <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">04 — The Place</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-4">Aurora Bay Convergence Center</h2>
+      <p class="reveal text-mist mt-5 text-lg leading-relaxed">
+        A 40,000 sq ft waterfront venue with a 2,000-seat main stage, four breakout studios, and a rooftop
+        garden built for the kind of hallway conversations that become companies.
+      </p>
+      <ul class="reveal mt-8 space-y-3 text-sm">
+        <li class="flex items-center gap-3"><span class="text-glow">◆</span> 12 min from Pacifica International Airport</li>
+        <li class="flex items-center gap-3"><span class="text-accent">◆</span> Partner hotels within walking distance</li>
+        <li class="flex items-center gap-3"><span class="text-ember">◆</span> Fully accessible, all-genders facilities, quiet rooms</li>
+        <li class="flex items-center gap-3"><span class="text-gold">◆</span> Live captioning &amp; ASL on the main stage</li>
+      </ul>
+      <a href="#tickets" class="reveal inline-flex mt-9 items-center gap-2 rounded-full border border-white/20 px-6 py-3 hover:bg-white/5 transition">Plan your trip →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TICKETS ================= -->
+<section id="tickets" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-accent/15 blur-[140px] rounded-full"></div>
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">05 — The Pass</span>
+      <h2 class="reveal font-display font-bold text-4xl sm:text-5xl lg:text-6xl mt-4">Choose your access</h2>
+      <p class="reveal text-mist mt-4">Early-bird pricing ends Aug 1. Prices rise after.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 items-stretch">
+      <!-- Tier 1 -->
+      <div class="reveal glass rounded-3xl p-7 flex flex-col">
+        <h3 class="font-display font-semibold text-xl">Stream</h3>
+        <p class="text-mist text-sm mt-1">Watch from anywhere</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display font-bold text-5xl">$149</span>
+          <span class="text-mist text-sm mb-2">/ pass</span>
+        </div>
+        <ul class="mt-6 space-y-2.5 text-sm text-mist flex-1">
+          <li class="flex gap-2"><span class="text-glow">✓</span> Full HD livestream, all tracks</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> 90-day on-demand replay</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Digital talk resources</li>
+          <li class="flex gap-2 opacity-40"><span>—</span> No on-site access</li>
+        </ul>
+        <a href="#tickets" class="magnetic mt-7 text-center rounded-full border border-white/20 py-3 font-semibold hover:bg-white/5 transition">Get Stream</a>
+      </div>
+
+      <!-- Tier 2 — featured -->
+      <div class="reveal relative rounded-3xl p-7 flex flex-col bg-gradient-to-b from-accent/30 to-panel border border-accent/50 shadow-glow md:-translate-y-3">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-ink text-xs font-bold px-3 py-1 rounded-full">MOST POPULAR</span>
+        <h3 class="font-display font-semibold text-xl">In-Person</h3>
+        <p class="text-mist text-sm mt-1">The full three days</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display font-bold text-5xl text-white">$549</span>
+          <span class="text-mist text-sm mb-2">/ pass</span>
+        </div>
+        <ul class="mt-6 space-y-2.5 text-sm text-white/90 flex-1">
+          <li class="flex gap-2"><span class="text-glow">✓</span> All-access to every track &amp; stage</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Live design jams &amp; workshops</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Speaker meet-ups &amp; networking app</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Catered lunches + after-party</li>
+        </ul>
+        <a href="#tickets" class="magnetic mt-7 text-center rounded-full bg-white text-ink py-3 font-bold hover:bg-glow transition">Get In-Person</a>
+      </div>
+
+      <!-- Tier 3 -->
+      <div class="reveal glass rounded-3xl p-7 flex flex-col">
+        <h3 class="font-display font-semibold text-xl">Frontier</h3>
+        <p class="text-mist text-sm mt-1">Builders &amp; teams</p>
+        <div class="mt-6 flex items-end gap-1">
+          <span class="font-display font-bold text-5xl">$1,290</span>
+          <span class="text-mist text-sm mb-2">/ pass</span>
+        </div>
+        <ul class="mt-6 space-y-2.5 text-sm text-mist flex-1">
+          <li class="flex gap-2"><span class="text-glow">✓</span> Everything in In-Person</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Front-row reserved seating</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Private speaker roundtables</li>
+          <li class="flex gap-2"><span class="text-glow">✓</span> Rooftop founders dinner</li>
+        </ul>
+        <a href="#tickets" class="magnetic mt-7 text-center rounded-full border border-white/20 py-3 font-semibold hover:bg-white/5 transition">Get Frontier</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="relative py-24 sm:py-32 bg-void/60 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow">06 — Past Editions</span>
+    <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-4 mb-12">What builders said</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal glass rounded-3xl p-7">
+        <div class="text-gold text-lg mb-3">★★★★★</div>
+        <blockquote class="text-mist leading-relaxed">"The only conference where I left with three prototypes and two co-founders. The design jams are unreal."</blockquote>
+        <figcaption class="mt-5 text-sm">
+          <span class="font-display font-semibold text-white">Amara Diallo</span><br/>
+          <span class="text-mist">Product Lead · Driftboard</span>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-3xl p-7 md:-translate-y-4">
+        <div class="text-gold text-lg mb-3">★★★★★</div>
+        <blockquote class="text-mist leading-relaxed">"HORIZON is what every tech event wishes it was — substance over swag. The frontier track changed how my team ships."</blockquote>
+        <figcaption class="mt-5 text-sm">
+          <span class="font-display font-semibold text-white">Jonas Frey</span><br/>
+          <span class="text-mist">Staff Engineer · Heliograph</span>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-3xl p-7">
+        <div class="text-gold text-lg mb-3">★★★★★</div>
+        <blockquote class="text-mist leading-relaxed">"Worth every dollar. The hallway track alone closed our seed round. Already booked next year."</blockquote>
+        <figcaption class="mt-5 text-sm">
+          <span class="font-display font-semibold text-white">Rina Castellano</span><br/>
+          <span class="text-mist">Founder · Lumenly</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <span class="reveal text-xs font-mono uppercase tracking-[0.3em] text-glow text-center block">07 — Questions</span>
+    <h2 class="reveal font-display font-bold text-4xl sm:text-5xl mt-4 mb-12 text-center">Good to know</h2>
+
+    <div id="faqList" class="space-y-3">
+      <div class="faq-item glass rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-semibold">Is my ticket transferable or refundable?</span>
+          <span class="faq-icon text-2xl text-glow transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-mist text-sm">Tickets are fully transferable up to 7 days before the event. Refunds are available within 30 days of purchase, minus a small processing fee.</p></div>
+      </div>
+      <div class="faq-item glass rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-semibold">Will sessions be recorded?</span>
+          <span class="faq-icon text-2xl text-glow transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-mist text-sm">Yes — every main-stage and track session is recorded. In-Person and Frontier holders get 90-day on-demand access; Stream holders too.</p></div>
+      </div>
+      <div class="faq-item glass rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-semibold">Are there group or student discounts?</span>
+          <span class="faq-icon text-2xl text-glow transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-mist text-sm">Teams of 5+ get 20% off In-Person passes. Verified students and educators receive 40% off — contact our team for a code.</p></div>
+      </div>
+      <div class="faq-item glass rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-semibold">What's included with the In-Person pass?</span>
+          <span class="faq-icon text-2xl text-glow transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-mist text-sm">All three days, every track, hands-on workshops, catered lunches, the networking app, and access to the closing after-party.</p></div>
+      </div>
+      <div class="faq-item glass rounded-2xl overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-semibold">Is the venue accessible?</span>
+          <span class="faq-icon text-2xl text-glow transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-mist text-sm">Absolutely. The Convergence Center is fully wheelchair accessible with quiet rooms, all-genders facilities, live captioning, and ASL interpretation on the main stage.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="relative py-28 overflow-hidden aurora grain">
+  <div class="absolute inset-0 grid-bg opacity-50"></div>
+  <div class="relative max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="reveal font-display font-bold text-4xl sm:text-6xl lg:text-7xl leading-tight">
+      The future isn't watched.<br/><span class="text-gradient">It's built.</span>
+    </h2>
+    <p class="reveal text-mist mt-6 text-lg max-w-xl mx-auto">Join 4,200+ builders this October. Early-bird seats are limited and moving fast.</p>
+    <a href="#tickets" id="finalCta" class="magnetic inline-flex mt-9 items-center gap-2 rounded-full bg-white text-ink font-bold px-9 py-4 text-lg hover:bg-glow transition-colors shadow-glow">
+      Claim your seat
+      <span class="text-accent">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ink border-t border-white/5 py-14">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-gradient-to-br from-accent to-glow">
+            <span class="font-display font-bold text-ink text-lg">H</span>
+          </span>
+          <span class="font-display font-bold text-lg">HORIZON·SUMMIT</span>
+        </div>
+        <p class="text-mist text-sm max-w-sm">The convergence of design, code, and machine intelligence. Aurora Bay Convergence Center · October 14–16, 2026.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold mb-3 text-sm">Event</h4>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a href="#about" class="hover:text-white transition">About</a></li>
+          <li><a href="#speakers" class="hover:text-white transition">Speakers</a></li>
+          <li><a href="#schedule" class="hover:text-white transition">Schedule</a></li>
+          <li><a href="#tickets" class="hover:text-white transition">Tickets</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold mb-3 text-sm">Connect</h4>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a href="#" class="hover:text-white transition">Newsletter</a></li>
+          <li><a href="#" class="hover:text-white transition">Sponsor us</a></li>
+          <li><a href="#" class="hover:text-white transition">Press kit</a></li>
+          <li><a href="#" class="hover:text-white transition">Code of conduct</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-mist">
+      <p>© 2026 Horizon Summit. A fictional event template. All rights reserved.</p>
+      <p class="font-mono">Designed for the next decade.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV ---------- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 30) nav.classList.add('glass','shadow-card');
+    else nav.classList.remove('glass','shadow-card');
+  });
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  /* ---------- COUNTDOWN ---------- */
+  const target = new Date('2026-10-14T09:00:00').getTime();
+  const cd = {
+    days: document.querySelector('[data-cd="days"]'),
+    hours: document.querySelector('[data-cd="hours"]'),
+    minutes: document.querySelector('[data-cd="minutes"]'),
+    seconds: document.querySelector('[data-cd="seconds"]'),
+  };
+  function pad(n){ return String(Math.max(0,n)).padStart(2,'0'); }
+  function tick(){
+    const diff = target - Date.now();
+    if (diff <= 0){ Object.values(cd).forEach(el => el && (el.textContent='00')); return; }
+    const d = Math.floor(diff/864e5);
+    const h = Math.floor(diff%864e5/36e5);
+    const m = Math.floor(diff%36e5/6e4);
+    const s = Math.floor(diff%6e4/1e3);
+    if(cd.days) cd.days.textContent = pad(d);
+    if(cd.hours) cd.hours.textContent = pad(h);
+    if(cd.minutes) cd.minutes.textContent = pad(m);
+    if(cd.seconds) cd.seconds.textContent = pad(s);
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---------- SCHEDULE DATA ---------- */
+  const trackColor = { Design:'text-ember', Engineering:'text-glow', Frontier:'text-accent' };
+  const schedule = [
+    [
+      { time:'09:00', track:'Design', title:'Opening: Designing for Models That Design Back', who:'Dr. Lena Okafor' },
+      { time:'10:30', track:'Engineering', title:'Latency-Free Generative UI in Production', who:'Mateo Russo' },
+      { time:'13:00', track:'Frontier', title:'Agents That Ship Production Code', who:'Sora Tanaka' },
+      { time:'15:30', track:'Design', title:'The Grammar of Motion Systems', who:'Priya Anand' },
+      { time:'18:00', track:'Frontier', title:'Welcome Mixer · Rooftop Garden', who:'All attendees' },
+    ],
+    [
+      { time:'09:30', track:'Engineering', title:'Infra for Real-Time Inference at Scale', who:'Idris Bello' },
+      { time:'11:00', track:'Design', title:'Brand Systems at Machine Speed', who:'Clara Vossen' },
+      { time:'13:30', track:'Engineering', title:'Edge-Rendered Design Tooling', who:'Nadia Kim' },
+      { time:'15:00', track:'Frontier', title:'The Ethics of Generative Experience', who:'Theo Marchand' },
+      { time:'17:00', track:'Design', title:'Live Design Jam · Build a Product in 90 Min', who:'Track facilitators' },
+    ],
+    [
+      { time:'09:30', track:'Frontier', title:'Keynote: The Next Interface', who:'Surprise guest' },
+      { time:'11:00', track:'Engineering', title:'Open-Source Tooling Showcase', who:'Community speakers' },
+      { time:'13:00', track:'Design', title:'Portfolio Teardowns, Live', who:'Mentor panel' },
+      { time:'15:00', track:'Frontier', title:'Closing: Where We Go From Here', who:'Dr. Lena Okafor' },
+      { time:'17:30', track:'Design', title:'Closing After-Party', who:'All attendees' },
+    ],
+  ];
+  const scheduleBody = document.getElementById('scheduleBody');
+  function renderSchedule(day){
+    scheduleBody.innerHTML = schedule[day].map(s => `
+      <div class="glass rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 hover:border-accent/40 transition">
+        <div class="font-mono text-glow text-sm w-16 shrink-0">${s.time}</div>
+        <div class="flex-1">
+          <div class="font-display font-semibold">${s.title}</div>
+          <div class="text-mist text-sm mt-0.5">${s.who}</div>
+        </div>
+        <span class="self-start sm:self-center text-xs font-mono uppercase tracking-wider px-3 py-1 rounded-full border border-white/15 ${trackColor[s.track]}">${s.track}</span>
+      </div>
+    `).join('');
+    if (!reduceMotion && window.gsap){
+      gsap.from('#scheduleBody > div', { y:18, opacity:0, duration:.4, stagger:.06, ease:'power2.out' });
+    }
+  }
+  renderSchedule(0);
+  document.querySelectorAll('.day-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.day-tab').forEach(b => {
+        b.classList.remove('bg-accent','text-white');
+        b.classList.add('text-mist');
+      });
+      btn.classList.add('bg-accent','text-white');
+      btn.classList.remove('text-mist');
+      renderSchedule(Number(btn.dataset.day));
+    });
+  });
+
+  /* ---------- FAQ ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(t => {
+    t.addEventListener('click', () => {
+      const item = t.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => {
+        i.classList.remove('open');
+        i.querySelector('.faq-icon').textContent = '+';
+      });
+      if (!open){ item.classList.add('open'); item.querySelector('.faq-icon').textContent = '+'; }
+    });
+  });
+
+  /* ---------- POINTER: TILT ---------- */
+  if (!reduceMotion && window.matchMedia('(pointer:fine)').matches){
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - .5;
+        const py = (e.clientY - r.top)/r.height - .5;
+        card.style.transform = `perspective(900px) rotateY(${px*10}deg) rotateX(${-py*10}deg) translateY(-6px)`;
+        card.style.boxShadow = '0 30px 60px -30px rgba(124,77,255,0.6)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        card.style.boxShadow = '';
+      });
+    });
+
+    /* ---------- MAGNETIC BUTTONS ---------- */
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width/2;
+        const my = e.clientY - r.top - r.height/2;
+        btn.style.transform = `translate(${mx*0.3}px, ${my*0.4}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
+
+  /* ---------- GSAP ANIMATIONS ---------- */
+  if (window.gsap && window.ScrollTrigger && !reduceMotion){
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Kinetic hero headline
+    gsap.from('.kinetic', { y:120, opacity:0, duration:1, stagger:.12, ease:'power4.out', delay:.15 });
+    gsap.utils.toArray('section .reveal').forEach(el => {
+      // hero reveals fire on load
+    });
+
+    // Section reveals
+    gsap.utils.toArray('.reveal').forEach(el => {
+      gsap.to(el, {
+        opacity:1, y:0, duration:.8, ease:'power3.out',
+        scrollTrigger:{ trigger: el, start:'top 88%' }
+      });
+    });
+
+    // Container parallax
+    gsap.utils.toArray('[data-parallax]').forEach(el => {
+      const amt = parseFloat(el.dataset.parallax) || 0.15;
+      gsap.to(el, {
+        yPercent: -amt*100,
+        ease:'none',
+        scrollTrigger:{ trigger: el, start:'top bottom', end:'bottom top', scrub:true }
+      });
+    });
+
+    // Count-ups
+    gsap.utils.toArray('[data-count]').forEach(el => {
+      const end = parseInt(el.dataset.count,10);
+      const suffix = el.dataset.suffix || '';
+      const obj = { v:0 };
+      ScrollTrigger.create({
+        trigger: el, start:'top 90%', once:true,
+        onEnter: () => gsap.to(obj, {
+          v:end, duration:1.8, ease:'power2.out',
+          onUpdate: () => el.textContent = Math.floor(obj.v).toLocaleString() + suffix
+        })
+      });
+    });
+  } else {
+    // reduced motion: ensure counters show final values
+    document.querySelectorAll('[data-count]').forEach(el => {
+      el.textContent = parseInt(el.dataset.count,10).toLocaleString() + (el.dataset.suffix||'');
+    });
+  }
+})();
+</script>
+</body>
+</html>

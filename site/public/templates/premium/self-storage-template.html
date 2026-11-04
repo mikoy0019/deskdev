@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StoreVault &mdash; Smart Self-Storage That Works Around You</title>
+<meta name="description" content="StoreVault offers climate-controlled, 24/7 secure self-storage with simple month-to-month pricing. Find your perfect unit size in seconds and reserve online." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          vault: {
+            50: '#fff7ed', 100: '#ffedd5', 200: '#fed7aa', 300: '#fdba74',
+            400: '#fb923c', 500: '#f97316', 600: '#ea580c', 700: '#c2410c',
+          },
+          ink: {
+            900: '#0c1322', 800: '#141d31', 700: '#1e2940', 600: '#2c3a57',
+            400: '#64748b', 300: '#94a3b8', 200: '#cbd5e1', 100: '#e2e8f0',
+          },
+        },
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        boxShadow: {
+          card: '0 18px 50px -20px rgba(12,19,34,0.18)',
+          lift: '0 30px 70px -30px rgba(234,88,12,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #0c1322; }
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(12,19,34,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(12,19,34,0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .gradient-text {
+    background: linear-gradient(100deg, #ea580c, #f97316 55%, #fb923c);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .img-fallback {
+    background: linear-gradient(135deg, #1e2940 0%, #2c3a57 50%, #ea580c 130%);
+  }
+  .reveal { opacity: 0; transform: translateY(34px); }
+  .marquee-track { display: flex; width: max-content; animation: scrollx 34s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  .unit-card { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s; transform-style: preserve-3d; }
+  .size-pill { transition: all .25s ease; }
+  .size-pill.active { background: #ea580c; color: #fff; border-color: #ea580c; box-shadow: 0 12px 26px -12px rgba(234,88,12,.7); }
+
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .faq-item.open .faq-body { max-height: 280px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .35s ease; }
+
+  .magnetic { transition: transform .25s cubic-bezier(.2,.7,.2,1); will-change: transform; }
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: -4px; height: 2px; width: 0;
+    background: #ea580c; transition: width .3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-10 h-10 rounded-xl bg-vault-600 text-white shadow-lg shadow-vault-600/30 group-hover:rotate-6 transition-transform">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V12h6v9"/></svg>
+      </span>
+      <span class="font-display font-extrabold text-lg tracking-tight text-ink-900">Store<span class="text-vault-600">Vault</span></span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-ink-600">
+      <a href="#sizes" class="nav-link">Unit Sizes</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How It Works</a>
+      <a href="#locations" class="nav-link">Locations</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="#locations" class="hidden md:inline-flex text-sm font-semibold text-ink-700 hover:text-vault-600 transition">Sign in</a>
+      <a href="#pricing" id="navCta" class="magnetic inline-flex items-center gap-2 rounded-full bg-ink-900 hover:bg-vault-600 text-white text-sm font-semibold px-5 py-2.5 transition-colors shadow-lg shadow-ink-900/20">
+        Reserve a Unit
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 grid-bg overflow-hidden">
+  <div class="absolute -top-32 -right-24 w-[34rem] h-[34rem] rounded-full bg-vault-200/40 blur-3xl"></div>
+  <div class="absolute top-40 -left-32 w-96 h-96 rounded-full bg-vault-100/60 blur-3xl"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <!-- copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full border border-vault-200 bg-white px-4 py-1.5 text-xs font-semibold text-vault-700 shadow-sm">
+        <span class="w-2 h-2 rounded-full bg-vault-500 animate-pulse"></span>
+        Move-in today &middot; First month 50% off
+      </span>
+
+      <h1 class="reveal mt-6 font-display font-extrabold text-4xl sm:text-5xl xl:text-6xl leading-[1.05] tracking-tight text-ink-900">
+        Storage that<br><span class="gradient-text">flexes</span> around your life.
+      </h1>
+
+      <p class="reveal mt-6 text-lg text-ink-400 max-w-md leading-relaxed">
+        Climate-controlled, drive-up, and 24/7 secure units across the city. No long contracts &mdash; just clean space when you need it, gone when you don't.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-6 text-sm text-ink-600">
+        <div class="flex items-center gap-2"><svg width="18" height="18" class="text-vault-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Month-to-month</div>
+        <div class="flex items-center gap-2"><svg width="18" height="18" class="text-vault-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> No deposit</div>
+        <div class="flex items-center gap-2"><svg width="18" height="18" class="text-vault-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Free moving cart</div>
+      </div>
+    </div>
+
+    <!-- SIZE FINDER -->
+    <div class="reveal relative">
+      <div class="absolute -inset-3 bg-gradient-to-tr from-vault-200/50 to-transparent rounded-[2rem] blur-xl"></div>
+      <div class="relative bg-white rounded-[1.6rem] shadow-card border border-ink-100 p-6 md:p-8">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display font-bold text-xl text-ink-900">Find your size</h2>
+          <span class="text-xs font-semibold text-vault-700 bg-vault-50 px-3 py-1 rounded-full">Live pricing</span>
+        </div>
+        <p class="text-sm text-ink-400 mt-1.5">Tap what you're storing &mdash; we'll match a unit.</p>
+
+        <div id="finderPills" class="grid grid-cols-2 gap-3 mt-5">
+          <button data-size="5x5" data-label="Closet" data-price="39" data-fit="Boxes, seasonal gear, a few totes" class="size-pill active text-left rounded-xl border border-ink-200 bg-ink-50/40 px-4 py-3.5">
+            <span class="block text-sm font-bold text-ink-900">5&times;5 Locker</span>
+            <span class="block text-xs text-ink-400 mt-0.5">Closet-sized</span>
+          </button>
+          <button data-size="5x10" data-label="Studio" data-price="69" data-fit="Studio apartment, mattress, sofa" class="size-pill text-left rounded-xl border border-ink-200 bg-ink-50/40 px-4 py-3.5">
+            <span class="block text-sm font-bold text-ink-900">5&times;10 Small</span>
+            <span class="block text-xs text-ink-400 mt-0.5">Studio move</span>
+          </button>
+          <button data-size="10x10" data-label="2-Bedroom" data-price="129" data-fit="2-bedroom home, appliances" class="size-pill text-left rounded-xl border border-ink-200 bg-ink-50/40 px-4 py-3.5">
+            <span class="block text-sm font-bold text-ink-900">10&times;10 Medium</span>
+            <span class="block text-xs text-ink-400 mt-0.5">2-bed home</span>
+          </button>
+          <button data-size="10x20" data-label="House + Car" data-price="219" data-fit="4-bedroom house, vehicle, business stock" class="size-pill text-left rounded-xl border border-ink-200 bg-ink-50/40 px-4 py-3.5">
+            <span class="block text-sm font-bold text-ink-900">10&times;20 Large</span>
+            <span class="block text-xs text-ink-400 mt-0.5">House + car</span>
+          </button>
+        </div>
+
+        <div class="mt-6 rounded-2xl bg-ink-900 text-white p-5 flex items-center justify-between overflow-hidden relative">
+          <div class="absolute -right-6 -top-8 w-32 h-32 bg-vault-600/30 rounded-full blur-2xl"></div>
+          <div class="relative">
+            <p class="text-xs text-ink-300 uppercase tracking-wide font-semibold">Estimated from</p>
+            <p class="mt-1"><span class="font-display font-extrabold text-4xl">$<span id="finderPrice">39</span></span><span class="text-ink-300 text-sm">/mo</span></p>
+            <p id="finderFit" class="text-xs text-ink-300 mt-1.5 max-w-[12rem]">Boxes, seasonal gear, a few totes</p>
+          </div>
+          <a href="#pricing" id="finderCta" class="magnetic relative shrink-0 inline-flex items-center gap-1.5 rounded-full bg-vault-600 hover:bg-vault-500 text-white text-sm font-bold px-5 py-3 transition-colors">
+            Reserve
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="border-y border-ink-100 bg-white">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl md:text-4xl text-ink-900"><span class="count" data-to="18400">0</span>+</p>
+      <p class="text-sm text-ink-400 mt-1">Units managed</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl md:text-4xl text-ink-900"><span class="count" data-to="42">0</span></p>
+      <p class="text-sm text-ink-400 mt-1">Locations nationwide</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl md:text-4xl text-ink-900"><span class="count" data-to="99">0</span>.7%</p>
+      <p class="text-sm text-ink-400 mt-1">Uptime monitoring</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl md:text-4xl text-ink-900">4.9<span class="text-vault-600">&#9733;</span></p>
+      <p class="text-sm text-ink-400 mt-1">From 6,200 reviews</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="bg-ink-900 py-4 overflow-hidden marquee">
+  <div class="marquee-track items-center gap-12 text-ink-300 text-sm font-semibold uppercase tracking-widest whitespace-nowrap">
+    <span class="flex items-center gap-3">Climate Controlled <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">24/7 Gate Access <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">HD Surveillance <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">Drive-Up Units <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">No Long Contracts <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">Free Moving Cart <span class="text-vault-500">&bull;</span></span>
+    <!-- dup -->
+    <span class="flex items-center gap-3">Climate Controlled <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">24/7 Gate Access <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">HD Surveillance <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">Drive-Up Units <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">No Long Contracts <span class="text-vault-500">&bull;</span></span>
+    <span class="flex items-center gap-3">Free Moving Cart <span class="text-vault-500">&bull;</span></span>
+  </div>
+</section>
+
+<!-- ============ UNIT SIZES GRID ============ -->
+<section id="sizes" class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">Unit Sizes</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">Pick a space that fits &mdash; not a contract.</h2>
+      <p class="reveal mt-4 text-ink-400 text-lg">Every unit is ground-secured, swept clean, and ready the day you reserve. Upsize or downsize anytime.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
+      <!-- card -->
+      <article class="unit-card reveal group rounded-2xl border border-ink-100 bg-white p-6 shadow-card hover:shadow-lift hover:-translate-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="11" rx="1"/><path d="M4 13h16"/></svg>
+          </span>
+          <span class="text-xs font-bold text-ink-300">5&times;5 ft</span>
+        </div>
+        <h3 class="font-display font-bold text-xl mt-5 text-ink-900">Locker</h3>
+        <p class="text-sm text-ink-400 mt-1.5 leading-relaxed">Closet-sized. Perfect for boxes, documents, and seasonal items.</p>
+        <div class="mt-5 pt-5 border-t border-ink-100 flex items-end justify-between">
+          <p class="font-display font-extrabold text-2xl text-ink-900">$39<span class="text-sm font-medium text-ink-300">/mo</span></p>
+          <a href="#pricing" class="text-sm font-bold text-vault-600 group-hover:underline">Reserve &rarr;</a>
+        </div>
+      </article>
+
+      <article class="unit-card reveal group rounded-2xl border border-ink-100 bg-white p-6 shadow-card hover:shadow-lift hover:-translate-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="1"/><path d="M3 13h18M9 8v12"/></svg>
+          </span>
+          <span class="text-xs font-bold text-ink-300">5&times;10 ft</span>
+        </div>
+        <h3 class="font-display font-bold text-xl mt-5 text-ink-900">Small</h3>
+        <p class="text-sm text-ink-400 mt-1.5 leading-relaxed">Fits a studio's worth &mdash; mattress, sofa, and a dozen boxes.</p>
+        <div class="mt-5 pt-5 border-t border-ink-100 flex items-end justify-between">
+          <p class="font-display font-extrabold text-2xl text-ink-900">$69<span class="text-sm font-medium text-ink-300">/mo</span></p>
+          <a href="#pricing" class="text-sm font-bold text-vault-600 group-hover:underline">Reserve &rarr;</a>
+        </div>
+      </article>
+
+      <article class="unit-card reveal group rounded-2xl border-2 border-vault-300 bg-white p-6 shadow-lift hover:-translate-y-1.5 relative">
+        <span class="absolute -top-3 left-6 text-[11px] font-bold uppercase tracking-wide bg-vault-600 text-white px-3 py-1 rounded-full">Most popular</span>
+        <div class="flex items-center justify-between">
+          <span class="grid place-items-center w-12 h-12 rounded-xl bg-vault-600 text-white">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="1"/><path d="M3 12h18M9 6v14M15 6v14"/></svg>
+          </span>
+          <span class="text-xs font-bold text-ink-300">10&times;10 ft</span>
+        </div>
+        <h3 class="font-display font-bold text-xl mt-5 text-ink-900">Medium</h3>
+        <p class="text-sm text-ink-400 mt-1.5 leading-relaxed">A 2-bedroom home with appliances and furniture, no problem.</p>
+        <div class="mt-5 pt-5 border-t border-ink-100 flex items-end justify-between">
+          <p class="font-display font-extrabold text-2xl text-ink-900">$129<span class="text-sm font-medium text-ink-300">/mo</span></p>
+          <a href="#pricing" class="text-sm font-bold text-vault-600 group-hover:underline">Reserve &rarr;</a>
+        </div>
+      </article>
+
+      <article class="unit-card reveal group rounded-2xl border border-ink-100 bg-white p-6 shadow-card hover:shadow-lift hover:-translate-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="1"/><path d="M2 13h20M7 6v14M12 6v14M17 6v14"/></svg>
+          </span>
+          <span class="text-xs font-bold text-ink-300">10&times;20 ft</span>
+        </div>
+        <h3 class="font-display font-bold text-xl mt-5 text-ink-900">Large</h3>
+        <p class="text-sm text-ink-400 mt-1.5 leading-relaxed">A 4-bedroom house plus a vehicle, or full business inventory.</p>
+        <div class="mt-5 pt-5 border-t border-ink-100 flex items-end justify-between">
+          <p class="font-display font-extrabold text-2xl text-ink-900">$219<span class="text-sm font-medium text-ink-300">/mo</span></p>
+          <a href="#pricing" class="text-sm font-bold text-vault-600 group-hover:underline">Reserve &rarr;</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="py-20 md:py-28 bg-white border-y border-ink-100">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <!-- image -->
+      <div class="reveal relative parallax-wrap">
+        <div class="img-fallback rounded-3xl overflow-hidden shadow-card aspect-[4/3]">
+          <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=80" alt="Clean modern self-storage corridor" class="parallax-img w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+        </div>
+        <div class="absolute -bottom-6 -left-4 md:-left-8 bg-white rounded-2xl shadow-lift border border-ink-100 p-5 max-w-[15rem]">
+          <div class="flex items-center gap-3">
+            <span class="grid place-items-center w-10 h-10 rounded-xl bg-vault-600 text-white">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <div>
+              <p class="font-display font-bold text-ink-900 text-sm">Insured & secured</p>
+              <p class="text-xs text-ink-400">Up to $25k coverage</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- list -->
+      <div>
+        <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">Why StoreVault</p>
+        <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">Built like a vault. Priced like a no-brainer.</h2>
+
+        <div class="mt-10 space-y-7">
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h2M20 12h2M12 2v2M12 20v2"/><circle cx="12" cy="12" r="5"/></svg>
+            </span>
+            <div>
+              <h3 class="font-display font-bold text-lg text-ink-900">Climate control</h3>
+              <p class="text-ink-400 mt-1 leading-relaxed">Steady 18&ndash;24&deg;C and humidity control protects electronics, wood, art, and documents year-round.</p>
+            </div>
+          </div>
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <div>
+              <h3 class="font-display font-bold text-lg text-ink-900">Layered security</h3>
+              <p class="text-ink-400 mt-1 leading-relaxed">Individual door alarms, PIN gate access, motion lighting, and HD cameras monitored 24/7.</p>
+            </div>
+          </div>
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 grid place-items-center w-12 h-12 rounded-xl bg-vault-50 text-vault-600">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            </span>
+            <div>
+              <h3 class="font-display font-bold text-lg text-ink-900">24/7 access</h3>
+              <p class="text-ink-400 mt-1 leading-relaxed">Your unit, your schedule. Drive up to the door any hour, every day &mdash; no appointment needed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl mx-auto text-center">
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">How It Works</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">From browse to box-it-up in minutes.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mt-14">
+      <div class="reveal relative rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <span class="font-display font-extrabold text-5xl text-vault-100">01</span>
+        <h3 class="font-display font-bold text-xl mt-2 text-ink-900">Find your fit</h3>
+        <p class="text-ink-400 mt-2 leading-relaxed">Use the size finder or chat with us. We'll recommend the exact unit &mdash; never oversell you space.</p>
+      </div>
+      <div class="reveal relative rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <span class="font-display font-extrabold text-5xl text-vault-100">02</span>
+        <h3 class="font-display font-bold text-xl mt-2 text-ink-900">Reserve online</h3>
+        <p class="text-ink-400 mt-2 leading-relaxed">Lock in your rate in under two minutes. No deposit, no credit check, cancel anytime.</p>
+      </div>
+      <div class="reveal relative rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <span class="font-display font-extrabold text-5xl text-vault-100">03</span>
+        <h3 class="font-display font-bold text-xl mt-2 text-ink-900">Move in today</h3>
+        <p class="text-ink-400 mt-2 leading-relaxed">Get your gate PIN by text, grab a free cart, and start storing &mdash; the same day you book.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOCATIONS ============ -->
+<section id="locations" class="py-20 md:py-28 bg-ink-900 text-white relative overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-[0.06]"></div>
+  <div class="absolute -bottom-32 -right-24 w-[30rem] h-[30rem] rounded-full bg-vault-600/20 blur-3xl"></div>
+  <div class="relative max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-500">Locations</p>
+        <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight">A vault near you, wherever you are.</h2>
+        <p class="reveal mt-4 text-ink-300 text-lg max-w-md">42 facilities and counting, all built to the same standard. Browse the closest branch and reserve in a tap.</p>
+
+        <div class="reveal mt-8 grid sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl bg-ink-800 border border-ink-700 p-5 hover:border-vault-500 transition">
+            <p class="font-display font-bold text-lg">Riverside Yard</p>
+            <p class="text-sm text-ink-300 mt-1">Drive-up &middot; 24/7 &middot; 96% full</p>
+          </div>
+          <div class="rounded-2xl bg-ink-800 border border-ink-700 p-5 hover:border-vault-500 transition">
+            <p class="font-display font-bold text-lg">Maple Crossing</p>
+            <p class="text-sm text-ink-300 mt-1">Climate &middot; 24/7 &middot; Few left</p>
+          </div>
+          <div class="rounded-2xl bg-ink-800 border border-ink-700 p-5 hover:border-vault-500 transition">
+            <p class="font-display font-bold text-lg">Harbor Point</p>
+            <p class="text-sm text-ink-300 mt-1">Drive-up &middot; RV/boat &middot; Open</p>
+          </div>
+          <div class="rounded-2xl bg-ink-800 border border-ink-700 p-5 hover:border-vault-500 transition">
+            <p class="font-display font-bold text-lg">Northgate Hub</p>
+            <p class="text-sm text-ink-300 mt-1">Climate &middot; 24/7 &middot; Open</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal img-fallback rounded-3xl overflow-hidden shadow-card aspect-[4/3] border border-ink-700">
+        <img src="https://images.unsplash.com/photo-1600518464441-9154a4dea21b?auto=format&fit=crop&w=1600&q=80" alt="Self-storage facility exterior at dusk" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / SPECIALS ============ -->
+<section id="pricing" class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl mx-auto text-center">
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">Pricing & Specials</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">One clear rate. No surprises.</h2>
+      <p class="reveal mt-4 text-ink-400 text-lg">Reserve this week and your first month is half off. Rate is locked &mdash; we never bump it after move-in.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 mt-14 items-stretch">
+      <div class="reveal rounded-2xl border border-ink-100 bg-white p-7 shadow-card flex flex-col">
+        <p class="font-display font-bold text-lg text-ink-900">Starter</p>
+        <p class="text-sm text-ink-400 mt-1">For declutters & dorms</p>
+        <p class="mt-5 font-display font-extrabold text-4xl text-ink-900">$39<span class="text-base font-medium text-ink-300">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-ink-600 flex-1">
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> 5&times;5 locker unit</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> 24/7 gate access</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> Free moving cart</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> Month-to-month</li>
+        </ul>
+        <a href="#cta" class="magnetic mt-7 inline-flex justify-center rounded-full border border-ink-200 hover:border-vault-600 hover:text-vault-600 text-ink-900 font-semibold py-3 transition">Reserve Starter</a>
+      </div>
+
+      <div class="reveal rounded-2xl border-2 border-vault-600 bg-ink-900 text-white p-7 shadow-lift flex flex-col relative -mt-2 md:-my-2">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold uppercase tracking-wide bg-vault-600 px-3 py-1 rounded-full">Best value</span>
+        <p class="font-display font-bold text-lg">Household</p>
+        <p class="text-sm text-ink-300 mt-1">For full-home moves</p>
+        <p class="mt-5 font-display font-extrabold text-4xl">$129<span class="text-base font-medium text-ink-300">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-ink-100 flex-1">
+          <li class="flex gap-2"><span class="text-vault-500 font-bold">&check;</span> 10&times;10 climate unit</li>
+          <li class="flex gap-2"><span class="text-vault-500 font-bold">&check;</span> First month 50% off</li>
+          <li class="flex gap-2"><span class="text-vault-500 font-bold">&check;</span> $25k contents insurance</li>
+          <li class="flex gap-2"><span class="text-vault-500 font-bold">&check;</span> Free truck for move-in</li>
+        </ul>
+        <a href="#cta" class="magnetic mt-7 inline-flex justify-center rounded-full bg-vault-600 hover:bg-vault-500 font-bold py-3 transition">Reserve Household</a>
+      </div>
+
+      <div class="reveal rounded-2xl border border-ink-100 bg-white p-7 shadow-card flex flex-col">
+        <p class="font-display font-bold text-lg text-ink-900">Business</p>
+        <p class="text-sm text-ink-400 mt-1">Stock, files & fleet</p>
+        <p class="mt-5 font-display font-extrabold text-4xl text-ink-900">$219<span class="text-base font-medium text-ink-300">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-ink-600 flex-1">
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> 10&times;20 drive-up unit</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> Vehicle / RV parking</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> Package receiving</li>
+          <li class="flex gap-2"><span class="text-vault-600 font-bold">&check;</span> Dedicated account rep</li>
+        </ul>
+        <a href="#cta" class="magnetic mt-7 inline-flex justify-center rounded-full border border-ink-200 hover:border-vault-600 hover:text-vault-600 text-ink-900 font-semibold py-3 transition">Reserve Business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-20 md:py-28 bg-white border-y border-ink-100">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal img-fallback rounded-3xl overflow-hidden shadow-card aspect-[4/3] order-last lg:order-first">
+      <img src="https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=1600&q=80" alt="Organized storage boxes and shelving" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+    </div>
+    <div>
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">Our Story</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">We started because storage felt like a trap.</h2>
+      <p class="reveal mt-5 text-ink-400 text-lg leading-relaxed">Hidden fees, surprise rate hikes, and gates that close at 6pm. StoreVault was built to be the opposite &mdash; honest pricing, real human support, and access whenever life happens.</p>
+      <p class="reveal mt-4 text-ink-400 leading-relaxed">Today we run 42 facilities, but the promise hasn't changed: the rate you reserve is the rate you keep, for as long as you stay.</p>
+      <div class="reveal mt-8 flex flex-wrap gap-8">
+        <div><p class="font-display font-extrabold text-3xl text-ink-900">2014</p><p class="text-sm text-ink-400">Founded</p></div>
+        <div><p class="font-display font-extrabold text-3xl text-ink-900">Zero</p><p class="text-sm text-ink-400">Rate hikes ever</p></div>
+        <div><p class="font-display font-extrabold text-3xl text-ink-900">7-day</p><p class="text-sm text-ink-400">Support week</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20 md:py-28">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">Reviews</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">Trusted with people's whole lives.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 mt-12">
+      <figure class="reveal rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <div class="text-vault-500 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-ink-700 leading-relaxed">&ldquo;Booked at midnight, moved in by noon. The cart was waiting at the gate. Stupidly easy.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-vault-100 text-vault-700 font-bold">DR</span>
+          <div><p class="font-semibold text-ink-900 text-sm">Dara Reyes</p><p class="text-xs text-ink-400">Apartment downsizer</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <div class="text-vault-500 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-ink-700 leading-relaxed">&ldquo;We store our entire e-commerce inventory here. Climate is dead steady &mdash; zero damaged stock in two years.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-vault-100 text-vault-700 font-bold">MA</span>
+          <div><p class="font-semibold text-ink-900 text-sm">Marcus Ade</p><p class="text-xs text-ink-400">Small business owner</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-ink-100 bg-white p-7 shadow-card">
+        <div class="text-vault-500 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="mt-4 text-ink-700 leading-relaxed">&ldquo;Three years in and my rate hasn't moved a cent. After my last place, that alone earned my loyalty.&rdquo;</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-vault-100 text-vault-700 font-bold">JL</span>
+          <div><p class="font-semibold text-ink-900 text-sm">Joy Lan</p><p class="text-xs text-ink-400">Long-term renter</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 md:py-28 bg-white border-y border-ink-100">
+  <div class="max-w-3xl mx-auto px-5 md:px-8">
+    <div class="text-center">
+      <p class="reveal text-sm font-bold uppercase tracking-widest text-vault-600">FAQ</p>
+      <h2 class="reveal mt-3 font-display font-extrabold text-3xl md:text-5xl tracking-tight text-ink-900">Good questions, straight answers.</h2>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faqList">
+      <div class="faq-item open rounded-2xl border border-ink-100 bg-ink-50/40 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-bold text-ink-900">Do I sign a long-term contract?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-7 h-7 rounded-full bg-vault-600 text-white text-lg leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink-400 leading-relaxed">Never. Every unit is month-to-month. Stay one month or ten years &mdash; give us 10 days' notice to leave and you're done.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink-100 bg-ink-50/40 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-bold text-ink-900">Will my rate ever increase?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-7 h-7 rounded-full bg-vault-600 text-white text-lg leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink-400 leading-relaxed">No. The rate you reserve is locked for as long as you keep the unit. We've never raised a rate on an active renter &mdash; and we never will.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink-100 bg-ink-50/40 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-bold text-ink-900">How secure is my unit?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-7 h-7 rounded-full bg-vault-600 text-white text-lg leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink-400 leading-relaxed">Each unit has its own door alarm, you set a private gate PIN, and HD cameras with motion lighting cover the property 24/7. Contents insurance up to $25k is included on most plans.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink-100 bg-ink-50/40 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-bold text-ink-900">Can I change unit sizes later?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-7 h-7 rounded-full bg-vault-600 text-white text-lg leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink-400 leading-relaxed">Anytime, subject to availability. Upsize or downsize at the same facility and we'll prorate the difference &mdash; no transfer fees.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink-100 bg-ink-50/40 overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display font-bold text-ink-900">When can I access my belongings?</span>
+          <span class="faq-icon shrink-0 grid place-items-center w-7 h-7 rounded-full bg-vault-600 text-white text-lg leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink-400 leading-relaxed">24 hours a day, 365 days a year, at every StoreVault location. Drive up to your door whenever it suits you &mdash; no appointment, no staff required.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="py-20 md:py-28">
+  <div class="max-w-5xl mx-auto px-5 md:px-8">
+    <div class="relative rounded-[2rem] bg-ink-900 text-white overflow-hidden p-10 md:p-16 text-center shadow-lift">
+      <div class="absolute inset-0 grid-bg opacity-[0.07]"></div>
+      <div class="absolute -top-20 -left-16 w-72 h-72 rounded-full bg-vault-600/30 blur-3xl"></div>
+      <div class="absolute -bottom-24 -right-16 w-80 h-80 rounded-full bg-vault-500/20 blur-3xl"></div>
+      <div class="relative">
+        <h2 class="reveal font-display font-extrabold text-3xl md:text-5xl tracking-tight">Reserve in 2 minutes.<br>Move in today.</h2>
+        <p class="reveal mt-4 text-ink-300 text-lg max-w-xl mx-auto">First month 50% off when you book online this week. No deposit, no credit check, cancel anytime.</p>
+        <div class="reveal mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#sizes" id="ctaPrimary" class="magnetic inline-flex items-center gap-2 rounded-full bg-vault-600 hover:bg-vault-500 text-white font-bold px-8 py-4 transition-colors shadow-lg shadow-vault-600/30">
+            Find my unit
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#locations" class="inline-flex items-center gap-2 rounded-full border border-ink-700 hover:border-vault-500 text-white font-semibold px-8 py-4 transition">
+            Browse locations
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink-900 text-ink-300 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-1">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-vault-600 text-white">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21V12h6v9"/></svg>
+          </span>
+          <span class="font-display font-extrabold text-lg text-white">Store<span class="text-vault-500">Vault</span></span>
+        </a>
+        <p class="mt-4 text-sm leading-relaxed">Smart self-storage with honest pricing and 24/7 access. Rate locked for life.</p>
+      </div>
+      <div>
+        <p class="font-display font-bold text-white text-sm uppercase tracking-wide">Units</p>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#sizes" class="hover:text-vault-500 transition">5&times;5 Locker</a></li>
+          <li><a href="#sizes" class="hover:text-vault-500 transition">5&times;10 Small</a></li>
+          <li><a href="#sizes" class="hover:text-vault-500 transition">10&times;10 Medium</a></li>
+          <li><a href="#sizes" class="hover:text-vault-500 transition">10&times;20 Large</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-bold text-white text-sm uppercase tracking-wide">Company</p>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          <li><a href="#about" class="hover:text-vault-500 transition">Our Story</a></li>
+          <li><a href="#locations" class="hover:text-vault-500 transition">Locations</a></li>
+          <li><a href="#pricing" class="hover:text-vault-500 transition">Pricing</a></li>
+          <li><a href="#faq" class="hover:text-vault-500 transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-bold text-white text-sm uppercase tracking-wide">Get the deal</p>
+        <p class="mt-4 text-sm">Drop your email for first-month-free promos.</p>
+        <form class="mt-4 flex gap-2" onsubmit="return false;">
+          <input type="email" placeholder="you@email.com" class="flex-1 min-w-0 rounded-full bg-ink-800 border border-ink-700 px-4 py-2.5 text-sm text-white placeholder:text-ink-400 focus:outline-none focus:border-vault-500" />
+          <button class="magnetic shrink-0 rounded-full bg-vault-600 hover:bg-vault-500 text-white text-sm font-bold px-5 py-2.5 transition">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-ink-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink-400">
+      <p>&copy; 2026 StoreVault Storage Co. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-vault-500 transition">Privacy</a>
+        <a href="#" class="hover:text-vault-500 transition">Terms</a>
+        <a href="#" class="hover:text-vault-500 transition">Accessibility</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) {
+      nav.classList.add('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'border-b', 'border-ink-100');
+    } else {
+      nav.classList.remove('bg-white/90', 'backdrop-blur-md', 'shadow-sm', 'border-b', 'border-ink-100');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Size finder ---------- */
+  const pills = document.querySelectorAll('#finderPills .size-pill');
+  const priceEl = document.getElementById('finderPrice');
+  const fitEl = document.getElementById('finderFit');
+  pills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      pills.forEach((p) => p.classList.remove('active'));
+      pill.classList.add('active');
+      const price = pill.getAttribute('data-price');
+      const fit = pill.getAttribute('data-fit');
+      if (!reduce && window.gsap) {
+        const obj = { v: parseInt(priceEl.textContent, 10) || 0 };
+        gsap.to(obj, {
+          v: parseInt(price, 10), duration: 0.5, ease: 'power2.out',
+          onUpdate: () => { priceEl.textContent = Math.round(obj.v); },
+        });
+      } else {
+        priceEl.textContent = price;
+      }
+      fitEl.textContent = fit;
+    });
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('#faqList .faq-item').forEach((item) => {
+    item.querySelector('.faq-trigger').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('#faqList .faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Magnetic buttons + tilt ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach((btn) => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.28}px, ${y * 0.32}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+    });
+
+    document.querySelectorAll('.unit-card').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateX(${py * -6}deg) rotateY(${px * 8}deg) translateY(-6px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  }
+
+  /* ---------- GSAP reveals, parallax, count-ups ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+
+      // container parallax on feature image
+      gsap.utils.toArray('.parallax-img').forEach((img) => {
+        gsap.fromTo(img, { yPercent: -8 }, {
+          yPercent: 8, ease: 'none',
+          scrollTrigger: { trigger: img.closest('.parallax-wrap'), start: 'top bottom', end: 'bottom top', scrub: true },
+        });
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    }
+
+    // count-ups
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseInt(el.getAttribute('data-to'), 10);
+      if (reduce) { el.textContent = to.toLocaleString(); return; }
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          gsap.to(obj, {
+            v: to, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); },
+          });
+        },
+      });
+    });
+  }
+
+  /* ---------- Animated headline ---------- */
+  if (window.gsap && !reduce) {
+    gsap.from('#top h1', { opacity: 0, y: 24, duration: 1, ease: 'power3.out', delay: 0.1 });
+  }
+})();
+</script>
+</body>
+</html>

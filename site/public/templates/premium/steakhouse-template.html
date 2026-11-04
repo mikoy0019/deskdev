@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ember &amp; Ash — Wood-Fired Steakhouse</title>
+<meta name="description" content="Ember &amp; Ash — a candlelit, wood-fired steakhouse. Dry-aged cuts, open-flame cooking, and a cellar built for the evening." />
+
+<!-- Fonts: refined serif + clean sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          charcoal: '#0c0a09',
+          ash: '#16120f',
+          smoke: '#231d18',
+          ember: '#c2410c',
+          flame: '#ea580c',
+          glow: '#f59e0b',
+          bone: '#f5efe6',
+          dust: '#a8a29e',
+          wine: '#5b1a1a',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          mega: '0.42em',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; background: #0c0a09; }
+  body { cursor: none; }
+  @media (hover: none) { body { cursor: auto; } #cursor, #cursor-dot { display:none !important; } }
+
+  ::selection { background: #c2410c; color: #f5efe6; }
+
+  /* Custom cursor */
+  #cursor {
+    position: fixed; top: 0; left: 0; width: 38px; height: 38px;
+    border: 1px solid rgba(245,158,11,.55); border-radius: 50%;
+    pointer-events: none; z-index: 9999; mix-blend-mode: screen;
+    transform: translate(-50%, -50%); transition: width .3s, height .3s, background .3s, border-color .3s;
+  }
+  #cursor.grow { width: 78px; height: 78px; background: rgba(194,65,12,.12); border-color: rgba(234,88,12,.8); }
+  #cursor-dot {
+    position: fixed; top: 0; left: 0; width: 5px; height: 5px; background: #f59e0b;
+    border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%);
+  }
+
+  /* Reveal masks */
+  .reveal-mask { overflow: hidden; }
+  .reveal-line { display: block; transform: translateY(110%); }
+
+  /* Clip reveal for images */
+  .clip-img { clip-path: inset(0 0 100% 0); }
+
+  /* Ember glow pulse */
+  @keyframes emberPulse {
+    0%,100% { opacity: .35; transform: scale(1); }
+    50% { opacity: .85; transform: scale(1.12); }
+  }
+  .ember-glow { animation: emberPulse 4.5s ease-in-out infinite; }
+
+  /* Floating ember particles */
+  @keyframes float-up {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    15% { opacity: .9; }
+    100% { transform: translateY(-120px) translateX(var(--drift,10px)); opacity: 0; }
+  }
+  .ember-particle {
+    position: absolute; bottom: 0; width: 3px; height: 3px; border-radius: 50%;
+    background: radial-gradient(circle, #f59e0b, #c2410c);
+    box-shadow: 0 0 6px #ea580c;
+    animation: float-up var(--dur,6s) linear infinite;
+  }
+
+  .grain::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .04; z-index: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .menu-row { transition: background .5s, padding-left .5s; }
+  .menu-row:hover { background: linear-gradient(90deg, rgba(194,65,12,.10), transparent); padding-left: 1.25rem; }
+  .menu-row .price { transition: color .4s; }
+  .menu-row:hover .price { color: #f59e0b; }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.4,0,.2,1); }
+
+  .hairline { height: 1px; background: linear-gradient(90deg, transparent, rgba(245,158,11,.4), transparent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal-line { transform: none !important; }
+    .clip-img { clip-path: none !important; }
+    .ember-particle, .ember-glow { display: none !important; }
+  }
+</style>
+</head>
+<body class="bg-charcoal text-bone font-sans antialiased selection:bg-ember">
+
+<!-- Custom cursor -->
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- NAV -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <a href="#hero" class="group flex items-center gap-3" data-cursor>
+      <span class="relative inline-flex w-9 h-9 items-center justify-center">
+        <span class="absolute inset-0 rounded-full bg-ember/30 ember-glow"></span>
+        <span class="relative font-serif text-glow text-xl leading-none">E</span>
+      </span>
+      <span class="font-serif text-xl tracking-wide">Ember <span class="text-glow">&amp;</span> Ash</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-9 text-[13px] tracking-widest uppercase text-dust">
+      <a href="#philosophy" data-cursor class="hover:text-bone transition-colors">Philosophy</a>
+      <a href="#menu" data-cursor class="hover:text-bone transition-colors">Menu</a>
+      <a href="#chef" data-cursor class="hover:text-bone transition-colors">Chef</a>
+      <a href="#private" data-cursor class="hover:text-bone transition-colors">Private</a>
+      <a href="#visit" data-cursor class="hover:text-bone transition-colors">Visit</a>
+    </nav>
+    <a href="#reserve" id="reserve-cta" data-cursor
+       class="relative inline-flex items-center gap-2 px-5 py-2.5 text-[12px] tracking-widest uppercase border border-ember/60 text-bone overflow-hidden group">
+      <span class="absolute inset-0 bg-ember translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+      <span class="relative">Reserve</span>
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="hero" class="relative min-h-screen flex items-center grain overflow-hidden">
+  <div class="absolute inset-0">
+    <div class="absolute inset-0 z-10 bg-gradient-to-b from-charcoal/80 via-charcoal/55 to-charcoal"></div>
+    <div class="absolute inset-0 z-10 bg-gradient-to-r from-charcoal via-charcoal/30 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-smoke to-charcoal"></div>
+    <img id="hero-img" src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'" alt="Wood-fired steak"
+         class="w-full h-full object-cover opacity-80" />
+  </div>
+
+  <!-- ember particles -->
+  <div id="embers" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+  <div class="relative z-30 max-w-7xl mx-auto px-6 lg:px-10 w-full">
+    <p class="reveal-mask mb-6"><span class="reveal-line text-glow text-[12px] tracking-mega uppercase">Wood-Fired · Dry-Aged · Candlelit</span></p>
+    <h1 class="font-serif leading-[0.9] text-bone">
+      <span class="reveal-mask block"><span class="reveal-line block text-6xl sm:text-7xl lg:text-[9rem]">Ember</span></span>
+      <span class="reveal-mask block"><span class="reveal-line block text-6xl sm:text-7xl lg:text-[9rem] italic text-glow">&amp; Ash</span></span>
+    </h1>
+    <p class="reveal-mask mt-8 max-w-md"><span class="reveal-line block text-dust text-lg font-light leading-relaxed">
+      An open hearth. Cuts aged in the dark. A room lit only by flame. Dinner, the way it was meant to burn.
+    </span></p>
+    <div class="reveal-mask mt-10"><span class="reveal-line flex flex-wrap items-center gap-5">
+      <a href="#reserve" data-cursor class="group relative inline-flex items-center gap-3 px-8 py-4 bg-ember text-bone text-sm tracking-widest uppercase overflow-hidden">
+        <span class="absolute inset-0 bg-flame translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500"></span>
+        <span class="relative">Reserve a Table</span>
+        <span class="relative">→</span>
+      </a>
+      <a href="#menu" data-cursor class="text-sm tracking-widest uppercase text-dust hover:text-bone border-b border-dust/40 hover:border-glow pb-1 transition-colors">View the Menu</a>
+    </span></div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 text-dust text-[11px] tracking-widest uppercase flex flex-col items-center gap-2">
+    <span>Scroll</span>
+    <span class="w-px h-10 bg-gradient-to-b from-glow to-transparent"></span>
+  </div>
+</section>
+
+<!-- PHILOSOPHY / INTRO -->
+<section id="philosophy" class="relative py-28 lg:py-40 grain">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-8">Our Philosophy</p>
+    <h2 data-split class="font-serif text-3xl sm:text-5xl lg:text-6xl leading-tight">
+      Fire is the oldest ingredient. We simply learned to listen to it —
+      <span class="italic text-glow">the hiss of fat, the crack of the crust, the patience of the coals.</span>
+    </h2>
+    <div data-fade class="mt-14 grid sm:grid-cols-3 gap-10 text-left">
+      <div>
+        <span class="block font-serif text-5xl text-glow count" data-count="42">0</span>
+        <p class="mt-2 text-dust text-sm tracking-wide uppercase">Days dry-aged, minimum</p>
+      </div>
+      <div>
+        <span class="block font-serif text-5xl text-glow count" data-count="11">0</span>
+        <p class="mt-2 text-dust text-sm tracking-wide uppercase">Years tending the hearth</p>
+      </div>
+      <div>
+        <span class="block font-serif text-5xl text-glow count" data-count="34">0</span>
+        <p class="mt-2 text-dust text-sm tracking-wide uppercase">Plates on the live fire</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNATURE MENU -->
+<section id="menu" class="relative py-24 lg:py-32 bg-ash grain">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+      <div>
+        <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-5">The Cuts</p>
+        <h2 data-split class="font-serif text-4xl sm:text-6xl leading-none">Signature Menu</h2>
+      </div>
+      <p data-fade class="text-dust max-w-sm font-light">Every cut is salted, rested, and finished over white-oak embers. Prices reflect a single serving; sharing boards on request.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-x-16">
+      <!-- col 1 -->
+      <div data-fade>
+        <h3 class="font-serif italic text-glow text-2xl mb-4">From the Hearth</h3>
+        <div class="divide-y divide-white/5">
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Bone-In Ribeye, 45-Day</h4><p class="text-dust text-sm mt-1 font-light">Smoked marrow butter · burnt shallot</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$72</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Charred Filet Mignon</h4><p class="text-dust text-sm mt-1 font-light">Bone-marrow jus · cracked black salt</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$58</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">The Ash Porterhouse</h4><p class="text-dust text-sm mt-1 font-light">For two · cooked in embers · 38oz</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$118</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Wagyu Picanha</h4><p class="text-dust text-sm mt-1 font-light">Coal-roasted · chimichurri ember oil</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$64</span>
+          </div>
+        </div>
+      </div>
+      <!-- col 2 -->
+      <div data-fade>
+        <h3 class="font-serif italic text-glow text-2xl mb-4 mt-12 lg:mt-0">Beginnings &amp; Sides</h3>
+        <div class="divide-y divide-white/5">
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Fire-Roasted Bone Marrow</h4><p class="text-dust text-sm mt-1 font-light">Sourdough · parsley · sea salt</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$22</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Charred Caesar, Smoked Anchovy</h4><p class="text-dust text-sm mt-1 font-light">Aged parmesan · ember crouton</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$19</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Hand-Cut Beef Tartare</h4><p class="text-dust text-sm mt-1 font-light">Smoked egg yolk · grilled bread</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$24</span>
+          </div>
+          <div class="menu-row py-5 flex justify-between items-baseline gap-6" data-cursor>
+            <div><h4 class="font-serif text-xl">Duck-Fat Hearth Potatoes</h4><p class="text-dust text-sm mt-1 font-light">Rosemary · burnt garlic</p></div>
+            <span class="price font-serif text-xl whitespace-nowrap">$14</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE EXPERIENCE / AMBIENCE -->
+<section id="experience" class="relative py-24 lg:py-32 grain overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative">
+      <div class="clip-img relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-charcoal">
+        <img data-parallax src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Candlelit dining room"
+             class="w-full h-[520px] object-cover scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-charcoal/70 to-transparent"></div>
+      </div>
+      <div class="absolute -bottom-6 -right-4 w-28 h-28 rounded-full bg-ember/20 blur-2xl ember-glow"></div>
+    </div>
+    <div>
+      <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-6">The Room</p>
+      <h2 data-split class="font-serif text-4xl sm:text-5xl leading-tight mb-7">A room lit only<br><span class="italic text-glow">by the fire.</span></h2>
+      <p data-fade class="text-dust font-light leading-relaxed mb-5">No overhead lights. No noise but the murmur of the room and the snap of oak. We seat slowly, pour generously, and let the evening find its own pace.</p>
+      <p data-fade class="text-dust font-light leading-relaxed">Cellar of 200 labels. A bar that smokes its own ice. Tables tucked into alcoves, built for the long conversation.</p>
+      <div data-fade class="hairline mt-10 mb-8"></div>
+      <div data-fade class="flex flex-wrap gap-8 text-sm text-dust tracking-wide uppercase">
+        <span>· Open Hearth</span><span>· 200-Label Cellar</span><span>· Candle Service</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / CHEF -->
+<section id="chef" class="relative py-24 lg:py-32 bg-ash grain overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="order-2 lg:order-1">
+      <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-6">The Chef</p>
+      <h2 data-split class="font-serif text-4xl sm:text-5xl leading-tight mb-7">Marcus <span class="italic text-glow">Cordell</span></h2>
+      <p data-fade class="text-dust font-light leading-relaxed mb-5">Marcus learned fire in his grandfather's yard before he ever stood in a kitchen. Twenty years later — through embered grills in Buenos Aires and a Michelin pass in London — he came home to build the room he always wanted to eat in.</p>
+      <p data-fade class="text-dust font-light leading-relaxed mb-8">"A steak is honest. You can't hide behind it. Either you respected the fire, or you didn't."</p>
+      <p data-fade class="font-serif italic text-2xl text-glow">— Marcus Cordell, Executive Chef</p>
+    </div>
+    <div class="order-1 lg:order-2 relative">
+      <div class="clip-img relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-charcoal">
+        <img data-parallax src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Chef plating steak"
+             class="w-full h-[560px] object-cover scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-charcoal/60 to-transparent"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVATE DINING -->
+<section id="private" class="relative py-24 lg:py-32 grain overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-charcoal via-ash to-charcoal"></div>
+  <div class="relative max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-6">Private Dining</p>
+    <h2 data-split class="font-serif text-4xl sm:text-6xl leading-tight mb-7">The Cellar Room</h2>
+    <p data-fade class="text-dust font-light leading-relaxed max-w-2xl mx-auto mb-12">A vaulted stone room beneath the dining floor, seating up to fourteen. Bespoke tasting menus, your own sommelier for the night, and a fire that's yours alone.</p>
+    <div data-fade class="grid sm:grid-cols-3 gap-8 text-left max-w-3xl mx-auto">
+      <div class="border-t border-glow/30 pt-5">
+        <h4 class="font-serif text-2xl mb-2">Up to 14</h4>
+        <p class="text-dust text-sm font-light">Seated guests in the vault</p>
+      </div>
+      <div class="border-t border-glow/30 pt-5">
+        <h4 class="font-serif text-2xl mb-2">Bespoke Menu</h4>
+        <p class="text-dust text-sm font-light">Designed with the chef</p>
+      </div>
+      <div class="border-t border-glow/30 pt-5">
+        <h4 class="font-serif text-2xl mb-2">Sommelier</h4>
+        <p class="text-dust text-sm font-light">Dedicated for the evening</p>
+      </div>
+    </div>
+    <a href="#reserve" data-cursor class="inline-flex mt-14 items-center gap-3 px-8 py-4 border border-ember/60 text-sm tracking-widest uppercase hover:bg-ember transition-colors">Enquire for the Cellar Room →</a>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="relative py-24 lg:py-32 bg-ash grain">
+  <div class="max-w-6xl mx-auto px-6 lg:px-10">
+    <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-12 text-center">From the Table</p>
+    <div class="grid md:grid-cols-3 gap-8">
+      <figure data-fade class="border border-white/5 p-8 bg-charcoal/40">
+        <div class="text-glow mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl italic leading-relaxed text-bone">"The porterhouse arrived still whispering from the coals. I've not stopped thinking about it."</blockquote>
+        <figcaption class="mt-6 text-dust text-sm tracking-wide uppercase">— Helena R.</figcaption>
+      </figure>
+      <figure data-fade class="border border-white/5 p-8 bg-charcoal/40">
+        <div class="text-glow mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl italic leading-relaxed text-bone">"Candlelight, smoke, and a ribeye worth the pilgrimage. The room does something to you."</blockquote>
+        <figcaption class="mt-6 text-dust text-sm tracking-wide uppercase">— Daniel V.</figcaption>
+      </figure>
+      <figure data-fade class="border border-white/5 p-8 bg-charcoal/40">
+        <div class="text-glow mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl italic leading-relaxed text-bone">"We booked the Cellar Room for an anniversary. It felt like the fire was lit just for us."</blockquote>
+        <figcaption class="mt-6 text-dust text-sm tracking-wide uppercase">— Priya &amp; Sam</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS / LOCATION -->
+<section id="visit" class="relative py-24 lg:py-32 grain overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative">
+      <div class="clip-img relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-charcoal">
+        <img data-parallax src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Restaurant interior at night"
+             class="w-full h-[500px] object-cover scale-110" />
+        <div class="absolute inset-0 bg-gradient-to-t from-charcoal/70 to-transparent"></div>
+      </div>
+    </div>
+    <div>
+      <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-6">Visit Us</p>
+      <h2 data-split class="font-serif text-4xl sm:text-5xl leading-tight mb-8">Hours &amp; Location</h2>
+      <div data-fade class="space-y-4 text-dust font-light">
+        <div class="flex justify-between border-b border-white/5 pb-3"><span class="tracking-wide uppercase text-sm text-bone">Tue – Thu</span><span>5:30pm – 10:00pm</span></div>
+        <div class="flex justify-between border-b border-white/5 pb-3"><span class="tracking-wide uppercase text-sm text-bone">Fri – Sat</span><span>5:00pm – 11:30pm</span></div>
+        <div class="flex justify-between border-b border-white/5 pb-3"><span class="tracking-wide uppercase text-sm text-bone">Sunday</span><span>5:00pm – 9:30pm</span></div>
+        <div class="flex justify-between border-b border-white/5 pb-3"><span class="tracking-wide uppercase text-sm text-bone">Monday</span><span class="text-ember">The hearth rests</span></div>
+      </div>
+      <div data-fade class="mt-8 text-dust font-light leading-relaxed">
+        <p class="text-bone font-serif text-xl mb-1">14 Foundry Lane, Old Quarter</p>
+        <p>Reservations: <span class="text-glow">+1 (555) 018-4477</span></p>
+        <p>hello@emberandash.co</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="relative py-24 lg:py-32 bg-ash grain">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-12 text-center">Before You Arrive</p>
+    <div id="faq" class="divide-y divide-white/5">
+      <div class="faq-item py-6" data-fade>
+        <button data-cursor class="faq-q w-full flex justify-between items-center text-left gap-6">
+          <span class="font-serif text-xl sm:text-2xl">Do you require reservations?</span>
+          <span class="faq-icon text-glow text-2xl transition-transform duration-500">+</span>
+        </button>
+        <div class="accordion-body"><p class="pt-4 text-dust font-light leading-relaxed">We strongly recommend them — the dining room is intimate and tables turn slowly by design. A limited number of bar seats are held for walk-ins each evening.</p></div>
+      </div>
+      <div class="faq-item py-6" data-fade>
+        <button data-cursor class="faq-q w-full flex justify-between items-center text-left gap-6">
+          <span class="font-serif text-xl sm:text-2xl">Is there a dress code?</span>
+          <span class="faq-icon text-glow text-2xl transition-transform duration-500">+</span>
+        </button>
+        <div class="accordion-body"><p class="pt-4 text-dust font-light leading-relaxed">Smart-casual and above. The room is candlelit and considered — come dressed for an occasion, not a uniform.</p></div>
+      </div>
+      <div class="faq-item py-6" data-fade>
+        <button data-cursor class="faq-q w-full flex justify-between items-center text-left gap-6">
+          <span class="font-serif text-xl sm:text-2xl">Can you cater to dietary needs?</span>
+          <span class="faq-icon text-glow text-2xl transition-transform duration-500">+</span>
+        </button>
+        <div class="accordion-body"><p class="pt-4 text-dust font-light leading-relaxed">Absolutely. The kitchen prepares fire-roasted vegetable and seafood mains, and accommodates allergies with notice. Tell us when you book.</p></div>
+      </div>
+      <div class="faq-item py-6" data-fade>
+        <button data-cursor class="faq-q w-full flex justify-between items-center text-left gap-6">
+          <span class="font-serif text-xl sm:text-2xl">How do I book the Cellar Room?</span>
+          <span class="faq-icon text-glow text-2xl transition-transform duration-500">+</span>
+        </button>
+        <div class="accordion-body"><p class="pt-4 text-dust font-light leading-relaxed">Private bookings begin at parties of eight. Enquire through the reservation form below and our events team will design the evening with you.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA / RESERVE -->
+<section id="reserve" class="relative py-28 lg:py-40 grain overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-charcoal via-smoke to-charcoal"></div>
+  <div id="reserve-embers" class="absolute inset-0 z-10 pointer-events-none"></div>
+  <div class="relative z-20 max-w-3xl mx-auto px-6 lg:px-10 text-center">
+    <p data-fade class="text-glow text-[12px] tracking-mega uppercase mb-7">Reserve a Table</p>
+    <h2 data-split class="font-serif text-4xl sm:text-7xl leading-[0.95] mb-8">Come sit by<br><span class="italic text-glow">the fire.</span></h2>
+    <p data-fade class="text-dust font-light leading-relaxed max-w-xl mx-auto mb-12">Tables are released thirty days in advance. Choose your evening, and we'll have the coals ready.</p>
+    <form data-fade onsubmit="return false" class="grid sm:grid-cols-2 gap-4 max-w-xl mx-auto text-left mb-10">
+      <input type="text" placeholder="Name" class="bg-charcoal/60 border border-white/10 px-4 py-3 text-bone placeholder-dust/60 focus:border-glow focus:outline-none transition-colors" />
+      <input type="email" placeholder="Email" class="bg-charcoal/60 border border-white/10 px-4 py-3 text-bone placeholder-dust/60 focus:border-glow focus:outline-none transition-colors" />
+      <input type="date" class="bg-charcoal/60 border border-white/10 px-4 py-3 text-dust focus:border-glow focus:outline-none transition-colors" />
+      <input type="number" min="1" placeholder="Party size" class="bg-charcoal/60 border border-white/10 px-4 py-3 text-bone placeholder-dust/60 focus:border-glow focus:outline-none transition-colors" />
+      <button id="reserve-magnet" data-cursor class="sm:col-span-2 group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-ember text-bone text-sm tracking-widest uppercase overflow-hidden">
+        <span class="absolute inset-0 bg-flame translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+        <span class="relative">Request Reservation →</span>
+      </button>
+    </form>
+    <p data-fade class="text-dust/60 text-xs tracking-wide">Or call us directly · <span class="text-glow">+1 (555) 018-4477</span></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="relative bg-ash grain border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-16 grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="relative inline-flex w-9 h-9 items-center justify-center">
+          <span class="absolute inset-0 rounded-full bg-ember/30 ember-glow"></span>
+          <span class="relative font-serif text-glow text-xl">E</span>
+        </span>
+        <span class="font-serif text-2xl">Ember <span class="text-glow">&amp;</span> Ash</span>
+      </div>
+      <p class="text-dust font-light max-w-sm leading-relaxed">A wood-fired steakhouse for the long evening. Dry-aged cuts, open flame, and a cellar built for the dark.</p>
+    </div>
+    <div>
+      <h5 class="text-[12px] tracking-widest uppercase text-glow mb-4">Explore</h5>
+      <ul class="space-y-2 text-dust text-sm">
+        <li><a href="#menu" data-cursor class="hover:text-bone transition-colors">Menu</a></li>
+        <li><a href="#chef" data-cursor class="hover:text-bone transition-colors">The Chef</a></li>
+        <li><a href="#private" data-cursor class="hover:text-bone transition-colors">Private Dining</a></li>
+        <li><a href="#visit" data-cursor class="hover:text-bone transition-colors">Visit</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5 class="text-[12px] tracking-widest uppercase text-glow mb-4">Find Us</h5>
+      <ul class="space-y-2 text-dust text-sm font-light">
+        <li>14 Foundry Lane, Old Quarter</li>
+        <li>+1 (555) 018-4477</li>
+        <li>hello@emberandash.co</li>
+      </ul>
+      <div class="flex gap-4 mt-5 text-dust text-sm uppercase tracking-widest">
+        <a href="#" data-cursor class="hover:text-glow transition-colors">IG</a>
+        <a href="#" data-cursor class="hover:text-glow transition-colors">FB</a>
+        <a href="#" data-cursor class="hover:text-glow transition-colors">X</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col sm:flex-row justify-between gap-3 text-dust/60 text-xs tracking-wide">
+      <span>© 2026 Ember &amp; Ash. All rights reserved.</span>
+      <span>Crafted over open flame.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  const cursor = document.getElementById('cursor');
+  const dot = document.getElementById('cursor-dot');
+  if (cursor && !reduce && window.matchMedia('(hover: hover)').matches) {
+    let cx = window.innerWidth/2, cy = window.innerHeight/2, dx = cx, dy = cy;
+    window.addEventListener('mousemove', e => { cx = e.clientX; cy = e.clientY; dot.style.left = cx+'px'; dot.style.top = cy+'px'; });
+    function loop() { dx += (cx-dx)*0.18; dy += (cy-dy)*0.18; cursor.style.left = dx+'px'; cursor.style.top = dy+'px'; requestAnimationFrame(loop); }
+    loop();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('grow'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Ember particles ---------- */
+  function seedEmbers(container, count) {
+    if (!container || reduce) return;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      p.className = 'ember-particle';
+      p.style.left = Math.random()*100 + '%';
+      p.style.setProperty('--dur', (4 + Math.random()*6) + 's');
+      p.style.setProperty('--drift', (Math.random()*40 - 20) + 'px');
+      p.style.animationDelay = (Math.random()*6) + 's';
+      p.style.bottom = (Math.random()*30) + '%';
+      container.appendChild(p);
+    }
+  }
+  seedEmbers(document.getElementById('embers'), 28);
+  seedEmbers(document.getElementById('reserve-embers'), 18);
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) nav.classList.add('bg-charcoal/85','backdrop-blur-md','shadow-lg','shadow-black/40');
+    else nav.classList.remove('bg-charcoal/85','backdrop-blur-md','shadow-lg','shadow-black/40');
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-q');
+    const body = item.querySelector('.accordion-body');
+    const icon = item.querySelector('.faq-icon');
+    btn.addEventListener('click', () => {
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => b.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; i.textContent = '+'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform = 'rotate(135deg)'; }
+    });
+  });
+
+  /* ---------- Magnetic Reserve buttons ---------- */
+  if (!reduce && window.matchMedia('(hover: hover)').matches) {
+    ['reserve-cta','reserve-magnet'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width/2;
+        const my = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${mx*0.3}px, ${my*0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; el.style.transition = 'transform .5s ease'; });
+      el.addEventListener('mouseenter', () => { el.style.transition = 'transform .1s ease'; });
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (typeof gsap !== 'undefined' && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero line reveals
+    gsap.to('#hero .reveal-line', {
+      y: 0, duration: 1.3, ease: 'power4.out', stagger: 0.12, delay: 0.2
+    });
+
+    // Section fade-ups
+    gsap.utils.toArray('[data-fade]').forEach(el => {
+      gsap.fromTo(el, { y: 50, opacity: 0 }, {
+        y: 0, opacity: 1, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // Masked serif split reveals
+    gsap.utils.toArray('[data-split]').forEach(el => {
+      gsap.fromTo(el, { y: 60, opacity: 0, clipPath: 'inset(0 0 100% 0)' }, {
+        y: 0, opacity: 1, clipPath: 'inset(0 0 0% 0)', duration: 1.2, ease: 'power4.out',
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    // Clip-path image reveals
+    gsap.utils.toArray('.clip-img').forEach(el => {
+      gsap.to(el, {
+        clipPath: 'inset(0 0 0% 0)', duration: 1.6, ease: 'power4.inOut',
+        scrollTrigger: { trigger: el, start: 'top 82%' }
+      });
+    });
+
+    // Parallax on food/room imagery
+    gsap.utils.toArray('[data-parallax]').forEach(img => {
+      gsap.fromTo(img, { yPercent: -8 }, {
+        yPercent: 8, ease: 'none',
+        scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    // Hero image slow parallax/scale
+    gsap.to('#hero-img', {
+      scale: 1.12, yPercent: 12, ease: 'none',
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    // Count-ups
+    gsap.utils.toArray('.count').forEach(el => {
+      const target = +el.dataset.count;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, { v: target, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => el.textContent = Math.round(obj.v) })
+      });
+    });
+  } else if (reduce) {
+    // Reveal everything statically
+    document.querySelectorAll('.reveal-line').forEach(e => e.style.transform = 'none');
+    document.querySelectorAll('.count').forEach(e => e.textContent = e.dataset.count);
+  }
+})();
+</script>
+</body>
+</html>

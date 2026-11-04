@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wanderlume — Chase the Horizon</title>
+<meta name="description" content="Wanderlume runs cinematic small-group adventure expeditions to the planet's wildest frontiers — glacier treks, desert crossings, jungle rivers and alpine summits, led by expert local crews.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={
+  theme:{extend:{
+    colors:{
+      ink:'#06110f',          /* near-black forest base */
+      'ink-2':'#0a1c18',
+      pine:'#0e2b25',
+      teal:'#10b3a0',         /* vivid teal accent */
+      'teal-deep':'#0c5d54',
+      sunset:'#ff6a3d',       /* hot sunset orange */
+      'sunset-2':'#ff9e57',
+      gold:'#ffc24b',         /* golden ember */
+      bone:'#f6f1e7',         /* warm bone */
+      'bone-2':'#e8dfcd',
+      mist:'#a9c4bd',
+      muted:'#8aa39c'
+    },
+    fontFamily:{
+      display:['Anton','Impact','sans-serif'],
+      cond:['Oswald','sans-serif'],
+      sans:['DM Sans','system-ui','sans-serif']
+    }
+  }}
+};
+</script>
+<style>
+  *{ -webkit-font-smoothing:antialiased; }
+  html{ scroll-behavior:smooth; }
+  body{ background:#06110f; color:#f6f1e7; font-family:'DM Sans',system-ui,sans-serif; overflow-x:hidden; }
+  ::selection{ background:#ff6a3d; color:#06110f; }
+
+  .display{ font-family:'Anton',Impact,sans-serif; letter-spacing:.01em; line-height:.86; text-transform:uppercase; }
+  .cond{ font-family:'Oswald',sans-serif; }
+  .kicker{ font-family:'Oswald',sans-serif; text-transform:uppercase; letter-spacing:.38em; font-weight:600; }
+
+  /* scrollbars on rails */
+  .no-bar::-webkit-scrollbar{ height:6px; }
+  .no-bar::-webkit-scrollbar-thumb{ background:rgba(16,179,160,.5); border-radius:99px; }
+  .no-bar::-webkit-scrollbar-track{ background:transparent; }
+
+  .img-fill{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .grad-cell{ background:linear-gradient(135deg,#0e2b25,#0c5d54 55%,#ff6a3d); }
+
+  .ken{ animation:ken 26s ease-in-out infinite alternate; }
+  @keyframes ken{ from{ transform:scale(1.04) translate3d(0,0,0); } to{ transform:scale(1.22) translate3d(-2%,-2%,0); } }
+
+  .vert-tag{ writing-mode:vertical-rl; }
+
+  .reveal{ opacity:0; transform:translateY(28px); }
+  .ln{ display:block; overflow:hidden; }
+  .ln > span{ display:block; transform:translateY(105%); }
+
+  .acc-body{ max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.22,1,.36,1); }
+  .acc.open .acc-body{ max-height:340px; }
+  .acc.open .acc-plus{ transform:rotate(135deg); }
+  .acc-plus{ transition:transform .4s cubic-bezier(.22,1,.36,1); }
+
+  .navlink{ position:relative; }
+  .navlink::after{ content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:#ff6a3d; transition:width .35s ease; }
+  .navlink:hover::after{ width:100%; }
+
+  .grain::before{
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.045; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .btn-fill{ position:relative; overflow:hidden; z-index:0; }
+  .btn-fill::before{ content:''; position:absolute; inset:0; z-index:-1; background:#06110f; transform:translateY(100%); transition:transform .4s cubic-bezier(.22,1,.36,1); }
+  .btn-fill:hover::before{ transform:translateY(0); }
+  .btn-fill:hover{ color:#f6f1e7; }
+
+  @media (prefers-reduced-motion: reduce){
+    .ken{ animation:none; }
+    .reveal{ opacity:1 !important; transform:none !important; }
+    .ln > span{ transform:none !important; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body class="grain">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8 h-20 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="w-9 h-9 rounded-full grad-cell grid place-items-center text-ink font-display text-lg leading-none pt-0.5">W</span>
+      <span class="cond font-700 tracking-[.32em] text-sm uppercase">Wanderlume</span>
+    </a>
+    <nav class="hidden lg:flex items-center gap-9 cond uppercase text-[13px] tracking-[.18em] text-bone/85">
+      <a href="#why" class="navlink">Why Us</a>
+      <a href="#trips" class="navlink">Expeditions</a>
+      <a href="#story" class="navlink">The Crew</a>
+      <a href="#how" class="navlink">How It Works</a>
+      <a href="#faq" class="navlink">FAQ</a>
+    </nav>
+    <a href="#cta" class="cond uppercase text-[12px] tracking-[.18em] font-600 px-5 py-2.5 bg-sunset text-ink rounded-full btn-fill hidden sm:inline-block">Book a Trip</a>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="top" class="relative h-[100svh] min-h-[620px] w-full overflow-hidden">
+  <div class="absolute inset-0 grad-cell"></div>
+  <img class="img-fill ken" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80" alt="Mountain valley at golden hour" onerror="this.style.display='none'">
+  <div class="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/20 to-ink"></div>
+  <div class="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-transparent"></div>
+
+  <div class="relative h-full max-w-[1400px] mx-auto px-5 sm:px-8 flex flex-col justify-end pb-16 md:pb-24">
+    <p class="kicker text-teal text-[12px] sm:text-[13px] mb-5 reveal" data-rev>Adventure expeditions · est. 2014</p>
+    <h1 class="display text-[clamp(3.4rem,14vw,12rem)] text-bone max-w-[16ch]">
+      <span class="ln"><span>Chase the</span></span>
+      <span class="ln"><span class="text-sunset">Horizon</span></span>
+    </h1>
+    <div class="mt-7 flex flex-col md:flex-row md:items-end gap-7 md:gap-14">
+      <p class="text-bone/80 text-base sm:text-lg max-w-md leading-relaxed reveal" data-rev>
+        Small-group expeditions to the planet's wildest frontiers — glacier treks, desert crossings and alpine summits, led by crews who call these places home.
+      </p>
+      <div class="flex items-center gap-4 reveal" data-rev>
+        <a href="#trips" class="cond uppercase tracking-[.16em] text-[13px] font-600 px-7 py-4 bg-sunset text-ink rounded-full btn-fill">Explore Expeditions</a>
+        <a href="#how" class="cond uppercase tracking-[.16em] text-[13px] font-600 px-7 py-4 border border-bone/30 text-bone rounded-full hover:border-sunset hover:text-sunset transition">How It Works</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 right-6 hidden md:flex items-center gap-3 text-bone/60 cond uppercase tracking-[.3em] text-[11px]">
+    <span>Scroll</span><span class="w-10 h-px bg-bone/40 inline-block"></span>
+  </div>
+</section>
+
+<!-- ================= STATS / TRUST STRIP ================= -->
+<section class="bg-bone text-ink">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8 py-12 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-6">
+    <div class="text-center md:text-left">
+      <div class="display text-[clamp(2.6rem,6vw,4.4rem)] text-teal-deep"><span class="count" data-to="62">0</span></div>
+      <p class="cond uppercase tracking-[.22em] text-[12px] text-ink/60 mt-1">Countries reached</p>
+    </div>
+    <div class="text-center md:text-left">
+      <div class="display text-[clamp(2.6rem,6vw,4.4rem)] text-teal-deep"><span class="count" data-to="14">0</span>K</div>
+      <p class="cond uppercase tracking-[.22em] text-[12px] text-ink/60 mt-1">Travelers guided</p>
+    </div>
+    <div class="text-center md:text-left">
+      <div class="display text-[clamp(2.6rem,6vw,4.4rem)] text-teal-deep"><span class="count" data-to="98">0</span>%</div>
+      <p class="cond uppercase tracking-[.22em] text-[12px] text-ink/60 mt-1">Would travel again</p>
+    </div>
+    <div class="text-center md:text-left">
+      <div class="display text-[clamp(2.6rem,6vw,4.4rem)] text-teal-deep"><span class="count" data-to="120">0</span>+</div>
+      <p class="cond uppercase tracking-[.22em] text-[12px] text-ink/60 mt-1">Local crews on call</p>
+    </div>
+  </div>
+  <div class="border-t border-ink/10">
+    <div class="max-w-[1400px] mx-auto px-5 sm:px-8 py-5 flex flex-wrap items-center justify-center md:justify-between gap-x-8 gap-y-2 cond uppercase tracking-[.26em] text-[11px] text-ink/45">
+      <span>Carbon-offset journeys</span><span>·</span><span>ATOL protected</span><span>·</span><span>24/7 field support</span><span>·</span><span>Verified local guides</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PARALLAX BAND 1 ================= -->
+<section class="relative h-[46vh] min-h-[320px] overflow-hidden grad-cell">
+  <img class="img-fill parallax" data-speed="0.18" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80" alt="Lake and forest" onerror="this.style.display='none'">
+  <div class="absolute inset-0 bg-ink/45"></div>
+  <div class="relative h-full max-w-[1400px] mx-auto px-5 sm:px-8 flex items-center">
+    <p class="display text-[clamp(2rem,7vw,6rem)] text-bone max-w-[18ch] reveal" data-rev>Some places don't fit on a postcard.</p>
+  </div>
+</section>
+
+<!-- ================= WHY TRAVEL / VALUE PROPS ================= -->
+<section id="why" class="bg-ink py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="kicker text-teal text-[12px] mb-4 reveal" data-rev>Why Wanderlume</p>
+        <h2 class="display text-[clamp(2.4rem,7vw,5.5rem)] text-bone max-w-[14ch] reveal" data-rev>Built for the bold, not the bus tour.</h2>
+      </div>
+      <p class="text-mist max-w-sm leading-relaxed reveal" data-rev>We design trips for people who'd rather earn the view than queue for it. Real terrain, real culture, no scripted detours.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-px bg-bone/10 rounded-2xl overflow-hidden">
+      <div class="bg-ink-2 p-9 md:p-10 reveal" data-rev>
+        <span class="display text-teal text-3xl">01</span>
+        <h3 class="cond uppercase tracking-[.1em] text-xl font-600 text-bone mt-5">Max 12 Travelers</h3>
+        <p class="text-muted mt-3 leading-relaxed text-[15px]">Tiny groups mean you move fast, go where coaches can't, and actually meet the people who live there.</p>
+      </div>
+      <div class="bg-ink-2 p-9 md:p-10 reveal" data-rev>
+        <span class="display text-sunset text-3xl">02</span>
+        <h3 class="cond uppercase tracking-[.1em] text-xl font-600 text-bone mt-5">Crews Born Here</h3>
+        <p class="text-muted mt-3 leading-relaxed text-[15px]">Every expedition is led by guides raised on this terrain — not flown in from a head office for the season.</p>
+      </div>
+      <div class="bg-ink-2 p-9 md:p-10 reveal" data-rev>
+        <span class="display text-gold text-3xl">03</span>
+        <h3 class="cond uppercase tracking-[.1em] text-xl font-600 text-bone mt-5">Zero Hidden Costs</h3>
+        <p class="text-muted mt-3 leading-relaxed text-[15px]">One transparent price covers permits, gear, transfers and meals. No surprise upsells halfway up the mountain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HORIZONTAL DESTINATIONS RAIL (pinned) ================= -->
+<section id="trips" class="bg-pine relative">
+  <div id="railPin" class="relative">
+    <div class="hrail-viewport h-[100svh] flex items-center overflow-hidden">
+      <div class="px-5 sm:px-8 max-w-[1400px] mx-auto w-full md:absolute md:top-10 md:left-1/2 md:-translate-x-1/2 md:z-20 pointer-events-none">
+        <p class="kicker text-gold text-[12px] mb-3 pt-8 md:pt-0">Featured expeditions</p>
+        <h2 class="display text-[clamp(2.2rem,6vw,4.5rem)] text-bone max-w-[16ch]">Pick your kind of wild.</h2>
+      </div>
+
+      <!-- TRACK: horizontal scroll on desktop (GSAP), native scroll/stack on mobile -->
+      <div id="railTrack" class="hrail-track no-bar flex gap-5 md:gap-7 px-5 sm:px-8 md:px-[8vw] overflow-x-auto md:overflow-visible w-full mt-0 md:mt-24 snap-x snap-mandatory">
+        <!-- card -->
+        <article class="rail-card snap-start shrink-0 w-[78vw] sm:w-[60vw] md:w-[34vw] lg:w-[27vw] aspect-[3/4] relative rounded-3xl overflow-hidden grad-cell group">
+          <img class="img-fill transition-transform duration-700 group-hover:scale-110" src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80" alt="Mountain pass trek" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+          <div class="absolute top-5 left-5 cond uppercase tracking-[.2em] text-[11px] text-ink bg-gold px-3 py-1 rounded-full">8 Days</div>
+          <div class="absolute bottom-0 p-6">
+            <p class="cond uppercase tracking-[.24em] text-teal text-[11px]">Patagonia</p>
+            <h3 class="display text-3xl md:text-4xl text-bone mt-1">Torres Traverse</h3>
+            <p class="text-bone/70 text-sm mt-2">Granite spires, glacial lakes and the windswept end of the Americas.</p>
+            <span class="cond uppercase tracking-[.18em] text-[12px] text-sunset mt-3 inline-block">From $2,940</span>
+          </div>
+        </article>
+
+        <article class="rail-card snap-start shrink-0 w-[78vw] sm:w-[60vw] md:w-[34vw] lg:w-[27vw] aspect-[3/4] relative rounded-3xl overflow-hidden grad-cell group">
+          <img class="img-fill transition-transform duration-700 group-hover:scale-110" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80" alt="Coastal shoreline" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+          <div class="absolute top-5 left-5 cond uppercase tracking-[.2em] text-[11px] text-ink bg-gold px-3 py-1 rounded-full">6 Days</div>
+          <div class="absolute bottom-0 p-6">
+            <p class="cond uppercase tracking-[.24em] text-teal text-[11px]">Azores</p>
+            <h3 class="display text-3xl md:text-4xl text-bone mt-1">Volcanic Coast</h3>
+            <p class="text-bone/70 text-sm mt-2">Sea-cave kayaking, crater lakes and black-sand swims off the Atlantic.</p>
+            <span class="cond uppercase tracking-[.18em] text-[12px] text-sunset mt-3 inline-block">From $1,880</span>
+          </div>
+        </article>
+
+        <article class="rail-card snap-start shrink-0 w-[78vw] sm:w-[60vw] md:w-[34vw] lg:w-[27vw] aspect-[3/4] relative rounded-3xl overflow-hidden grad-cell group">
+          <img class="img-fill transition-transform duration-700 group-hover:scale-110" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80" alt="Forest road" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+          <div class="absolute top-5 left-5 cond uppercase tracking-[.2em] text-[11px] text-ink bg-gold px-3 py-1 rounded-full">10 Days</div>
+          <div class="absolute bottom-0 p-6">
+            <p class="cond uppercase tracking-[.24em] text-teal text-[11px]">British Columbia</p>
+            <h3 class="display text-3xl md:text-4xl text-bone mt-1">Wild North Run</h3>
+            <p class="text-bone/70 text-sm mt-2">Old-growth forest, fjord ferries and grizzly country with a tracker crew.</p>
+            <span class="cond uppercase tracking-[.18em] text-[12px] text-sunset mt-3 inline-block">From $3,420</span>
+          </div>
+        </article>
+
+        <article class="rail-card snap-start shrink-0 w-[78vw] sm:w-[60vw] md:w-[34vw] lg:w-[27vw] aspect-[3/4] relative rounded-3xl overflow-hidden grad-cell group">
+          <img class="img-fill transition-transform duration-700 group-hover:scale-110" src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80" alt="Snowy peaks" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+          <div class="absolute top-5 left-5 cond uppercase tracking-[.2em] text-[11px] text-ink bg-gold px-3 py-1 rounded-full">12 Days</div>
+          <div class="absolute bottom-0 p-6">
+            <p class="cond uppercase tracking-[.24em] text-teal text-[11px]">Nepal</p>
+            <h3 class="display text-3xl md:text-4xl text-bone mt-1">High Camp Circuit</h3>
+            <p class="text-bone/70 text-sm mt-2">Tea-house trails, suspension bridges and the thin blue air of altitude.</p>
+            <span class="cond uppercase tracking-[.18em] text-[12px] text-sunset mt-3 inline-block">From $2,610</span>
+          </div>
+        </article>
+
+        <article class="rail-card snap-start shrink-0 w-[78vw] sm:w-[60vw] md:w-[34vw] lg:w-[27vw] aspect-[3/4] relative rounded-3xl overflow-hidden grad-cell group">
+          <img class="img-fill transition-transform duration-700 group-hover:scale-110" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80" alt="Golden valley" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-transparent"></div>
+          <div class="absolute top-5 left-5 cond uppercase tracking-[.2em] text-[11px] text-ink bg-gold px-3 py-1 rounded-full">7 Days</div>
+          <div class="absolute bottom-0 p-6">
+            <p class="cond uppercase tracking-[.24em] text-teal text-[11px]">Morocco</p>
+            <h3 class="display text-3xl md:text-4xl text-bone mt-1">Atlas Crossing</h3>
+            <p class="text-bone/70 text-sm mt-2">Berber villages, high passes and a desert night under a sky full of fire.</p>
+            <span class="cond uppercase tracking-[.18em] text-[12px] text-sunset mt-3 inline-block">From $2,150</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT / STORY (sticky caption) ================= -->
+<section id="story" class="bg-ink relative">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8 grid md:grid-cols-2 gap-12 md:gap-20 py-24 md:py-32">
+    <!-- sticky caption -->
+    <div class="md:sticky md:top-28 self-start">
+      <p class="kicker text-teal text-[12px] mb-5 reveal" data-rev>The Crew</p>
+      <h2 class="display text-[clamp(2.4rem,7vw,5.5rem)] text-bone reveal" data-rev>We started as<br>two restless<br><span class="text-sunset">guides.</span></h2>
+      <p class="text-mist mt-7 max-w-md leading-relaxed reveal" data-rev>
+        Wanderlume began in a battered Land Cruiser in 2014 — two friends, a tent, and a hunch that travel had gone soft. A decade on, we're a collective of 120 local guides who refuse to flatten the wild into a checklist.
+      </p>
+      <div class="flex gap-10 mt-9 reveal" data-rev>
+        <div>
+          <div class="display text-3xl text-teal"><span class="count" data-to="10">0</span>+</div>
+          <p class="cond uppercase tracking-[.2em] text-[11px] text-muted mt-1">Years in the field</p>
+        </div>
+        <div>
+          <div class="display text-3xl text-gold"><span class="count" data-to="40">0</span></div>
+          <p class="cond uppercase tracking-[.2em] text-[11px] text-muted mt-1">Custom routes</p>
+        </div>
+      </div>
+    </div>
+    <!-- scrolling images -->
+    <div class="space-y-5">
+      <div class="relative aspect-[4/3] rounded-3xl overflow-hidden grad-cell reveal" data-rev>
+        <img class="img-fill" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1600&q=80" alt="Guides at a lake" onerror="this.style.display='none'">
+      </div>
+      <div class="relative aspect-[16/10] rounded-3xl overflow-hidden grad-cell reveal" data-rev>
+        <img class="img-fill" src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=1600&q=80" alt="Forest trail" onerror="this.style.display='none'">
+      </div>
+      <div class="relative aspect-[4/3] rounded-3xl overflow-hidden grad-cell reveal" data-rev>
+        <img class="img-fill" src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80" alt="Mountain pass" onerror="this.style.display='none'">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PARALLAX BAND 2 ================= -->
+<section class="relative h-[52vh] min-h-[340px] overflow-hidden grad-cell">
+  <img class="img-fill parallax" data-speed="0.2" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80" alt="Coast at sunset" onerror="this.style.display='none'">
+  <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/20"></div>
+  <div class="relative h-full max-w-[1400px] mx-auto px-5 sm:px-8 flex flex-col items-center justify-center text-center">
+    <p class="kicker text-gold text-[12px] mb-4 reveal" data-rev>From the field</p>
+    <p class="display text-[clamp(1.8rem,5.5vw,4.5rem)] text-bone max-w-[20ch] reveal" data-rev>"The day we crossed the pass, nobody spoke for an hour."</p>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="bg-bone text-ink py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8">
+    <p class="kicker text-teal-deep text-[12px] mb-4 reveal" data-rev>Travelers</p>
+    <h2 class="display text-[clamp(2.2rem,6.5vw,5rem)] text-ink max-w-[16ch] mb-14 reveal" data-rev>They came back changed.</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <blockquote class="bg-ink text-bone rounded-3xl p-8 reveal" data-rev>
+        <div class="text-gold text-xl mb-4">★★★★★</div>
+        <p class="text-bone/85 leading-relaxed">"I've travelled a lot. Nothing came close. The crew read the mountain like a book and somehow always had hot coffee at the worst weather."</p>
+        <footer class="mt-6 cond uppercase tracking-[.16em] text-[12px] text-teal">Mara K. · Patagonia '25</footer>
+      </blockquote>
+      <blockquote class="bg-teal-deep text-bone rounded-3xl p-8 reveal md:translate-y-6" data-rev>
+        <div class="text-gold text-xl mb-4">★★★★★</div>
+        <p class="text-bone/90 leading-relaxed">"Twelve strangers walked into Nepal and a family walked out. Wanderlume sweats the details so you can just be present."</p>
+        <footer class="mt-6 cond uppercase tracking-[.16em] text-[12px] text-gold">Devon R. · Nepal '24</footer>
+      </blockquote>
+      <blockquote class="bg-ink text-bone rounded-3xl p-8 reveal" data-rev>
+        <div class="text-gold text-xl mb-4">★★★★★</div>
+        <p class="text-bone/85 leading-relaxed">"Booked solo and nervous. Came home with a phone full of photos and a standing invite to a guide's wedding. Worth every cent."</p>
+        <footer class="mt-6 cond uppercase tracking-[.16em] text-[12px] text-teal">Imani T. · Azores '25</footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS (numbered) ================= -->
+<section id="how" class="bg-ink py-24 md:py-32">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <h2 class="display text-[clamp(2.4rem,7vw,5.5rem)] text-bone max-w-[12ch] reveal" data-rev>From spark to summit.</h2>
+      <p class="text-mist max-w-sm leading-relaxed reveal" data-rev>Four steps stand between you and the trail. We handle the heavy lifting — you handle showing up.</p>
+    </div>
+    <div class="space-y-px bg-bone/10 rounded-2xl overflow-hidden">
+      <div class="bg-ink-2 grid md:grid-cols-[120px_1fr_auto] gap-4 md:gap-8 items-center p-8 md:p-10 reveal hover:bg-pine transition-colors" data-rev>
+        <span class="display text-[clamp(2.5rem,6vw,4rem)] text-teal/40">01</span>
+        <div>
+          <h3 class="cond uppercase tracking-[.1em] text-xl text-bone font-600">Tell us your appetite</h3>
+          <p class="text-muted mt-2 max-w-xl">Glacier or jungle? Hard days or slow mornings? A two-minute call sets the tone for everything.</p>
+        </div>
+        <span class="cond uppercase tracking-[.2em] text-[11px] text-muted hidden md:block">~2 min</span>
+      </div>
+      <div class="bg-ink-2 grid md:grid-cols-[120px_1fr_auto] gap-4 md:gap-8 items-center p-8 md:p-10 reveal hover:bg-pine transition-colors" data-rev>
+        <span class="display text-[clamp(2.5rem,6vw,4rem)] text-sunset/50">02</span>
+        <div>
+          <h3 class="cond uppercase tracking-[.1em] text-xl text-bone font-600">We draft the route</h3>
+          <p class="text-muted mt-2 max-w-xl">A local lead designs a day-by-day plan with the right pace, permits and backups built in.</p>
+        </div>
+        <span class="cond uppercase tracking-[.2em] text-[11px] text-muted hidden md:block">48 hrs</span>
+      </div>
+      <div class="bg-ink-2 grid md:grid-cols-[120px_1fr_auto] gap-4 md:gap-8 items-center p-8 md:p-10 reveal hover:bg-pine transition-colors" data-rev>
+        <span class="display text-[clamp(2.5rem,6vw,4rem)] text-gold/50">03</span>
+        <div>
+          <h3 class="cond uppercase tracking-[.1em] text-xl text-bone font-600">Lock it & gear up</h3>
+          <p class="text-muted mt-2 max-w-xl">One transparent price, a kit list, and a prep coach on call right up to departure day.</p>
+        </div>
+        <span class="cond uppercase tracking-[.2em] text-[11px] text-muted hidden md:block">Your call</span>
+      </div>
+      <div class="bg-ink-2 grid md:grid-cols-[120px_1fr_auto] gap-4 md:gap-8 items-center p-8 md:p-10 reveal hover:bg-pine transition-colors" data-rev>
+        <span class="display text-[clamp(2.5rem,6vw,4rem)] text-mist/40">04</span>
+        <div>
+          <h3 class="cond uppercase tracking-[.1em] text-xl text-bone font-600">Chase the horizon</h3>
+          <p class="text-muted mt-2 max-w-xl">Land, meet your crew, and disappear into it. We're on radio 24/7 the whole way.</p>
+        </div>
+        <span class="cond uppercase tracking-[.2em] text-[11px] text-muted hidden md:block">Go time</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="bg-pine py-24 md:py-32">
+  <div class="max-w-[1000px] mx-auto px-5 sm:px-8">
+    <p class="kicker text-gold text-[12px] mb-4 reveal" data-rev>Before you go</p>
+    <h2 class="display text-[clamp(2.2rem,6.5vw,5rem)] text-bone mb-12 reveal" data-rev>Good questions.</h2>
+
+    <div class="divide-y divide-bone/12 border-y border-bone/12">
+      <div class="acc reveal" data-rev>
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="cond uppercase tracking-[.06em] text-lg md:text-xl text-bone">How fit do I need to be?</span>
+          <span class="acc-plus text-2xl text-sunset shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="text-mist pb-6 leading-relaxed max-w-2xl">Every trip is graded one to five. Most travelers comfortably handle grades one to three with regular weekend walks. We send a tailored training plan twelve weeks out so you arrive ready.</p></div>
+      </div>
+      <div class="acc reveal" data-rev>
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="cond uppercase tracking-[.06em] text-lg md:text-xl text-bone">Can I travel solo?</span>
+          <span class="acc-plus text-2xl text-sunset shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="text-mist pb-6 leading-relaxed max-w-2xl">Around half of every group books solo. With a twelve-person cap you'll know everyone by day two. There's no forced single supplement — we pair same-gender shares unless you'd like a private room.</p></div>
+      </div>
+      <div class="acc reveal" data-rev>
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="cond uppercase tracking-[.06em] text-lg md:text-xl text-bone">What's actually included?</span>
+          <span class="acc-plus text-2xl text-sunset shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="text-mist pb-6 leading-relaxed max-w-2xl">Permits, in-country transfers, expert guiding, technical group gear, lodging and most meals. You cover flights, travel insurance and a few free evenings. No surprise upsells on the trail — ever.</p></div>
+      </div>
+      <div class="acc reveal" data-rev>
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-6 text-left">
+          <span class="cond uppercase tracking-[.06em] text-lg md:text-xl text-bone">What if plans change?</span>
+          <span class="acc-plus text-2xl text-sunset shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="text-mist pb-6 leading-relaxed max-w-2xl">Cancel up to sixty days out for a full credit toward any future trip. Inside sixty days our flexible policy and recommended insurance have you covered for the unexpected.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section id="cta" class="relative overflow-hidden grad-cell">
+  <img class="img-fill ken" src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1600&q=80" alt="Snowy summit" onerror="this.style.display='none'">
+  <div class="absolute inset-0 bg-ink/70"></div>
+  <div class="relative max-w-[1400px] mx-auto px-5 sm:px-8 py-28 md:py-40 text-center">
+    <p class="kicker text-teal text-[12px] mb-5 reveal" data-rev>Your seat is waiting</p>
+    <h2 class="display text-[clamp(3rem,11vw,9rem)] text-bone reveal" data-rev>The wild won't<br><span class="text-sunset">wait forever.</span></h2>
+    <p class="text-bone/80 max-w-lg mx-auto mt-7 leading-relaxed reveal" data-rev>Trips sell out months ahead. Grab a free planning call and we'll hold a spot on the expedition that fits you.</p>
+    <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4 reveal" data-rev>
+      <a href="#" class="cond uppercase tracking-[.16em] text-[13px] font-600 px-9 py-4 bg-sunset text-ink rounded-full btn-fill">Book a Free Call</a>
+      <a href="#trips" class="cond uppercase tracking-[.16em] text-[13px] font-600 px-9 py-4 border border-bone/30 text-bone rounded-full hover:border-sunset hover:text-sunset transition">Browse Expeditions</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ink text-bone pt-20 pb-10">
+  <div class="max-w-[1400px] mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-10 md:gap-8 pb-14 border-b border-bone/10">
+      <div>
+        <a href="#top" class="flex items-center gap-2.5 mb-5">
+          <span class="w-9 h-9 rounded-full grad-cell grid place-items-center text-ink font-display text-lg leading-none pt-0.5">W</span>
+          <span class="cond font-700 tracking-[.32em] text-sm uppercase">Wanderlume</span>
+        </a>
+        <p class="text-muted max-w-xs leading-relaxed text-[15px]">Cinematic small-group expeditions to the planet's wildest frontiers. Earn the view.</p>
+      </div>
+      <div>
+        <p class="cond uppercase tracking-[.2em] text-[12px] text-sunset mb-4">Explore</p>
+        <ul class="space-y-2.5 text-muted text-[15px]">
+          <li><a href="#trips" class="hover:text-bone transition">Expeditions</a></li>
+          <li><a href="#why" class="hover:text-bone transition">Why Us</a></li>
+          <li><a href="#how" class="hover:text-bone transition">How It Works</a></li>
+          <li><a href="#faq" class="hover:text-bone transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="cond uppercase tracking-[.2em] text-[12px] text-sunset mb-4">Company</p>
+        <ul class="space-y-2.5 text-muted text-[15px]">
+          <li><a href="#story" class="hover:text-bone transition">The Crew</a></li>
+          <li><a href="#" class="hover:text-bone transition">Careers</a></li>
+          <li><a href="#" class="hover:text-bone transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-bone transition">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="cond uppercase tracking-[.2em] text-[12px] text-sunset mb-4">Stay in the loop</p>
+        <p class="text-muted text-[15px] mb-3">New routes, last spots, field stories.</p>
+        <form class="flex" onsubmit="return false">
+          <input type="email" placeholder="you@email.com" class="bg-ink-2 border border-bone/15 rounded-l-full px-4 py-2.5 text-sm w-full focus:outline-none focus:border-sunset text-bone placeholder-muted">
+          <button class="bg-sunset text-ink px-4 rounded-r-full cond uppercase text-[12px] tracking-[.1em] font-600">Go</button>
+        </form>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 cond uppercase tracking-[.18em] text-[11px] text-muted">
+      <p>© 2026 Wanderlume Expeditions. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-bone transition">Instagram</a>
+        <a href="#" class="hover:text-bone transition">YouTube</a>
+        <a href="#" class="hover:text-bone transition">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= GSAP ================= -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasGSAP = typeof gsap !== 'undefined';
+
+  // ---- Nav background on scroll ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if(window.scrollY > 40){
+      nav.classList.add('bg-ink/85','backdrop-blur-md','border-b','border-bone/10','shadow-2xl');
+    }else{
+      nav.classList.remove('bg-ink/85','backdrop-blur-md','border-b','border-bone/10','shadow-2xl');
+    }
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  if(reduce || !hasGSAP){
+    document.querySelectorAll('.ln > span').forEach(s=> s.style.transform='none');
+    // run count-ups instantly
+    document.querySelectorAll('.count').forEach(el=> el.textContent = el.dataset.to);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Hero line reveal ----
+  gsap.to('.ln > span', {y:'0%', duration:1.1, stagger:.12, ease:'power4.out', delay:.15});
+  gsap.utils.toArray('[data-rev]').forEach((el)=>{
+    gsap.fromTo(el, {opacity:0, y:30}, {
+      opacity:1, y:0, duration:.9, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 86%', once:true }
+    });
+  });
+
+  // ---- Count-up stats ----
+  gsap.utils.toArray('.count').forEach((el)=>{
+    const to = parseFloat(el.dataset.to) || 0;
+    const obj = {v:0};
+    gsap.to(obj, {
+      v:to, duration:1.8, ease:'power2.out',
+      scrollTrigger:{ trigger:el, start:'top 90%', once:true },
+      onUpdate:()=>{ el.textContent = Math.round(obj.v); }
+    });
+  });
+
+  // ---- Parallax bands ----
+  gsap.utils.toArray('.parallax').forEach((img)=>{
+    const speed = parseFloat(img.dataset.speed) || 0.2;
+    gsap.fromTo(img, {yPercent:-speed*60}, {
+      yPercent:speed*60, ease:'none',
+      scrollTrigger:{ trigger:img.parentElement, start:'top bottom', end:'bottom top', scrub:true }
+    });
+  });
+
+  // ---- Horizontal destinations rail (desktop only, pinned) ----
+  const mm = gsap.matchMedia();
+  mm.add('(min-width: 768px)', ()=>{
+    const track = document.getElementById('railTrack');
+    const pin = document.getElementById('railPin');
+    if(!track || !pin) return;
+    const getScroll = () => track.scrollWidth - window.innerWidth + (window.innerWidth*0.04);
+    const tween = gsap.to(track, {
+      x: () => -getScroll(),
+      ease:'none',
+      scrollTrigger:{
+        trigger: pin,
+        start:'top top',
+        end: () => '+=' + getScroll(),
+        pin: true,
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+        anticipatePin: 1
+      }
+    });
+    // pop cards in as the rail moves
+    gsap.utils.toArray('.rail-card').forEach((card)=>{
+      gsap.fromTo(card, {scale:.92, opacity:.4}, {
+        scale:1, opacity:1, ease:'none',
+        scrollTrigger:{ trigger:card, containerAnimation:tween, start:'left 92%', end:'left 55%', scrub:true }
+      });
+    });
+    return () => { gsap.set(track, {x:0}); };
+  });
+
+  window.addEventListener('load', ()=> ScrollTrigger.refresh());
+})();
+
+// ---- FAQ accordion (vanilla, works regardless of motion pref) ----
+document.querySelectorAll('.acc-head').forEach((btn)=>{
+  btn.addEventListener('click', ()=>{
+    const acc = btn.closest('.acc');
+    const open = acc.classList.contains('open');
+    document.querySelectorAll('.acc.open').forEach(a=> a.classList.remove('open'));
+    if(!open) acc.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

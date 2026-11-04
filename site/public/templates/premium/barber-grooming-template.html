@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IRONHIDE &amp; CO. — Master Barbers &amp; Grooming Parlour</title>
+<meta name="description" content="Ironhide & Co. — an upscale barbershop and grooming parlour. Precision cuts, hot-towel shaves, and old-world ritual for the modern gentleman." />
+
+<!-- Google Fonts: heavy condensed display + clean body -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          charcoal:  '#14110e',
+          ink:       '#0c0a08',
+          smoke:     '#1f1a15',
+          ash:       '#2a2420',
+          parchment: '#e9e1d4',
+          bone:      '#cabfa9',
+          gold:      '#c79a45',
+          amber:     '#e0b552',
+          rust:      '#9a5b2c',
+        },
+        fontFamily: {
+          display: ['"Bebas Neue"', 'sans-serif'],
+          cond:    ['Oswald', 'sans-serif'],
+          body:    ['Inter', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background-color: #14110e;
+    color: #e9e1d4;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Subtle paper / canvas texture overlay */
+  .grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.05;
+    background-image:
+      radial-gradient(circle at 25% 15%, rgba(255,255,255,.6) 0.5px, transparent 1px),
+      radial-gradient(circle at 75% 65%, rgba(255,255,255,.4) 0.5px, transparent 1px);
+    background-size: 4px 4px, 6px 6px;
+  }
+
+  .font-display { letter-spacing: 0.015em; }
+  .cond-tight { letter-spacing: -0.01em; }
+
+  /* Masked headline reveal lines */
+  .mask-line { display: block; overflow: hidden; }
+  .mask-inner { display: block; will-change: transform; }
+
+  /* Gold underline accent */
+  .gold-rule {
+    background: linear-gradient(90deg, transparent, #c79a45, transparent);
+    height: 1px;
+  }
+
+  /* Rotating barber pole */
+  .barber-pole {
+    width: 30px;
+    border-radius: 999px;
+    overflow: hidden;
+    box-shadow: 0 0 0 3px #2a2420, 0 10px 30px rgba(0,0,0,.6);
+    position: relative;
+    background: #fff;
+  }
+  .barber-pole-stripes {
+    position: absolute;
+    inset: -50% -50%;
+    background: repeating-linear-gradient(
+      45deg,
+      #b1222a 0, #b1222a 12px,
+      #fff 12px, #fff 24px,
+      #1f5fa8 24px, #1f5fa8 36px,
+      #fff 36px, #fff 48px
+    );
+    animation: poleSpin 2.4s linear infinite;
+  }
+  .barber-pole-cap {
+    position: absolute; left: 0; right: 0; height: 8px;
+    background: linear-gradient(#e0b552, #9a5b2c);
+    z-index: 2;
+  }
+  .barber-pole-cap.top { top: 0; }
+  .barber-pole-cap.bottom { bottom: 0; }
+  @keyframes poleSpin {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(-48px); }
+  }
+
+  /* Marquee */
+  .marquee-track {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: marquee 28s linear infinite;
+  }
+  @keyframes marquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  /* Magnetic button base */
+  .magnetic { will-change: transform; }
+
+  /* Service row hover */
+  .svc-row { transition: background-color .35s ease, padding-left .35s ease; }
+  .svc-row:hover { background-color: rgba(199,154,69,.07); padding-left: 1.25rem; }
+  .svc-row:hover .svc-name { color: #e0b552; }
+  .svc-row .svc-price { transition: transform .35s ease; }
+  .svc-row:hover .svc-price { transform: translateX(-6px); }
+
+  /* Barber card hover */
+  .barber-card img { transition: transform .8s cubic-bezier(.2,.7,.2,1), filter .6s ease; }
+  .barber-card:hover img { transform: scale(1.07); filter: grayscale(0) contrast(1.05); }
+  .barber-card .barber-overlay { transition: opacity .5s ease, transform .5s ease; }
+  .barber-card:hover .barber-overlay { opacity: 1; transform: translateY(0); }
+
+  /* Gallery zoom */
+  .gal-item img { transition: transform 1s cubic-bezier(.2,.7,.2,1); }
+  .gal-item:hover img { transform: scale(1.1); }
+
+  /* FAQ accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .4s ease; }
+
+  /* Parallax media */
+  .parallax-wrap { overflow: hidden; }
+  .parallax-img { will-change: transform; }
+
+  /* Nav scrolled state */
+  #nav { transition: background-color .4s ease, backdrop-filter .4s ease, border-color .4s ease; }
+  #nav.scrolled {
+    background-color: rgba(12,10,8,.85);
+    backdrop-filter: blur(10px);
+    border-bottom-color: rgba(199,154,69,.2);
+  }
+
+  /* Reveal default state (JS-driven). prefers-reduced-motion guard below resets it. */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .mask-inner { transform: none !important; }
+    .barber-pole-stripes { animation: none !important; }
+    .marquee-track { animation: none !important; }
+  }
+
+  ::selection { background: #c79a45; color: #0c0a08; }
+</style>
+</head>
+
+<body class="grain font-body antialiased selection:bg-gold">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 border-b border-transparent">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group">
+      <div class="barber-pole h-9">
+        <div class="barber-pole-stripes"></div>
+        <div class="barber-pole-cap top"></div>
+        <div class="barber-pole-cap bottom"></div>
+      </div>
+      <span class="font-display text-2xl tracking-wider text-parchment leading-none">
+        IRONHIDE<span class="text-gold">&amp;</span>CO.
+      </span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-9 font-cond text-sm uppercase tracking-[0.18em] text-bone">
+      <a href="#services" class="hover:text-amber transition-colors">Services</a>
+      <a href="#barbers"  class="hover:text-amber transition-colors">Barbers</a>
+      <a href="#story"    class="hover:text-amber transition-colors">Story</a>
+      <a href="#reviews"  class="hover:text-amber transition-colors">Reviews</a>
+      <a href="#faq"      class="hover:text-amber transition-colors">FAQ</a>
+    </div>
+
+    <a href="#booking" id="navBook"
+       class="magnetic relative inline-flex items-center gap-2 px-6 py-3 font-cond uppercase tracking-[0.2em] text-xs text-ink bg-gold hover:bg-amber transition-colors rounded-sm">
+      <span class="magnetic-label">Book a Chair</span>
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-end pt-28 pb-16 overflow-hidden">
+  <!-- background image -->
+  <div class="absolute inset-0 parallax-wrap">
+    <div class="parallax-img absolute inset-0 -top-24 -bottom-24">
+      <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80"
+           alt="Barber at work" onerror="this.style.display='none'"
+           class="w-full h-full object-cover object-center opacity-60" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/70 to-ink/40"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-transparent"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full">
+    <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs sm:text-sm mb-6">
+      Est. 2009 · Downtown Parlour
+    </p>
+
+    <h1 class="font-display leading-[0.86] text-parchment text-6xl sm:text-8xl lg:text-[9.5rem]">
+      <span class="mask-line"><span class="mask-inner block">SHARP CUTS.</span></span>
+      <span class="mask-line"><span class="mask-inner block">CLEAN <span class="text-gold">SHAVES.</span></span></span>
+      <span class="mask-line"><span class="mask-inner block">OLD-WORLD RITUAL.</span></span>
+    </h1>
+
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-center gap-6 max-w-2xl">
+      <p class="reveal text-bone/90 text-base sm:text-lg leading-relaxed">
+        A grooming parlour built on steel, leather and steam. Every chair is a craft station —
+        every gentleman leaves looking the part.
+      </p>
+    </div>
+
+    <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+      <a href="#booking" id="heroBook"
+         class="magnetic group inline-flex items-center gap-3 px-8 py-4 bg-gold hover:bg-amber text-ink font-cond uppercase tracking-[0.22em] text-sm rounded-sm transition-colors">
+        <span class="magnetic-label">Book Your Chair</span>
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#services"
+         class="inline-flex items-center gap-2 px-6 py-4 border border-bone/30 hover:border-gold text-parchment font-cond uppercase tracking-[0.22em] text-sm rounded-sm transition-colors">
+        View Services
+      </a>
+    </div>
+  </div>
+
+  <!-- floating barber pole -->
+  <div class="hidden md:block absolute right-8 lg:right-16 bottom-24 z-10">
+    <div class="barber-pole h-44">
+      <div class="barber-pole-stripes"></div>
+      <div class="barber-pole-cap top"></div>
+      <div class="barber-pole-cap bottom"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="bg-ink border-y border-ash/60 py-4 marquee-mask">
+  <div class="marquee-track font-display text-2xl sm:text-3xl tracking-wider text-bone/70">
+    <span class="px-8">HOT TOWEL SHAVES</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">SKIN FADES</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">BEARD SCULPTING</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">STRAIGHT RAZOR</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">SCISSOR WORK</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">HOT TOWEL SHAVES</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">SKIN FADES</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">BEARD SCULPTING</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">STRAIGHT RAZOR</span><span class="text-gold px-2">✦</span>
+    <span class="px-8">SCISSOR WORK</span><span class="text-gold px-2">✦</span>
+  </div>
+</div>
+
+<!-- ============ STATS STRIP ============ -->
+<section class="bg-smoke border-b border-ash/60 py-14">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-6 text-center">
+    <div class="reveal">
+      <div class="font-display text-5xl sm:text-6xl text-gold cond-tight" data-count="16" data-suffix="">0</div>
+      <p class="font-cond uppercase tracking-[0.22em] text-xs text-bone/70 mt-2">Years On The Block</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-5xl sm:text-6xl text-gold cond-tight" data-count="84" data-suffix="K">0</div>
+      <p class="font-cond uppercase tracking-[0.22em] text-xs text-bone/70 mt-2">Cuts &amp; Shaves</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-5xl sm:text-6xl text-gold cond-tight" data-count="9" data-suffix="">0</div>
+      <p class="font-cond uppercase tracking-[0.22em] text-xs text-bone/70 mt-2">Master Barbers</p>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-5xl sm:text-6xl text-gold cond-tight" data-count="4" data-suffix=".9">0</div>
+      <p class="font-cond uppercase tracking-[0.22em] text-xs text-bone/70 mt-2">Avg. Star Rating</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES & PRICING ============ -->
+<section id="services" class="py-24 sm:py-32 bg-charcoal relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+      <div>
+        <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">The Menu</p>
+        <h2 class="reveal font-display text-5xl sm:text-7xl text-parchment leading-[0.9]">
+          SERVICES &amp;<br><span class="text-gold">PRICING</span>
+        </h2>
+      </div>
+      <p class="reveal max-w-md text-bone/80 leading-relaxed">
+        No upsells, no gimmicks. Pick your service, take a seat, and let a master do the work.
+        Every cut includes a hot-towel finish and a complimentary neck shave.
+      </p>
+    </div>
+
+    <div class="border-t border-ash/60">
+      <!-- rows -->
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">The Signature Cut</h3>
+          <p class="text-bone/60 text-sm mt-1">Consultation, scissor &amp; clipper cut, hot towel, style finish · 45 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$48</div>
+      </div>
+
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">Skin Fade &amp; Sculpt</h3>
+          <p class="text-bone/60 text-sm mt-1">Precision fade, line-up, design work, finish · 50 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$55</div>
+      </div>
+
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">Hot Towel Straight Shave</h3>
+          <p class="text-bone/60 text-sm mt-1">Steam prep, straight razor, balm, cold-towel close · 40 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$42</div>
+      </div>
+
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">Beard Sculpt &amp; Oil</h3>
+          <p class="text-bone/60 text-sm mt-1">Shape, line, trim, hot-towel, premium beard oil · 30 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$32</div>
+      </div>
+
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">The Full Works</h3>
+          <p class="text-bone/60 text-sm mt-1">Signature cut + straight shave + beard oil + scalp tonic · 90 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$95</div>
+      </div>
+
+      <div class="svc-row reveal grid grid-cols-[1fr_auto] items-baseline gap-4 py-7 border-b border-ash/60">
+        <div>
+          <h3 class="svc-name font-cond text-2xl sm:text-3xl text-parchment uppercase tracking-wide transition-colors">Father &amp; Son</h3>
+          <p class="text-bone/60 text-sm mt-1">Two cuts, side by side, first cut keepsake included · 60 min</p>
+        </div>
+        <div class="svc-price font-display text-3xl sm:text-4xl text-gold">$70</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OUR BARBERS ============ -->
+<section id="barbers" class="py-24 sm:py-32 bg-ink relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">The Crew</p>
+      <h2 class="reveal font-display text-5xl sm:text-7xl text-parchment leading-[0.9]">
+        MASTERS OF <span class="text-gold">THE CHAIR</span>
+      </h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- barber 1 -->
+      <article class="barber-card reveal relative overflow-hidden rounded-sm border border-ash/60 bg-smoke">
+        <div class="aspect-[3/4] bg-gradient-to-b from-ash to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1600&q=80"
+               alt="Master barber portrait" onerror="this.style.display='none'"
+               class="w-full h-full object-cover grayscale" />
+        </div>
+        <div class="barber-overlay absolute inset-0 flex items-end p-6 bg-gradient-to-t from-ink via-ink/40 to-transparent opacity-90 translate-y-2">
+          <div>
+            <h3 class="font-display text-3xl text-parchment tracking-wide">MARCUS "STEEL" DURANT</h3>
+            <p class="font-cond uppercase tracking-[0.2em] text-amber text-xs mt-1">Founder · Master Barber</p>
+            <p class="text-bone/70 text-sm mt-2">16 yrs · Fades, classic tapers, straight razor.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- barber 2 -->
+      <article class="barber-card reveal relative overflow-hidden rounded-sm border border-ash/60 bg-smoke">
+        <div class="aspect-[3/4] bg-gradient-to-b from-ash to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1600&q=80"
+               alt="Barber portrait" onerror="this.style.display='none'"
+               class="w-full h-full object-cover grayscale" />
+        </div>
+        <div class="barber-overlay absolute inset-0 flex items-end p-6 bg-gradient-to-t from-ink via-ink/40 to-transparent opacity-90 translate-y-2">
+          <div>
+            <h3 class="font-display text-3xl text-parchment tracking-wide">ELENA VARGA</h3>
+            <p class="font-cond uppercase tracking-[0.2em] text-amber text-xs mt-1">Senior Stylist</p>
+            <p class="text-bone/70 text-sm mt-2">11 yrs · Textured crops, scissor work, beard art.</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- barber 3 -->
+      <article class="barber-card reveal relative overflow-hidden rounded-sm border border-ash/60 bg-smoke">
+        <div class="aspect-[3/4] bg-gradient-to-b from-ash to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1600&q=80"
+               alt="Barber portrait" onerror="this.style.display='none'"
+               class="w-full h-full object-cover grayscale" />
+        </div>
+        <div class="barber-overlay absolute inset-0 flex items-end p-6 bg-gradient-to-t from-ink via-ink/40 to-transparent opacity-90 translate-y-2">
+          <div>
+            <h3 class="font-display text-3xl text-parchment tracking-wide">THEO OKAFOR</h3>
+            <p class="font-cond uppercase tracking-[0.2em] text-amber text-xs mt-1">Razor Specialist</p>
+            <p class="text-bone/70 text-sm mt-2">8 yrs · Hot-towel shaves, line-ups, designs.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY BAND ============ -->
+<section class="py-4 bg-charcoal">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 px-2">
+    <div class="gal-item overflow-hidden rounded-sm aspect-square bg-gradient-to-br from-ash to-ink">
+      <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80" alt="Barbershop" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90" />
+    </div>
+    <div class="gal-item overflow-hidden rounded-sm aspect-square bg-gradient-to-br from-ash to-ink">
+      <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1600&q=80" alt="Barbershop" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90" />
+    </div>
+    <div class="gal-item overflow-hidden rounded-sm aspect-square bg-gradient-to-br from-ash to-ink">
+      <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=1600&q=80" alt="Barbershop" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90" />
+    </div>
+    <div class="gal-item overflow-hidden rounded-sm aspect-square bg-gradient-to-br from-ash to-ink">
+      <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1600&q=80" alt="Barbershop" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-90" />
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STORY ============ -->
+<section id="story" class="py-24 sm:py-32 bg-smoke relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal parallax-wrap rounded-sm border border-ash/60 overflow-hidden">
+      <div class="parallax-img aspect-[4/5] bg-gradient-to-b from-ash to-ink">
+        <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&w=1600&q=80"
+             alt="Inside the parlour" onerror="this.style.display='none'"
+             class="w-full h-full object-cover scale-110 opacity-80" />
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">Our Story</p>
+      <h2 class="reveal font-display text-5xl sm:text-6xl text-parchment leading-[0.9] mb-6">
+        BUILT ON STEEL,<br>LEATHER &amp; <span class="text-gold">STEAM</span>
+      </h2>
+      <div class="space-y-5 text-bone/85 leading-relaxed reveal">
+        <p>
+          Ironhide &amp; Co. started in a single rented chair behind a hardware store in 2009.
+          Marcus Durant had two clippers, a worn strop, and a belief that a man's grooming
+          should feel like a ritual — not a transaction.
+        </p>
+        <p>
+          Sixteen years later we run nine chairs of polished brass and oxblood leather. The
+          philosophy hasn't moved an inch: take your time, get the lines right, send a man back
+          into the world sharper than he came in.
+        </p>
+        <p class="text-parchment font-cond uppercase tracking-[0.15em] text-sm border-l-2 border-gold pl-4">
+          "We don't rush the blade. Good work shows."
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="reviews" class="py-24 sm:py-32 bg-charcoal">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">From The Chair</p>
+      <h2 class="reveal font-display text-5xl sm:text-7xl text-parchment leading-[0.9]">
+        WHAT THE <span class="text-gold">REGULARS SAY</span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal bg-smoke border border-ash/60 rounded-sm p-8">
+        <div class="text-gold text-lg mb-4">★★★★★</div>
+        <blockquote class="text-bone/90 leading-relaxed">
+          "Best fade I've had in fifteen years. Marcus took his time, asked the right questions,
+          and the hot towel at the end is unreal. I'm a lifer now."
+        </blockquote>
+        <figcaption class="mt-6 font-cond uppercase tracking-[0.18em] text-xs text-amber">
+          Daniel R. · Regular since 2018
+        </figcaption>
+      </figure>
+
+      <figure class="reveal bg-smoke border border-ash/60 rounded-sm p-8">
+        <div class="text-gold text-lg mb-4">★★★★★</div>
+        <blockquote class="text-bone/90 leading-relaxed">
+          "The straight-razor shave is a whole experience. Steam, the warm balm, the steady hand —
+          you walk out feeling brand new. Worth every cent."
+        </blockquote>
+        <figcaption class="mt-6 font-cond uppercase tracking-[0.18em] text-xs text-amber">
+          Anthony M. · Wedding party
+        </figcaption>
+      </figure>
+
+      <figure class="reveal bg-smoke border border-ash/60 rounded-sm p-8">
+        <div class="text-gold text-lg mb-4">★★★★★</div>
+        <blockquote class="text-bone/90 leading-relaxed">
+          "Took my boy for his first cut. Theo made him feel like a king and gave us the keepsake
+          curl. We've been coming back every month since."
+        </blockquote>
+        <figcaption class="mt-6 font-cond uppercase tracking-[0.18em] text-xs text-amber">
+          Marcus &amp; Eli · Father &amp; Son
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOOKING / HOW-TO ============ -->
+<section id="booking" class="py-24 sm:py-32 bg-ink relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-14">
+      <div>
+        <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">How It Works</p>
+        <h2 class="reveal font-display text-5xl sm:text-6xl text-parchment leading-[0.9] mb-10">
+          THREE STEPS<br>TO THE <span class="text-gold">CHAIR</span>
+        </h2>
+
+        <ol class="space-y-8">
+          <li class="reveal flex gap-5">
+            <span class="font-display text-5xl text-gold leading-none">01</span>
+            <div>
+              <h3 class="font-cond text-xl uppercase tracking-wide text-parchment">Pick Your Service</h3>
+              <p class="text-bone/70 mt-1">Choose a cut, shave, or the full works from the menu above.</p>
+            </div>
+          </li>
+          <li class="reveal flex gap-5">
+            <span class="font-display text-5xl text-gold leading-none">02</span>
+            <div>
+              <h3 class="font-cond text-xl uppercase tracking-wide text-parchment">Choose Your Barber &amp; Time</h3>
+              <p class="text-bone/70 mt-1">Request a specific master or let us match you with the next open chair.</p>
+            </div>
+          </li>
+          <li class="reveal flex gap-5">
+            <span class="font-display text-5xl text-gold leading-none">03</span>
+            <div>
+              <h3 class="font-cond text-xl uppercase tracking-wide text-parchment">Take A Seat</h3>
+              <p class="text-bone/70 mt-1">Arrive five minutes early, grab an espresso, and leave it to us.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- booking card -->
+      <div class="reveal bg-smoke border border-gold/30 rounded-sm p-8 sm:p-10 self-start">
+        <h3 class="font-display text-3xl text-parchment tracking-wide mb-1">RESERVE A CHAIR</h3>
+        <p class="text-bone/60 text-sm mb-7">We'll confirm by text within the hour.</p>
+
+        <form class="space-y-5" onsubmit="event.preventDefault(); this.reset(); document.getElementById('bookMsg').classList.remove('hidden');">
+          <div>
+            <label class="block font-cond uppercase tracking-[0.18em] text-xs text-bone/70 mb-2">Name</label>
+            <input type="text" required placeholder="Your name"
+                   class="w-full bg-ink border border-ash rounded-sm px-4 py-3 text-parchment placeholder-bone/30 focus:border-gold focus:outline-none transition-colors" />
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-cond uppercase tracking-[0.18em] text-xs text-bone/70 mb-2">Phone</label>
+              <input type="tel" required placeholder="(000) 000-0000"
+                     class="w-full bg-ink border border-ash rounded-sm px-4 py-3 text-parchment placeholder-bone/30 focus:border-gold focus:outline-none transition-colors" />
+            </div>
+            <div>
+              <label class="block font-cond uppercase tracking-[0.18em] text-xs text-bone/70 mb-2">Service</label>
+              <select class="w-full bg-ink border border-ash rounded-sm px-4 py-3 text-parchment focus:border-gold focus:outline-none transition-colors">
+                <option>Signature Cut</option>
+                <option>Skin Fade &amp; Sculpt</option>
+                <option>Hot Towel Shave</option>
+                <option>Beard Sculpt</option>
+                <option>The Full Works</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block font-cond uppercase tracking-[0.18em] text-xs text-bone/70 mb-2">Preferred Date</label>
+            <input type="date"
+                   class="w-full bg-ink border border-ash rounded-sm px-4 py-3 text-parchment focus:border-gold focus:outline-none transition-colors" />
+          </div>
+          <button type="submit"
+                  class="magnetic w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-gold hover:bg-amber text-ink font-cond uppercase tracking-[0.22em] text-sm rounded-sm transition-colors">
+            <span class="magnetic-label">Request Booking</span>
+          </button>
+          <p id="bookMsg" class="hidden text-amber font-cond uppercase tracking-[0.15em] text-xs text-center pt-2">
+            ✦ Request received — we'll text you shortly.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-32 bg-charcoal">
+  <div class="max-w-4xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="reveal font-cond uppercase tracking-[0.4em] text-amber text-xs mb-4">Good To Know</p>
+      <h2 class="reveal font-display text-5xl sm:text-7xl text-parchment leading-[0.9]">
+        QUESTIONS, <span class="text-gold">ANSWERED</span>
+      </h2>
+    </div>
+
+    <div class="divide-y divide-ash/60 border-y border-ash/60">
+      <div class="faq-item reveal">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-cond text-xl sm:text-2xl uppercase tracking-wide text-parchment">Do I need an appointment?</span>
+          <span class="faq-icon text-gold text-2xl leading-none shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-bone/75 pb-6 leading-relaxed">Walk-ins are always welcome, but chairs fill fast on evenings and weekends. Booking ahead guarantees your barber and your slot.</p></div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-cond text-xl sm:text-2xl uppercase tracking-wide text-parchment">Can I request a specific barber?</span>
+          <span class="faq-icon text-gold text-2xl leading-none shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-bone/75 pb-6 leading-relaxed">Absolutely. Pick your master when you book. If they're fully booked, we'll offer the next available chair or hold your slot for their next opening.</p></div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-cond text-xl sm:text-2xl uppercase tracking-wide text-parchment">What's your cancellation policy?</span>
+          <span class="faq-icon text-gold text-2xl leading-none shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-bone/75 pb-6 leading-relaxed">Life happens. Give us at least four hours' notice and there's no charge. Same-day no-shows may incur a small deposit on your next visit.</p></div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-cond text-xl sm:text-2xl uppercase tracking-wide text-parchment">Do you cut kids' hair?</span>
+          <span class="faq-icon text-gold text-2xl leading-none shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-bone/75 pb-6 leading-relaxed">We do. Our Father &amp; Son package is a favourite, and we keep a keepsake curl from every first cut. Little gentlemen are always welcome.</p></div>
+      </div>
+
+      <div class="faq-item reveal">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-cond text-xl sm:text-2xl uppercase tracking-wide text-parchment">What products do you use?</span>
+          <span class="faq-icon text-gold text-2xl leading-none shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-bone/75 pb-6 leading-relaxed">Our own small-batch Ironhide line — beard oils, pomades, and balms blended with cedar and black pepper. All of it is available to take home at the front counter.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 sm:py-40 overflow-hidden">
+  <div class="absolute inset-0 parallax-wrap">
+    <div class="parallax-img absolute inset-0 -top-20 -bottom-20">
+      <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1600&q=80"
+           alt="Barbershop interior" onerror="this.style.display='none'"
+           class="w-full h-full object-cover opacity-30" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-charcoal via-ink/80 to-charcoal"></div>
+  </div>
+
+  <div class="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="reveal font-display text-6xl sm:text-8xl text-parchment leading-[0.86] mb-6">
+      SIT DOWN.<br><span class="text-gold">LEVEL UP.</span>
+    </h2>
+    <p class="reveal text-bone/85 text-lg max-w-xl mx-auto mb-10">
+      Your sharpest look is one appointment away. Book a chair at Ironhide &amp; Co. and feel the difference a master makes.
+    </p>
+    <a href="#booking" id="ctaBook"
+       class="magnetic inline-flex items-center gap-3 px-10 py-5 bg-gold hover:bg-amber text-ink font-cond uppercase tracking-[0.22em] text-base rounded-sm transition-colors">
+      <span class="magnetic-label">Book Your Chair</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink border-t border-ash/60 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="barber-pole h-8"><div class="barber-pole-stripes"></div><div class="barber-pole-cap top"></div><div class="barber-pole-cap bottom"></div></div>
+          <span class="font-display text-2xl tracking-wider text-parchment">IRONHIDE<span class="text-gold">&amp;</span>CO.</span>
+        </div>
+        <p class="text-bone/60 max-w-sm leading-relaxed">
+          Master barbers &amp; grooming parlour. Precision cuts, hot-towel shaves, and old-world ritual since 2009.
+        </p>
+      </div>
+      <div>
+        <h4 class="font-cond uppercase tracking-[0.2em] text-xs text-amber mb-4">Visit</h4>
+        <p class="text-bone/70 text-sm leading-relaxed">42 Forge Street<br>Old Town Quarter<br>Open Tue–Sun · 9am–7pm</p>
+      </div>
+      <div>
+        <h4 class="font-cond uppercase tracking-[0.2em] text-xs text-amber mb-4">Connect</h4>
+        <ul class="space-y-2 text-bone/70 text-sm">
+          <li><a href="#booking" class="hover:text-amber transition-colors">Book Online</a></li>
+          <li><a href="#" class="hover:text-amber transition-colors">Instagram</a></li>
+          <li><a href="#" class="hover:text-amber transition-colors">(000) 555-0142</a></li>
+          <li><a href="#" class="hover:text-amber transition-colors">hello@ironhide.co</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="gold-rule mb-6"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-bone/50 text-xs font-cond uppercase tracking-[0.18em]">
+      <p>© 2025 Ironhide &amp; Co. — All rights reserved.</p>
+      <p>Crafted with steel &amp; steam.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ GSAP + ScrollTrigger ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Nav scrolled state ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ---- FAQ accordion (works regardless of motion pref) ----
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach((o) => o.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  if (reduce || typeof gsap === 'undefined') {
+    // Ensure everything is visible without animation
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('[data-count]').forEach((el) => {
+      const t = el.getAttribute('data-count'); const s = el.getAttribute('data-suffix') || '';
+      el.textContent = t + s;
+    });
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Masked headline reveal ----
+  gsap.set('.mask-inner', { yPercent: 115 });
+  gsap.to('.mask-inner', {
+    yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: 0.12, delay: 0.2,
+  });
+
+  // ---- Generic reveal-on-scroll ----
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+    });
+  });
+
+  // ---- Container parallax on barber photography ----
+  gsap.utils.toArray('.parallax-img').forEach((img) => {
+    gsap.fromTo(img, { yPercent: -8 }, {
+      yPercent: 8, ease: 'none',
+      scrollTrigger: { trigger: img.closest('.parallax-wrap') || img, start: 'top bottom', end: 'bottom top', scrub: true },
+    });
+  });
+
+  // ---- Count-ups ----
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const target = parseFloat(el.getAttribute('data-count'));
+    const suffix = el.getAttribute('data-suffix') || '';
+    const isFloat = !Number.isInteger(target);
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => {
+        gsap.to(obj, {
+          v: target, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => { el.textContent = (isFloat ? obj.v.toFixed(1) : Math.round(obj.v)) + suffix; },
+          onComplete: () => { el.textContent = (isFloat ? target.toFixed(1) : target) + suffix; },
+        });
+      },
+    });
+  });
+
+  // ---- Magnetic buttons ----
+  document.querySelectorAll('.magnetic').forEach((btn) => {
+    const label = btn.querySelector('.magnetic-label');
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(btn, { x: x * 0.3, y: y * 0.4, duration: 0.4, ease: 'power3.out' });
+      if (label) gsap.to(label, { x: x * 0.15, y: y * 0.2, duration: 0.4, ease: 'power3.out' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+      if (label) gsap.to(label, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+    });
+  });
+
+  // ---- Section heading subtle scrub on the marquee for extra life ----
+  ScrollTrigger.refresh();
+})();
+</script>
+</body>
+</html>

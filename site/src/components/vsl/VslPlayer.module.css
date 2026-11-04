@@ -1,0 +1,673 @@
+/* Homepage VSL player. Only nx.css tokens, so both themes follow html[data-theme].
+   Everything that moves stops under prefers-reduced-motion (bottom of file). */
+
+/* ───────── Layout: video + chapters beside (desktop) / below (phones) ───────── */
+.root {
+  /* Both panels draw their tray as spread shadows, 7px outside their own box.
+     The padding keeps that outer hairline on the page grid (and inside the
+     section's spacing); the gap is measured between the two hairlines. */
+  --vsl-tray: 7px;
+  display: grid;
+  gap: calc(2 * var(--vsl-tray) + clamp(0.625rem, 1.2vw, 1rem));
+  width: 100%;
+  padding: var(--vsl-tray);
+  max-width: var(--nx-wrap);
+  margin-inline: auto;
+  align-items: stretch;
+}
+@media (min-width: 1024px) {
+  .root {
+    /* Stage tops out near 1100px inside the 1320px wrap; the chapter column keeps 16–20rem. */
+    grid-template-columns: minmax(0, 1fr) clamp(16rem, 26%, 20rem);
+  }
+}
+
+/* ───────── Frame: picture + control bar ───────── */
+.frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 68.75rem;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--nx-radius-lg);
+  background: var(--surface);
+  /* Double bezel without extra markup: a 6px tray in the page's raised tone and
+     a hairline around it (spread shadows follow the radius, so the curves stay
+     concentric), an inner highlight on the top edge, then the soft depth shadow. */
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 0 0 6px color-mix(in oklab, var(--surface) 55%, transparent),
+    0 0 0 7px var(--line),
+    var(--shadow-lg);
+}
+
+.stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  container-type: inline-size;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* Under the error panel the dark poster would still edge the rounded corners. */
+.stage[data-failed] .video {
+  visibility: hidden;
+}
+
+/* Full screen: the frame fills the screen, the picture takes what the bar leaves. */
+.frame:fullscreen {
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+}
+.frame:fullscreen .stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  aspect-ratio: auto;
+  background: var(--bg);
+}
+.frame:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: var(--bg);
+}
+.frame:-webkit-full-screen .stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  aspect-ratio: auto;
+  background: var(--bg);
+}
+
+/* ───────── Poster / end-card button ───────── */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent-fg);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.overlay:focus-visible {
+  outline: none;
+}
+
+/* Sits in the gap between the phone and the timeline on the poster frame. */
+.disc {
+  position: absolute;
+  left: 38.6%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: clamp(3rem, 9cqi, 6.25rem);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  box-shadow:
+    0 0 0 clamp(0.4rem, 1.1cqi, 0.9rem) color-mix(in oklab, var(--accent) 24%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 12px 28px -12px rgb(2 4 10 / 0.6);
+  transition: scale var(--dur-dropdown) var(--ease-out), background-color 200ms ease;
+}
+.disc svg {
+  width: 38%;
+  height: 38%;
+}
+/* End card: the last frame carries the logo and URL in the middle, so Replay sits beneath them. */
+.overlayEnded .disc {
+  left: 50%;
+  top: 80%;
+}
+@container (max-width: 30rem) {
+  .overlayEnded .disc { top: 84%; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .overlay:hover .disc {
+    scale: 1.06;
+    background: var(--accent-hover);
+  }
+}
+/* Press answers on pointer-down, faster than the hover grows. */
+.overlay:active .disc {
+  scale: 0.97;
+  transition-duration: var(--dur-press);
+}
+.overlay:focus-visible .disc {
+  outline: 3px solid var(--ring);
+  outline-offset: clamp(0.6rem, 1.5cqi, 1.1rem);
+}
+/* Optical centring of the play triangle. */
+.discPlay {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  translate: 6% 0;
+}
+
+.chip {
+  position: absolute;
+  left: clamp(0.75rem, 2.2cqi, 1.5rem);
+  top: clamp(0.75rem, 2.2cqi, 1.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 1.875rem;
+  padding-inline: 0.75rem;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  /* --glass is ~75% opaque, enough to read over the poster on its own; no
+     backdrop blur here, since the chip scrolls with the page (blur belongs on
+     fixed layers only, where it doesn't repaint on every scroll frame). */
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+  color: var(--fg);
+  font-family: var(--nx-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+@container (max-width: 30rem) {
+  .chip {
+    height: 1.5rem;
+    gap: 0.375rem;
+    padding-inline: 0.5rem;
+    font-size: 0.5625rem;
+  }
+}
+.chipDot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* ───────── Buffering + error ───────── */
+.spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: -1.375rem 0 0 -1.375rem;
+  border: 3px solid color-mix(in oklab, var(--accent-fg) 25%, transparent);
+  border-top-color: var(--accent);
+  border-radius: 999px;
+  pointer-events: none;
+  animation: vsl-spin 0.9s linear infinite;
+}
+@keyframes vsl-spin {
+  to { rotate: 360deg; }
+}
+
+.error {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-family: var(--nx-font-body);
+  font-size: 0.9375rem;
+  text-align: center;
+}
+.errorLink {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ───────── Control bar ───────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.375rem, 1.2vw, 0.75rem);
+  padding: 0.625rem clamp(0.625rem, 1.6vw, 1rem);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg-2);
+}
+
+.btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg-2);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease, scale var(--dur-press) var(--ease-out);
+}
+.btn:active {
+  scale: 0.97;
+}
+/* Fingers get the full 44px target; a mouse keeps the denser 40px bar. */
+@media (pointer: coarse) {
+  .btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+}
+.btn:focus-visible {
+  border-radius: 999px;
+  outline-offset: 2px;
+}
+.btnPrimary {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .btnPrimary:hover {
+    background: var(--accent-hover);
+    color: var(--accent-fg);
+  }
+}
+
+/* Seek bar: rail + fill + chapter ticks drawn under a transparent range input
+   (the input keeps the native keyboard / pointer / screen-reader behaviour). */
+.seek {
+  --vsl-fill: 0;
+  --vsl-seek-h: 2.5rem;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 4rem;
+  height: var(--vsl-seek-h);
+}
+/* The 44px touch target, like the buttons. After .seek on purpose: the two
+   rules have the same specificity, so the later one decides. */
+@media (pointer: coarse) {
+  .seek {
+    --vsl-seek-h: 2.75rem;
+  }
+}
+.rail,
+.fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.rail {
+  background: var(--line-2);
+}
+.fill {
+  background: var(--accent);
+  transform: scaleX(var(--vsl-fill));
+  transform-origin: left center;
+}
+.tick {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 6px;
+  margin: -3px 0 0 -1.5px;
+  background: var(--surface);
+  pointer-events: none;
+}
+.range {
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.range:focus-visible {
+  border-radius: 0.375rem;
+  outline-offset: 0;
+}
+.range::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+  border: 0;
+}
+.range::-moz-range-track {
+  height: 100%;
+  background: transparent;
+  border: 0;
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: calc((var(--vsl-seek-h) - 0.875rem) / 2); /* centred in the track */
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--surface);
+  transition: scale var(--dur-tooltip) var(--ease-out);
+}
+.range::-moz-range-thumb {
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--surface);
+  transition: scale var(--dur-tooltip) var(--ease-out);
+}
+.range:focus-visible::-webkit-slider-thumb,
+.range:active::-webkit-slider-thumb {
+  scale: 1.25;
+}
+.range:focus-visible::-moz-range-thumb,
+.range:active::-moz-range-thumb {
+  scale: 1.25;
+}
+@media (hover: hover) and (pointer: fine) {
+  .seek:hover .range::-webkit-slider-thumb {
+    scale: 1.25;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .seek:hover .range::-moz-range-thumb {
+    scale: 1.25;
+  }
+}
+
+.time {
+  flex: none;
+  font-family: var(--nx-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
+  white-space: nowrap;
+}
+.timeSep {
+  color: var(--fg-3);
+}
+/* Narrow players: the seek bar takes its own full-width row above the buttons.
+   Squeezed between them it was about 90px wide, two seconds of film per pixel. */
+@media (max-width: 30rem) {
+  .controls {
+    flex-wrap: wrap;
+    row-gap: 0;
+    padding-top: 0.25rem;
+  }
+  .seek {
+    order: -1;
+    flex: 1 0 100%;
+  }
+  .time + .btn {
+    margin-left: auto;
+  }
+}
+
+/* ───────── Chapters ───────── */
+.chapters {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--nx-radius-lg);
+  background: var(--surface);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 0 0 6px color-mix(in oklab, var(--surface) 55%, transparent),
+    0 0 0 7px var(--line);
+}
+.chaptersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--nx-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.chaptersCount {
+  color: var(--accent-text);
+}
+.list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  display: flex;
+  flex: 1 1 0;
+}
+.item + .item {
+  border-top: 1px solid var(--line);
+}
+
+.chapter {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.625rem 1.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--fg-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .chapter:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+  }
+}
+.chapter:focus-visible {
+  border-radius: 0;
+  outline-offset: -3px;
+}
+/* Current chapter: accent edge, raised surface, progress hairline along the bottom. */
+.chapter::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.chapter[data-current] {
+  background: var(--surface-2);
+  color: var(--fg);
+}
+.chapter[data-current]::before {
+  opacity: 1;
+}
+
+.chapterIndex {
+  font-family: var(--nx-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-3);
+}
+.chapter[data-current] .chapterIndex,
+.chapter[data-done] .chapterIndex {
+  color: var(--accent-text);
+}
+.chapterTitle {
+  overflow: hidden;
+  font-family: var(--nx-font-heading);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chapterTime {
+  font-family: var(--nx-font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-3);
+}
+.chapterBar {
+  --vsl-progress: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(var(--vsl-progress));
+  transform-origin: left center;
+  pointer-events: none;
+}
+.chapter:not([data-current]) .chapterBar {
+  display: none;
+}
+
+/* Phones / tablets: chapters sit below the video as a compact two-column grid when there is room. */
+@media (min-width: 40rem) and (max-width: 63.9375rem) {
+  .list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .item + .item {
+    border-top: 0;
+  }
+  .item:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  .item:nth-child(even) {
+    border-left: 1px solid var(--line);
+  }
+}
+@media (max-width: 63.9375rem) {
+  .frame {
+    max-width: none;
+  }
+  .chaptersHead {
+    padding: 0.875rem 1rem;
+  }
+  .chapter {
+    padding-inline: 1rem;
+  }
+  .chapterTitle {
+    font-size: 1rem;
+  }
+}
+
+/* ───────── Utilities ───────── */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ───────── Reduced motion ───────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Vendor pseudo-elements get their own rules: one unknown selector drops a whole list. */
+  /* Fewer and gentler: colour and opacity changes stay, size changes go. */
+  .disc,
+  .btn,
+  .chapter {
+    transition-property: background-color, color;
+  }
+  .range::-webkit-slider-thumb {
+    transition: none;
+  }
+  .range::-moz-range-thumb {
+    transition: none;
+  }
+  .overlay:hover .disc,
+  .overlay:active .disc,
+  .btn:active {
+    scale: none;
+  }
+  .seek:hover .range::-webkit-slider-thumb,
+  .range:active::-webkit-slider-thumb,
+  .range:focus-visible::-webkit-slider-thumb {
+    scale: none;
+  }
+  .seek:hover .range::-moz-range-thumb,
+  .range:active::-moz-range-thumb,
+  .range:focus-visible::-moz-range-thumb {
+    scale: none;
+  }
+  /* Still says "loading" without rotating: the ring breathes in opacity only. */
+  .spinner {
+    animation: vsl-breathe 1.2s ease-in-out infinite alternate;
+  }
+}
+@keyframes vsl-breathe {
+  from { opacity: 1; }
+  to { opacity: 0.35; }
+}

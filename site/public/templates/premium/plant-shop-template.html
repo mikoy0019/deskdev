@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdanté — Houseplants & Plant Care, Delivered Happy</title>
+<meta name="description" content="Verdanté is a modern houseplant shop. Curated low-light, pet-safe & statement plants, expert care guides, and a monthly leaf-mail subscription." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          fern:   '#2f5d3a',
+          moss:   '#5a8a4e',
+          sprout: '#8fbc6e',
+          mist:   '#d9e7cf',
+          cream:  '#f7f4ea',
+          bark:   '#3a3027',
+          clay:   '#c98a5e',
+          sun:    '#e7c46b',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          body: ['"DM Sans"', 'sans-serif'],
+        },
+        borderRadius: { blob: '42% 58% 63% 37% / 41% 44% 56% 59%' },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #f7f4ea; color: #3a3027; font-family: 'DM Sans', sans-serif; cursor: none; }
+
+  ::selection { background: #8fbc6e; color: #2f5d3a; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%); mix-blend-mode: multiply;
+  }
+  .cursor-dot { width: 8px; height: 8px; background: #2f5d3a; }
+  .cursor-ring { width: 40px; height: 40px; border: 1.5px solid #5a8a4e; transition: width .25s, height .25s, background .25s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(143,188,110,.22); }
+  @media (max-width: 768px) { .cursor-dot, .cursor-ring { display: none; } body { cursor: auto; } }
+
+  /* Marquee */
+  .marquee { display: flex; gap: 3rem; white-space: nowrap; animation: marquee 28s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* Leaf sway */
+  @keyframes sway { 0%,100%{ transform: rotate(-6deg) translateY(0);} 50%{ transform: rotate(6deg) translateY(-12px);} }
+  .leaf { animation: sway 9s ease-in-out infinite; transform-origin: bottom center; }
+
+  @keyframes drift { 0%{transform:translateY(0) rotate(0);} 50%{transform:translateY(-26px) rotate(8deg);} 100%{transform:translateY(0) rotate(0);} }
+  .drift { animation: drift 12s ease-in-out infinite; }
+
+  .grad-leaf { background: linear-gradient(150deg,#2f5d3a 0%, #5a8a4e 45%, #8fbc6e 100%); }
+  .grad-soft { background: linear-gradient(160deg,#d9e7cf 0%, #f7f4ea 100%); }
+
+  .reveal { opacity: 0; transform: translateY(36px); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .faq-item.open .faq-body { max-height: 240px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* Care card flip-ish */
+  .care-card .care-info { opacity: 0; transform: translateY(14px); transition: .4s ease; }
+  .care-card:hover .care-info { opacity: 1; transform: translateY(0); }
+
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; will-change: transform; }
+
+  .underline-grow { background-image: linear-gradient(#2f5d3a,#2f5d3a); background-size: 0% 2px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size .35s; }
+  .underline-grow:hover { background-size: 100% 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .leaf, .drift, .marquee { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="font-body antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- Floating decorative leaves -->
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+  <svg class="drift absolute top-24 left-[6%] w-16 opacity-30" viewBox="0 0 64 64" fill="none"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#8fbc6e"/><path d="M32 4C32 24 27 44 22 58" stroke="#2f5d3a" stroke-width="1.5"/></svg>
+  <svg class="leaf absolute top-[40%] right-[5%] w-20 opacity-20" viewBox="0 0 64 64" fill="none"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#5a8a4e"/></svg>
+  <svg class="drift absolute bottom-24 left-[14%] w-12 opacity-25" style="animation-delay:-4s" viewBox="0 0 64 64" fill="none"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#2f5d3a"/></svg>
+</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-20">
+    <a href="#top" class="flex items-center gap-2 group" data-cursor>
+      <span class="grad-leaf w-9 h-9 rounded-blob inline-block group-hover:rotate-12 transition-transform"></span>
+      <span class="font-display text-2xl text-fern tracking-tight">Verdanté</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-8 text-sm font-medium text-bark/80">
+      <li><a href="#bestsellers" class="underline-grow" data-cursor>Shop</a></li>
+      <li><a href="#categories" class="underline-grow" data-cursor>Categories</a></li>
+      <li><a href="#guides" class="underline-grow" data-cursor>Care</a></li>
+      <li><a href="#subscribe" class="underline-grow" data-cursor>Leaf Mail</a></li>
+      <li><a href="#faq" class="underline-grow" data-cursor>FAQ</a></li>
+    </ul>
+    <div class="flex items-center gap-4">
+      <button data-cursor class="relative grid place-items-center w-11 h-11 rounded-full bg-white/70 hover:bg-white shadow-sm transition" aria-label="Cart">
+        <svg class="w-5 h-5 text-fern" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.5l1.7 11.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L19.5 6H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+        <span class="absolute -top-1 -right-1 bg-clay text-white text-[10px] font-bold w-5 h-5 grid place-items-center rounded-full">3</span>
+      </button>
+      <a href="#bestsellers" id="magnetic" data-cursor class="hidden sm:inline-flex items-center bg-fern text-cream px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-moss transition-colors shadow-lg shadow-fern/20">Shop Plants</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-32 pb-20 sm:pt-40 sm:pb-28 grad-soft overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="relative z-10">
+      <span class="inline-flex items-center gap-2 bg-white/70 backdrop-blur px-4 py-1.5 rounded-full text-xs font-semibold text-moss mb-6 reveal">
+        <span class="w-2 h-2 rounded-full bg-sprout animate-pulse"></span> Free care guide with every plant
+      </span>
+      <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-fern reveal">
+        Bring the <span class="italic text-moss" id="hero-word">forest</span><br/>home with you.
+      </h1>
+      <p class="mt-6 text-lg text-bark/70 max-w-md reveal">
+        Hand-picked houseplants raised in our greenhouse, shipped happy in compostable pots — with a care plan made just for your space.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-4 reveal">
+        <a href="#bestsellers" data-cursor class="bg-fern text-cream px-8 py-4 rounded-full font-semibold hover:bg-moss transition shadow-xl shadow-fern/20">Shop Bestsellers</a>
+        <a href="#guides" data-cursor class="px-8 py-4 rounded-full font-semibold text-fern border border-fern/30 hover:bg-fern/5 transition">Plant Care 101</a>
+      </div>
+      <!-- count ups -->
+      <div class="mt-12 flex gap-10 reveal">
+        <div><div class="font-display text-4xl text-fern"><span class="count" data-to="180">0</span>+</div><p class="text-sm text-bark/60">Plants thriving daily</p></div>
+        <div><div class="font-display text-4xl text-fern"><span class="count" data-to="64">0</span></div><p class="text-sm text-bark/60">Leafy varieties</p></div>
+        <div><div class="font-display text-4xl text-fern"><span class="count" data-to="98">0</span>%</div><p class="text-sm text-bark/60">Arrive healthy</p></div>
+      </div>
+    </div>
+
+    <div class="relative" id="hero-parallax">
+      <div class="absolute -inset-6 grad-leaf rounded-blob blur-2xl opacity-30 drift"></div>
+      <div class="relative rounded-blob overflow-hidden grad-leaf aspect-[4/5] shadow-2xl" data-tilt>
+        <img src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1600&q=80" alt="Lush houseplant" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3 drift" style="animation-delay:-3s">
+        <span class="grad-leaf w-10 h-10 rounded-full grid place-items-center text-cream">🌿</span>
+        <div><p class="text-xs text-bark/60">Today's pick</p><p class="font-semibold text-fern text-sm">Monstera Deliciosa</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="bg-fern text-cream py-4 overflow-hidden">
+  <div class="marquee font-display text-xl tracking-wide">
+    <span class="flex gap-12"><span>Low-light heroes</span><span>•</span><span>Pet-safe greens</span><span>•</span><span>Air purifiers</span><span>•</span><span>Statement palms</span><span>•</span><span>Trailing vines</span><span>•</span><span>Carefree succulents</span><span>•</span></span>
+    <span class="flex gap-12" aria-hidden="true"><span>Low-light heroes</span><span>•</span><span>Pet-safe greens</span><span>•</span><span>Air purifiers</span><span>•</span><span>Statement palms</span><span>•</span><span>Trailing vines</span><span>•</span><span>Carefree succulents</span><span>•</span></span>
+  </div>
+</div>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="bestsellers" class="py-24 max-w-7xl mx-auto px-5 sm:px-8">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-12">
+    <div>
+      <p class="text-moss font-semibold text-sm uppercase tracking-widest reveal">Greenhouse favourites</p>
+      <h2 class="font-display text-4xl sm:text-5xl text-fern mt-2 reveal">Bestselling plants</h2>
+    </div>
+    <a href="#" data-cursor class="text-fern font-semibold underline-grow reveal">View all 64 →</a>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- product -->
+    <article data-cursor class="product reveal group bg-cream border border-mist rounded-3xl p-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div class="relative rounded-2xl overflow-hidden grad-leaf aspect-square mb-4">
+        <img src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1600&q=80" alt="Pothos plant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 bg-sun text-bark text-xs font-bold px-3 py-1 rounded-full">Easy care</span>
+      </div>
+      <h3 class="font-display text-xl text-fern">Golden Pothos</h3>
+      <p class="text-sm text-bark/60">Trailing • Low-light</p>
+      <div class="flex items-center justify-between mt-3">
+        <span class="font-bold text-fern">$24</span>
+        <button class="bg-fern text-cream w-9 h-9 rounded-full grid place-items-center hover:bg-moss transition" aria-label="Add to cart">+</button>
+      </div>
+    </article>
+
+    <article data-cursor class="product reveal group bg-cream border border-mist rounded-3xl p-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div class="relative rounded-2xl overflow-hidden grad-leaf aspect-square mb-4">
+        <img src="https://images.unsplash.com/photo-1459156212016-c812468e2115?auto=format&fit=crop&w=1600&q=80" alt="Snake plant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 bg-sprout text-fern text-xs font-bold px-3 py-1 rounded-full">Air-pure</span>
+      </div>
+      <h3 class="font-display text-xl text-fern">Snake Plant</h3>
+      <p class="text-sm text-bark/60">Upright • Forgiving</p>
+      <div class="flex items-center justify-between mt-3">
+        <span class="font-bold text-fern">$32</span>
+        <button class="bg-fern text-cream w-9 h-9 rounded-full grid place-items-center hover:bg-moss transition" aria-label="Add to cart">+</button>
+      </div>
+    </article>
+
+    <article data-cursor class="product reveal group bg-cream border border-mist rounded-3xl p-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div class="relative rounded-2xl overflow-hidden grad-leaf aspect-square mb-4">
+        <img src="https://images.unsplash.com/photo-1463320726281-696a485928c7?auto=format&fit=crop&w=1600&q=80" alt="Calathea plant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 bg-clay text-cream text-xs font-bold px-3 py-1 rounded-full">Pet-safe</span>
+      </div>
+      <h3 class="font-display text-xl text-fern">Calathea Orbifolia</h3>
+      <p class="text-sm text-bark/60">Patterned • Humid-loving</p>
+      <div class="flex items-center justify-between mt-3">
+        <span class="font-bold text-fern">$41</span>
+        <button class="bg-fern text-cream w-9 h-9 rounded-full grid place-items-center hover:bg-moss transition" aria-label="Add to cart">+</button>
+      </div>
+    </article>
+
+    <article data-cursor class="product reveal group bg-cream border border-mist rounded-3xl p-4 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      <div class="relative rounded-2xl overflow-hidden grad-leaf aspect-square mb-4">
+        <img src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1600&q=80" alt="Monstera plant" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.style.display='none'" />
+        <span class="absolute top-3 left-3 bg-sun text-bark text-xs font-bold px-3 py-1 rounded-full">Statement</span>
+      </div>
+      <h3 class="font-display text-xl text-fern">Monstera Deliciosa</h3>
+      <p class="text-sm text-bark/60">Climbing • Big leaf</p>
+      <div class="flex items-center justify-between mt-3">
+        <span class="font-bold text-fern">$58</span>
+        <button class="bg-fern text-cream w-9 h-9 rounded-full grid place-items-center hover:bg-moss transition" aria-label="Add to cart">+</button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ CATEGORIES ============ -->
+<section id="categories" class="py-24 bg-mist/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="text-moss font-semibold text-sm uppercase tracking-widest reveal">Find your match</p>
+      <h2 class="font-display text-4xl sm:text-5xl text-fern mt-2 reveal">Shop by lifestyle</h2>
+      <p class="mt-4 text-bark/70 reveal">Whatever your light, schedule, or furry roommates — there's a plant that fits right in.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <a href="#" data-cursor class="reveal group relative rounded-3xl overflow-hidden p-7 h-44 flex flex-col justify-end bg-fern text-cream hover:-translate-y-1 transition">
+        <span class="text-3xl mb-2">🌑</span><h3 class="font-display text-2xl">Low-Light</h3><p class="text-cream/70 text-sm">Thrives in dim corners</p>
+      </a>
+      <a href="#" data-cursor class="reveal group relative rounded-3xl overflow-hidden p-7 h-44 flex flex-col justify-end bg-moss text-cream hover:-translate-y-1 transition">
+        <span class="text-3xl mb-2">🐾</span><h3 class="font-display text-2xl">Pet-Safe</h3><p class="text-cream/70 text-sm">Non-toxic & cuddle-proof</p>
+      </a>
+      <a href="#" data-cursor class="reveal group relative rounded-3xl overflow-hidden p-7 h-44 flex flex-col justify-end bg-sprout text-fern hover:-translate-y-1 transition">
+        <span class="text-3xl mb-2">💧</span><h3 class="font-display text-2xl">Low-Water</h3><p class="text-fern/70 text-sm">Forgives the forgetful</p>
+      </a>
+      <a href="#" data-cursor class="reveal group relative rounded-3xl overflow-hidden p-7 h-44 flex flex-col justify-end bg-clay text-cream hover:-translate-y-1 transition">
+        <span class="text-3xl mb-2">🌬️</span><h3 class="font-display text-2xl">Air-Purifying</h3><p class="text-cream/80 text-sm">Cleaner breaths indoors</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / PLANT-CARE ============ -->
+<section id="about" class="py-24 max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+  <div class="relative" data-tilt>
+    <div class="rounded-blob overflow-hidden grad-leaf aspect-[5/4] shadow-2xl">
+      <img src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1600&q=80" alt="Greenhouse interior" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+    </div>
+    <div class="absolute -top-5 -right-3 bg-sun text-bark rounded-2xl px-5 py-3 shadow-lg drift font-display text-lg">Grown with love 🌱</div>
+  </div>
+  <div>
+    <p class="text-moss font-semibold text-sm uppercase tracking-widest reveal">Our roots</p>
+    <h2 class="font-display text-4xl sm:text-5xl text-fern mt-2 reveal">A greenhouse on a mission</h2>
+    <p class="mt-5 text-bark/70 reveal">Verdanté began on a sunny balcony with two cuttings and too much enthusiasm. Today we nurture every plant in our solar-powered greenhouse until it's strong enough to thrive in your home — no plastic, no guesswork.</p>
+    <ul class="mt-8 space-y-4">
+      <li class="flex gap-3 reveal"><span class="grad-leaf w-7 h-7 rounded-full grid place-items-center text-cream text-sm shrink-0">✓</span><span class="text-bark/80"><b class="text-fern">Compostable pots</b> — peat-free soil, zero single-use plastic.</span></li>
+      <li class="flex gap-3 reveal"><span class="grad-leaf w-7 h-7 rounded-full grid place-items-center text-cream text-sm shrink-0">✓</span><span class="text-bark/80"><b class="text-fern">14-day thrive guarantee</b> — we replace any plant that struggles.</span></li>
+      <li class="flex gap-3 reveal"><span class="grad-leaf w-7 h-7 rounded-full grid place-items-center text-cream text-sm shrink-0">✓</span><span class="text-bark/80"><b class="text-fern">Real human botanists</b> — text us a photo, get care help.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ CARE GUIDES (hover info) ============ -->
+<section id="guides" class="py-24 bg-fern text-cream relative overflow-hidden">
+  <svg aria-hidden="true" class="leaf absolute -top-6 right-8 w-32 opacity-10" viewBox="0 0 64 64"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#f7f4ea"/></svg>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="text-sprout font-semibold text-sm uppercase tracking-widest reveal">Care library</p>
+      <h2 class="font-display text-4xl sm:text-5xl mt-2 reveal">Plant care, made simple</h2>
+      <p class="mt-4 text-cream/70 reveal">Hover a guide for the quick essentials — water, light, and one pro tip.</p>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6">
+      <div data-cursor class="care-card reveal relative bg-cream/5 border border-cream/15 rounded-3xl p-7 h-60 overflow-hidden hover:bg-cream/10 transition">
+        <span class="text-4xl">💦</span>
+        <h3 class="font-display text-2xl mt-4">Watering rhythm</h3>
+        <div class="care-info absolute inset-x-7 bottom-7 text-sm text-cream/80 space-y-1">
+          <p><b class="text-sprout">Light:</b> Bright, indirect</p>
+          <p><b class="text-sprout">Water:</b> When top inch is dry</p>
+          <p><b class="text-sprout">Tip:</b> Use room-temp water</p>
+        </div>
+      </div>
+      <div data-cursor class="care-card reveal relative bg-cream/5 border border-cream/15 rounded-3xl p-7 h-60 overflow-hidden hover:bg-cream/10 transition">
+        <span class="text-4xl">☀️</span>
+        <h3 class="font-display text-2xl mt-4">Reading the light</h3>
+        <div class="care-info absolute inset-x-7 bottom-7 text-sm text-cream/80 space-y-1">
+          <p><b class="text-sprout">Light:</b> Match leaf to window</p>
+          <p><b class="text-sprout">Water:</b> Less in low light</p>
+          <p><b class="text-sprout">Tip:</b> Rotate weekly for shape</p>
+        </div>
+      </div>
+      <div data-cursor class="care-card reveal relative bg-cream/5 border border-cream/15 rounded-3xl p-7 h-60 overflow-hidden hover:bg-cream/10 transition">
+        <span class="text-4xl">🌡️</span>
+        <h3 class="font-display text-2xl mt-4">Humidity & heat</h3>
+        <div class="care-info absolute inset-x-7 bottom-7 text-sm text-cream/80 space-y-1">
+          <p><b class="text-sprout">Light:</b> Keep off cold glass</p>
+          <p><b class="text-sprout">Water:</b> Mist tropical leaves</p>
+          <p><b class="text-sprout">Tip:</b> Group plants for humidity</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUBSCRIPTION ============ -->
+<section id="subscribe" class="py-24 max-w-7xl mx-auto px-5 sm:px-8">
+  <div class="grad-soft rounded-[2.5rem] p-8 sm:p-14 grid lg:grid-cols-2 gap-10 items-center relative overflow-hidden">
+    <svg aria-hidden="true" class="drift absolute -bottom-8 -right-6 w-40 opacity-20" viewBox="0 0 64 64"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#5a8a4e"/></svg>
+    <div>
+      <span class="inline-block bg-sun text-bark text-xs font-bold px-4 py-1.5 rounded-full mb-5 reveal">Leaf Mail · monthly</span>
+      <h2 class="font-display text-4xl sm:text-5xl text-fern reveal">A new plant friend, every month</h2>
+      <p class="mt-5 text-bark/70 max-w-md reveal">A surprise plant matched to your home, a hand-painted care card, and a little treat — delivered to your door. Pause or skip anytime.</p>
+      <form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md reveal" onsubmit="return false;">
+        <input type="email" required placeholder="you@home.com" class="flex-1 px-5 py-4 rounded-full bg-white text-bark placeholder-bark/40 outline-none focus:ring-2 ring-moss" />
+        <button data-cursor class="bg-fern text-cream px-7 py-4 rounded-full font-semibold hover:bg-moss transition">Join Leaf Mail</button>
+      </form>
+    </div>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl p-5 text-center shadow-sm reveal"><div class="font-display text-3xl text-fern">$29</div><p class="text-xs text-bark/60 mt-1">/ month</p></div>
+      <div class="bg-fern text-cream rounded-2xl p-5 text-center shadow-sm reveal"><div class="font-display text-3xl">Free</div><p class="text-xs text-cream/70 mt-1">shipping</p></div>
+      <div class="bg-white rounded-2xl p-5 text-center shadow-sm reveal"><div class="font-display text-3xl text-fern">Skip</div><p class="text-xs text-bark/60 mt-1">anytime</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 bg-mist/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="text-moss font-semibold text-sm uppercase tracking-widest reveal">Happy growers</p>
+      <h2 class="font-display text-4xl sm:text-5xl text-fern mt-2 reveal">Loved by 12,000 plant parents</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal bg-cream border border-mist rounded-3xl p-7">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="text-bark/80">"My snake plant arrived greener than the photos and the care card is the cutest thing. Three months in and it's thriving."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="grad-leaf w-10 h-10 rounded-full"></span><span><b class="text-fern">Mara L.</b><br/><span class="text-xs text-bark/50">Brooklyn, NY</span></span></figcaption>
+      </figure>
+      <figure class="reveal bg-cream border border-mist rounded-3xl p-7">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="text-bark/80">"I kill everything. Verdanté matched me with a low-light pothos and texted me reminders. Still alive — I'm shocked!"</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="grad-leaf w-10 h-10 rounded-full"></span><span><b class="text-fern">Devon R.</b><br/><span class="text-xs text-bark/50">Austin, TX</span></span></figcaption>
+      </figure>
+      <figure class="reveal bg-cream border border-mist rounded-3xl p-7">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="text-bark/80">"Leaf Mail is the highlight of my month. Compostable pots, real humans answering questions — this is how plant shopping should feel."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="grad-leaf w-10 h-10 rounded-full"></span><span><b class="text-fern">Priya N.</b><br/><span class="text-xs text-bark/50">Seattle, WA</span></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 max-w-3xl mx-auto px-5 sm:px-8">
+  <div class="text-center mb-12">
+    <p class="text-moss font-semibold text-sm uppercase tracking-widest reveal">Good to know</p>
+    <h2 class="font-display text-4xl sm:text-5xl text-fern mt-2 reveal">Questions, answered</h2>
+  </div>
+  <div class="space-y-4" id="faq-list">
+    <div class="faq-item reveal bg-cream border border-mist rounded-2xl px-6">
+      <button data-cursor class="faq-trigger w-full flex items-center justify-between py-5 text-left font-semibold text-fern">How do plants survive shipping?<span class="faq-icon text-2xl text-moss transition-transform">+</span></button>
+      <div class="faq-body"><p class="pb-5 text-bark/70">Every plant is wrapped in a breathable sleeve, secured with a compostable soil plug, and shipped in insulated boxes within 2 days — so it arrives hydrated and happy.</p></div>
+    </div>
+    <div class="faq-item reveal bg-cream border border-mist rounded-2xl px-6">
+      <button data-cursor class="faq-trigger w-full flex items-center justify-between py-5 text-left font-semibold text-fern">What if my plant arrives damaged?<span class="faq-icon text-2xl text-moss transition-transform">+</span></button>
+      <div class="faq-body"><p class="pb-5 text-bark/70">Our 14-day thrive guarantee has you covered — send a photo and we'll replace it free, no return shipping needed.</p></div>
+    </div>
+    <div class="faq-item reveal bg-cream border border-mist rounded-2xl px-6">
+      <button data-cursor class="faq-trigger w-full flex items-center justify-between py-5 text-left font-semibold text-fern">Are your plants pet-safe?<span class="faq-icon text-2xl text-moss transition-transform">+</span></button>
+      <div class="faq-body"><p class="pb-5 text-bark/70">Many are! Filter by our Pet-Safe collection for non-toxic picks. Each product page clearly flags toxicity for cats and dogs.</p></div>
+    </div>
+    <div class="faq-item reveal bg-cream border border-mist rounded-2xl px-6">
+      <button data-cursor class="faq-trigger w-full flex items-center justify-between py-5 text-left font-semibold text-fern">Can I pause my Leaf Mail subscription?<span class="faq-icon text-2xl text-moss transition-transform">+</span></button>
+      <div class="faq-body"><p class="pb-5 text-bark/70">Absolutely. Skip a month, pause, or cancel anytime from your account — no fees, no hassle.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-24 px-5 sm:px-8">
+  <div class="max-w-5xl mx-auto grad-leaf rounded-[2.5rem] text-center text-cream px-6 py-16 sm:py-20 relative overflow-hidden">
+    <svg aria-hidden="true" class="drift absolute top-6 left-6 w-20 opacity-20" viewBox="0 0 64 64"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#f7f4ea"/></svg>
+    <svg aria-hidden="true" class="leaf absolute bottom-4 right-8 w-24 opacity-20" viewBox="0 0 64 64"><path d="M32 4C14 14 8 38 22 58c14-8 26-30 10-54Z" fill="#f7f4ea"/></svg>
+    <h2 class="font-display text-4xl sm:text-6xl reveal">Ready to grow something?</h2>
+    <p class="mt-5 text-cream/80 max-w-xl mx-auto reveal">Start with one easy plant. We'll handle the matchmaking, the shipping, and the care reminders.</p>
+    <a href="#bestsellers" data-cursor class="inline-block mt-9 bg-cream text-fern px-9 py-4 rounded-full font-bold hover:bg-white transition shadow-xl reveal">Pick My First Plant 🌿</a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-bark text-cream/80 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4"><span class="grad-leaf w-9 h-9 rounded-blob inline-block"></span><span class="font-display text-2xl text-cream">Verdanté</span></div>
+      <p class="text-sm text-cream/60 max-w-xs">Houseplants raised with care, shipped happy, and backed by real botanists.</p>
+    </div>
+    <div><h4 class="font-display text-lg text-cream mb-4">Shop</h4><ul class="space-y-2 text-sm"><li><a href="#bestsellers" class="hover:text-sprout">Bestsellers</a></li><li><a href="#categories" class="hover:text-sprout">Low-light</a></li><li><a href="#categories" class="hover:text-sprout">Pet-safe</a></li><li><a href="#subscribe" class="hover:text-sprout">Leaf Mail</a></li></ul></div>
+    <div><h4 class="font-display text-lg text-cream mb-4">Learn</h4><ul class="space-y-2 text-sm"><li><a href="#guides" class="hover:text-sprout">Care guides</a></li><li><a href="#about" class="hover:text-sprout">Our greenhouse</a></li><li><a href="#faq" class="hover:text-sprout">FAQ</a></li><li><a href="#" class="hover:text-sprout">Blog</a></li></ul></div>
+    <div>
+      <h4 class="font-display text-lg text-cream mb-4">Stay leafy</h4>
+      <p class="text-sm text-cream/60 mb-3">Care tips & new drops, monthly.</p>
+      <form class="flex gap-2" onsubmit="return false;"><input type="email" placeholder="Email" class="flex-1 px-4 py-2.5 rounded-full bg-cream/10 text-cream placeholder-cream/40 text-sm outline-none focus:ring-2 ring-moss"/><button data-cursor class="bg-sprout text-fern px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-moss hover:text-cream transition">Go</button></form>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mt-12 pt-6 border-t border-cream/10 flex flex-col sm:flex-row justify-between gap-3 text-xs text-cream/50">
+    <p>© 2026 Verdanté Botanicals. Crafted with chlorophyll.</p>
+    <div class="flex gap-5"><a href="#" class="hover:text-sprout">Privacy</a><a href="#" class="hover:text-sprout">Terms</a><a href="#" class="hover:text-sprout">Shipping</a></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  if (window.matchMedia('(min-width: 769px)').matches) {
+    let rx = 0, ry = 0, mx = 0, my = 0;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    function ringLoop() {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(ringLoop);
+    }
+    ringLoop();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) nav.classList.add('bg-cream/90','backdrop-blur','shadow-sm');
+    else nav.classList.remove('bg-cream/90','backdrop-blur','shadow-sm');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Magnetic CTA ---------- */
+  const mag = document.getElementById('magnetic');
+  if (mag && !reduce && window.matchMedia('(min-width:769px)').matches) {
+    mag.addEventListener('mousemove', e => {
+      const r = mag.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      mag.style.transform = `translate(${x * 0.35}px, ${y * 0.45}px)`;
+    });
+    mag.addEventListener('mouseleave', () => mag.style.transform = 'translate(0,0)');
+  }
+
+  /* ---------- Tilt 3D ---------- */
+  if (!reduce && window.matchMedia('(min-width:769px)').matches) {
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.classList.add('tilt');
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${px * 12}deg) rotateX(${-py * 12}deg) scale(1.02)`;
+      });
+      card.addEventListener('mouseleave', () => card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)');
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Headline word rotate ---------- */
+  const word = document.getElementById('hero-word');
+  const words = ['forest', 'jungle', 'calm', 'fresh air'];
+  if (word && !reduce) {
+    let i = 0;
+    setInterval(() => {
+      i = (i + 1) % words.length;
+      word.style.opacity = 0;
+      setTimeout(() => { word.textContent = words[i]; word.style.opacity = 1; }, 250);
+    }, 2600);
+    word.style.transition = 'opacity .25s';
+  }
+
+  /* ---------- GSAP reveals + count-ups + parallax ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // count-ups
+      document.querySelectorAll('.count').forEach(el => {
+        const to = +el.dataset.to;
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => {
+            gsap.to({ v: 0 }, {
+              v: to, duration: 1.6, ease: 'power2.out',
+              onUpdate: function () { el.textContent = Math.round(this.targets()[0].v); }
+            });
+          }
+        });
+      });
+
+      // hero parallax
+      gsap.to('#hero-parallax', {
+        yPercent: -12, ease: 'none',
+        scrollTrigger: { trigger: '#hero-parallax', start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+      document.querySelectorAll('.count').forEach(el => el.textContent = el.dataset.to);
+    }
+  }
+})();
+</script>
+</body>
+</html>

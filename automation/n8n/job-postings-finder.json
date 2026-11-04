@@ -1,0 +1,399 @@
+{
+  "name": "[deskdev] job-postings-finder",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "trigger",
+      "name": "Daily 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/us/search/1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "app_id",
+              "value": "b1a35196"
+            },
+            {
+              "name": "results_per_page",
+              "value": "50"
+            },
+            {
+              "name": "what_or",
+              "value": "wordpress shopify \"web developer\" \"web design\" react automation"
+            },
+            {
+              "name": "sort_by",
+              "value": "date"
+            },
+            {
+              "name": "max_days_old",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth"
+      },
+      "id": "adzuna",
+      "name": "Adzuna",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "__ADZUNA_CRED__",
+          "name": "Adzuna API key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.onlinejobs.ph/jobseekers/jobsearch?jobkeyword=web%20developer",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "onlinejobs",
+      "name": "OnlineJobs.ph",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Adzuna (JSON) + onlinejobs.ph (HTML, best-effort) into unified postings.\nconst MNL = 'Asia/Manila';\nconst nowIso = () => new Date().toISOString();\n\n// lead = a company hiring in-house (pitch them to outsource); gig = a contract to apply to.\nfunction classify(text) {\n  const t = (text || '').toLowerCase();\n  const gig = /(contract|freelance|freelancer|project[- ]based|part[- ]time|remote gig|per hour|hourly|\\/hr)/;\n  const lead = /(hiring|we're looking|were looking|join our team|in[- ]house|full[- ]time|seeking a|looking for a)/;\n  if (gig.test(t)) return 'gig';\n  if (lead.test(t)) return 'lead';\n  return 'gig';\n}\n\nconst out = [];\n\n// ── Adzuna ──\ntry {\n  const a = $('Adzuna').first().json;\n  const rows = (a && a.results) || [];\n  for (const r of rows) {\n    if (!r || !r.redirect_url) continue;\n    const title = r.title || '';\n    out.push({\n      source: 'adzuna',\n      external_id: String(r.id || ''),\n      url: r.redirect_url,\n      title: title.replace(/<[^>]+>/g, '').trim(),\n      company: (r.company && r.company.display_name) || null,\n      location: (r.location && r.location.display_name) || null,\n      remote: /remote/i.test(title + ' ' + ((r.location && r.location.display_name) || '')),\n      category: (r.category && r.category.label) || null,\n      tag: classify(title + ' ' + (r.description || '')),\n      salary_text: r.salary_min ? ('$' + Math.round(r.salary_min) + (r.salary_max ? '–$' + Math.round(r.salary_max) : '')) : null,\n      posted_at: r.created || nowIso(),\n      description: (r.description || '').replace(/<[^>]+>/g, '').slice(0, 500),\n    });\n  }\n} catch (e) { /* Adzuna failed — carry on with onlinejobs */ }\n\n// ── onlinejobs.ph (best-effort HTML scrape) ──\ntry {\n  const html = $('OnlineJobs.ph').first().json;\n  const body = typeof html === 'string' ? html : (html && (html.data || html.body)) || '';\n  const re = /href=\\\"(\\/jobseekers\\/job\\/[^\\\"]+)\\\"[^>]*>\\s*([^<]{4,140})</g;\n  let match; const seen = new Set();\n  while ((match = re.exec(body)) !== null) {\n    const url = 'https://www.onlinejobs.ph' + match[1];\n    if (seen.has(url)) continue; seen.add(url);\n    const title = match[2].replace(/\\s+/g, ' ').trim();\n    out.push({\n      source: 'onlinejobs', external_id: match[1], url, title,\n      company: null, location: 'Philippines', remote: true, category: null,\n      tag: classify(title), salary_text: null, posted_at: nowIso(), description: null,\n    });\n  }\n} catch (e) { /* onlinejobs parse failed — Adzuna still delivered */ }\n\n// De-dupe within this run by url.\nconst byUrl = new Map();\nfor (const p of out) if (p.url && !byUrl.has(p.url)) byUrl.set(p.url, p);\nreturn [{ json: { postings: [...byUrl.values()] } }];\n"
+      },
+      "id": "normalize",
+      "name": "Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/job_postings?on_conflict=url",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=ignore-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.postings) }}",
+        "options": {}
+      },
+      "id": "upsert",
+      "name": "Upsert job_postings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Supabase returns ONLY newly-inserted rows (dupes ignored). Fan out one item\n// per new posting for the Sheet, tagged with split date/time.\nconst MNL = 'Asia/Manila';\nconst rows = $input.all().map(i => i.json).flat().filter(r => r && r.url);\nconst fmt = (iso) => {\n  const d = new Date(iso || Date.now());\n  return {\n    Date: new Intl.DateTimeFormat('en-CA', { timeZone: MNL, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d),\n    Time: new Intl.DateTimeFormat('en-GB', { timeZone: MNL, hour: '2-digit', minute: '2-digit' }).format(d),\n  };\n};\nreturn rows.map((r) => { const t = fmt(r.created_at); return { json: {\n  Timestamp: r.created_at, Date: t.Date, Time: t.Time,\n  Source: r.source, Tag: r.tag, Title: r.title, Company: r.company || '',\n  Location: r.location || '', Remote: r.remote ? 'yes' : 'no',\n  Salary: r.salary_text || '', PostedAt: r.posted_at || '', URL: r.url,\n} }; });\n"
+      },
+      "id": "new",
+      "name": "New postings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Job Postings",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet",
+      "name": "Append: Job Postings",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1320,
+        -120
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        1320,
+        120
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipients come from profiles (the Recipients node), never a hardcoded\n// personal address: the mail follows whoever holds the role today, and a\n// deactivated account (profiles.deactivated_at, migration 032) stops getting\n// it. The company inbox is used only when nobody qualifies.\nconst FALLBACK_TO = 'nixgensolutions@gmail.com';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst people = $('Recipients').all().map(i => i.json).flat()\n  .filter(p => p && p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\nconst can = (p, feature, level) => p.role === 'admin'\n  || (p.permissions || {})[feature] === 'edit'\n  || (level === 'view' && (p.permissions || {})[feature] === 'view');\nconst addressOf = (list) => [...new Set(list.map(p => String(p.email).trim().toLowerCase()))].join(',');\nconst TO = addressOf(people.filter(p => can(p, 'growth', 'edit'))) || FALLBACK_TO;\n// Aggregate the new postings into one digest email. No new → no email.\nconst rows = $('New postings').all().map(i => i.json).filter(r => r && r.URL);\nif (!rows.length) return [];\n// Postings are third-party data (Adzuna, onlinejobs.ph): every value is\n// escaped for text AND attributes, and a link is only ever an https URL.\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst safeHttps = (u) => {\n  try {\n    const x = new URL(String(u ?? '').trim());\n    return x.protocol === 'https:' && !x.username && !x.password ? x.href : '';\n  } catch (e) {\n    return '';\n  }\n};\nconst tagOf = (t) => (t === 'lead' ? 'lead' : 'gig');\nconst tr = rows.map((r) => `<tr>\n  <td style=\\\"padding:6px 12px;border-bottom:1px solid #eee\\\"><span style=\\\"font-size:11px;text-transform:uppercase;color:${tagOf(r.Tag) === 'lead' ? '#2563eb' : '#0ea5e9'}\\\">${tagOf(r.Tag)}</span></td>\n  <td style=\\\"padding:6px 12px;border-bottom:1px solid #eee\\\">${safeHttps(r.URL) ? `<a href=\\\"${esc(safeHttps(r.URL))}\\\">${esc(r.Title)}</a>` : esc(r.Title)}</td>\n  <td style=\\\"padding:6px 12px;border-bottom:1px solid #eee;color:#666\\\">${esc(r.Company)}</td>\n  <td style=\\\"padding:6px 12px;border-bottom:1px solid #eee;color:#666\\\">${esc(r.Location)}${r.Remote === 'yes' ? ' · Remote' : ''}</td>\n</tr>`).join('');\nconst html = `<div style=\\\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\\\">\n  <h2 style=\\\"margin:0 0 4px\\\">DeskDev — ${rows.length} new job ${rows.length === 1 ? 'posting' : 'postings'}</h2>\n  <p style=\\\"margin:0 0 16px;color:#666\\\">Leads to pitch and gigs to apply to. Manage them in Growth Hub → Job leads.</p>\n  <table style=\\\"border-collapse:collapse;font-size:14px\\\">${tr}</table>\n  <p style=\\\"margin-top:20px;color:#999;font-size:12px\\\">Sent by n8n · Adzuna + onlinejobs.ph</p></div>`;\nreturn [{ json: { html, count: rows.length, to: TO } }];\n"
+      },
+      "id": "digest",
+      "name": "Build digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "=DeskDev — {{ $json.count }} new job postings",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email digest",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        120
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "deskdev-jobs-digest"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'job-postings-finder', workflow: $workflow.name, status: $('Adzuna').first().json.error ? 'error' : 'ok', execution_id: String($execution.id), detail: { new_postings: $('Upsert job_postings').all().filter(i => i.json && i.json.url).length, adzuna_error: $('Adzuna').first().json.error ? String($('Adzuna').first().json.error.message || $('Adzuna').first().json.error).slice(0, 300) : null, onlinejobs_error: $('OnlineJobs.ph').first().json.error ? String($('OnlineJobs.ph').first().json.error.message || $('OnlineJobs.ph').first().json.error).slice(0, 300) : null } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        1100,
+        220
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 07:00": {
+      "main": [
+        [
+          {
+            "node": "Adzuna",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adzuna": {
+      "main": [
+        [
+          {
+            "node": "OnlineJobs.ph",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OnlineJobs.ph": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "Upsert job_postings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert job_postings": {
+      "main": [
+        [
+          {
+            "node": "New postings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New postings": {
+      "main": [
+        [
+          {
+            "node": "Append: Job Postings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build digest": {
+      "main": [
+        [
+          {
+            "node": "Email digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Build digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

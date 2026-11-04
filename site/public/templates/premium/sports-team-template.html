@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ironvale Titans FC — Forged in Fire</title>
+<meta name="description" content="Official home of Ironvale Titans FC. Fixtures, squad, standings, membership and matchday tickets. Forged in fire, united in steel." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700;900&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0a0e14',
+          coal:   '#11161f',
+          steel:  '#1b2330',
+          ember:  '#ff4d1c',
+          flame:  '#ff8a3d',
+          gold:   '#ffc14d',
+          ice:    '#cfe0ff',
+        },
+        fontFamily: {
+          display: ['Anton', 'sans-serif'],
+          cond:    ['"Barlow Condensed"', 'sans-serif'],
+          body:    ['Archivo', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #0a0e14;
+    color: #e9eef6;
+    font-family: 'Archivo', sans-serif;
+  }
+  .font-display { letter-spacing: .01em; }
+  .clip-diag    { clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%); }
+  .clip-diag-up { clip-path: polygon(0 12%, 100% 0, 100% 100%, 0 100%); }
+  .clip-slash   { clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%); }
+  .stripe-bg {
+    background-image: repeating-linear-gradient(115deg, rgba(255,77,28,.06) 0 2px, transparent 2px 22px);
+  }
+  .grain::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+  .text-stroke {
+    -webkit-text-stroke: 2px rgba(255,255,255,.18);
+    color: transparent;
+  }
+  .glow { text-shadow: 0 0 28px rgba(255,77,28,.55); }
+  .gradient-ember {
+    background: linear-gradient(100deg, #ff4d1c 0%, #ff8a3d 50%, #ffc14d 100%);
+  }
+  .reveal { opacity: 0; }
+  .marquee-track { display:flex; width:max-content; animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .card-3d { transform-style: preserve-3d; transition: transform .25s ease, box-shadow .25s ease; will-change: transform; }
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] .faq-icon { transform: rotate(45deg); }
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content:""; position:absolute; left:0; bottom:-6px; height:2px; width:0;
+    background: #ff4d1c; transition: width .3s ease;
+  }
+  .nav-link:hover::after { width:100%; }
+  ::selection { background: #ff4d1c; color: #fff; }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased selection:bg-ember">
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex items-center justify-between h-[72px]">
+      <a href="#top" class="flex items-center gap-3 group">
+        <span class="grid place-items-center h-10 w-10 rounded-md gradient-ember font-display text-ink text-2xl leading-none rotate-3 group-hover:rotate-0 transition-transform">IT</span>
+        <span class="font-display text-xl tracking-wide leading-none">IRONVALE<span class="text-ember">.</span>TITANS</span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-8 font-cond text-[15px] uppercase tracking-wider text-ice/80">
+        <a href="#fixtures" class="nav-link hover:text-white">Fixtures</a>
+        <a href="#squad" class="nav-link hover:text-white">Squad</a>
+        <a href="#standings" class="nav-link hover:text-white">Table</a>
+        <a href="#membership" class="nav-link hover:text-white">Membership</a>
+        <a href="#news" class="nav-link hover:text-white">News</a>
+      </nav>
+      <a href="#tickets" id="ticketsCta" class="relative inline-flex items-center gap-2 rounded-md gradient-ember px-5 py-2.5 font-cond font-700 uppercase tracking-wider text-ink text-sm shadow-lg shadow-ember/30 hover:shadow-ember/50 transition-shadow">
+        <span>Tickets</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center grain stripe-bg overflow-hidden">
+  <!-- bg action image w/ parallax -->
+  <div class="absolute inset-0 -z-10">
+    <div data-parallax class="absolute inset-0 scale-110">
+      <div class="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/85 to-ink"></div>
+      <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           alt="Match action" class="h-full w-full object-cover opacity-50" />
+    </div>
+    <div class="absolute -right-32 top-1/4 h-[480px] w-[480px] rounded-full bg-ember/20 blur-[120px]"></div>
+    <div class="absolute -left-24 bottom-0 h-[360px] w-[360px] rounded-full bg-flame/10 blur-[100px]"></div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-5 lg:px-8 pt-28 pb-20 w-full">
+    <div class="grid lg:grid-cols-12 gap-10 items-end">
+      <div class="lg:col-span-7">
+        <span data-hero class="reveal inline-flex items-center gap-2 rounded-full border border-ember/40 bg-ember/10 px-4 py-1.5 font-cond uppercase tracking-[0.2em] text-ember text-xs">
+          <span class="h-2 w-2 rounded-full bg-ember animate-pulse"></span> Vale Premier League · Season 24/25
+        </span>
+
+        <h1 class="mt-6 font-display leading-[0.86] uppercase">
+          <span data-hero class="reveal block text-stroke text-5xl sm:text-7xl lg:text-8xl">Forged in</span>
+          <span data-hero class="reveal block text-6xl sm:text-8xl lg:text-9xl gradient-ember bg-clip-text text-transparent glow">Fire</span>
+          <span data-hero class="reveal block text-stroke text-4xl sm:text-6xl lg:text-7xl mt-1">United in Steel</span>
+        </h1>
+
+        <p data-hero class="reveal mt-6 max-w-xl text-ice/70 text-lg leading-relaxed">
+          The Ironvale Titans — eleven on the pitch, fifty thousand behind them. Built in the foundry city, playing with the heat of the furnace and the discipline of the forge.
+        </p>
+
+        <div data-hero class="reveal mt-8 flex flex-wrap items-center gap-4">
+          <a href="#tickets" class="rounded-md gradient-ember px-7 py-3.5 font-cond font-700 uppercase tracking-wider text-ink shadow-lg shadow-ember/30 hover:scale-[1.03] transition-transform">Get Matchday Tickets</a>
+          <a href="#squad" class="rounded-md border border-white/20 px-7 py-3.5 font-cond font-600 uppercase tracking-wider text-ice hover:bg-white/5 transition-colors">Meet the Squad</a>
+        </div>
+
+        <!-- count-up stats -->
+        <div data-hero class="reveal mt-12 grid grid-cols-3 gap-6 max-w-lg">
+          <div>
+            <div class="font-display text-4xl sm:text-5xl text-white"><span class="count" data-to="28">0</span></div>
+            <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mt-1">Wins this season</div>
+          </div>
+          <div>
+            <div class="font-display text-4xl sm:text-5xl text-ember"><span class="count" data-to="52">0</span>K</div>
+            <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mt-1">Season members</div>
+          </div>
+          <div>
+            <div class="font-display text-4xl sm:text-5xl text-white"><span class="count" data-to="14">0</span></div>
+            <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mt-1">League titles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- next match countdown card -->
+      <div data-hero class="reveal lg:col-span-5">
+        <div class="relative rounded-2xl border border-white/10 bg-coal/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl clip-slash overflow-hidden">
+          <div class="absolute top-0 right-0 h-24 w-24 gradient-ember opacity-20 blur-2xl"></div>
+          <div class="font-cond uppercase tracking-[0.25em] text-ember text-xs">Next Fixture · Foundry Stadium</div>
+          <div class="mt-5 flex items-center justify-between gap-3">
+            <div class="text-center flex-1">
+              <div class="mx-auto h-14 w-14 rounded-full gradient-ember grid place-items-center font-display text-ink text-xl">IT</div>
+              <div class="mt-2 font-cond uppercase text-sm tracking-wide">Titans</div>
+            </div>
+            <div class="font-display text-3xl text-ice/40">VS</div>
+            <div class="text-center flex-1">
+              <div class="mx-auto h-14 w-14 rounded-full bg-steel grid place-items-center font-display text-ice text-xl border border-white/10">NH</div>
+              <div class="mt-2 font-cond uppercase text-sm tracking-wide">North Harlow</div>
+            </div>
+          </div>
+          <div id="countdown" class="mt-7 grid grid-cols-4 gap-2 text-center">
+            <div class="rounded-lg bg-ink/60 border border-white/5 py-3">
+              <div class="font-display text-3xl text-white" data-cd="days">00</div>
+              <div class="font-cond uppercase text-[10px] tracking-widest text-ice/40">Days</div>
+            </div>
+            <div class="rounded-lg bg-ink/60 border border-white/5 py-3">
+              <div class="font-display text-3xl text-white" data-cd="hours">00</div>
+              <div class="font-cond uppercase text-[10px] tracking-widest text-ice/40">Hrs</div>
+            </div>
+            <div class="rounded-lg bg-ink/60 border border-white/5 py-3">
+              <div class="font-display text-3xl text-white" data-cd="mins">00</div>
+              <div class="font-cond uppercase text-[10px] tracking-widest text-ice/40">Min</div>
+            </div>
+            <div class="rounded-lg bg-ink/60 border border-white/5 py-3">
+              <div class="font-display text-3xl text-ember" data-cd="secs">00</div>
+              <div class="font-cond uppercase text-[10px] tracking-widest text-ice/40">Sec</div>
+            </div>
+          </div>
+          <a href="#tickets" class="mt-6 block text-center rounded-md border border-ember/50 bg-ember/10 py-3 font-cond font-700 uppercase tracking-wider text-ember hover:bg-ember/20 transition-colors">Secure Your Seat</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SPONSOR MARQUEE ===================== -->
+<div class="border-y border-white/10 bg-coal py-5 overflow-hidden">
+  <div class="marquee-track items-center gap-16 font-cond uppercase tracking-[0.2em] text-ice/40 text-lg">
+    <span>Forgeworks Steel</span><span class="text-ember">◆</span>
+    <span>Vale Energy</span><span class="text-ember">◆</span>
+    <span>Crucible Athletics</span><span class="text-ember">◆</span>
+    <span>Anvil Bank</span><span class="text-ember">◆</span>
+    <span>Molten Motors</span><span class="text-ember">◆</span>
+    <span>Ironclad Insurance</span><span class="text-ember">◆</span>
+    <!-- duplicate for seamless loop -->
+    <span>Forgeworks Steel</span><span class="text-ember">◆</span>
+    <span>Vale Energy</span><span class="text-ember">◆</span>
+    <span>Crucible Athletics</span><span class="text-ember">◆</span>
+    <span>Anvil Bank</span><span class="text-ember">◆</span>
+    <span>Molten Motors</span><span class="text-ember">◆</span>
+    <span>Ironclad Insurance</span><span class="text-ember">◆</span>
+  </div>
+</div>
+
+<!-- ===================== FIXTURES / RESULTS ===================== -->
+<section id="fixtures" class="relative py-24 bg-ink">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-12">
+      <div>
+        <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>Schedule</div>
+        <h2 class="font-display text-5xl sm:text-6xl uppercase mt-2 reveal" data-rise>Fixtures &amp; Results</h2>
+      </div>
+      <a href="#" class="font-cond uppercase tracking-wider text-ice/60 hover:text-ember transition-colors reveal" data-rise>Full season →</a>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <!-- result -->
+      <div class="reveal" data-rise>
+        <div class="rounded-xl border border-white/10 bg-coal p-5 flex items-center justify-between hover:border-ember/40 transition-colors">
+          <div class="font-cond uppercase text-xs text-ice/40 w-24">Sat · Apr 06</div>
+          <div class="flex items-center gap-3 flex-1 justify-end font-cond uppercase">Titans</div>
+          <div class="mx-4 font-display text-2xl"><span class="text-ember">3</span> - 1</div>
+          <div class="flex items-center gap-3 flex-1 font-cond uppercase text-ice/70">East Cinder</div>
+          <span class="ml-3 rounded bg-ember/15 text-ember px-2 py-0.5 font-cond uppercase text-[10px] tracking-widest">Win</span>
+        </div>
+      </div>
+      <div class="reveal" data-rise>
+        <div class="rounded-xl border border-white/10 bg-coal p-5 flex items-center justify-between hover:border-ember/40 transition-colors">
+          <div class="font-cond uppercase text-xs text-ice/40 w-24">Wed · Apr 10</div>
+          <div class="flex items-center gap-3 flex-1 justify-end font-cond uppercase">Titans</div>
+          <div class="mx-4 font-display text-2xl">2 - 2</div>
+          <div class="flex items-center gap-3 flex-1 font-cond uppercase text-ice/70">Granite Rovers</div>
+          <span class="ml-3 rounded bg-gold/15 text-gold px-2 py-0.5 font-cond uppercase text-[10px] tracking-widest">Draw</span>
+        </div>
+      </div>
+      <!-- upcoming -->
+      <div class="reveal" data-rise>
+        <div class="rounded-xl border border-ember/30 bg-gradient-to-r from-ember/10 to-transparent p-5 flex items-center justify-between">
+          <div class="font-cond uppercase text-xs text-ember w-24">Sat · Apr 20</div>
+          <div class="flex items-center gap-3 flex-1 justify-end font-cond uppercase">Titans</div>
+          <div class="mx-4 font-display text-xl text-ember">VS</div>
+          <div class="flex items-center gap-3 flex-1 font-cond uppercase text-ice/70">North Harlow</div>
+          <a href="#tickets" class="ml-3 rounded bg-ember text-ink px-3 py-1 font-cond uppercase text-[10px] tracking-widest font-700">Tickets</a>
+        </div>
+      </div>
+      <div class="reveal" data-rise>
+        <div class="rounded-xl border border-white/10 bg-coal p-5 flex items-center justify-between hover:border-ember/40 transition-colors">
+          <div class="font-cond uppercase text-xs text-ice/40 w-24">Sat · Apr 27</div>
+          <div class="flex items-center gap-3 flex-1 justify-end font-cond uppercase">Slate City</div>
+          <div class="mx-4 font-display text-xl text-ice/40">VS</div>
+          <div class="flex items-center gap-3 flex-1 font-cond uppercase text-ice/70">Titans</div>
+          <span class="ml-3 rounded border border-white/10 text-ice/40 px-2 py-0.5 font-cond uppercase text-[10px] tracking-widest">Away</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== THE SQUAD ===================== -->
+<section id="squad" class="relative py-24 bg-coal grain overflow-hidden">
+  <div class="absolute -left-40 top-20 h-[420px] w-[420px] rounded-full bg-ember/10 blur-[140px]"></div>
+  <div class="mx-auto max-w-7xl px-5 lg:px-8 relative">
+    <div class="text-center mb-14">
+      <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>The Forge</div>
+      <h2 class="font-display text-5xl sm:text-7xl uppercase mt-2 reveal" data-rise>Meet the Squad</h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- player card template -->
+      <article class="player-card reveal" data-rise>
+        <div class="card-3d group relative rounded-2xl overflow-hidden border border-white/10 bg-steel clip-diag">
+          <div class="absolute top-3 right-4 font-display text-6xl text-white/10 group-hover:text-ember/30 transition-colors">09</div>
+          <div class="relative h-72 bg-gradient-to-b from-steel to-ink overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'"
+                 alt="Player" class="h-full w-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          </div>
+          <div class="relative p-5 -mt-12">
+            <div class="font-cond uppercase tracking-wider text-ember text-xs">Forward</div>
+            <h3 class="font-display text-2xl uppercase mt-1">Cassian Vossberg</h3>
+            <div class="mt-3 flex gap-4 font-cond text-ice/60 text-sm uppercase">
+              <span><b class="text-white font-display text-lg">21</b> Goals</span>
+              <span><b class="text-white font-display text-lg">7</b> Assists</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="player-card reveal" data-rise>
+        <div class="card-3d group relative rounded-2xl overflow-hidden border border-white/10 bg-steel clip-diag">
+          <div class="absolute top-3 right-4 font-display text-6xl text-white/10 group-hover:text-ember/30 transition-colors">10</div>
+          <div class="relative h-72 bg-gradient-to-b from-steel to-ink overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'"
+                 alt="Player" class="h-full w-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          </div>
+          <div class="relative p-5 -mt-12">
+            <div class="font-cond uppercase tracking-wider text-ember text-xs">Midfield</div>
+            <h3 class="font-display text-2xl uppercase mt-1">Rurik Halden</h3>
+            <div class="mt-3 flex gap-4 font-cond text-ice/60 text-sm uppercase">
+              <span><b class="text-white font-display text-lg">12</b> Assists</span>
+              <span><b class="text-white font-display text-lg">94</b>% Pass</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="player-card reveal" data-rise>
+        <div class="card-3d group relative rounded-2xl overflow-hidden border border-white/10 bg-steel clip-diag">
+          <div class="absolute top-3 right-4 font-display text-6xl text-white/10 group-hover:text-ember/30 transition-colors">04</div>
+          <div class="relative h-72 bg-gradient-to-b from-steel to-ink overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'"
+                 alt="Player" class="h-full w-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          </div>
+          <div class="relative p-5 -mt-12">
+            <div class="font-cond uppercase tracking-wider text-ember text-xs">Defender</div>
+            <h3 class="font-display text-2xl uppercase mt-1">Tomas Brandt</h3>
+            <div class="mt-3 flex gap-4 font-cond text-ice/60 text-sm uppercase">
+              <span><b class="text-white font-display text-lg">61</b> Tackles</span>
+              <span><b class="text-white font-display text-lg">9</b> Clean</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="player-card reveal" data-rise>
+        <div class="card-3d group relative rounded-2xl overflow-hidden border border-white/10 bg-steel clip-diag">
+          <div class="absolute top-3 right-4 font-display text-6xl text-white/10 group-hover:text-ember/30 transition-colors">01</div>
+          <div class="relative h-72 bg-gradient-to-b from-steel to-ink overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'"
+                 alt="Player" class="h-full w-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+          </div>
+          <div class="relative p-5 -mt-12">
+            <div class="font-cond uppercase tracking-wider text-ember text-xs">Goalkeeper</div>
+            <h3 class="font-display text-2xl uppercase mt-1">Nils Eckhart</h3>
+            <div class="mt-3 flex gap-4 font-cond text-ice/60 text-sm uppercase">
+              <span><b class="text-white font-display text-lg">112</b> Saves</span>
+              <span><b class="text-white font-display text-lg">15</b> Clean</span>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STANDINGS ===================== -->
+<section id="standings" class="relative py-24 bg-ink">
+  <div class="mx-auto max-w-6xl px-5 lg:px-8">
+    <div class="text-center mb-12">
+      <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>Vale Premier League</div>
+      <h2 class="font-display text-5xl sm:text-6xl uppercase mt-2 reveal" data-rise>League Table</h2>
+    </div>
+
+    <div class="reveal overflow-hidden rounded-2xl border border-white/10" data-rise>
+      <table class="w-full text-left font-cond">
+        <thead class="bg-coal uppercase tracking-wider text-ice/50 text-xs">
+          <tr>
+            <th class="px-4 sm:px-6 py-4">#</th>
+            <th class="px-2 py-4">Club</th>
+            <th class="px-3 py-4 text-center">P</th>
+            <th class="px-3 py-4 text-center hidden sm:table-cell">W</th>
+            <th class="px-3 py-4 text-center hidden sm:table-cell">D</th>
+            <th class="px-3 py-4 text-center hidden sm:table-cell">L</th>
+            <th class="px-3 py-4 text-center">GD</th>
+            <th class="px-4 sm:px-6 py-4 text-center text-ember">Pts</th>
+          </tr>
+        </thead>
+        <tbody class="text-ice/80">
+          <tr class="border-t border-white/5 bg-ember/[0.06]">
+            <td class="px-4 sm:px-6 py-4 text-ember font-700">1</td>
+            <td class="px-2 py-4 flex items-center gap-3"><span class="h-7 w-7 rounded gradient-ember grid place-items-center font-display text-ink text-xs">IT</span><b class="text-white uppercase">Ironvale Titans</b></td>
+            <td class="px-3 py-4 text-center">32</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">28</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">2</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">2</td>
+            <td class="px-3 py-4 text-center text-flame">+61</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-display text-xl text-ember">86</td>
+          </tr>
+          <tr class="border-t border-white/5">
+            <td class="px-4 sm:px-6 py-4">2</td>
+            <td class="px-2 py-4 uppercase">North Harlow</td>
+            <td class="px-3 py-4 text-center">32</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">24</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">4</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">4</td>
+            <td class="px-3 py-4 text-center text-flame">+38</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-display text-xl text-white">76</td>
+          </tr>
+          <tr class="border-t border-white/5">
+            <td class="px-4 sm:px-6 py-4">3</td>
+            <td class="px-2 py-4 uppercase">Granite Rovers</td>
+            <td class="px-3 py-4 text-center">32</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">21</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">6</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">5</td>
+            <td class="px-3 py-4 text-center text-flame">+22</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-display text-xl text-white">69</td>
+          </tr>
+          <tr class="border-t border-white/5">
+            <td class="px-4 sm:px-6 py-4">4</td>
+            <td class="px-2 py-4 uppercase">Slate City</td>
+            <td class="px-3 py-4 text-center">32</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">18</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">7</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">7</td>
+            <td class="px-3 py-4 text-center text-ice/60">+9</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-display text-xl text-white">61</td>
+          </tr>
+          <tr class="border-t border-white/5">
+            <td class="px-4 sm:px-6 py-4">5</td>
+            <td class="px-2 py-4 uppercase">East Cinder</td>
+            <td class="px-3 py-4 text-center">32</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">15</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">8</td>
+            <td class="px-3 py-4 text-center hidden sm:table-cell">9</td>
+            <td class="px-3 py-4 text-center text-ice/60">-4</td>
+            <td class="px-4 sm:px-6 py-4 text-center font-display text-xl text-white">53</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CLUB STORE CTA ===================== -->
+<section class="relative py-24 bg-coal overflow-hidden grain">
+  <div class="absolute inset-0 -z-10 opacity-30">
+    <div data-parallax class="absolute inset-0 scale-110">
+      <img src="https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'" alt="Store" class="h-full w-full object-cover" />
+      <div class="absolute inset-0 bg-gradient-to-r from-coal via-coal/80 to-coal/40"></div>
+    </div>
+  </div>
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
+      <div class="reveal" data-rise>
+        <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm">Official Store</div>
+        <h2 class="font-display text-5xl sm:text-7xl uppercase mt-2 leading-[0.9]">Wear the<br><span class="gradient-ember bg-clip-text text-transparent">Furnace</span></h2>
+        <p class="mt-5 max-w-md text-ice/70 text-lg">The 24/25 home kit — molten orange on forged black. Stamped with the Titan crest and woven for the terraces.</p>
+        <div class="mt-7 flex flex-wrap gap-4">
+          <a href="#" class="rounded-md gradient-ember px-7 py-3.5 font-cond font-700 uppercase tracking-wider text-ink hover:scale-[1.03] transition-transform">Shop the Kit</a>
+          <a href="#" class="rounded-md border border-white/20 px-7 py-3.5 font-cond font-600 uppercase tracking-wider text-ice hover:bg-white/5 transition-colors">All Merch</a>
+        </div>
+      </div>
+      <div class="reveal grid grid-cols-3 gap-3" data-rise>
+        <div class="rounded-xl border border-white/10 bg-ink/60 p-4 text-center">
+          <div class="font-display text-3xl text-ember">€89</div>
+          <div class="font-cond uppercase text-xs text-ice/50 mt-1">Home Kit</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-ink/60 p-4 text-center">
+          <div class="font-display text-3xl text-white">€34</div>
+          <div class="font-cond uppercase text-xs text-ice/50 mt-1">Scarf</div>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-ink/60 p-4 text-center">
+          <div class="font-display text-3xl text-white">€55</div>
+          <div class="font-cond uppercase text-xs text-ice/50 mt-1">Training Top</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MEMBERSHIP ===================== -->
+<section id="membership" class="relative py-24 bg-ink">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>Join the Foundry</div>
+      <h2 class="font-display text-5xl sm:text-7xl uppercase mt-2 reveal" data-rise>Membership</h2>
+      <p class="mt-4 text-ice/60 max-w-xl mx-auto reveal" data-rise>Three ways to stand with the Titans. Every member fuels the fire.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal rounded-2xl border border-white/10 bg-coal p-8 hover:border-ember/30 transition-colors" data-rise>
+        <div class="font-cond uppercase tracking-wider text-ice/50 text-sm">Ironside</div>
+        <div class="mt-3 font-display text-5xl">€39<span class="text-lg text-ice/40 font-body">/yr</span></div>
+        <ul class="mt-6 space-y-3 font-cond text-ice/70 text-[15px]">
+          <li class="flex gap-2"><span class="text-ember">▪</span> Digital membership card</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Priority ticket window</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> 10% store discount</li>
+        </ul>
+        <a href="#" class="mt-7 block text-center rounded-md border border-white/20 py-3 font-cond font-700 uppercase tracking-wider hover:bg-white/5 transition-colors">Choose Ironside</a>
+      </div>
+
+      <div class="reveal rounded-2xl border-2 border-ember bg-gradient-to-b from-ember/10 to-coal p-8 relative scale-[1.03] shadow-2xl shadow-ember/20" data-rise>
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full gradient-ember px-4 py-1 font-cond uppercase text-[11px] tracking-widest text-ink font-700">Most Popular</div>
+        <div class="font-cond uppercase tracking-wider text-ember text-sm">Furnace</div>
+        <div class="mt-3 font-display text-5xl">€99<span class="text-lg text-ice/40 font-body">/yr</span></div>
+        <ul class="mt-6 space-y-3 font-cond text-ice/80 text-[15px]">
+          <li class="flex gap-2"><span class="text-ember">▪</span> Everything in Ironside</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Guaranteed match access</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Free welcome scarf</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Players' lounge ballot</li>
+        </ul>
+        <a href="#" class="mt-7 block text-center rounded-md gradient-ember py-3 font-cond font-700 uppercase tracking-wider text-ink hover:scale-[1.02] transition-transform">Choose Furnace</a>
+      </div>
+
+      <div class="reveal rounded-2xl border border-white/10 bg-coal p-8 hover:border-ember/30 transition-colors" data-rise>
+        <div class="font-cond uppercase tracking-wider text-ice/50 text-sm">Molten Elite</div>
+        <div class="mt-3 font-display text-5xl">€249<span class="text-lg text-ice/40 font-body">/yr</span></div>
+        <ul class="mt-6 space-y-3 font-cond text-ice/70 text-[15px]">
+          <li class="flex gap-2"><span class="text-ember">▪</span> Everything in Furnace</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Reserved Foundry seat</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Signed annual shirt</li>
+          <li class="flex gap-2"><span class="text-ember">▪</span> Tunnel club experience</li>
+        </ul>
+        <a href="#" class="mt-7 block text-center rounded-md border border-white/20 py-3 font-cond font-700 uppercase tracking-wider hover:bg-white/5 transition-colors">Choose Elite</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT / HISTORY ===================== -->
+<section id="about" class="relative py-24 bg-coal grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div class="reveal" data-rise>
+        <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm">Since 1907</div>
+        <h2 class="font-display text-5xl sm:text-6xl uppercase mt-2 leading-[0.9]">Born in the<br>Foundry City</h2>
+        <p class="mt-5 text-ice/70 text-lg leading-relaxed">Founded by steelworkers on the banks of the Vale, the Titans were stitched together from the night shift and the early shift. We have always played the way the city works — relentless, loud, and unbreakable.</p>
+        <p class="mt-4 text-ice/60 leading-relaxed">From the old Cinder Ground to the 52,000-seat Foundry Stadium, the crest has never changed: the hammer, the flame, and the eleven stars for every title earned in fire.</p>
+      </div>
+      <div class="reveal grid grid-cols-2 gap-4" data-rise>
+        <div class="rounded-2xl border border-white/10 bg-ink/60 p-6">
+          <div class="font-display text-5xl gradient-ember bg-clip-text text-transparent">1907</div>
+          <div class="font-cond uppercase text-ice/50 text-xs mt-1">Club founded</div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-ink/60 p-6">
+          <div class="font-display text-5xl text-white">14</div>
+          <div class="font-cond uppercase text-ice/50 text-xs mt-1">League titles</div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-ink/60 p-6">
+          <div class="font-display text-5xl text-white">52K</div>
+          <div class="font-cond uppercase text-ice/50 text-xs mt-1">Stadium capacity</div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-ink/60 p-6">
+          <div class="font-display text-5xl text-flame">6</div>
+          <div class="font-cond uppercase text-ice/50 text-xs mt-1">Vale Cup wins</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== NEWS ===================== -->
+<section id="news" class="relative py-24 bg-ink">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-12">
+      <div>
+        <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>From the Terraces</div>
+        <h2 class="font-display text-5xl sm:text-6xl uppercase mt-2 reveal" data-rise>Latest News</h2>
+      </div>
+      <a href="#" class="font-cond uppercase tracking-wider text-ice/60 hover:text-ember transition-colors reveal" data-rise>All stories →</a>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <article class="reveal group rounded-2xl overflow-hidden border border-white/10 bg-coal hover:border-ember/40 transition-colors" data-rise>
+        <div class="relative h-48 overflow-hidden bg-gradient-to-b from-steel to-ink">
+          <img src="https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="News" class="h-full w-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
+        </div>
+        <div class="p-6">
+          <div class="font-cond uppercase tracking-wider text-ember text-xs">Match Report</div>
+          <h3 class="font-display text-2xl uppercase mt-2 leading-tight">Vossberg Hat-trick Sinks East Cinder</h3>
+          <p class="mt-2 text-ice/60 text-sm">A blistering second half saw the Titans tear apart their rivals at the Foundry.</p>
+        </div>
+      </article>
+
+      <article class="reveal group rounded-2xl overflow-hidden border border-white/10 bg-coal hover:border-ember/40 transition-colors" data-rise>
+        <div class="relative h-48 overflow-hidden bg-gradient-to-b from-steel to-ink">
+          <img src="https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="News" class="h-full w-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
+        </div>
+        <div class="p-6">
+          <div class="font-cond uppercase tracking-wider text-ember text-xs">Transfer</div>
+          <h3 class="font-display text-2xl uppercase mt-2 leading-tight">Halden Signs Record Extension</h3>
+          <p class="mt-2 text-ice/60 text-sm">The midfield engine commits his future to the foundry through 2029.</p>
+        </div>
+      </article>
+
+      <article class="reveal group rounded-2xl overflow-hidden border border-white/10 bg-coal hover:border-ember/40 transition-colors" data-rise>
+        <div class="relative h-48 overflow-hidden bg-gradient-to-b from-steel to-ink">
+          <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="News" class="h-full w-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
+        </div>
+        <div class="p-6">
+          <div class="font-cond uppercase tracking-wider text-ember text-xs">Club</div>
+          <h3 class="font-display text-2xl uppercase mt-2 leading-tight">Foundry Stadium Expansion Approved</h3>
+          <p class="mt-2 text-ice/60 text-sm">Plans confirmed to grow the South Stand to 58,000 by 2027.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="relative py-24 bg-coal">
+  <div class="mx-auto max-w-3xl px-5 lg:px-8">
+    <div class="text-center mb-12">
+      <div class="font-cond uppercase tracking-[0.25em] text-ember text-sm reveal" data-rise>Matchday Info</div>
+      <h2 class="font-display text-5xl sm:text-6xl uppercase mt-2 reveal" data-rise>FAQ</h2>
+    </div>
+
+    <div class="space-y-3">
+      <details class="reveal group rounded-xl border border-white/10 bg-ink/60 px-6 py-1 open:border-ember/40" data-rise open>
+        <summary class="flex items-center justify-between py-5 font-cond uppercase tracking-wide text-lg">
+          How do I buy matchday tickets?
+          <span class="faq-icon text-ember text-2xl transition-transform">+</span>
+        </summary>
+        <p class="pb-5 text-ice/65 leading-relaxed">Tickets go on general sale ten days before each fixture. Members get a 72-hour priority window. Buy securely through the Tickets button at the top of the page.</p>
+      </details>
+
+      <details class="reveal group rounded-xl border border-white/10 bg-ink/60 px-6 py-1 open:border-ember/40" data-rise>
+        <summary class="flex items-center justify-between py-5 font-cond uppercase tracking-wide text-lg">
+          Is the Foundry Stadium family friendly?
+          <span class="faq-icon text-ember text-2xl transition-transform">+</span>
+        </summary>
+        <p class="pb-5 text-ice/65 leading-relaxed">Absolutely. The East Stand is a designated family zone with discounted junior tickets, baby-change facilities, and a half-time activity area for under-12s.</p>
+      </details>
+
+      <details class="reveal group rounded-xl border border-white/10 bg-ink/60 px-6 py-1 open:border-ember/40" data-rise>
+        <summary class="flex items-center justify-between py-5 font-cond uppercase tracking-wide text-lg">
+          Can I upgrade my membership mid-season?
+          <span class="faq-icon text-ember text-2xl transition-transform">+</span>
+        </summary>
+        <p class="pb-5 text-ice/65 leading-relaxed">Yes — upgrade any time from your member account and only pay the prorated difference. New benefits unlock immediately.</p>
+      </details>
+
+      <details class="reveal group rounded-xl border border-white/10 bg-ink/60 px-6 py-1 open:border-ember/40" data-rise>
+        <summary class="flex items-center justify-between py-5 font-cond uppercase tracking-wide text-lg">
+          How do I get to the stadium?
+          <span class="faq-icon text-ember text-2xl transition-transform">+</span>
+        </summary>
+        <p class="pb-5 text-ice/65 leading-relaxed">The Foundry is a 12-minute walk from Vale Central station. Matchday shuttle buses run from the city ring road, and accessible parking can be booked in advance.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA (TICKETS) ===================== -->
+<section id="tickets" class="relative py-28 overflow-hidden clip-diag-up bg-ink grain">
+  <div class="absolute inset-0 -z-10">
+    <div data-parallax class="absolute inset-0 scale-110">
+      <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'" alt="Crowd" class="h-full w-full object-cover opacity-40" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/70 to-ink"></div>
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[480px] w-[480px] rounded-full bg-ember/20 blur-[140px]"></div>
+  </div>
+  <div class="mx-auto max-w-4xl px-5 lg:px-8 text-center">
+    <div class="font-cond uppercase tracking-[0.3em] text-ember text-sm reveal" data-rise>This Saturday · Foundry Stadium</div>
+    <h2 class="reveal font-display text-6xl sm:text-8xl uppercase mt-4 leading-[0.88]" data-rise>
+      Be in the<br><span class="gradient-ember bg-clip-text text-transparent glow">Fire</span>
+    </h2>
+    <p class="reveal mt-6 max-w-xl mx-auto text-ice/70 text-lg" data-rise>Fifty-two thousand voices. Ninety minutes of thunder. Claim your seat before they're gone.</p>
+    <div class="reveal mt-9 flex flex-wrap justify-center gap-4" data-rise>
+      <a href="#" id="finalTickets" class="rounded-md gradient-ember px-9 py-4 font-cond font-700 uppercase tracking-wider text-ink text-lg shadow-2xl shadow-ember/40 hover:scale-[1.04] transition-transform">Buy Tickets Now</a>
+      <a href="#membership" class="rounded-md border border-white/25 px-9 py-4 font-cond font-600 uppercase tracking-wider text-ice text-lg hover:bg-white/5 transition-colors">Become a Member</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="relative bg-coal border-t border-white/10 pt-16 pb-8">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div>
+        <a href="#top" class="flex items-center gap-3">
+          <span class="grid place-items-center h-10 w-10 rounded-md gradient-ember font-display text-ink text-2xl leading-none">IT</span>
+          <span class="font-display text-xl tracking-wide">IRONVALE<span class="text-ember">.</span>TITANS</span>
+        </a>
+        <p class="mt-4 text-ice/50 text-sm leading-relaxed max-w-xs">Forged in fire, united in steel. The official home of Ironvale Titans FC, the foundry city's football club since 1907.</p>
+      </div>
+      <div>
+        <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mb-4">Club</div>
+        <ul class="space-y-2 font-cond text-ice/70">
+          <li><a href="#fixtures" class="hover:text-ember transition-colors">Fixtures</a></li>
+          <li><a href="#squad" class="hover:text-ember transition-colors">Squad</a></li>
+          <li><a href="#standings" class="hover:text-ember transition-colors">Table</a></li>
+          <li><a href="#about" class="hover:text-ember transition-colors">History</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mb-4">Supporters</div>
+        <ul class="space-y-2 font-cond text-ice/70">
+          <li><a href="#membership" class="hover:text-ember transition-colors">Membership</a></li>
+          <li><a href="#tickets" class="hover:text-ember transition-colors">Tickets</a></li>
+          <li><a href="#" class="hover:text-ember transition-colors">Club Store</a></li>
+          <li><a href="#faq" class="hover:text-ember transition-colors">Matchday FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-cond uppercase tracking-wider text-ice/50 text-xs mb-4">Follow the Titans</div>
+        <div class="flex gap-3">
+          <a href="#" aria-label="Social" class="h-10 w-10 grid place-items-center rounded-md border border-white/15 hover:border-ember hover:text-ember transition-colors font-cond">X</a>
+          <a href="#" aria-label="Social" class="h-10 w-10 grid place-items-center rounded-md border border-white/15 hover:border-ember hover:text-ember transition-colors font-cond">IG</a>
+          <a href="#" aria-label="Social" class="h-10 w-10 grid place-items-center rounded-md border border-white/15 hover:border-ember hover:text-ember transition-colors font-cond">YT</a>
+        </div>
+        <p class="mt-5 text-ice/40 text-xs leading-relaxed">Foundry Stadium, Vale District<br>Ironvale, VL1 9FC</p>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between gap-3 text-ice/40 text-xs font-cond uppercase tracking-wider">
+      <span>© 2025 Ironvale Titans FC. All rights reserved. Fictional club.</span>
+      <span class="flex gap-5"><a href="#" class="hover:text-ember">Privacy</a><a href="#" class="hover:text-ember">Terms</a><a href="#" class="hover:text-ember">Cookies</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Nav scroll state ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) {
+      nav.classList.add('bg-ink/85', 'backdrop-blur-xl', 'border-b', 'border-white/10', 'shadow-lg');
+    } else {
+      nav.classList.remove('bg-ink/85', 'backdrop-blur-xl', 'border-b', 'border-white/10', 'shadow-lg');
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ---- Countdown ----
+  const target = new Date();
+  target.setDate(target.getDate() + (((6 - target.getDay()) + 7) % 7 || 7));
+  target.setHours(15, 0, 0, 0);
+  const pad = n => String(n).padStart(2, '0');
+  const cd = { days: document.querySelector('[data-cd=days]'), hours: document.querySelector('[data-cd=hours]'), mins: document.querySelector('[data-cd=mins]'), secs: document.querySelector('[data-cd=secs]') };
+  function tick() {
+    let diff = Math.max(0, target - new Date());
+    const d = Math.floor(diff / 86400000); diff -= d * 86400000;
+    const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+    const m = Math.floor(diff / 60000); diff -= m * 60000;
+    const s = Math.floor(diff / 1000);
+    if (cd.days)  cd.days.textContent  = pad(d);
+    if (cd.hours) cd.hours.textContent = pad(h);
+    if (cd.mins)  cd.mins.textContent  = pad(m);
+    if (cd.secs)  cd.secs.textContent  = pad(s);
+  }
+  tick(); setInterval(tick, 1000);
+
+  if (reduce) return; // motion guard — leave everything static
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Hero kinetic reveal ----
+  gsap.set('[data-hero]', { y: 40, opacity: 0 });
+  gsap.to('[data-hero]', {
+    y: 0, opacity: 1, duration: 0.9, ease: 'power3.out', stagger: 0.12, delay: 0.15,
+    onStart: () => document.querySelectorAll('[data-hero]').forEach(el => el.style.opacity = '')
+  });
+
+  // ---- Section rise reveals (diagonal) ----
+  gsap.utils.toArray('[data-rise]').forEach((el, i) => {
+    gsap.fromTo(el,
+      { y: 60, opacity: 0, x: -12 },
+      {
+        y: 0, opacity: 1, x: 0, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+      });
+    el.style.opacity = '';
+  });
+
+  // ---- Container parallax on action images ----
+  gsap.utils.toArray('[data-parallax]').forEach(layer => {
+    gsap.to(layer, {
+      yPercent: 14, ease: 'none',
+      scrollTrigger: { trigger: layer, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // ---- Count-ups ----
+  document.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to;
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, { v: to, duration: 1.6, ease: 'power2.out', onUpdate: () => el.textContent = Math.round(obj.v) })
+    });
+  });
+
+  // ---- Player card tilt ----
+  document.querySelectorAll('.player-card .card-3d').forEach(card => {
+    const strength = 10;
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(card, { rotationY: px * strength, rotationX: -py * strength, duration: 0.4, ease: 'power2.out', boxShadow: '0 30px 60px rgba(255,77,28,.25)' });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotationY: 0, rotationX: 0, duration: 0.6, ease: 'power3.out', boxShadow: '0 0 0 rgba(0,0,0,0)' });
+    });
+  });
+
+  // ---- Magnetic Tickets CTAs ----
+  ['ticketsCta', 'finalTickets'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const mx = e.clientX - r.left - r.width / 2;
+      const my = e.clientY - r.top - r.height / 2;
+      gsap.to(btn, { x: mx * 0.3, y: my * 0.4, duration: 0.4, ease: 'power2.out' });
+    });
+    btn.addEventListener('mouseleave', () => gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' }));
+  });
+})();
+</script>
+</body>
+</html>

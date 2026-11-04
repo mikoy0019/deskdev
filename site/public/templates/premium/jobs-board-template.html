@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Roleplate — The tech job marketplace that moves at your speed</title>
+<meta name="description" content="Roleplate is the search-first job marketplace for software, design, data, and product talent. One profile, vetted companies, transparent pay — apply in two clicks and hear back in days, not weeks." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0b1220',
+          slate2: '#465468',
+          mist:   '#f4f6fb',
+          paper:  '#ffffff',
+          line:   '#e6e9f2',
+          brand:  { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#5b5bf6',600:'#4338e8',700:'#3a2dc7',800:'#3026a0',900:'#2a247f' },
+          lime:   { 50:'#f2fbe9',100:'#e2f6cb',200:'#c8ee9c',300:'#a9e167',400:'#8ed13e',500:'#6fb31f',600:'#558c16',700:'#426b16',800:'#385516',900:'#2f4715' },
+        },
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"','system-ui','sans-serif'],
+          display: ['"Clash Display"','"Plus Jakarta Sans"','sans-serif'],
+        },
+        borderRadius: { '4xl':'2rem', '5xl':'2.75rem' },
+        boxShadow: {
+          soft: '0 18px 50px -24px rgba(67,56,232,0.30)',
+          card: '0 22px 60px -30px rgba(11,18,32,0.45)',
+          lift: '0 30px 70px -28px rgba(11,18,32,0.50)',
+          chip: '0 6px 16px -6px rgba(67,56,232,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#ffffff; color:#0b1220; font-family:'Plus Jakarta Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection { background:#5b5bf6; color:#fff; }
+
+  .display { font-family:'Space Grotesk','Plus Jakarta Sans',sans-serif; letter-spacing:-0.02em; }
+  .dotgrid { background-image:radial-gradient(circle at 1px 1px, rgba(11,18,32,0.06) 1px, transparent 0); background-size:24px 24px; }
+  .gridlines {
+    background-image:
+      linear-gradient(rgba(67,56,232,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(67,56,232,0.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .reveal { opacity:0; transform:translateY(28px); }
+  .reveal-x { opacity:0; transform:translateX(-30px); }
+
+  /* gradient text */
+  .gtext { background:linear-gradient(100deg,#4338e8 0%, #5b5bf6 40%, #6fb31f 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+  /* company CSS logos */
+  .logo {
+    width:46px; height:46px; border-radius:14px; display:grid; place-items:center;
+    font-weight:800; font-family:'Space Grotesk',sans-serif; color:#fff; font-size:18px; flex:none;
+  }
+  .logo-dot { position:relative; }
+  .logo-dot::after { content:''; position:absolute; right:8px; bottom:8px; width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.85); }
+  .logo-ring { box-shadow:inset 0 0 0 3px rgba(255,255,255,.35); }
+  .logo-slash { position:relative; overflow:hidden; }
+  .logo-slash::before { content:''; position:absolute; inset:0; background:linear-gradient(120deg,transparent 45%, rgba(255,255,255,.45) 46%, rgba(255,255,255,.45) 54%, transparent 55%); }
+
+  /* marquee */
+  .marquee { display:flex; width:max-content; animation:scroll 38s linear infinite; }
+  .marquee:hover { animation-play-state:paused; }
+  @keyframes scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+  /* chips */
+  .chip { transition:transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease; }
+  .chip:hover { transform:translateY(-3px); box-shadow:0 10px 22px -10px rgba(67,56,232,.5); }
+
+  /* job card */
+  .jcard { transition:transform .4s cubic-bezier(.2,.7,.2,1), box-shadow .4s ease, border-color .3s ease; will-change:transform; }
+  .jcard:hover { transform:translateY(-8px); box-shadow:0 30px 70px -28px rgba(11,18,32,.5); border-color:#c7d2fe; }
+
+  .tilt { transition:transform .25s ease; transform-style:preserve-3d; }
+
+  /* magnetic */
+  .magnetic { transition:transform .2s ease; }
+
+  /* accordion */
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  /* animated underline cursor */
+  .blink { animation:blink 1.1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+
+  .nav-link { position:relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; width:0; height:2px; background:#4338e8; transition:width .3s ease; }
+  .nav-link:hover::after { width:100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation:none !important; transition:none !important; }
+    .reveal,.reveal-x { opacity:1 !important; transform:none !important; }
+    .marquee { animation:none !important; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div id="navbar" class="mt-4 flex items-center justify-between rounded-2xl border border-line bg-paper/80 backdrop-blur-xl px-4 sm:px-5 py-3 shadow-soft">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="logo logo-dot" style="width:38px;height:38px;border-radius:11px;font-size:15px;background:linear-gradient(135deg,#4338e8,#5b5bf6);">R</span>
+        <span class="display text-xl font-bold tracking-tight">Roleplate</span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate2">
+        <a href="#jobs" class="nav-link">Find jobs</a>
+        <a href="#categories" class="nav-link">Categories</a>
+        <a href="#employers" class="nav-link">For employers</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-2.5">
+        <a href="#" class="hidden sm:inline-flex text-sm font-semibold text-ink px-3 py-2 rounded-xl hover:bg-mist transition">Sign in</a>
+        <a href="#cta" id="navCta" class="magnetic inline-flex items-center gap-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 px-4 py-2.5 rounded-xl transition shadow-chip">
+          Post a job
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative pt-36 sm:pt-40 pb-20 overflow-hidden">
+  <div class="absolute inset-0 gridlines opacity-70"></div>
+  <div class="absolute -top-32 -right-24 w-[34rem] h-[34rem] rounded-full bg-brand-200/50 blur-3xl"></div>
+  <div class="absolute -bottom-40 -left-24 w-[30rem] h-[30rem] rounded-full bg-lime-100 blur-3xl"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-3xl mx-auto text-center">
+      <span class="reveal inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-700 bg-brand-50 border border-brand-100 px-3.5 py-1.5 rounded-full">
+        <span class="w-1.5 h-1.5 rounded-full bg-lime-500"></span>
+        12,480 live roles this week
+      </span>
+      <h1 class="reveal display mt-6 text-4xl sm:text-6xl lg:text-7xl font-bold leading-[1.02]">
+        The job hunt,<br class="hidden sm:block" />
+        <span class="gtext" id="headlineWord">re-engineered</span><span class="text-brand-500 blink">_</span>
+      </h1>
+      <p class="reveal mt-6 text-base sm:text-lg text-slate2 max-w-xl mx-auto leading-relaxed">
+        One profile. Vetted companies. Transparent pay bands. Roleplate matches engineers, designers, and product people with teams that actually reply — apply in two clicks, hear back in days.
+      </p>
+    </div>
+
+    <!-- Search bar -->
+    <div class="reveal mt-9 max-w-3xl mx-auto">
+      <div class="flex flex-col sm:flex-row items-stretch gap-2 bg-paper border border-line rounded-3xl sm:rounded-full p-2 shadow-card">
+        <div class="flex items-center gap-2.5 flex-1 px-4 py-2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#465468" stroke-width="2" class="flex-none"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" placeholder="Role, skill, or company" class="w-full bg-transparent outline-none text-sm placeholder:text-slate2/70" />
+        </div>
+        <div class="hidden sm:block w-px my-2 bg-line"></div>
+        <div class="flex items-center gap-2.5 flex-1 px-4 py-2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#465468" stroke-width="2" class="flex-none"><path d="M12 21s-7-5.2-7-11a7 7 0 1 1 14 0c0 5.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <input type="text" placeholder="Remote · location" class="w-full bg-transparent outline-none text-sm placeholder:text-slate2/70" />
+        </div>
+        <button id="searchCta" class="magnetic flex-none inline-flex items-center justify-center gap-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 px-7 py-3.5 rounded-full transition shadow-chip">
+          Search
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <!-- category chips -->
+      <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5" id="chipRow">
+        <span class="text-xs text-slate2 mr-1 font-medium">Popular:</span>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">Frontend</button>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">ML / AI</button>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">Product Design</button>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">DevOps</button>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">Data</button>
+        <button class="chip text-sm font-medium px-4 py-2 rounded-full bg-paper border border-line text-ink hover:border-brand-200">Remote</button>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="reveal mt-14 grid grid-cols-3 max-w-2xl mx-auto gap-4 text-center">
+      <div>
+        <div class="display text-3xl sm:text-4xl font-bold text-ink"><span class="count" data-to="12480">0</span></div>
+        <div class="text-xs sm:text-sm text-slate2 mt-1 font-medium">Open roles</div>
+      </div>
+      <div class="border-x border-line">
+        <div class="display text-3xl sm:text-4xl font-bold text-ink"><span class="count" data-to="3200">0</span>+</div>
+        <div class="text-xs sm:text-sm text-slate2 mt-1 font-medium">Hiring companies</div>
+      </div>
+      <div>
+        <div class="display text-3xl sm:text-4xl font-bold text-ink"><span class="count" data-to="58000">0</span></div>
+        <div class="text-xs sm:text-sm text-slate2 mt-1 font-medium">Hires made</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPANIES MARQUEE ===================== -->
+<section class="py-10 border-y border-line bg-mist/60 overflow-hidden">
+  <p class="text-center text-xs uppercase tracking-[0.2em] text-slate2 font-semibold mb-7">Trusted by teams hiring right now</p>
+  <div class="relative">
+    <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-mist to-transparent z-10"></div>
+    <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-mist to-transparent z-10"></div>
+    <div class="marquee gap-10 px-5" id="marquee"></div>
+  </div>
+</section>
+
+<!-- ===================== FEATURED JOBS ===================== -->
+<section id="jobs" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+      <div>
+        <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Fresh this week</span>
+        <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">Featured roles</h2>
+      </div>
+      <a href="#" class="reveal inline-flex items-center gap-2 text-sm font-semibold text-brand-700 hover:gap-3 transition-all">
+        Browse all 12,480 jobs
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" id="jobGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== CATEGORIES ===================== -->
+<section id="categories" class="py-24 bg-mist/60 border-y border-line dotgrid">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Explore by craft</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">Find your lane</h2>
+      <p class="reveal mt-4 text-slate2">Every category is curated and pay-banded. No ghost listings, no recruiter spam.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5" id="catGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS (SEEKERS) ===================== -->
+<section class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">For job seekers</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">Three steps to your next offer</h2>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-6 relative">
+      <div class="hidden lg:block absolute top-9 left-[16%] right-[16%] h-px bg-gradient-to-r from-brand-200 via-brand-300 to-lime-300"></div>
+      <div class="reveal relative bg-paper border border-line rounded-4xl p-8 shadow-soft">
+        <div class="display w-12 h-12 rounded-2xl bg-brand-600 text-white grid place-items-center text-lg font-bold shadow-chip">1</div>
+        <h3 class="display mt-5 text-xl font-bold">Build one profile</h3>
+        <p class="mt-3 text-slate2 text-sm leading-relaxed">Import from GitHub or your resume. Roleplate auto-extracts your skills, seniority, and pay expectations — set once, apply everywhere.</p>
+      </div>
+      <div class="reveal relative bg-paper border border-line rounded-4xl p-8 shadow-soft">
+        <div class="display w-12 h-12 rounded-2xl bg-brand-600 text-white grid place-items-center text-lg font-bold shadow-chip">2</div>
+        <h3 class="display mt-5 text-xl font-bold">Get matched daily</h3>
+        <p class="mt-3 text-slate2 text-sm leading-relaxed">Our match engine ranks roles by fit, pay, and response rate. Only see companies that reply — we hide the ghosters automatically.</p>
+      </div>
+      <div class="reveal relative bg-paper border border-line rounded-4xl p-8 shadow-soft">
+        <div class="display w-12 h-12 rounded-2xl bg-lime-500 text-ink grid place-items-center text-lg font-bold shadow-chip">3</div>
+        <h3 class="display mt-5 text-xl font-bold">Apply in two clicks</h3>
+        <p class="mt-3 text-slate2 text-sm leading-relaxed">One profile, one tap. Track every application in a clean pipeline and get nudged when a team views your file.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOR EMPLOYERS ===================== -->
+<section id="employers" class="py-24 bg-ink text-white relative overflow-hidden">
+  <div class="absolute inset-0 gridlines opacity-20"></div>
+  <div class="absolute -top-24 right-0 w-96 h-96 rounded-full bg-brand-600/30 blur-3xl"></div>
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">For employers</span>
+      <h2 class="reveal display mt-3 text-3xl sm:text-5xl font-bold leading-tight">Hire vetted talent<br />without the noise</h2>
+      <p class="reveal mt-5 text-white/70 leading-relaxed max-w-md">Post a role and reach pre-screened candidates who actually match. Pay-band transparency means fewer mismatches, faster yeses, and a 4-day median time-to-first-interview.</p>
+      <ul class="reveal mt-8 space-y-3.5">
+        <li class="flex items-start gap-3"><span class="mt-0.5 w-5 h-5 rounded-full bg-lime-400 grid place-items-center flex-none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg></span><span class="text-white/85 text-sm">AI-ranked shortlists delivered within 48 hours</span></li>
+        <li class="flex items-start gap-3"><span class="mt-0.5 w-5 h-5 rounded-full bg-lime-400 grid place-items-center flex-none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg></span><span class="text-white/85 text-sm">Built-in scheduling, scorecards, and team feedback</span></li>
+        <li class="flex items-start gap-3"><span class="mt-0.5 w-5 h-5 rounded-full bg-lime-400 grid place-items-center flex-none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg></span><span class="text-white/85 text-sm">Pay-band publishing — only serious candidates apply</span></li>
+      </ul>
+      <a href="#pricing" class="reveal magnetic inline-flex items-center gap-2 mt-9 text-sm font-semibold text-ink bg-white hover:bg-mist px-6 py-3.5 rounded-full transition">
+        See employer plans
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <!-- dashboard mock -->
+    <div class="reveal relative">
+      <div class="rounded-4xl border border-white/10 bg-white/[0.04] backdrop-blur p-5 shadow-lift">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <span class="logo logo-ring" style="width:32px;height:32px;border-radius:9px;font-size:13px;background:linear-gradient(135deg,#5b5bf6,#6fb31f);">N</span>
+            <div>
+              <div class="text-sm font-semibold">Nimbus Labs · Senior Backend</div>
+              <div class="text-[11px] text-white/50">Pipeline · 6 stages</div>
+            </div>
+          </div>
+          <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-lime-400/20 text-lime-300">Live</span>
+        </div>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between rounded-xl bg-white/[0.05] px-3.5 py-3">
+            <span class="text-sm text-white/80">Applied</span><span class="text-sm font-semibold">214</span>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-white/[0.05] px-3.5 py-3">
+            <span class="text-sm text-white/80">AI-shortlisted</span><span class="text-sm font-semibold text-brand-300">31</span>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-brand-600/20 border border-brand-400/30 px-3.5 py-3">
+            <span class="text-sm text-white/90">Interviewing</span><span class="text-sm font-semibold text-lime-300">9</span>
+          </div>
+          <div class="flex items-center justify-between rounded-xl bg-white/[0.05] px-3.5 py-3">
+            <span class="text-sm text-white/80">Offer out</span><span class="text-sm font-semibold">2</span>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 text-[11px] text-white/50">
+          <span class="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+          Median time-to-interview: 4 days
+        </div>
+      </div>
+      <div class="absolute -bottom-5 -left-5 rounded-2xl bg-white text-ink px-4 py-3 shadow-lift hidden sm:block">
+        <div class="text-2xl font-bold display">93%</div>
+        <div class="text-[11px] text-slate2 font-medium">match accuracy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section id="about" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal-x relative">
+      <div class="rounded-4xl overflow-hidden border border-line shadow-card bg-gradient-to-br from-brand-100 to-lime-50 aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1600&q=80" alt="A modern team collaborating" loading="lazy" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -top-5 -right-4 rounded-2xl bg-paper border border-line px-4 py-3 shadow-soft hidden sm:block">
+        <div class="display text-xl font-bold text-brand-700">est. 2021</div>
+        <div class="text-[11px] text-slate2 font-medium">Built by hiring nerds</div>
+      </div>
+    </div>
+    <div>
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Our story</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold leading-tight">Hiring should feel like a match, not a maze</h2>
+      <p class="reveal mt-5 text-slate2 leading-relaxed">We started Roleplate after sending 300 applications between us and hearing back from nine. The job market wasn't broken because of talent — it was broken because of noise, opacity, and ghosting.</p>
+      <p class="reveal mt-4 text-slate2 leading-relaxed">So we built a marketplace where pay is public, every company is vetted, and a reply rate is a number you can see before you apply. The result: faster offers for candidates and better hires for teams.</p>
+      <div class="reveal mt-8 grid grid-cols-3 gap-6">
+        <div><div class="display text-2xl font-bold text-ink"><span class="count" data-to="48">0</span>h</div><div class="text-xs text-slate2 mt-1">Median first reply</div></div>
+        <div><div class="display text-2xl font-bold text-ink"><span class="count" data-to="92">0</span>%</div><div class="text-xs text-slate2 mt-1">Get an interview</div></div>
+        <div><div class="display text-2xl font-bold text-ink"><span class="count" data-to="41">0</span></div><div class="text-xs text-slate2 mt-1">Countries hiring</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-24 bg-mist/60 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Loved by both sides</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">Offers, not anxiety</h2>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-5" id="testiGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== PRICING ===================== -->
+<section id="pricing" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Employer plans</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">Pay to hire, not to browse</h2>
+      <p class="reveal mt-4 text-slate2">Job seekers use Roleplate free, forever. Employers pick a plan that fits their hiring volume.</p>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto" id="priceGrid"></div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-24 bg-mist/60 border-y border-line">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal text-xs font-semibold uppercase tracking-[0.18em] text-brand-700">Good questions</span>
+      <h2 class="reveal display mt-2 text-3xl sm:text-5xl font-bold">FAQ</h2>
+    </div>
+    <div class="space-y-3" id="faqList"></div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="cta" class="py-24">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8">
+    <div class="reveal relative overflow-hidden rounded-5xl bg-brand-700 text-white px-8 sm:px-14 py-16 text-center shadow-lift">
+      <div class="absolute inset-0 gridlines opacity-20"></div>
+      <div class="absolute -top-20 -left-16 w-72 h-72 rounded-full bg-lime-400/20 blur-3xl"></div>
+      <div class="absolute -bottom-24 -right-10 w-80 h-80 rounded-full bg-brand-400/30 blur-3xl"></div>
+      <div class="relative">
+        <h2 class="display text-3xl sm:text-5xl font-bold leading-tight">Your next role is already listed</h2>
+        <p class="mt-5 text-white/75 max-w-xl mx-auto">Join 1.2M professionals who hunt smarter on Roleplate. Free for seekers — set up your profile in under three minutes.</p>
+        <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#" class="magnetic inline-flex items-center gap-2 text-sm font-semibold text-ink bg-white hover:bg-mist px-7 py-4 rounded-full transition w-full sm:w-auto justify-center">
+            Find jobs free
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#pricing" class="inline-flex items-center justify-center text-sm font-semibold text-white border border-white/30 hover:bg-white/10 px-7 py-4 rounded-full transition w-full sm:w-auto">Post a job</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="pt-20 pb-10 border-t border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="logo logo-dot" style="width:38px;height:38px;border-radius:11px;font-size:15px;background:linear-gradient(135deg,#4338e8,#5b5bf6);">R</span>
+          <span class="display text-xl font-bold">Roleplate</span>
+        </a>
+        <p class="mt-4 text-sm text-slate2 max-w-xs leading-relaxed">The search-first tech job marketplace. Vetted companies, transparent pay, replies in days.</p>
+        <div class="mt-5 flex items-center gap-2.5">
+          <a href="#" aria-label="X" class="w-9 h-9 rounded-xl border border-line grid place-items-center text-slate2 hover:text-ink hover:border-brand-200 transition"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-7-6.2 7H1.4l8.1-9.3L1 2h7l4.9 6.5L18.9 2zm-2.4 18h1.9L7.6 4H5.6l10.9 16z"/></svg></a>
+          <a href="#" aria-label="LinkedIn" class="w-9 h-9 rounded-xl border border-line grid place-items-center text-slate2 hover:text-ink hover:border-brand-200 transition"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0zM.25 8h4.5V24H.25V8zM8.5 8h4.3v2.2h.06c.6-1.1 2.06-2.26 4.24-2.26 4.53 0 5.37 2.98 5.37 6.86V24h-4.5v-6.4c0-1.53-.03-3.5-2.13-3.5-2.14 0-2.46 1.67-2.46 3.39V24H8.5V8z"/></svg></a>
+          <a href="#" aria-label="GitHub" class="w-9 h-9 rounded-xl border border-line grid place-items-center text-slate2 hover:text-ink hover:border-brand-200 transition"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2 0 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.9 5 18.9 5.3 18.9 5.3c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Seekers</h4>
+        <ul class="space-y-2.5 text-sm text-slate2">
+          <li><a href="#jobs" class="hover:text-ink transition">Browse jobs</a></li>
+          <li><a href="#categories" class="hover:text-ink transition">Categories</a></li>
+          <li><a href="#" class="hover:text-ink transition">Salary guide</a></li>
+          <li><a href="#" class="hover:text-ink transition">Career tips</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Employers</h4>
+        <ul class="space-y-2.5 text-sm text-slate2">
+          <li><a href="#pricing" class="hover:text-ink transition">Pricing</a></li>
+          <li><a href="#employers" class="hover:text-ink transition">Post a job</a></li>
+          <li><a href="#" class="hover:text-ink transition">Talent search</a></li>
+          <li><a href="#" class="hover:text-ink transition">Sourcing API</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-ink mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm text-slate2">
+          <li><a href="#about" class="hover:text-ink transition">About</a></li>
+          <li><a href="#" class="hover:text-ink transition">Careers</a></li>
+          <li><a href="#" class="hover:text-ink transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-ink transition">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate2">
+      <p>© 2026 Roleplate, Inc. Fictional brand for template demonstration.</p>
+      <p>Made for people who deserve faster yeses.</p>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script>
+/* ============== DATA ============== */
+const companies = [
+  {n:'Nimbus Labs', g:'linear-gradient(135deg,#4338e8,#5b5bf6)', i:'N', c:'logo-dot'},
+  {n:'Quantel', g:'linear-gradient(135deg,#0ea5e9,#22d3ee)', i:'Q', c:'logo-ring'},
+  {n:'Mossbyte', g:'linear-gradient(135deg,#6fb31f,#a9e167)', i:'M', c:'logo-slash'},
+  {n:'Halcyon', g:'linear-gradient(135deg,#f97316,#fb923c)', i:'H', c:'logo-dot'},
+  {n:'Vectorly', g:'linear-gradient(135deg,#db2777,#f472b6)', i:'V', c:'logo-ring'},
+  {n:'Driftwave', g:'linear-gradient(135deg,#0f766e,#2dd4bf)', i:'D', c:'logo-slash'},
+  {n:'Pyrolite', g:'linear-gradient(135deg,#7c3aed,#a78bfa)', i:'P', c:'logo-dot'},
+  {n:'Solantis', g:'linear-gradient(135deg,#ca8a04,#facc15)', i:'S', c:'logo-ring'},
+  {n:'Foundry9', g:'linear-gradient(135deg,#1e293b,#475569)', i:'F', c:'logo-slash'},
+  {n:'Aetherloop', g:'linear-gradient(135deg,#be123c,#fb7185)', i:'A', c:'logo-dot'},
+];
+
+const jobs = [
+  {role:'Senior Frontend Engineer', co:'Nimbus Labs', g:companies[0].g, i:'N', cc:'logo-dot', loc:'Remote · EU', type:'Full-time', pay:'$130k–165k', tags:['React','TypeScript','Design Systems'], new:true},
+  {role:'Machine Learning Engineer', co:'Quantel', g:companies[1].g, i:'Q', cc:'logo-ring', loc:'Berlin · Hybrid', type:'Full-time', pay:'$145k–190k', tags:['PyTorch','LLMs','MLOps'], new:true},
+  {role:'Product Designer', co:'Mossbyte', g:companies[2].g, i:'M', cc:'logo-slash', loc:'Remote · Global', type:'Full-time', pay:'$110k–140k', tags:['Figma','Prototyping','UX'], new:false},
+  {role:'Staff Backend Engineer', co:'Halcyon', g:companies[3].g, i:'H', cc:'logo-dot', loc:'NYC · On-site', type:'Full-time', pay:'$180k–230k', tags:['Go','Postgres','Kafka'], new:false},
+  {role:'DevOps / Platform Eng', co:'Driftwave', g:companies[5].g, i:'D', cc:'logo-slash', loc:'Remote · US', type:'Full-time', pay:'$150k–185k', tags:['Kubernetes','Terraform','AWS'], new:true},
+  {role:'Data Scientist', co:'Vectorly', g:companies[4].g, i:'V', cc:'logo-ring', loc:'London · Hybrid', type:'Full-time', pay:'$125k–160k', tags:['Python','SQL','Experimentation'], new:false},
+];
+
+const cats = [
+  {n:'Engineering', c:'4,210 roles', icon:'<path d="M8 3v3M16 3v3M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/>', g:'#4338e8'},
+  {n:'Design', c:'1,180 roles', icon:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>', g:'#db2777'},
+  {n:'Data & AI', c:'2,040 roles', icon:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/>', g:'#0ea5e9'},
+  {n:'Product', c:'860 roles', icon:'<path d="M12 2l8 4v8l-8 4-8-4V6z"/><path d="M4 6l8 4 8-4M12 10v8"/>', g:'#6fb31f'},
+  {n:'DevOps', c:'940 roles', icon:'<path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/>', g:'#f97316'},
+  {n:'Security', c:'520 roles', icon:'<path d="M12 2l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V5z"/>', g:'#7c3aed'},
+  {n:'Mobile', c:'710 roles', icon:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>', g:'#0f766e'},
+  {n:'Growth', c:'430 roles', icon:'<path d="M3 17l6-6 4 4 7-8M14 7h6v6"/>', g:'#ca8a04'},
+];
+
+const testis = [
+  {q:'I had three interviews booked within a week of finishing my profile. The pay bands meant I never wasted time on a role that couldn’t meet my number.', n:'Mara Velez', r:'Senior iOS Engineer · hired at Quantel', i:'M', g:companies[1].g, cc:'logo-ring'},
+  {q:'As a hiring manager, the AI shortlist saved me a full week of screening. Every candidate it surfaced was genuinely in range.', n:'Dele Okonkwo', r:'Eng Manager · Nimbus Labs', i:'D', g:companies[0].g, cc:'logo-dot'},
+  {q:'Roleplate is the only board where I actually heard back. The response-rate filter is a game changer — no more shouting into the void.', n:'Priya Anand', r:'Product Designer · hired at Mossbyte', i:'P', g:companies[2].g, cc:'logo-slash'},
+];
+
+const plans = [
+  {n:'Starter', p:'$0', sub:'/ forever', desc:'For seekers and tiny teams testing the waters.', feats:['Unlimited job browsing','1 active job post','Basic applicant inbox','Pay-band publishing'], cta:'Start free', hot:false},
+  {n:'Growth', p:'$249', sub:'/ month', desc:'For teams hiring across multiple roles.', feats:['10 active job posts','AI-ranked shortlists','Scheduling & scorecards','Team collaboration','Priority placement'], cta:'Start 14-day trial', hot:true},
+  {n:'Scale', p:'Custom', sub:'', desc:'For high-volume and enterprise hiring.', feats:['Unlimited job posts','Dedicated sourcing pod','Sourcing API + ATS sync','SSO & audit logs','Success manager'], cta:'Talk to sales', hot:false},
+];
+
+const faqs = [
+  {q:'Is Roleplate free for job seekers?', a:'Always. Browsing, matching, applying, and tracking are 100% free for candidates. Employers fund the platform through job posts and hiring plans.'},
+  {q:'How are companies vetted?', a:'Every employer is reviewed for legitimacy, then scored on real response and offer rates. Teams that ghost candidates lose visibility automatically.'},
+  {q:'What does "transparent pay" mean?', a:'Every listed role must publish a pay band before it goes live. No band, no listing — so you never apply blind.'},
+  {q:'How does the match engine work?', a:'We rank roles using your skills, seniority, and pay expectations against each company’s requirements and historical reply rate — so you only see roles likely to convert.'},
+  {q:'Can I hide my profile from my current employer?', a:'Yes. Confidential mode blocks specific companies and domains from ever seeing your profile while you browse and apply.'},
+];
+
+/* ============== RENDER ============== */
+// marquee (doubled for seamless loop)
+const mq = document.getElementById('marquee');
+const mqItem = c => `<div class="flex items-center gap-3 opacity-80 hover:opacity-100 transition">
+  <span class="logo ${c.c}" style="background:${c.g}">${c.i}</span>
+  <span class="display text-lg font-semibold text-ink whitespace-nowrap">${c.n}</span></div>`;
+mq.innerHTML = [...companies, ...companies].map(mqItem).join('');
+
+// jobs
+document.getElementById('jobGrid').innerHTML = jobs.map(j => `
+  <article class="jcard tilt reveal group bg-paper border border-line rounded-4xl p-6 shadow-soft cursor-pointer">
+    <div class="flex items-start justify-between">
+      <div class="flex items-center gap-3">
+        <span class="logo ${j.cc}" style="background:${j.g}">${j.i}</span>
+        <div>
+          <div class="text-sm font-semibold text-ink">${j.co}</div>
+          <div class="text-xs text-slate2">${j.loc}</div>
+        </div>
+      </div>
+      ${j.new ? '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-lime-100 text-lime-700">New</span>' : '<button class="text-slate2 hover:text-brand-600 transition" aria-label="Save"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></button>'}
+    </div>
+    <h3 class="display mt-5 text-xl font-bold text-ink group-hover:text-brand-700 transition">${j.role}</h3>
+    <div class="mt-3 flex flex-wrap gap-2">
+      ${j.tags.map(t => `<span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-mist text-slate2">${t}</span>`).join('')}
+    </div>
+    <div class="mt-6 pt-5 border-t border-line flex items-center justify-between">
+      <div>
+        <div class="display text-base font-bold text-ink">${j.pay}</div>
+        <div class="text-[11px] text-slate2">${j.type}</div>
+      </div>
+      <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 group-hover:gap-2.5 transition-all">
+        Apply <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </div>
+  </article>`).join('');
+
+// categories
+document.getElementById('catGrid').innerHTML = cats.map(c => `
+  <a href="#jobs" class="reveal group bg-paper border border-line rounded-4xl p-6 shadow-soft hover:shadow-card hover:-translate-y-1.5 transition-all duration-300">
+    <div class="w-12 h-12 rounded-2xl grid place-items-center" style="background:${c.g}1a">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c.g}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
+    </div>
+    <h3 class="display mt-4 text-lg font-bold text-ink group-hover:text-brand-700 transition">${c.n}</h3>
+    <p class="text-sm text-slate2 mt-1">${c.c}</p>
+  </a>`).join('');
+
+// testimonials
+document.getElementById('testiGrid').innerHTML = testis.map(t => `
+  <figure class="reveal bg-paper border border-line rounded-4xl p-7 shadow-soft flex flex-col">
+    <div class="text-brand-300 text-5xl display leading-none">&ldquo;</div>
+    <blockquote class="text-ink text-[15px] leading-relaxed -mt-3">${t.q}</blockquote>
+    <figcaption class="mt-6 pt-5 border-t border-line flex items-center gap-3">
+      <span class="logo ${t.cc}" style="width:40px;height:40px;font-size:15px;background:${t.g}">${t.i}</span>
+      <div>
+        <div class="text-sm font-semibold text-ink">${t.n}</div>
+        <div class="text-xs text-slate2">${t.r}</div>
+      </div>
+    </figcaption>
+  </figure>`).join('');
+
+// pricing
+document.getElementById('priceGrid').innerHTML = plans.map(p => `
+  <div class="reveal relative rounded-4xl p-7 border ${p.hot ? 'border-brand-300 bg-paper shadow-lift ring-1 ring-brand-200' : 'border-line bg-paper shadow-soft'}">
+    ${p.hot ? '<span class="absolute -top-3 left-7 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-brand-600 text-white shadow-chip">Most popular</span>' : ''}
+    <h3 class="display text-xl font-bold text-ink">${p.n}</h3>
+    <div class="mt-3 flex items-end gap-1">
+      <span class="display text-4xl font-bold text-ink">${p.p}</span>
+      <span class="text-sm text-slate2 mb-1">${p.sub}</span>
+    </div>
+    <p class="mt-3 text-sm text-slate2">${p.desc}</p>
+    <ul class="mt-6 space-y-3">
+      ${p.feats.map(f => `<li class="flex items-start gap-2.5 text-sm text-ink"><span class="mt-0.5 w-4 h-4 rounded-full bg-lime-100 grid place-items-center flex-none"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#558c16" stroke-width="3.5"><path d="M5 13l4 4L19 7"/></svg></span>${f}</li>`).join('')}
+    </ul>
+    <a href="#cta" class="mt-7 inline-flex w-full items-center justify-center gap-2 text-sm font-semibold px-5 py-3.5 rounded-full transition ${p.hot ? 'bg-brand-600 hover:bg-brand-700 text-white shadow-chip' : 'bg-mist hover:bg-line text-ink'}">${p.cta}</a>
+  </div>`).join('');
+
+// faq
+document.getElementById('faqList').innerHTML = faqs.map((f,i) => `
+  <div class="reveal bg-paper border border-line rounded-2xl overflow-hidden">
+    <button class="acc-btn w-full flex items-center justify-between gap-4 text-left px-6 py-5" data-i="${i}">
+      <span class="font-semibold text-ink">${f.q}</span>
+      <span class="acc-icon flex-none w-7 h-7 rounded-full bg-mist grid place-items-center transition-transform duration-300">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4338e8" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </span>
+    </button>
+    <div class="acc-body px-6"><p class="pb-5 text-sm text-slate2 leading-relaxed">${f.a}</p></div>
+  </div>`).join('');
+
+/* ============== INTERACTIONS ============== */
+// accordion
+document.querySelectorAll('.acc-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const body = btn.nextElementSibling;
+    const icon = btn.querySelector('.acc-icon');
+    const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+    document.querySelectorAll('.acc-body').forEach(b => { b.style.maxHeight = '0px'; });
+    document.querySelectorAll('.acc-icon').forEach(ic => ic.style.transform = 'rotate(0deg)');
+    if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform = 'rotate(135deg)'; }
+  });
+});
+
+// nav scroll state
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 20) navbar.classList.add('shadow-card'); else navbar.classList.remove('shadow-card');
+}, {passive:true});
+
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============== MOTION ============== */
+if (!reduce && window.gsap) {
+  gsap.registerPlugin(ScrollTrigger);
+
+  // generic reveals
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.to(el, {
+      opacity:1, y:0, duration:.9, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 88%' }
+    });
+  });
+  gsap.utils.toArray('.reveal-x').forEach(el => {
+    gsap.to(el, {
+      opacity:1, x:0, duration:1, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 85%' }
+    });
+  });
+
+  // hero stagger
+  gsap.from('#nav', { y:-30, opacity:0, duration:.8, ease:'power3.out' });
+
+  // count-ups
+  gsap.utils.toArray('.count').forEach(el => {
+    const to = +el.dataset.to;
+    const obj = { v:0 };
+    ScrollTrigger.create({
+      trigger:el, start:'top 92%', once:true,
+      onEnter:() => gsap.to(obj, {
+        v:to, duration:1.8, ease:'power2.out',
+        onUpdate:() => { el.textContent = Math.floor(obj.v).toLocaleString(); }
+      })
+    });
+  });
+
+  // container parallax on hero blobs
+  gsap.to('.gridlines', {
+    yPercent:6, ease:'none',
+    scrollTrigger:{ trigger:'body', start:'top top', end:'bottom bottom', scrub:true }
+  });
+
+  // animated headline word cycle
+  const words = ['re-engineered','transparent','match-first','blazing fast'];
+  let wi = 0;
+  const hw = document.getElementById('headlineWord');
+  setInterval(() => {
+    wi = (wi + 1) % words.length;
+    gsap.to(hw, { opacity:0, y:-10, duration:.3, ease:'power2.in', onComplete:() => {
+      hw.textContent = words[wi];
+      gsap.fromTo(hw, {opacity:0, y:10}, {opacity:1, y:0, duration:.4, ease:'power2.out'});
+    }});
+  }, 2600);
+
+  // card tilt on pointer
+  document.querySelectorAll('.tilt').forEach(card => {
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - .5;
+      const py = (e.clientY - r.top) / r.height - .5;
+      card.style.transform = `perspective(800px) rotateY(${px*6}deg) rotateX(${-py*6}deg) translateY(-8px)`;
+    });
+    card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+  });
+
+  // magnetic CTAs
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('pointermove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width/2;
+      const y = e.clientY - r.top - r.height/2;
+      btn.style.transform = `translate(${x*0.25}px, ${y*0.35}px)`;
+    });
+    btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="AURELIUS HALO — the world's first neural ambient computer. Light that thinks. A cinematic flagship launch." />
+<title>AURELIUS HALO — Light That Thinks</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: '#05060d',
+          deepvoid: '#03040a',
+          ink: '#0b0d1a',
+          halo: '#7b5cff',
+          halo2: '#a98bff',
+          ember: '#ff5c8a',
+          aqua: '#2ee6c9',
+          glassline: 'rgba(255,255,255,0.08)',
+        },
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          body: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          mega: '-0.045em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root {
+    --halo: #7b5cff;
+    --ember: #ff5c8a;
+    --aqua: #2ee6c9;
+  }
+  * { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  html, body { overflow-x: hidden; background: #05060d; }
+  body { font-family: 'Inter', sans-serif; color: #e7e9f5; }
+  ::selection { background: rgba(123,92,255,0.4); color: #fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 9px; }
+  ::-webkit-scrollbar-track { background: #05060d; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(#7b5cff, #ff5c8a); border-radius: 9px; }
+
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* Gradient text */
+  .text-grad {
+    background: linear-gradient(110deg, #fff 0%, #a98bff 45%, #2ee6c9 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .text-grad-warm {
+    background: linear-gradient(110deg, #ff5c8a 0%, #a98bff 60%, #7b5cff 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+
+  /* Glow keyframes */
+  @keyframes haloPulse {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0.95; transform: scale(1.08); }
+  }
+  @keyframes drift {
+    0% { transform: translate(0,0); }
+    50% { transform: translate(2.5%, -3%); }
+    100% { transform: translate(0,0); }
+  }
+  @keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes floaty {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+
+  .glow-orb { filter: blur(70px); animation: haloPulse 7s ease-in-out infinite; will-change: transform, opacity; }
+  .glow-drift { animation: drift 16s ease-in-out infinite; }
+  .ring-spin { animation: spinSlow 30s linear infinite; }
+  .floaty { animation: floaty 6s ease-in-out infinite; }
+
+  /* Neon edge accent */
+  .neon-line {
+    background: linear-gradient(90deg, transparent, rgba(123,92,255,0.9), rgba(46,230,201,0.7), transparent);
+    background-size: 200% auto;
+    animation: shimmer 6s linear infinite;
+  }
+
+  /* Glass card */
+  .glass {
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015));
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+  }
+  .glass-hover { transition: transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s, box-shadow .5s; }
+  .glass-hover:hover {
+    transform: translateY(-6px);
+    border-color: rgba(123,92,255,0.5);
+    box-shadow: 0 30px 80px -30px rgba(123,92,255,0.45);
+  }
+
+  /* Product device — gradient built silhouette */
+  .halo-device {
+    background:
+      radial-gradient(circle at 50% 38%, rgba(255,255,255,0.95) 0%, rgba(169,139,255,0.55) 18%, transparent 42%),
+      conic-gradient(from 180deg at 50% 50%, #7b5cff, #2ee6c9, #ff5c8a, #7b5cff);
+    box-shadow:
+      0 0 90px 12px rgba(123,92,255,0.55),
+      0 0 180px 40px rgba(46,230,201,0.25),
+      inset 0 0 60px rgba(255,255,255,0.25);
+  }
+  .halo-core {
+    background: radial-gradient(circle at 50% 40%, #ffffff 0%, #c9bbff 35%, #5a3fd6 75%, #1b1340 100%);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 0 0 60px rgba(169,139,255,0.6);
+  }
+
+  /* Masked reveal lines */
+  .reveal-mask { overflow: hidden; display: block; }
+  .reveal-line { display: block; transform: translateY(110%); }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .divider-glow { box-shadow: 0 0 30px 2px rgba(123,92,255,0.5); }
+
+  .pill { border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
+
+  .faq-item .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.2,.8,.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .4s; }
+
+  .marquee-track { animation: scrollx 28s linear infinite; }
+  @keyframes scrollx { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .btn-glow { position: relative; isolation: isolate; transition: transform .3s, box-shadow .4s; }
+  .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 18px 50px -12px rgba(123,92,255,0.7); }
+  .btn-glow::after {
+    content:''; position:absolute; inset:-1px; border-radius:inherit; z-index:-1;
+    background: linear-gradient(110deg, #7b5cff, #ff5c8a, #2ee6c9);
+    opacity:0; transition: opacity .4s;
+  }
+  .btn-glow:hover::after { opacity: 0.9; filter: blur(8px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glow-orb, .glow-drift, .ring-spin, .floaty, .neon-line, .marquee-track { animation: none !important; }
+    .reveal-line { transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-void text-[#e7e9f5] font-body antialiased overflow-x-hidden">
+
+<div class="grain"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="relative w-8 h-8 rounded-full halo-device flex items-center justify-center">
+        <span class="w-3 h-3 rounded-full bg-white/90"></span>
+      </span>
+      <span class="font-display font-700 tracking-mega text-lg">AURELIUS<span class="text-halo2">·</span>HALO</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm text-white/65">
+      <a href="#features" class="hover:text-white transition">Features</a>
+      <a href="#how" class="hover:text-white transition">How it works</a>
+      <a href="#story" class="hover:text-white transition">Story</a>
+      <a href="#pricing" class="hover:text-white transition">Pre-order</a>
+      <a href="#faq" class="hover:text-white transition">FAQ</a>
+    </nav>
+    <a href="#pricing" class="btn-glow rounded-full px-5 py-2.5 text-sm font-500 bg-white text-void hover:text-void">
+      Reserve yours
+    </a>
+  </div>
+  <div class="h-px neon-line opacity-0" id="navline"></div>
+</header>
+
+<!-- ============ HERO (PINNED) ============ -->
+<section id="top" class="relative">
+  <div id="heroPin" class="relative h-screen w-full overflow-hidden flex items-center justify-center">
+
+    <!-- background glow layers (parallax) -->
+    <div class="absolute inset-0 -z-10">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,#12102b_0%,#05060d_60%)]"></div>
+      <div data-parallax="0.3" class="glow-orb glow-drift absolute top-[12%] left-1/2 -translate-x-1/2 w-[60vw] h-[60vw] max-w-[780px] max-h-[780px] rounded-full bg-halo/40 -z-10"></div>
+      <div data-parallax="0.55" class="glow-orb absolute bottom-[6%] left-[14%] w-[34vw] h-[34vw] max-w-[420px] max-h-[420px] rounded-full bg-aqua/25"></div>
+      <div data-parallax="0.45" class="glow-orb absolute top-[18%] right-[10%] w-[30vw] h-[30vw] max-w-[380px] max-h-[380px] rounded-full bg-ember/25"></div>
+    </div>
+
+    <!-- spinning ring accent behind product -->
+    <div id="heroRing" class="absolute z-0 w-[78vw] h-[78vw] max-w-[640px] max-h-[640px] rounded-full ring-spin"
+         style="background:conic-gradient(from 0deg, transparent 0%, rgba(123,92,255,0.55) 18%, transparent 36%, rgba(46,230,201,0.45) 60%, transparent 78%, rgba(255,92,138,0.4) 100%); mask:radial-gradient(circle, transparent 60%, #000 61%); -webkit-mask:radial-gradient(circle, transparent 60%, #000 61%);"></div>
+
+    <!-- THE PRODUCT (scrub reveal target) -->
+    <div id="heroProduct" class="absolute z-10 flex items-center justify-center">
+      <div class="relative w-[48vw] h-[48vw] max-w-[360px] max-h-[360px] rounded-full halo-device floaty flex items-center justify-center">
+        <div class="w-[58%] h-[58%] rounded-full halo-core"></div>
+        <div class="absolute inset-0 rounded-full border border-white/10"></div>
+      </div>
+    </div>
+
+    <!-- Headline overlay -->
+    <div id="heroCopy" class="relative z-20 text-center px-6 max-w-4xl">
+      <span class="pill inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs tracking-widest uppercase text-white/70 mb-7">
+        <span class="w-1.5 h-1.5 rounded-full bg-aqua animate-pulse"></span> Generation Zero · Now reserving
+      </span>
+      <h1 class="font-display font-800 tracking-mega leading-[0.92] text-5xl sm:text-7xl lg:text-[5.6rem]">
+        <span class="reveal-mask"><span class="reveal-line">Light that</span></span>
+        <span class="reveal-mask"><span class="reveal-line text-grad">thinks with you.</span></span>
+      </h1>
+      <p id="heroSub" class="mt-7 text-base sm:text-lg text-white/65 max-w-xl mx-auto leading-relaxed">
+        Meet <strong class="text-white font-600">HALO</strong> — the first ambient neural computer that lives as light in your space, anticipating before you ask.
+      </p>
+      <div id="heroBtns" class="mt-9 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="#pricing" class="btn-glow rounded-full px-7 py-3.5 bg-white text-void font-600 text-sm">Reserve for $99</a>
+        <a href="#how" class="rounded-full px-7 py-3.5 pill text-white/80 font-500 text-sm hover:bg-white/10 transition">Watch the reveal</a>
+      </div>
+    </div>
+
+    <!-- scroll cue -->
+    <div id="scrollCue" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/40 text-[11px] tracking-widest uppercase">
+      Scroll to reveal
+      <span class="w-px h-10 bg-gradient-to-b from-white/50 to-transparent"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPEC / STATS STRIP ============ -->
+<section class="relative py-20 border-y border-white/5 bg-deepvoid">
+  <div class="absolute inset-x-0 top-0 h-px neon-line"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 text-center">
+    <div data-stat>
+      <div class="font-display font-800 text-4xl sm:text-5xl text-grad"><span class="countup" data-to="14">0</span><span class="text-white/40 text-2xl">ms</span></div>
+      <p class="mt-2 text-xs sm:text-sm tracking-widest uppercase text-white/45">Neural latency</p>
+    </div>
+    <div data-stat>
+      <div class="font-display font-800 text-4xl sm:text-5xl text-grad"><span class="countup" data-to="64">0</span><span class="text-white/40 text-2xl">h</span></div>
+      <p class="mt-2 text-xs sm:text-sm tracking-widest uppercase text-white/45">Ambient battery</p>
+    </div>
+    <div data-stat>
+      <div class="font-display font-800 text-4xl sm:text-5xl text-grad"><span class="countup" data-to="100">0</span><span class="text-white/40 text-2xl">%</span></div>
+      <p class="mt-2 text-xs sm:text-sm tracking-widest uppercase text-white/45">On-device privacy</p>
+    </div>
+    <div data-stat>
+      <div class="font-display font-800 text-4xl sm:text-5xl text-grad"><span class="countup" data-to="360">0</span><span class="text-white/40 text-2xl">°</span></div>
+      <p class="mt-2 text-xs sm:text-sm tracking-widest uppercase text-white/45">Spatial sensing</p>
+    </div>
+  </div>
+</section>
+
+<!-- press marquee -->
+<section class="py-10 overflow-hidden border-b border-white/5">
+  <div class="flex w-max marquee-track gap-16 px-8 text-white/30 font-display font-600 text-lg sm:text-xl tracking-mega">
+    <span>THE VERGE FRONTIER</span><span>·</span><span>WIRED LUMEN</span><span>·</span><span>FAST ORBIT</span><span>·</span><span>NEURAL TIMES</span><span>·</span><span>DESIGN MILK²</span><span>·</span>
+    <span>THE VERGE FRONTIER</span><span>·</span><span>WIRED LUMEN</span><span>·</span><span>FAST ORBIT</span><span>·</span><span>NEURAL TIMES</span><span>·</span><span>DESIGN MILK²</span><span>·</span>
+  </div>
+</section>
+
+<!-- ============ FEATURES — ALTERNATING BIG SCENES ============ -->
+<section id="features" class="relative py-28 sm:py-36">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+
+    <div class="text-center max-w-3xl mx-auto mb-24">
+      <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-4">The capabilities</p>
+      <h2 class="font-display font-800 tracking-mega text-4xl sm:text-6xl leading-[0.95]">
+        Engineered to feel like <span class="text-grad-warm">intuition.</span>
+      </h2>
+    </div>
+
+    <!-- Scene 1 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-32" data-scene>
+      <div data-scene-media class="relative order-1">
+        <div class="relative aspect-square rounded-[2rem] glass overflow-hidden flex items-center justify-center">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(123,92,255,0.35),transparent_60%)]"></div>
+          <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=900&q=70"
+               alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"
+               onerror="this.style.display='none'">
+          <div class="relative w-44 h-44 rounded-full halo-device floaty flex items-center justify-center">
+            <div class="w-1/2 h-1/2 rounded-full halo-core"></div>
+          </div>
+        </div>
+      </div>
+      <div data-scene-copy class="order-2">
+        <span class="text-halo2 font-display font-700 text-sm tracking-widest">01 — PRESENCE</span>
+        <h3 class="font-display font-700 tracking-mega text-3xl sm:text-4xl mt-3 leading-tight">A computer made of light, not screens.</h3>
+        <p class="mt-5 text-white/60 leading-relaxed text-lg">HALO projects an ambient field that reads your space and your attention. No glass to stare into — just a presence that brightens when you need it and dissolves when you don't.</p>
+        <ul class="mt-7 space-y-3 text-white/70">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-aqua"></span> Volumetric projection up to 3 meters</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-aqua"></span> Gaze + gesture aware</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Scene 2 (reversed) -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-32" data-scene>
+      <div data-scene-copy class="order-2 lg:order-1">
+        <span class="text-ember font-display font-700 text-sm tracking-widest">02 — ANTICIPATION</span>
+        <h3 class="font-display font-700 tracking-mega text-3xl sm:text-4xl mt-3 leading-tight">It prepares the moment before you ask.</h3>
+        <p class="mt-5 text-white/60 leading-relaxed text-lg">An on-device 4B neural core learns your rhythms locally — surfacing the call, the recipe, the route, or the light you wanted, a beat before the thought finishes.</p>
+        <ul class="mt-7 space-y-3 text-white/70">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-ember"></span> Predictive context engine</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-ember"></span> Nothing leaves the device</li>
+        </ul>
+      </div>
+      <div data-scene-media class="relative order-1 lg:order-2">
+        <div class="relative aspect-square rounded-[2rem] glass overflow-hidden flex items-center justify-center">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(255,92,138,0.3),transparent_60%)]"></div>
+          <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=900&q=70"
+               alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"
+               onerror="this.style.display='none'">
+          <div class="relative w-48 h-48 rounded-full ring-spin"
+               style="background:conic-gradient(from 0deg,transparent,rgba(255,92,138,0.6),transparent,rgba(123,92,255,0.6),transparent);mask:radial-gradient(circle,transparent 55%,#000 56%);-webkit-mask:radial-gradient(circle,transparent 55%,#000 56%);"></div>
+          <div class="absolute w-24 h-24 rounded-full halo-core floaty"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 3 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center" data-scene>
+      <div data-scene-media class="relative order-1">
+        <div class="relative aspect-square rounded-[2rem] glass overflow-hidden flex items-center justify-center">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_40%_60%,rgba(46,230,201,0.3),transparent_60%)]"></div>
+          <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=900&q=70"
+               alt="" loading="lazy" class="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-luminosity"
+               onerror="this.style.display='none'">
+          <div class="relative grid grid-cols-3 gap-3">
+            <div class="w-12 h-12 rounded-full bg-halo/70 blur-[2px]"></div>
+            <div class="w-12 h-12 rounded-full bg-aqua/70 blur-[2px] floaty"></div>
+            <div class="w-12 h-12 rounded-full bg-ember/70 blur-[2px]"></div>
+            <div class="w-12 h-12 rounded-full bg-aqua/50 blur-[2px]"></div>
+            <div class="w-12 h-12 rounded-full halo-device"></div>
+            <div class="w-12 h-12 rounded-full bg-halo/50 blur-[2px] floaty"></div>
+            <div class="w-12 h-12 rounded-full bg-ember/50 blur-[2px]"></div>
+            <div class="w-12 h-12 rounded-full bg-halo/70 blur-[2px]"></div>
+            <div class="w-12 h-12 rounded-full bg-aqua/70 blur-[2px]"></div>
+          </div>
+        </div>
+      </div>
+      <div data-scene-copy class="order-2">
+        <span class="text-aqua font-display font-700 text-sm tracking-widest">03 — CONSTELLATION</span>
+        <h3 class="font-display font-700 tracking-mega text-3xl sm:text-4xl mt-3 leading-tight">One HALO is calm. A room of them is magic.</h3>
+        <p class="mt-5 text-white/60 leading-relaxed text-lg">Place several and they self-organize into a mesh — handing your context room to room, so the light always knows where you are and what you meant.</p>
+        <ul class="mt-7 space-y-3 text-white/70">
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-halo2"></span> Zero-config mesh pairing</li>
+          <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 rounded-full bg-halo2"></span> Seamless context hand-off</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="relative py-28 bg-deepvoid border-y border-white/5 overflow-hidden">
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full bg-halo/10 glow-orb -z-0"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-20">
+      <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-4">In three quiet steps</p>
+      <h2 class="font-display font-800 tracking-mega text-4xl sm:text-6xl">From box to ambient.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="glass glass-hover rounded-2xl p-8" data-step>
+        <div class="font-display font-800 text-5xl text-grad mb-5">01</div>
+        <h3 class="font-display font-600 text-xl mb-2">Set it down</h3>
+        <p class="text-white/55 leading-relaxed">Place HALO anywhere flat. It wakes, maps the room's geometry, and finds its glow in under a minute.</p>
+      </div>
+      <div class="glass glass-hover rounded-2xl p-8" data-step>
+        <div class="font-display font-800 text-5xl text-grad mb-5">02</div>
+        <h3 class="font-display font-600 text-xl mb-2">Let it learn</h3>
+        <p class="text-white/55 leading-relaxed">Speak, gesture, ignore it. The on-device core quietly studies your rhythm — never sending a byte to a cloud.</p>
+      </div>
+      <div class="glass glass-hover rounded-2xl p-8" data-step>
+        <div class="font-display font-800 text-5xl text-grad mb-5">03</div>
+        <h3 class="font-display font-600 text-xl mb-2">Live ambiently</h3>
+        <p class="text-white/55 leading-relaxed">From day three, HALO anticipates — the right light, info, and presence, exactly when the moment calls.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STORY / ABOUT ============ -->
+<section id="story" class="relative py-32">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-6">The origin</p>
+    <h2 class="font-display font-700 tracking-mega text-3xl sm:text-5xl leading-[1.15]">
+      <span class="reveal-mask"><span class="reveal-line">We were tired of computers</span></span>
+      <span class="reveal-mask"><span class="reveal-line text-grad">that demanded our eyes.</span></span>
+    </h2>
+    <p class="mt-9 text-white/60 text-lg leading-relaxed max-w-2xl mx-auto">
+      Aurelius began in a dim studio in 2024 with a stubborn belief: technology should recede into the room, not dominate it. Five years and eleven prototypes later, HALO is light you can talk to — built by a team of physicists, animators, and one very patient acoustician.
+    </p>
+    <div class="mt-14 flex flex-wrap justify-center gap-3 text-sm">
+      <span class="pill rounded-full px-5 py-2 text-white/70">Designed in Reykjavík</span>
+      <span class="pill rounded-full px-5 py-2 text-white/70">Carbon-neutral build</span>
+      <span class="pill rounded-full px-5 py-2 text-white/70">Repairable by design</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / PRESS ============ -->
+<section class="relative py-28 bg-deepvoid border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-4">Early voices</p>
+      <h2 class="font-display font-800 tracking-mega text-4xl sm:text-5xl">The reveal landed.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="glass glass-hover rounded-2xl p-8" data-quote>
+        <div class="text-aqua text-3xl font-display mb-3">"</div>
+        <blockquote class="text-white/75 leading-relaxed">The first piece of hardware in a decade that made our whole office go quiet. HALO doesn't ask for attention — it earns it.</blockquote>
+        <figcaption class="mt-6 text-sm text-white/45">— Mara Velasquez, <span class="text-white/70">Frontier Review</span></figcaption>
+      </figure>
+      <figure class="glass glass-hover rounded-2xl p-8" data-quote>
+        <div class="text-ember text-3xl font-display mb-3">"</div>
+        <blockquote class="text-white/75 leading-relaxed">It anticipated a meeting I hadn't told it about. Slightly uncanny, deeply useful. This is ambient done right.</blockquote>
+        <figcaption class="mt-6 text-sm text-white/45">— Dr. Idris Kohl, <span class="text-white/70">Lumen Lab</span></figcaption>
+      </figure>
+      <figure class="glass glass-hover rounded-2xl p-8" data-quote>
+        <div class="text-halo2 text-3xl font-display mb-3">"</div>
+        <blockquote class="text-white/75 leading-relaxed">Privacy on-device, beauty in the open. Aurelius understood the assignment everyone else keeps failing.</blockquote>
+        <figcaption class="mt-6 text-sm text-white/45">— Petra Lindqvist, <span class="text-white/70">Orbit Daily</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / PREORDER ============ -->
+<section id="pricing" class="relative py-32 overflow-hidden">
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[60vw] h-[40vw] max-w-[680px] rounded-full bg-halo/20 glow-orb -z-0"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-4">Generation Zero · Limited run</p>
+      <h2 class="font-display font-800 tracking-mega text-4xl sm:text-6xl">Reserve your HALO.</h2>
+      <p class="mt-5 text-white/55">$99 fully-refundable deposit. Ships winter 2026.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Tier 1 -->
+      <div class="glass glass-hover rounded-2xl p-8 flex flex-col">
+        <h3 class="font-display font-600 text-xl">HALO Solo</h3>
+        <p class="text-white/45 text-sm mt-1">For one quiet room</p>
+        <div class="mt-6 font-display font-800 text-4xl">$349</div>
+        <ul class="mt-6 space-y-3 text-white/65 text-sm flex-1">
+          <li>Single HALO unit</li>
+          <li>On-device neural core</li>
+          <li>1-year ambient updates</li>
+        </ul>
+        <a href="#" class="mt-8 rounded-full px-6 py-3 pill text-center text-white/80 hover:bg-white/10 transition text-sm">Reserve Solo</a>
+      </div>
+      <!-- Tier 2 featured -->
+      <div class="relative rounded-2xl p-[1px] bg-gradient-to-b from-halo via-ember to-aqua glass-hover">
+        <div class="rounded-2xl bg-ink p-8 flex flex-col h-full">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display font-600 text-xl text-grad">HALO Duo</h3>
+            <span class="text-[10px] tracking-widest uppercase bg-white/10 rounded-full px-3 py-1">Most reserved</span>
+          </div>
+          <p class="text-white/45 text-sm mt-1">Constellation starter</p>
+          <div class="mt-6 font-display font-800 text-4xl">$599</div>
+          <ul class="mt-6 space-y-3 text-white/70 text-sm flex-1">
+            <li>Two meshed HALO units</li>
+            <li>Room-to-room hand-off</li>
+            <li>3-year ambient updates</li>
+            <li>Priority winter shipment</li>
+          </ul>
+          <a href="#" class="btn-glow mt-8 rounded-full px-6 py-3 text-center bg-white text-void font-600 text-sm">Reserve Duo</a>
+        </div>
+      </div>
+      <!-- Tier 3 -->
+      <div class="glass glass-hover rounded-2xl p-8 flex flex-col">
+        <h3 class="font-display font-600 text-xl">HALO Studio</h3>
+        <p class="text-white/45 text-sm mt-1">Whole-home mesh</p>
+        <div class="mt-6 font-display font-800 text-4xl">$1,099</div>
+        <ul class="mt-6 space-y-3 text-white/65 text-sm flex-1">
+          <li>Four meshed HALO units</li>
+          <li>Lifetime ambient updates</li>
+          <li>White-glove setup</li>
+        </ul>
+        <a href="#" class="mt-8 rounded-full px-6 py-3 pill text-center text-white/80 hover:bg-white/10 transition text-sm">Reserve Studio</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-28 bg-deepvoid border-y border-white/5">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="text-xs tracking-[0.3em] uppercase text-halo2 mb-4">Before you reserve</p>
+      <h2 class="font-display font-800 tracking-mega text-4xl sm:text-5xl">Questions, answered.</h2>
+    </div>
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item glass rounded-xl px-6 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="font-500 text-white/90">Does HALO send my data to the cloud?</h3>
+          <span class="faq-icon text-halo2 text-2xl leading-none">+</span>
+        </div>
+        <div class="faq-body"><p class="pt-4 text-white/55 leading-relaxed">Never by default. The neural core runs entirely on-device. Cloud sync is optional, encrypted, and off until you explicitly enable it.</p></div>
+      </div>
+      <div class="faq-item glass rounded-xl px-6 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="font-500 text-white/90">When does the deposit charge and when does it ship?</h3>
+          <span class="faq-icon text-halo2 text-2xl leading-none">+</span>
+        </div>
+        <div class="faq-body"><p class="pt-4 text-white/55 leading-relaxed">Your $99 deposit is collected today and is fully refundable any time before shipment. Generation Zero units ship in waves through winter 2026.</p></div>
+      </div>
+      <div class="faq-item glass rounded-xl px-6 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="font-500 text-white/90">Do I need multiple units?</h3>
+          <span class="faq-icon text-halo2 text-2xl leading-none">+</span>
+        </div>
+        <div class="faq-body"><p class="pt-4 text-white/55 leading-relaxed">No — a single HALO is complete. Additional units simply form a mesh, handing your context from room to room as you move.</p></div>
+      </div>
+      <div class="faq-item glass rounded-xl px-6 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-4">
+          <h3 class="font-500 text-white/90">Is it repairable?</h3>
+          <span class="faq-icon text-halo2 text-2xl leading-none">+</span>
+        </div>
+        <div class="faq-body"><p class="pt-4 text-white/55 leading-relaxed">Yes. HALO is built modular — the core, optics, and battery are individually replaceable, with parts and guides available to everyone.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-36 overflow-hidden text-center">
+  <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_50%,#1a1640_0%,#05060d_65%)]"></div>
+  <div class="glow-orb absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50vw] h-[50vw] max-w-[560px] max-h-[560px] rounded-full bg-halo/30 -z-10"></div>
+  <div class="relative max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="relative mx-auto w-28 h-28 rounded-full halo-device floaty flex items-center justify-center mb-10">
+      <div class="w-1/2 h-1/2 rounded-full halo-core"></div>
+    </div>
+    <h2 class="font-display font-800 tracking-mega text-4xl sm:text-6xl leading-[0.95]">
+      The light is ready.<br><span class="text-grad">Are you?</span>
+    </h2>
+    <p class="mt-6 text-white/60 text-lg">Join the first generation. Reserve in under a minute.</p>
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#pricing" class="btn-glow rounded-full px-8 py-4 bg-white text-void font-600">Reserve for $99</a>
+      <a href="#features" class="rounded-full px-8 py-4 pill text-white/80 font-500 hover:bg-white/10 transition">Explore HALO</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-deepvoid border-t border-white/5 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-14">
+      <div class="md:col-span-1">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="w-8 h-8 rounded-full halo-device flex items-center justify-center"><span class="w-3 h-3 rounded-full bg-white/90"></span></span>
+          <span class="font-display font-700 tracking-mega">AURELIUS·HALO</span>
+        </div>
+        <p class="text-white/45 text-sm leading-relaxed">Light that thinks with you. Built in Reykjavík, shipped to the world.</p>
+      </div>
+      <div>
+        <h4 class="font-600 text-white/80 mb-4 text-sm tracking-widest uppercase">Product</h4>
+        <ul class="space-y-2.5 text-white/50 text-sm">
+          <li><a href="#features" class="hover:text-white transition">Features</a></li>
+          <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Pre-order</a></li>
+          <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-600 text-white/80 mb-4 text-sm tracking-widest uppercase">Company</h4>
+        <ul class="space-y-2.5 text-white/50 text-sm">
+          <li><a href="#story" class="hover:text-white transition">Story</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+          <li><a href="#" class="hover:text-white transition">Press kit</a></li>
+          <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-600 text-white/80 mb-4 text-sm tracking-widest uppercase">Stay in the loop</h4>
+        <p class="text-white/45 text-sm mb-4">Reveal updates, ship dates, no noise.</p>
+        <form class="flex gap-2" onsubmit="return false;">
+          <input type="email" placeholder="you@email.com" class="flex-1 rounded-full bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-halo transition" />
+          <button class="btn-glow rounded-full px-5 py-2.5 bg-white text-void text-sm font-600">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="h-px neon-line mb-8"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-white/35 text-xs">
+      <p>© 2026 Aurelius Labs. A flagship demo template. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-white transition">Privacy</a>
+        <a href="#" class="hover:text-white transition">Terms</a>
+        <a href="#" class="hover:text-white transition">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Nav state on scroll
+  const nav = document.getElementById('nav');
+  const navline = document.getElementById('navline');
+  function onScroll() {
+    if (window.scrollY > 40) {
+      nav.classList.add('bg-void/70','backdrop-blur-xl');
+      navline && navline.classList.remove('opacity-0');
+    } else {
+      nav.classList.remove('bg-void/70','backdrop-blur-xl');
+      navline && navline.classList.add('opacity-0');
+    }
+  }
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  if (reduce || typeof gsap === 'undefined') {
+    // Reduced motion: reveal everything statically
+    document.querySelectorAll('.reveal-line').forEach(el => el.style.transform = 'none');
+    document.querySelectorAll('.countup').forEach(el => el.textContent = el.dataset.to);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Intro: masked headline lines + hero copy ----
+  const introTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+  introTl
+    .to('#heroCopy .reveal-line', { y: 0, duration: 1.1, stagger: 0.12 }, 0.2)
+    .from('#heroSub', { autoAlpha: 0, y: 24, duration: 0.9 }, 0.7)
+    .from('#heroBtns', { autoAlpha: 0, y: 24, duration: 0.9 }, 0.9)
+    .from('#scrollCue', { autoAlpha: 0, duration: 0.8 }, 1.1);
+
+  // ---- Pinned hero: scrub-driven product reveal + parallax ----
+  const heroScrub = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#heroPin',
+      start: 'top top',
+      end: '+=120%',
+      scrub: 1,
+      pin: true,
+      anticipatePin: 1,
+    }
+  });
+  heroScrub
+    .fromTo('#heroProduct', { scale: 0.55, autoAlpha: 0.4 }, { scale: 1.25, autoAlpha: 1, ease: 'none' }, 0)
+    .to('#heroCopy', { y: -120, autoAlpha: 0, ease: 'none' }, 0)
+    .to('#heroRing', { scale: 1.5, rotate: 80, autoAlpha: 0.3, ease: 'none' }, 0)
+    .to('#scrollCue', { autoAlpha: 0, duration: 0.2 }, 0);
+
+  // parallax glow layers within pinned hero
+  gsap.utils.toArray('[data-parallax]').forEach(el => {
+    const depth = parseFloat(el.getAttribute('data-parallax')) || 0.3;
+    gsap.to(el, {
+      yPercent: -30 * depth,
+      ease: 'none',
+      scrollTrigger: { trigger: '#heroPin', start: 'top top', end: '+=120%', scrub: true }
+    });
+  });
+
+  // ---- Count-up specs ----
+  gsap.utils.toArray('.countup').forEach(el => {
+    const to = parseFloat(el.dataset.to);
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 85%',
+      once: true,
+      onEnter: () => gsap.to(obj, {
+        v: to, duration: 1.6, ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(obj.v); }
+      })
+    });
+  });
+
+  // ---- Stats strip fade-up ----
+  gsap.utils.toArray('[data-stat]').forEach((el, i) => {
+    gsap.from(el, {
+      autoAlpha: 0, y: 40, duration: 0.9, ease: 'power3.out', delay: i * 0.08,
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  // ---- Feature scenes: copy + media slide/fade ----
+  gsap.utils.toArray('[data-scene]').forEach(scene => {
+    const media = scene.querySelector('[data-scene-media]');
+    const copy = scene.querySelector('[data-scene-copy]');
+    gsap.from(media, {
+      autoAlpha: 0, y: 60, scale: 0.94, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: scene, start: 'top 80%' }
+    });
+    gsap.from(copy.children, {
+      autoAlpha: 0, y: 30, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+      scrollTrigger: { trigger: scene, start: 'top 78%' }
+    });
+    // subtle parallax on media while scrolling through
+    gsap.to(media, {
+      yPercent: -8, ease: 'none',
+      scrollTrigger: { trigger: scene, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // ---- Steps + quotes pop ----
+  ['[data-step]', '[data-quote]'].forEach(sel => {
+    gsap.utils.toArray(sel).forEach((el, i) => {
+      gsap.from(el, {
+        autoAlpha: 0, y: 50, duration: 0.8, ease: 'power3.out', delay: i * 0.1,
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+  });
+
+  // ---- Generic masked reveal lines outside hero ----
+  gsap.utils.toArray('.reveal-mask').forEach(mask => {
+    if (mask.closest('#heroCopy')) return; // handled by intro
+    const line = mask.querySelector('.reveal-line');
+    gsap.to(line, {
+      y: 0, duration: 1, ease: 'power4.out',
+      scrollTrigger: { trigger: mask, start: 'top 88%' }
+    });
+  });
+})();
+
+// ---- FAQ accordion (works regardless of motion pref) ----
+document.querySelectorAll('#faqList .faq-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('#faqList .faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

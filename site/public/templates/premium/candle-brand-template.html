@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emberhaus — Hand-Poured Candles & Home Fragrance</title>
+<meta name="description" content="Emberhaus crafts small-batch, hand-poured soy candles and home fragrance. Slow-burning, clean-scented, made to glow." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#F6F1E9',
+          sand: '#EAE0D2',
+          clay: '#C8B49A',
+          umber: '#3A2E25',
+          espresso: '#26201B',
+          ember: '#D98E4A',
+          emberlt: '#E9B07A',
+          glow: '#F4C77B',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans: ['Jost', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #F6F1E9; color: #3A2E25; }
+
+  ::selection { background: #E9B07A; color: #26201B; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #EAE0D2; }
+  ::-webkit-scrollbar-thumb { background: #C8B49A; border-radius: 20px; }
+
+  .font-serif { letter-spacing: 0.01em; }
+  .tracking-luxe { letter-spacing: 0.32em; }
+
+  /* Flame */
+  .flame {
+    position: relative;
+    width: 38px;
+    height: 78px;
+    transform-origin: 50% 100%;
+    animation: sway 2.6s ease-in-out infinite;
+  }
+  .flame .body {
+    position: absolute;
+    bottom: 0; left: 50%;
+    width: 30px; height: 70px;
+    transform: translateX(-50%);
+    background: linear-gradient(to top, #D98E4A 0%, #F4C77B 45%, #FFF3D6 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    box-shadow: 0 0 30px 10px rgba(244,199,123,0.55), 0 0 70px 30px rgba(217,142,74,0.30);
+    animation: flicker 0.18s infinite alternate;
+    filter: blur(0.4px);
+  }
+  .flame .inner {
+    position: absolute;
+    bottom: 4px; left: 50%;
+    width: 14px; height: 40px;
+    transform: translateX(-50%);
+    background: linear-gradient(to top, #B5651D 0%, #F4C77B 70%, #FFFCEF 100%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    animation: flickerInner 0.22s infinite alternate;
+  }
+  @keyframes flicker {
+    0%   { transform: translateX(-50%) scaleY(1)    scaleX(1);    }
+    100% { transform: translateX(-50%) scaleY(1.06) scaleX(0.96); }
+  }
+  @keyframes flickerInner {
+    0%   { transform: translateX(-50%) scaleY(1)    translateY(0);   opacity: 0.92; }
+    100% { transform: translateX(-50%) scaleY(0.92) translateY(2px); opacity: 1; }
+  }
+  @keyframes sway {
+    0%,100% { transform: rotate(-2deg); }
+    50%     { transform: rotate(2.5deg); }
+  }
+
+  /* Ambient glow behind hero candle */
+  .ambient-glow {
+    background: radial-gradient(circle at center, rgba(244,199,123,0.55) 0%, rgba(233,176,122,0.22) 35%, rgba(246,241,233,0) 70%);
+    animation: breathe 4s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%,100% { transform: scale(1);    opacity: 0.85; }
+    50%     { transform: scale(1.12); opacity: 1; }
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollx 32s linear infinite; }
+  .marquee:hover { animation-play-state: paused; }
+  @keyframes scrollx {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* Reveal base */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* Product card */
+  .product-card { transition: transform 0.5s cubic-bezier(.2,.8,.2,1), box-shadow 0.5s; will-change: transform; }
+  .product-card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px -28px rgba(58,46,37,0.45); }
+  .product-card .swatch { transition: transform 0.7s cubic-bezier(.2,.8,.2,1); }
+  .product-card:hover .swatch { transform: scale(1.07); }
+  .product-card .quick { transition: opacity 0.4s, transform 0.4s; }
+  .product-card:hover .quick { opacity: 1; transform: translateY(0); }
+
+  /* Scent note micro-interaction */
+  .note { transition: transform 0.35s cubic-bezier(.2,.8,.2,1), color 0.35s, background 0.35s; }
+  .note:hover { transform: translateY(-3px) scale(1.04); background: #3A2E25; color: #F4C77B; }
+
+  /* Magnetic CTA */
+  .magnetic { transition: transform 0.25s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(.2,.8,.2,1); }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform 0.4s; }
+
+  /* Tilt cards */
+  .tilt { transform-style: preserve-3d; transition: transform 0.2s ease-out; will-change: transform; }
+
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .marquee { animation: none; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased">
+
+<!-- Grain overlay -->
+<div class="grain fixed inset-0 pointer-events-none opacity-[0.035] z-[60] mix-blend-multiply"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#hero" class="flex items-center gap-2 group">
+      <span class="relative inline-flex h-7 w-7 items-center justify-center">
+        <span class="absolute inset-0 rounded-full bg-glow/40 blur-[6px] group-hover:bg-glow/70 transition"></span>
+        <span class="relative h-2.5 w-2.5 rounded-full bg-ember"></span>
+      </span>
+      <span class="font-serif text-2xl tracking-wide text-umber">Emberhaus</span>
+    </a>
+
+    <ul class="hidden md:flex items-center gap-9 text-[13px] tracking-[0.14em] uppercase text-umber/80">
+      <li><a href="#bestsellers" class="hover:text-ember transition">Shop</a></li>
+      <li><a href="#scents" class="hover:text-ember transition">Scents</a></li>
+      <li><a href="#craft" class="hover:text-ember transition">The Craft</a></li>
+      <li><a href="#subscription" class="hover:text-ember transition">Subscribe</a></li>
+      <li><a href="#gifting" class="hover:text-ember transition">Gifting</a></li>
+    </ul>
+
+    <div class="flex items-center gap-5">
+      <button class="hidden sm:inline text-[13px] tracking-[0.14em] uppercase text-umber/80 hover:text-ember transition">Account</button>
+      <button id="cartBtn" class="relative flex items-center gap-2 text-umber hover:text-ember transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-.534 2.07-1.398 2.69-2.5l1.302-2.31a.75.75 0 0 0-.654-1.118H6.347m0 0L5.106 5.272M6.347 9h12.5m-11.61 11.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm11.25 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/>
+        </svg>
+        <span id="cartCount" class="absolute -top-2 -right-2 h-4 w-4 rounded-full bg-ember text-cream text-[10px] flex items-center justify-center font-medium">0</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-cream">
+  <!-- soft background wash -->
+  <div class="absolute inset-0 bg-gradient-to-b from-sand/60 via-cream to-cream"></div>
+  <div data-parallax="0.25" class="absolute -top-40 -right-32 h-[36rem] w-[36rem] rounded-full bg-emberlt/20 blur-3xl"></div>
+  <div data-parallax="0.4" class="absolute bottom-0 -left-32 h-[28rem] w-[28rem] rounded-full bg-clay/30 blur-3xl"></div>
+
+  <div class="relative max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 items-center pt-28 pb-20 w-full">
+    <!-- Copy -->
+    <div class="order-2 lg:order-1">
+      <p data-hero class="reveal text-[12px] tracking-luxe uppercase text-ember mb-6">Small-batch · Hand-poured · Clean soy</p>
+      <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-umber">
+        <span data-hero class="reveal block">Light a little</span>
+        <span data-hero class="reveal block italic text-ember">warmth</span>
+        <span data-hero class="reveal block">into every room.</span>
+      </h1>
+      <p data-hero class="reveal mt-7 text-lg text-umber/70 max-w-md leading-relaxed">
+        Slow-burning candles poured by hand in our studio — natural soy wax, cotton wicks, and fragrances composed to feel like home.
+      </p>
+
+      <div data-hero class="reveal mt-9 flex flex-wrap items-center gap-5">
+        <a href="#bestsellers" id="shopCta" class="magnetic group inline-flex items-center gap-3 rounded-full bg-umber px-8 py-4 text-cream text-sm tracking-[0.14em] uppercase hover:bg-espresso transition">
+          Shop the collection
+          <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+        </a>
+        <a href="#craft" class="text-sm tracking-[0.14em] uppercase text-umber/70 underline underline-offset-8 decoration-clay hover:text-ember hover:decoration-ember transition">Our craft</a>
+      </div>
+
+      <!-- count-ups -->
+      <div data-hero class="reveal mt-12 flex gap-10">
+        <div>
+          <div class="font-serif text-4xl text-umber"><span class="count" data-to="60">0</span>h</div>
+          <p class="text-[11px] tracking-[0.18em] uppercase text-umber/55 mt-1">Avg. burn time</p>
+        </div>
+        <div>
+          <div class="font-serif text-4xl text-umber"><span class="count" data-to="100">0</span>%</div>
+          <p class="text-[11px] tracking-[0.18em] uppercase text-umber/55 mt-1">Natural soy wax</p>
+        </div>
+        <div>
+          <div class="font-serif text-4xl text-umber"><span class="count" data-to="24">0</span></div>
+          <p class="text-[11px] tracking-[0.18em] uppercase text-umber/55 mt-1">Signature scents</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Candle visual -->
+    <div class="order-1 lg:order-2 relative flex justify-center">
+      <div data-parallax="0.15" class="relative">
+        <!-- ambient glow -->
+        <div class="ambient-glow absolute -top-10 left-1/2 -translate-x-1/2 h-72 w-72 rounded-full pointer-events-none"></div>
+        <!-- flame -->
+        <div class="relative z-10 flex justify-center -mb-3">
+          <div class="flame"><div class="body"></div><div class="inner"></div></div>
+        </div>
+        <!-- candle vessel -->
+        <div class="relative z-0 mx-auto w-56 sm:w-64">
+          <div class="h-72 sm:h-80 rounded-[2rem] bg-gradient-to-b from-sand to-clay/80 shadow-[0_40px_80px_-30px_rgba(58,46,37,0.5)] overflow-hidden flex flex-col items-center justify-end">
+            <img src="https://images.unsplash.com/photo-1602874801006-2bd9c1c0a1a1?auto=format&fit=crop&w=1600&q=80"
+                 alt="Hand-poured candle" loading="lazy"
+                 onerror="this.style.display='none'"
+                 class="absolute inset-0 h-full w-full object-cover opacity-90" />
+            <div class="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-espresso/55 to-transparent"></div>
+            <div class="relative z-10 mb-8 text-center">
+              <p class="font-serif text-cream text-2xl">No. 04</p>
+              <p class="text-cream/80 text-[11px] tracking-[0.25em] uppercase">Amber &amp; Oak</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-umber/50">
+    <span class="text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+    <span class="h-10 w-px bg-umber/30 animate-pulse"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="bg-umber py-5 overflow-hidden">
+  <div class="marquee">
+    <div class="flex items-center gap-12 pr-12 text-cream/80 font-serif text-xl italic whitespace-nowrap">
+      <span>Amber &amp; Oak</span><span class="text-ember">✦</span>
+      <span>Fig &amp; Cashmere</span><span class="text-ember">✦</span>
+      <span>Sea Salt Vetiver</span><span class="text-ember">✦</span>
+      <span>Tobacco &amp; Vanilla</span><span class="text-ember">✦</span>
+      <span>Wild Bergamot</span><span class="text-ember">✦</span>
+      <span>Smoked Cedar</span><span class="text-ember">✦</span>
+    </div>
+    <div class="flex items-center gap-12 pr-12 text-cream/80 font-serif text-xl italic whitespace-nowrap" aria-hidden="true">
+      <span>Amber &amp; Oak</span><span class="text-ember">✦</span>
+      <span>Fig &amp; Cashmere</span><span class="text-ember">✦</span>
+      <span>Sea Salt Vetiver</span><span class="text-ember">✦</span>
+      <span>Tobacco &amp; Vanilla</span><span class="text-ember">✦</span>
+      <span>Wild Bergamot</span><span class="text-ember">✦</span>
+      <span>Smoked Cedar</span><span class="text-ember">✦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="bestsellers" class="py-24 lg:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">The favourites</p>
+        <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber max-w-md leading-tight">Bestsellers, poured this week</h2>
+      </div>
+      <p class="reveal text-umber/60 max-w-sm">Each candle is mixed, poured, and labelled by hand in our studio. Once they sell out, we pour again — never mass-produced.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      <!-- card 1 -->
+      <article class="reveal product-card group rounded-3xl bg-white/60 p-4 border border-clay/30">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emberlt/40 to-clay/40 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1602874801006-2bd9c1c0a1a1?auto=format&fit=crop&w=1600&q=80" alt="Amber & Oak candle" loading="lazy" onerror="this.style.display='none'" class="swatch h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-umber/90 text-cream text-[10px] tracking-[0.18em] uppercase px-3 py-1">Bestseller</span>
+          <button class="quick add-cart opacity-0 translate-y-3 absolute bottom-3 inset-x-3 rounded-full bg-cream/95 text-umber text-xs tracking-[0.14em] uppercase py-3 hover:bg-ember hover:text-cream transition">Add — $38</button>
+        </div>
+        <div class="px-1 pt-4 pb-1">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-xl text-umber">Amber &amp; Oak</h3>
+            <span class="text-umber/70">$38</span>
+          </div>
+          <p class="text-sm text-umber/55 mt-1">Warm, woody, grounding</p>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="reveal product-card group rounded-3xl bg-white/60 p-4 border border-clay/30">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-clay/40 to-sand aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1608181831718-c9ffd8728e8f?auto=format&fit=crop&w=1600&q=80" alt="Fig & Cashmere candle" loading="lazy" onerror="this.style.display='none'" class="swatch h-full w-full object-cover" />
+          <button class="quick add-cart opacity-0 translate-y-3 absolute bottom-3 inset-x-3 rounded-full bg-cream/95 text-umber text-xs tracking-[0.14em] uppercase py-3 hover:bg-ember hover:text-cream transition">Add — $36</button>
+        </div>
+        <div class="px-1 pt-4 pb-1">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-xl text-umber">Fig &amp; Cashmere</h3>
+            <span class="text-umber/70">$36</span>
+          </div>
+          <p class="text-sm text-umber/55 mt-1">Soft, fruity, comforting</p>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="reveal product-card group rounded-3xl bg-white/60 p-4 border border-clay/30">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sand to-emberlt/40 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1611072172377-0cabc3addb30?auto=format&fit=crop&w=1600&q=80" alt="Sea Salt Vetiver candle" loading="lazy" onerror="this.style.display='none'" class="swatch h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-ember/90 text-cream text-[10px] tracking-[0.18em] uppercase px-3 py-1">New</span>
+          <button class="quick add-cart opacity-0 translate-y-3 absolute bottom-3 inset-x-3 rounded-full bg-cream/95 text-umber text-xs tracking-[0.14em] uppercase py-3 hover:bg-ember hover:text-cream transition">Add — $42</button>
+        </div>
+        <div class="px-1 pt-4 pb-1">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-xl text-umber">Sea Salt Vetiver</h3>
+            <span class="text-umber/70">$42</span>
+          </div>
+          <p class="text-sm text-umber/55 mt-1">Fresh, mineral, airy</p>
+        </div>
+      </article>
+      <!-- card 4 -->
+      <article class="reveal product-card group rounded-3xl bg-white/60 p-4 border border-clay/30">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-clay/50 to-umber/20 aspect-[4/5]">
+          <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1600&q=80" alt="Tobacco & Vanilla candle" loading="lazy" onerror="this.style.display='none'" class="swatch h-full w-full object-cover" />
+          <button class="quick add-cart opacity-0 translate-y-3 absolute bottom-3 inset-x-3 rounded-full bg-cream/95 text-umber text-xs tracking-[0.14em] uppercase py-3 hover:bg-ember hover:text-cream transition">Add — $40</button>
+        </div>
+        <div class="px-1 pt-4 pb-1">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-xl text-umber">Tobacco &amp; Vanilla</h3>
+            <span class="text-umber/70">$40</span>
+          </div>
+          <p class="text-sm text-umber/55 mt-1">Rich, sweet, smoky</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCENT FAMILIES ============ -->
+<section id="scents" class="py-24 lg:py-32 bg-sand/50">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">Find your scent</p>
+      <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber leading-tight">Four families, endless moods</h2>
+      <p class="reveal text-umber/60 mt-5">Hover a note to feel where it sits. Every blend is built from these natural accords.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- family -->
+      <div class="reveal tilt rounded-3xl bg-cream p-8 border border-clay/30 shadow-sm">
+        <div class="h-12 w-12 rounded-full bg-emberlt/30 flex items-center justify-center mb-6 text-2xl">🪵</div>
+        <h3 class="font-serif text-2xl text-umber mb-3">Woody &amp; Warm</h3>
+        <p class="text-sm text-umber/60 mb-5">Grounding base notes for slow evenings.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Cedar</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Oak</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Sandalwood</span>
+        </div>
+      </div>
+      <div class="reveal tilt rounded-3xl bg-cream p-8 border border-clay/30 shadow-sm">
+        <div class="h-12 w-12 rounded-full bg-emberlt/30 flex items-center justify-center mb-6 text-2xl">🌿</div>
+        <h3 class="font-serif text-2xl text-umber mb-3">Fresh &amp; Green</h3>
+        <p class="text-sm text-umber/60 mb-5">Bright, clean air for open windows.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Vetiver</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Sea Salt</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Bergamot</span>
+        </div>
+      </div>
+      <div class="reveal tilt rounded-3xl bg-cream p-8 border border-clay/30 shadow-sm">
+        <div class="h-12 w-12 rounded-full bg-emberlt/30 flex items-center justify-center mb-6 text-2xl">🍯</div>
+        <h3 class="font-serif text-2xl text-umber mb-3">Sweet &amp; Gourmand</h3>
+        <p class="text-sm text-umber/60 mb-5">Cozy, edible warmth for the kitchen.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Vanilla</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Tonka</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Fig</span>
+        </div>
+      </div>
+      <div class="reveal tilt rounded-3xl bg-cream p-8 border border-clay/30 shadow-sm">
+        <div class="h-12 w-12 rounded-full bg-emberlt/30 flex items-center justify-center mb-6 text-2xl">🌸</div>
+        <h3 class="font-serif text-2xl text-umber mb-3">Floral &amp; Soft</h3>
+        <p class="text-sm text-umber/60 mb-5">Delicate petals for quiet mornings.</p>
+        <div class="flex flex-wrap gap-2">
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Neroli</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Jasmine</span>
+          <span class="note cursor-default rounded-full bg-sand px-3 py-1 text-xs text-umber/80">Iris</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE CRAFT ============ -->
+<section id="craft" class="py-24 lg:py-32 bg-cream overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div data-parallax="0.12" class="relative">
+      <div class="rounded-3xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-clay/50 to-emberlt/40 shadow-[0_40px_80px_-30px_rgba(58,46,37,0.4)]">
+        <img src="https://images.unsplash.com/photo-1608181831718-c9ffd8728e8f?auto=format&fit=crop&w=1600&q=80" alt="Pouring candles by hand" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:-right-8 bg-umber text-cream rounded-2xl px-6 py-5 shadow-xl">
+        <p class="font-serif text-3xl"><span class="count" data-to="48">0</span>h</p>
+        <p class="text-[11px] tracking-[0.18em] uppercase text-cream/70">Cure time per candle</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">The craft</p>
+      <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber leading-tight mb-6">Patience, poured slowly</h2>
+      <p class="reveal text-umber/70 leading-relaxed mb-5">We blend natural soy wax with carefully dosed fragrance, hand-pour into reusable vessels, and let each candle cure for two full days. No shortcuts, no synthetic fillers — just a clean, even burn.</p>
+      <ul class="space-y-4">
+        <li class="reveal flex gap-4">
+          <span class="mt-1 h-6 w-6 shrink-0 rounded-full bg-ember/15 text-ember flex items-center justify-center text-xs">01</span>
+          <div><p class="font-medium text-umber">Natural soy &amp; cotton wicks</p><p class="text-sm text-umber/55">Renewable, low-soot, lead-free.</p></div>
+        </li>
+        <li class="reveal flex gap-4">
+          <span class="mt-1 h-6 w-6 shrink-0 rounded-full bg-ember/15 text-ember flex items-center justify-center text-xs">02</span>
+          <div><p class="font-medium text-umber">Phthalate-free fragrance</p><p class="text-sm text-umber/55">Composed in-house, skin-safe blends.</p></div>
+        </li>
+        <li class="reveal flex gap-4">
+          <span class="mt-1 h-6 w-6 shrink-0 rounded-full bg-ember/15 text-ember flex items-center justify-center text-xs">03</span>
+          <div><p class="font-medium text-umber">Refill &amp; reuse vessels</p><p class="text-sm text-umber/55">Send back the jar, save 20% on the next pour.</p></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUBSCRIPTION ============ -->
+<section id="subscription" class="py-24 lg:py-32 bg-umber text-cream relative overflow-hidden">
+  <div class="absolute -top-24 left-1/4 h-80 w-80 rounded-full bg-ember/20 blur-3xl"></div>
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center relative">
+    <p class="reveal text-[12px] tracking-luxe uppercase text-glow mb-4">The candle club</p>
+    <h2 class="reveal font-serif text-4xl lg:text-6xl leading-tight mb-6">A new scent at your door<br class="hidden sm:block"/> every month</h2>
+    <p class="reveal text-cream/70 max-w-xl mx-auto mb-12">Members get first access to seasonal pours, 15% off everything, and a surprise scent delivered monthly. Pause or cancel any time.</p>
+
+    <div class="grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto text-left">
+      <div class="reveal rounded-3xl border border-cream/15 p-7 bg-cream/[0.04]">
+        <p class="font-serif text-2xl">Taster</p>
+        <p class="text-cream/60 text-sm mt-1 mb-5">1 mini candle / month</p>
+        <p class="font-serif text-3xl text-glow">$19<span class="text-sm text-cream/50">/mo</span></p>
+      </div>
+      <div class="reveal rounded-3xl border-2 border-ember p-7 bg-cream/[0.06] relative">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ember text-cream text-[10px] tracking-[0.18em] uppercase px-3 py-1">Most loved</span>
+        <p class="font-serif text-2xl">Signature</p>
+        <p class="text-cream/60 text-sm mt-1 mb-5">1 full candle / month</p>
+        <p class="font-serif text-3xl text-glow">$34<span class="text-sm text-cream/50">/mo</span></p>
+      </div>
+      <div class="reveal rounded-3xl border border-cream/15 p-7 bg-cream/[0.04]">
+        <p class="font-serif text-2xl">Haus</p>
+        <p class="text-cream/60 text-sm mt-1 mb-5">2 candles + diffuser</p>
+        <p class="font-serif text-3xl text-glow">$58<span class="text-sm text-cream/50">/mo</span></p>
+      </div>
+    </div>
+
+    <a href="#cta" class="reveal magnetic inline-flex items-center gap-3 mt-12 rounded-full bg-ember px-9 py-4 text-cream text-sm tracking-[0.14em] uppercase hover:bg-emberlt transition">Join the club</a>
+  </div>
+</section>
+
+<!-- ============ GIFTING ============ -->
+<section id="gifting" class="py-24 lg:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 items-stretch">
+    <div class="reveal relative rounded-3xl overflow-hidden min-h-[22rem] bg-gradient-to-br from-emberlt/40 to-clay/50 flex items-end p-10">
+      <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1600&q=80" alt="Gift set" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 h-full w-full object-cover opacity-80" />
+      <div class="absolute inset-0 bg-gradient-to-t from-espresso/70 to-transparent"></div>
+      <div class="relative">
+        <p class="text-[12px] tracking-luxe uppercase text-glow mb-3">Ready to give</p>
+        <h3 class="font-serif text-3xl text-cream mb-3">Curated gift sets</h3>
+        <p class="text-cream/80 max-w-sm">Hand-wrapped trios with a folded card and your message, ready to send straight to their door.</p>
+      </div>
+    </div>
+
+    <div class="reveal flex flex-col justify-center">
+      <p class="text-[12px] tracking-luxe uppercase text-ember mb-4">Gifting</p>
+      <h2 class="font-serif text-4xl lg:text-5xl text-umber leading-tight mb-6">A little glow, beautifully wrapped</h2>
+      <p class="text-umber/70 leading-relaxed mb-8">Choose a trio, add a handwritten note, and we'll wrap it in recycled tissue tied with cotton twine. Corporate gifting and custom labels available for orders of ten or more.</p>
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="rounded-2xl border border-clay/30 p-6 bg-sand/40">
+          <p class="font-serif text-xl text-umber">The Trio</p>
+          <p class="text-sm text-umber/55 mt-1">Three minis, your scents</p>
+          <p class="mt-4 text-umber/80">$54</p>
+        </div>
+        <div class="rounded-2xl border border-clay/30 p-6 bg-sand/40">
+          <p class="font-serif text-xl text-umber">The Ritual</p>
+          <p class="text-sm text-umber/55 mt-1">Candle, matches &amp; trimmer</p>
+          <p class="mt-4 text-umber/80">$62</p>
+        </div>
+      </div>
+      <a href="#bestsellers" class="magnetic mt-8 self-start inline-flex items-center gap-3 rounded-full border border-umber px-8 py-4 text-umber text-sm tracking-[0.14em] uppercase hover:bg-umber hover:text-cream transition">Build a gift</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-24 lg:py-32 bg-sand/50">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">Our story</p>
+    <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber leading-tight mb-8">Born from a single candle on a winter evening</h2>
+    <p class="reveal text-lg text-umber/70 leading-relaxed mb-6">Emberhaus started in a small kitchen, melting wax in a borrowed pot because nothing on the shelf smelled like the home we remembered. We chased that feeling — warm, honest, a little nostalgic — and learned to pour it into wax.</p>
+    <p class="reveal text-umber/60 leading-relaxed">Today we're a tiny studio of makers who still pour every candle by hand. We believe scent is memory, and that the right glow can turn an ordinary room into somewhere you want to stay.</p>
+    <div class="reveal mt-12 flex justify-center">
+      <div class="flame scale-75"><div class="body"></div><div class="inner"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 lg:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">Loved at home</p>
+      <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber">What the haus says</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-sand/40 border border-clay/30 p-8">
+        <div class="text-ember mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl text-umber leading-snug mb-6">"Amber &amp; Oak fills the whole house without ever feeling heavy. It's the first thing I light when I get home."</blockquote>
+        <figcaption class="text-sm text-umber/60">Lena M. · Verified buyer</figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-umber text-cream p-8">
+        <div class="text-glow mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl leading-snug mb-6">"The burn is so clean and even — I've tried a lot of candles and these actually last the hours they promise."</blockquote>
+        <figcaption class="text-sm text-cream/60">Priya R. · Club member</figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-sand/40 border border-clay/30 p-8">
+        <div class="text-ember mb-4">★★★★★</div>
+        <blockquote class="font-serif text-xl text-umber leading-snug mb-6">"Gifted the trio to my mum and she immediately asked where they're from. The wrapping alone is worth it."</blockquote>
+        <figcaption class="text-sm text-umber/60">Daniel K. · Verified buyer</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="py-24 lg:py-32 bg-sand/50">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="reveal text-[12px] tracking-luxe uppercase text-ember mb-4">Good to know</p>
+      <h2 class="reveal font-serif text-4xl lg:text-5xl text-umber">Questions, answered</h2>
+    </div>
+
+    <div class="space-y-4">
+      <div class="faq-item reveal rounded-2xl bg-cream border border-clay/30 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-serif text-xl text-umber">How long does each candle burn?</span>
+          <span class="faq-icon text-2xl text-ember leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-umber/65">Our full-size candles burn for roughly 50–60 hours when trimmed and burned properly. Always trim the wick to 5mm before each light.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-clay/30 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-serif text-xl text-umber">Are your candles non-toxic?</span>
+          <span class="faq-icon text-2xl text-ember leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-umber/65">Yes. We use natural soy wax, lead-free cotton wicks, and phthalate-free, skin-safe fragrance oils. No paraffin, no synthetic dyes.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-clay/30 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-serif text-xl text-umber">Can I pause my subscription?</span>
+          <span class="faq-icon text-2xl text-ember leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-umber/65">Absolutely. Pause, skip, or cancel any month from your account — no fees, no questions. Changes apply to the next billing cycle.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-clay/30 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-serif text-xl text-umber">Do you ship internationally?</span>
+          <span class="faq-icon text-2xl text-ember leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-umber/65">We ship across most regions with carbon-neutral delivery. Shipping is calculated at checkout, and orders over $60 ship free domestically.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="py-28 lg:py-36 bg-cream relative overflow-hidden">
+  <div data-parallax="0.2" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[26rem] w-[26rem] rounded-full bg-emberlt/25 blur-3xl"></div>
+  <div class="relative max-w-3xl mx-auto px-6 lg:px-10 text-center">
+    <div class="flex justify-center mb-8">
+      <div class="flame"><div class="body"></div><div class="inner"></div></div>
+    </div>
+    <h2 class="reveal font-serif text-4xl lg:text-6xl text-umber leading-tight mb-6">Find the scent that feels like home</h2>
+    <p class="reveal text-umber/65 max-w-md mx-auto mb-10">Take our 60-second scent quiz or browse the full collection — your next favourite candle is one pour away.</p>
+    <div class="reveal flex flex-wrap items-center justify-center gap-5">
+      <a href="#bestsellers" class="magnetic inline-flex items-center gap-3 rounded-full bg-umber px-9 py-4 text-cream text-sm tracking-[0.14em] uppercase hover:bg-espresso transition">Shop now</a>
+      <a href="#scents" class="inline-flex items-center gap-3 rounded-full border border-umber px-9 py-4 text-umber text-sm tracking-[0.14em] uppercase hover:bg-umber hover:text-cream transition">Take the scent quiz</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-espresso text-cream/80 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-12 pb-14 border-b border-cream/10">
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="h-2.5 w-2.5 rounded-full bg-ember"></span>
+          <span class="font-serif text-2xl text-cream">Emberhaus</span>
+        </div>
+        <p class="text-cream/60 max-w-xs leading-relaxed mb-6">Small-batch, hand-poured candles and home fragrance. Made slowly, burned warmly.</p>
+        <form class="flex max-w-sm" onsubmit="return false;">
+          <input type="email" placeholder="Your email" class="flex-1 rounded-l-full bg-cream/10 border border-cream/15 px-5 py-3 text-sm text-cream placeholder-cream/40 focus:outline-none focus:border-ember" />
+          <button class="rounded-r-full bg-ember px-6 text-sm tracking-[0.12em] uppercase text-cream hover:bg-emberlt transition">Join</button>
+        </form>
+      </div>
+      <div>
+        <p class="text-[11px] tracking-[0.2em] uppercase text-cream/40 mb-5">Shop</p>
+        <ul class="space-y-3 text-sm">
+          <li><a href="#bestsellers" class="hover:text-ember transition">Bestsellers</a></li>
+          <li><a href="#scents" class="hover:text-ember transition">Scent families</a></li>
+          <li><a href="#gifting" class="hover:text-ember transition">Gift sets</a></li>
+          <li><a href="#subscription" class="hover:text-ember transition">Candle club</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[11px] tracking-[0.2em] uppercase text-cream/40 mb-5">Studio</p>
+        <ul class="space-y-3 text-sm">
+          <li><a href="#craft" class="hover:text-ember transition">The craft</a></li>
+          <li><a href="#about" class="hover:text-ember transition">Our story</a></li>
+          <li><a href="#" class="hover:text-ember transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-ember transition">Refill program</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[11px] tracking-[0.2em] uppercase text-cream/40 mb-5">Care</p>
+        <ul class="space-y-3 text-sm">
+          <li><a href="#" class="hover:text-ember transition">Candle care</a></li>
+          <li><a href="#" class="hover:text-ember transition">Shipping</a></li>
+          <li><a href="#" class="hover:text-ember transition">Returns</a></li>
+          <li><a href="#" class="hover:text-ember transition">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 text-xs text-cream/45">
+      <p>© 2026 Emberhaus Candle Co. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-ember transition">Instagram</a>
+        <a href="#" class="hover:text-ember transition">Pinterest</a>
+        <a href="#" class="hover:text-ember transition">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) {
+      nav.classList.add('bg-cream/85', 'backdrop-blur-md', 'shadow-[0_8px_30px_-15px_rgba(58,46,37,0.35)]');
+    } else {
+      nav.classList.remove('bg-cream/85', 'backdrop-blur-md', 'shadow-[0_8px_30px_-15px_rgba(58,46,37,0.35)]');
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---- Cart ---- */
+  let cart = 0;
+  const cartCount = document.getElementById('cartCount');
+  document.querySelectorAll('.add-cart').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      cart += 1;
+      cartCount.textContent = cart;
+      if (!reduceMotion && window.gsap) {
+        gsap.fromTo(cartCount, { scale: 1.6 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+      }
+    });
+  });
+
+  if (reduceMotion || !window.gsap) {
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach((el) => { el.textContent = el.dataset.to; });
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---- Hero intro ---- */
+  gsap.to('[data-hero]', {
+    opacity: 1, y: 0, duration: 1, ease: 'power3.out', stagger: 0.12, delay: 0.15,
+  });
+
+  /* ---- Generic reveals ---- */
+  gsap.utils.toArray('.reveal:not([data-hero])').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' },
+    });
+  });
+
+  /* ---- Count-ups ---- */
+  document.querySelectorAll('.count').forEach((el) => {
+    const to = parseFloat(el.dataset.to);
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: to, duration: 1.8, ease: 'power2.out',
+        onUpdate: () => { el.textContent = Math.round(obj.v); },
+      }),
+    });
+  });
+
+  /* ---- Container parallax ---- */
+  gsap.utils.toArray('[data-parallax]').forEach((el) => {
+    const depth = parseFloat(el.dataset.parallax) || 0.2;
+    gsap.to(el, {
+      yPercent: -depth * 30,
+      ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true },
+    });
+  });
+
+  /* ---- Magnetic buttons ---- */
+  document.querySelectorAll('.magnetic').forEach((el) => {
+    el.addEventListener('mousemove', (e) => {
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(el, { x: x * 0.3, y: y * 0.4, duration: 0.4, ease: 'power3.out' });
+    });
+    el.addEventListener('mouseleave', () => {
+      gsap.to(el, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+    });
+  });
+
+  /* ---- Tilt cards ---- */
+  document.querySelectorAll('.tilt').forEach((el) => {
+    el.addEventListener('mousemove', (e) => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(el, { rotateY: px * 8, rotateX: -py * 8, duration: 0.4, ease: 'power2.out', transformPerspective: 800 });
+    });
+    el.addEventListener('mouseleave', () => {
+      gsap.to(el, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'power2.out' });
+    });
+  });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>

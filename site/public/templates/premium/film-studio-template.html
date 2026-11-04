@@ -1,0 +1,603 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Northlight â€” Film &amp; Commercial Production Studio</title>
+<meta name="description" content="Northlight is a cinematic film and commercial production studio crafting branded films, spots, and original stories with directorial precision." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,600;0,6..96,700;1,6..96,500&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#070708',
+          coal: '#0d0d10',
+          smoke: '#16161b',
+          ash: '#9a9aa3',
+          bone: '#e9e6df',
+          ember: '#e8543f', // film-grade accent
+          emberdim: '#b53c2c',
+        },
+        fontFamily: {
+          display: ['"Bodoni Moda"', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['"Space Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { background:#070708; color:#e9e6df; }
+  body { overflow-x:hidden; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; cursor:none; }
+  ::selection { background:#e8543f; color:#070708; }
+
+  /* film grain */
+  .grain::before{
+    content:""; position:fixed; inset:-50%; z-index:60; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 0.6s steps(2) infinite;
+  }
+  @keyframes grain{ 0%{transform:translate(0,0)}25%{transform:translate(-4%,2%)}50%{transform:translate(3%,-3%)}75%{transform:translate(-2%,4%)}100%{transform:translate(2%,-2%)} }
+
+  /* letterbox bars */
+  .letterbox{ position:fixed; left:0; right:0; height:42px; background:#070708; z-index:50; pointer-events:none; }
+  .letterbox.top{ top:0; box-shadow:0 8px 20px rgba(0,0,0,.6); }
+  .letterbox.bottom{ bottom:0; box-shadow:0 -8px 20px rgba(0,0,0,.6); }
+
+  /* custom cursor */
+  .cursor{ position:fixed; top:0; left:0; width:14px; height:14px; border-radius:50%; background:#e8543f; pointer-events:none; z-index:70; mix-blend-mode:difference; transform:translate(-50%,-50%); transition:width .25s, height .25s, background .25s; }
+  .cursor.big{ width:78px; height:78px; background:rgba(232,84,63,.18); border:1px solid #e8543f; }
+  @media (hover:none){ body{cursor:auto} .cursor{display:none} }
+
+  .reveal-mask{ overflow:hidden; }
+  .reveal-line{ display:block; transform:translateY(110%); }
+
+  .marquee-track{ display:inline-flex; white-space:nowrap; animation:marq 28s linear infinite; }
+  @keyframes marq{ to{ transform:translateX(-50%); } }
+
+  .rail::-webkit-scrollbar{ height:0; }
+  .rail{ scrollbar-width:none; }
+
+  .vignette{ box-shadow:inset 0 0 140px 40px rgba(7,7,8,.9); }
+
+  .faq-body{ max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+
+  .play-ring{ animation:spin 14s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .kicker{ letter-spacing:.4em; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+    .reveal-line{ transform:none !important; }
+    .grain::before{ display:none; }
+  }
+</style>
+</head>
+<body class="grain antialiased">
+
+<div class="letterbox top"></div>
+<div class="letterbox bottom"></div>
+<div class="cursor" id="cursor"></div>
+
+<!-- NAV -->
+<header class="fixed top-0 left-0 right-0 z-40" style="top:42px">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group" data-cursor>
+      <span class="w-8 h-8 rounded-full border border-ember flex items-center justify-center">
+        <span class="w-2.5 h-2.5 bg-ember rounded-full block"></span>
+      </span>
+      <span class="font-display text-xl tracking-tight">Northlight&nbsp;<span class="text-ember italic">Reel</span></span>
+    </a>
+    <ul class="hidden md:flex items-center gap-9 text-[13px] text-ash">
+      <li><a href="#work" class="hover:text-bone transition" data-cursor>Work</a></li>
+      <li><a href="#services" class="hover:text-bone transition" data-cursor>Capabilities</a></li>
+      <li><a href="#studio" class="hover:text-bone transition" data-cursor>Studio</a></li>
+      <li><a href="#process" class="hover:text-bone transition" data-cursor>Process</a></li>
+      <li><a href="#faq" class="hover:text-bone transition" data-cursor>FAQ</a></li>
+    </ul>
+    <a href="#contact" id="navCta" class="text-[13px] border border-bone/20 rounded-full px-5 py-2 hover:border-ember hover:text-ember transition" data-cursor>Start a project</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative min-h-screen flex items-end overflow-hidden">
+  <div class="absolute inset-0" id="heroStill">
+    <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1600&q=80"
+         alt="Cinematic film still" class="w-full h-full object-cover opacity-50"
+         onerror="this.style.display='none'" />
+    <div class="absolute inset-0 vignette"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/70"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto w-full px-5 sm:px-8 pb-20 sm:pb-28">
+    <div class="flex items-center gap-3 mb-7">
+      <span class="kicker text-[11px] text-ember">EST. 2014 Â· LOS ANGELES / LISBON</span>
+      <span class="h-px w-16 bg-ember/50"></span>
+    </div>
+
+    <h1 class="font-display leading-[0.92] text-[15vw] sm:text-[12vw] lg:text-[9.5rem]">
+      <span class="reveal-mask block"><span class="reveal-line">Stories that</span></span>
+      <span class="reveal-mask block"><span class="reveal-line italic text-ember">hold the frame.</span></span>
+    </h1>
+
+    <div class="mt-10 flex flex-col sm:flex-row sm:items-end gap-8 sm:gap-14">
+      <button id="showreel" class="group flex items-center gap-5" data-cursor-big>
+        <span class="relative w-20 h-20 flex items-center justify-center">
+          <svg class="play-ring absolute inset-0" viewBox="0 0 100 100">
+            <path id="ringPath" d="M50,5 a45,45 0 1,1 0,90 a45,45 0 1,1 0,-90" fill="none"/>
+            <text fill="#9a9aa3" font-size="8.5" letter-spacing="2.4" font-family="Space Mono">
+              <textPath href="#ringPath">PLAY SHOWREEL Â· PLAY SHOWREEL Â· </textPath>
+            </text>
+          </svg>
+          <span class="w-12 h-12 rounded-full bg-ember flex items-center justify-center group-hover:scale-110 transition">
+            <svg width="14" height="16" viewBox="0 0 14 16" fill="#070708"><path d="M0 0l14 8-14 8z"/></svg>
+          </span>
+        </span>
+        <span class="text-left">
+          <span class="block text-sm text-bone">Watch the 2026 reel</span>
+          <span class="block text-xs text-ash font-mono">02:14 Â· 4K HDR</span>
+        </span>
+      </button>
+
+      <p class="max-w-sm text-ash text-[15px] leading-relaxed border-l border-ember/30 pl-6">
+        A director-led production studio crafting branded films, commercial spots, and original cinema â€” from first frame to final color.
+      </p>
+    </div>
+  </div>
+
+  <div class="absolute bottom-24 right-6 sm:right-8 z-10 hidden sm:flex flex-col items-center gap-3 text-ash">
+    <span class="text-[10px] font-mono tracking-widest rotate-90 origin-center mb-6">SCROLL</span>
+    <span class="w-px h-14 bg-gradient-to-b from-ember to-transparent"></span>
+  </div>
+</section>
+
+<!-- MARQUEE of services -->
+<section class="border-y border-white/5 py-5 bg-coal overflow-hidden">
+  <div class="marquee-track text-ash">
+    <span class="font-display text-2xl sm:text-3xl">
+      Branded Film&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Commercial Spots&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Documentary&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Music Videos&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Color &amp; Post&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Motion Design&nbsp;<span class="text-ember">âœ¦</span>&nbsp;
+    </span>
+    <span class="font-display text-2xl sm:text-3xl" aria-hidden="true">
+      Branded Film&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Commercial Spots&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Documentary&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Music Videos&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Color &amp; Post&nbsp;<span class="text-ember">âœ¦</span>&nbsp; Motion Design&nbsp;<span class="text-ember">âœ¦</span>&nbsp;
+    </span>
+  </div>
+</section>
+
+<!-- SELECTED WORK â€” horizontal rail -->
+<section id="work" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 flex items-end justify-between mb-12">
+    <div>
+      <span class="kicker text-[11px] text-ember">01 â€” SELECTED WORK</span>
+      <h2 class="font-display text-4xl sm:text-6xl mt-4">The Reel, <span class="italic">unrolled.</span></h2>
+    </div>
+    <span class="hidden sm:block text-ash text-xs font-mono">DRAG / SCROLL â†’</span>
+  </div>
+
+  <div class="rail overflow-x-auto pb-6">
+    <div class="flex gap-6 px-5 sm:px-8" style="width:max-content">
+      <!-- cards -->
+      <article class="work-card group relative w-[78vw] sm:w-[460px] shrink-0" data-cursor-big>
+        <div class="aspect-[4/5] rounded-sm overflow-hidden bg-gradient-to-br from-smoke to-ink relative">
+          <img src="https://images.unsplash.com/photo-1500210600142-d4fa2c4f0d5b?auto=format&fit=crop&w=1600&q=80" alt="Nightfall film still" class="parallax w-full h-[112%] object-cover -mt-[6%] opacity-80 group-hover:opacity-100 transition duration-700" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono text-ember border border-ember/40 rounded px-2 py-1">COMMERCIAL</span>
+        </div>
+        <div class="flex items-end justify-between mt-5">
+          <div>
+            <h3 class="font-display text-2xl group-hover:text-ember transition">Nocturne for Vael</h3>
+            <p class="text-ash text-sm">Fragrance launch film Â· 60s + cutdowns</p>
+          </div>
+          <span class="font-mono text-xs text-ash">â€™25</span>
+        </div>
+      </article>
+
+      <article class="work-card group relative w-[78vw] sm:w-[460px] shrink-0" data-cursor-big>
+        <div class="aspect-[4/5] rounded-sm overflow-hidden bg-gradient-to-br from-smoke to-ink relative">
+          <img src="https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=1600&q=80" alt="Desert film still" class="parallax w-full h-[112%] object-cover -mt-[6%] opacity-80 group-hover:opacity-100 transition duration-700" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono text-ember border border-ember/40 rounded px-2 py-1">DOCUMENTARY</span>
+        </div>
+        <div class="flex items-end justify-between mt-5">
+          <div>
+            <h3 class="font-display text-2xl group-hover:text-ember transition">The Long Dry</h3>
+            <p class="text-ash text-sm">Feature doc Â· Tribena Festival selection</p>
+          </div>
+          <span class="font-mono text-xs text-ash">â€™24</span>
+        </div>
+      </article>
+
+      <article class="work-card group relative w-[78vw] sm:w-[460px] shrink-0" data-cursor-big>
+        <div class="aspect-[4/5] rounded-sm overflow-hidden bg-gradient-to-br from-smoke to-ink relative">
+          <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=1600&q=80" alt="Studio film still" class="parallax w-full h-[112%] object-cover -mt-[6%] opacity-80 group-hover:opacity-100 transition duration-700" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono text-ember border border-ember/40 rounded px-2 py-1">MUSIC VIDEO</span>
+        </div>
+        <div class="flex items-end justify-between mt-5">
+          <div>
+            <h3 class="font-display text-2xl group-hover:text-ember transition">Static Bloom</h3>
+            <p class="text-ash text-sm">Music film for IVORY KITES Â· one-take</p>
+          </div>
+          <span class="font-mono text-xs text-ash">â€™25</span>
+        </div>
+      </article>
+
+      <article class="work-card group relative w-[78vw] sm:w-[460px] shrink-0" data-cursor-big>
+        <div class="aspect-[4/5] rounded-sm overflow-hidden bg-gradient-to-br from-smoke to-ink relative">
+          <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1600&q=80" alt="Cinematic film still" class="parallax w-full h-[112%] object-cover -mt-[6%] opacity-80 group-hover:opacity-100 transition duration-700" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/90 to-transparent"></div>
+          <span class="absolute top-4 left-4 text-[10px] font-mono text-ember border border-ember/40 rounded px-2 py-1">BRAND FILM</span>
+        </div>
+        <div class="flex items-end justify-between mt-5">
+          <div>
+            <h3 class="font-display text-2xl group-hover:text-ember transition">Made by Hand</h3>
+            <p class="text-ash text-sm">Anthem film for Orsk Atelier Â· 3 films</p>
+          </div>
+          <span class="font-mono text-xs text-ash">â€™24</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- STATS / COUNT-UPS -->
+<section class="border-y border-white/5 bg-coal py-16">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-10">
+    <div><div class="font-display text-5xl sm:text-6xl text-ember"><span class="count" data-to="240">0</span>+</div><p class="text-ash text-sm mt-2">Films delivered</p></div>
+    <div><div class="font-display text-5xl sm:text-6xl"><span class="count" data-to="38">0</span></div><p class="text-ash text-sm mt-2">Awards &amp; selections</p></div>
+    <div><div class="font-display text-5xl sm:text-6xl"><span class="count" data-to="61">0</span></div><p class="text-ash text-sm mt-2">Brand partners</p></div>
+    <div><div class="font-display text-5xl sm:text-6xl"><span class="count" data-to="12">0</span></div><p class="text-ash text-sm mt-2">Years on set</p></div>
+  </div>
+</section>
+
+<!-- SERVICES / CAPABILITIES -->
+<section id="services" class="py-24 sm:py-32 max-w-7xl mx-auto px-5 sm:px-8">
+  <span class="kicker text-[11px] text-ember">02 â€” CAPABILITIES</span>
+  <h2 class="font-display text-4xl sm:text-6xl mt-4 mb-14">From treatment <span class="italic">to final cut.</span></h2>
+
+  <div class="grid md:grid-cols-3 gap-px bg-white/5 rounded-sm overflow-hidden">
+    <div class="svc bg-ink p-8 sm:p-10 hover:bg-smoke transition" data-cursor>
+      <span class="font-mono text-xs text-ember">/ 01</span>
+      <h3 class="font-display text-2xl mt-4 mb-3">Film &amp; Direction</h3>
+      <p class="text-ash text-sm leading-relaxed">Concept, treatment, casting, and direction. We build the world, then shoot it with a crew that has done it a hundred times.</p>
+      <ul class="text-xs text-ash/80 mt-5 space-y-1.5 font-mono">
+        <li>Â· Creative treatment</li><li>Â· Casting &amp; locations</li><li>Â· Cinematography</li>
+      </ul>
+    </div>
+    <div class="svc bg-ink p-8 sm:p-10 hover:bg-smoke transition" data-cursor>
+      <span class="font-mono text-xs text-ember">/ 02</span>
+      <h3 class="font-display text-2xl mt-4 mb-3">Commercial Spots</h3>
+      <p class="text-ash text-sm leading-relaxed">Broadcast, social, and OLV built for performance. One shoot, every aspect ratio and cutdown your media plan needs.</p>
+      <ul class="text-xs text-ash/80 mt-5 space-y-1.5 font-mono">
+        <li>Â· 6sâ€“60s formats</li><li>Â· Vertical + square</li><li>Â· Versioning at scale</li>
+      </ul>
+    </div>
+    <div class="svc bg-ink p-8 sm:p-10 hover:bg-smoke transition" data-cursor>
+      <span class="font-mono text-xs text-ember">/ 03</span>
+      <h3 class="font-display text-2xl mt-4 mb-3">Color &amp; Post</h3>
+      <p class="text-ash text-sm leading-relaxed">In-house edit, sound design, and a dedicated DI suite. Grade, finish, and deliver in HDR â€” no handoffs, no surprises.</p>
+      <ul class="text-xs text-ash/80 mt-5 space-y-1.5 font-mono">
+        <li>Â· Editorial &amp; VFX</li><li>Â· DI color grade</li><li>Â· Sound &amp; mix</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / THE STUDIO -->
+<section id="studio" class="py-24 sm:py-32 bg-coal border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative">
+      <div class="aspect-[4/5] rounded-sm overflow-hidden bg-gradient-to-br from-smoke to-ink relative">
+        <img src="https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=1600&q=80" alt="On the studio floor" class="parallax w-full h-[112%] object-cover -mt-[6%] opacity-85" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 vignette"></div>
+      </div>
+      <div class="absolute -bottom-6 -right-2 sm:right-6 bg-ember text-ink px-6 py-4 rounded-sm">
+        <p class="font-display text-3xl leading-none">No. 12</p>
+        <p class="text-[11px] font-mono">stages on standby</p>
+      </div>
+    </div>
+    <div>
+      <span class="kicker text-[11px] text-ember">03 â€” THE STUDIO</span>
+      <h2 class="font-display text-4xl sm:text-5xl mt-4 mb-6">We donâ€™t shoot footage.<br><span class="italic">We compose frames.</span></h2>
+      <p class="text-ash leading-relaxed mb-5">Northlight is a director-led studio of editors, colorists, and cinematographers who believe a single honest frame outlasts a hundred busy ones. We keep our crews small, our craft obsessive, and our edit bay loud.</p>
+      <p class="text-ash leading-relaxed mb-8">Founded between Los Angeles and Lisbon, we travel light and shoot everywhere â€” from a kitchen table to a salt flat at dawn.</p>
+      <div class="flex flex-wrap gap-x-10 gap-y-4 text-sm">
+        <div><span class="text-ember font-mono">â†’</span> Director-led, in-house post</div>
+        <div><span class="text-ember font-mono">â†’</span> 4K / 8K HDR finishing</div>
+        <div><span class="text-ember font-mono">â†’</span> Global crew network</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="py-24 sm:py-32 max-w-7xl mx-auto px-5 sm:px-8">
+  <span class="kicker text-[11px] text-ember">04 â€” PROCESS</span>
+  <h2 class="font-display text-4xl sm:text-6xl mt-4 mb-14">Four reels, <span class="italic">one cut.</span></h2>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-sm overflow-hidden">
+    <div class="step bg-ink p-8">
+      <span class="font-display text-5xl text-ember/30">01</span>
+      <h3 class="font-display text-xl mt-3 mb-2">Treatment</h3>
+      <p class="text-ash text-sm leading-relaxed">We interrogate the brief and return a visual treatment â€” references, tone, and the one idea worth shooting.</p>
+    </div>
+    <div class="step bg-ink p-8">
+      <span class="font-display text-5xl text-ember/30">02</span>
+      <h3 class="font-display text-xl mt-3 mb-2">Pre-production</h3>
+      <p class="text-ash text-sm leading-relaxed">Boards, casting, locations, and a schedule that respects the light. Nothing on set is improvised by accident.</p>
+    </div>
+    <div class="step bg-ink p-8">
+      <span class="font-display text-5xl text-ember/30">03</span>
+      <h3 class="font-display text-xl mt-3 mb-2">Production</h3>
+      <p class="text-ash text-sm leading-relaxed">A tight crew, the right glass, and a director who knows when to hold and when to roll again.</p>
+    </div>
+    <div class="step bg-ink p-8">
+      <span class="font-display text-5xl text-ember/30">04</span>
+      <h3 class="font-display text-xl mt-3 mb-2">Post &amp; Color</h3>
+      <p class="text-ash text-sm leading-relaxed">Edit, grade, sound, and final delivery â€” all under one roof, all the way to your inbox.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CLIENTS -->
+<section class="py-16 border-y border-white/5 bg-coal">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <p class="text-center text-ash text-xs font-mono tracking-widest mb-10">TRUSTED BY BRANDS &amp; LABELS</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8 items-center justify-items-center text-ash/70 font-display text-lg sm:text-xl">
+      <span class="hover:text-bone transition" data-cursor>Vael</span>
+      <span class="hover:text-bone transition" data-cursor>Orsk</span>
+      <span class="hover:text-bone transition" data-cursor>LumÃ¨re</span>
+      <span class="hover:text-bone transition" data-cursor>Northwind</span>
+      <span class="hover:text-bone transition" data-cursor>Pale&nbsp;Sun</span>
+      <span class="hover:text-bone transition" data-cursor>Atlas&nbsp;9</span>
+    </div>
+  </div>
+</section>
+
+<!-- AWARDS -->
+<section class="py-24 sm:py-32 max-w-7xl mx-auto px-5 sm:px-8">
+  <span class="kicker text-[11px] text-ember">05 â€” RECOGNITION</span>
+  <h2 class="font-display text-4xl sm:text-6xl mt-4 mb-12">Things on the shelf.</h2>
+  <div class="divide-y divide-white/8 border-y border-white/8">
+    <div class="award flex flex-col sm:flex-row sm:items-center justify-between py-6 gap-2 group" data-cursor>
+      <h3 class="font-display text-2xl sm:text-3xl group-hover:text-ember transition">Tribena â€” Best Cinematography</h3>
+      <p class="text-ash font-mono text-sm">â€œThe Long Dryâ€ Â· 2024</p>
+    </div>
+    <div class="award flex flex-col sm:flex-row sm:items-center justify-between py-6 gap-2 group" data-cursor>
+      <h3 class="font-display text-2xl sm:text-3xl group-hover:text-ember transition">Lumen Gold â€” Branded Film</h3>
+      <p class="text-ash font-mono text-sm">â€œMade by Handâ€ Â· 2024</p>
+    </div>
+    <div class="award flex flex-col sm:flex-row sm:items-center justify-between py-6 gap-2 group" data-cursor>
+      <h3 class="font-display text-2xl sm:text-3xl group-hover:text-ember transition">Halo Awards â€” Music Video</h3>
+      <p class="text-ash font-mono text-sm">â€œStatic Bloomâ€ Â· 2025</p>
+    </div>
+    <div class="award flex flex-col sm:flex-row sm:items-center justify-between py-6 gap-2 group" data-cursor>
+      <h3 class="font-display text-2xl sm:text-3xl group-hover:text-ember transition">CinÃ© Nord â€” Official Selection</h3>
+      <p class="text-ash font-mono text-sm">â€œNocturne for Vaelâ€ Â· 2025</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-24 sm:py-32 bg-coal border-y border-white/5">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 grid md:grid-cols-2 gap-px bg-white/5 rounded-sm overflow-hidden">
+    <figure class="bg-ink p-10">
+      <p class="font-display text-2xl sm:text-3xl leading-snug mb-8">â€œThey didnâ€™t deliver a video. They delivered a <span class="text-ember italic">point of view</span> â€” and our launch lived inside it.â€</p>
+      <figcaption class="text-sm"><span class="text-bone">Mara Velasquez</span><span class="block text-ash font-mono text-xs">VP Brand Â· Vael</span></figcaption>
+    </figure>
+    <figure class="bg-ink p-10">
+      <p class="font-display text-2xl sm:text-3xl leading-snug mb-8">â€œCalm on set, relentless in the edit. The grade alone made the whole spot feel <span class="text-ember italic">expensive.</span>â€</p>
+      <figcaption class="text-sm"><span class="text-bone">Dev Okonkwo</span><span class="block text-ash font-mono text-xs">Founder Â· Orsk Atelier</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-24 sm:py-32 max-w-4xl mx-auto px-5 sm:px-8">
+  <span class="kicker text-[11px] text-ember">06 â€” FAQ</span>
+  <h2 class="font-display text-4xl sm:text-6xl mt-4 mb-12">Before you roll.</h2>
+  <div class="divide-y divide-white/8 border-y border-white/8">
+    <div class="faq">
+      <button class="faq-q w-full flex items-center justify-between py-6 text-left" data-cursor>
+        <span class="font-display text-xl sm:text-2xl">What does a typical project cost?</span>
+        <span class="faq-ic text-ember text-2xl transition-transform">+</span>
+      </button>
+      <div class="faq-body"><p class="text-ash pb-6 leading-relaxed">Branded films and commercial spots generally start in the mid five figures and scale with scope, crew, and shoot days. We scope every project after the treatment so the number reflects the film, not a template.</p></div>
+    </div>
+    <div class="faq">
+      <button class="faq-q w-full flex items-center justify-between py-6 text-left" data-cursor>
+        <span class="font-display text-xl sm:text-2xl">How long from brief to final cut?</span>
+        <span class="faq-ic text-ember text-2xl transition-transform">+</span>
+      </button>
+      <div class="faq-body"><p class="text-ash pb-6 leading-relaxed">Most commercial projects run four to eight weeks end-to-end. Larger films and documentaries take longer. Weâ€™ll give you a date-locked schedule before pre-production begins.</p></div>
+    </div>
+    <div class="faq">
+      <button class="faq-q w-full flex items-center justify-between py-6 text-left" data-cursor>
+        <span class="font-display text-xl sm:text-2xl">Do you handle post in-house?</span>
+        <span class="faq-ic text-ember text-2xl transition-transform">+</span>
+      </button>
+      <div class="faq-body"><p class="text-ash pb-6 leading-relaxed">Yes â€” editorial, sound, VFX, and a dedicated DI color suite all live under our roof. One team owns the film from first frame to final delivery.</p></div>
+    </div>
+    <div class="faq">
+      <button class="faq-q w-full flex items-center justify-between py-6 text-left" data-cursor>
+        <span class="font-display text-xl sm:text-2xl">Can you shoot internationally?</span>
+        <span class="faq-ic text-ember text-2xl transition-transform">+</span>
+      </button>
+      <div class="faq-body"><p class="text-ash pb-6 leading-relaxed">We travel light and maintain a vetted crew network across Europe, North America, and beyond. Permits, fixers, and logistics are part of the package.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="contact" class="relative py-28 sm:py-40 overflow-hidden">
+  <div class="absolute inset-0">
+    <img src="https://images.unsplash.com/photo-1574267432553-4b4628081c31?auto=format&fit=crop&w=1600&q=80" alt="" class="w-full h-full object-cover opacity-25" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink"></div>
+  </div>
+  <div class="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <span class="kicker text-[11px] text-ember">LETâ€™S MAKE SOMETHING</span>
+    <h2 class="font-display text-5xl sm:text-7xl lg:text-8xl mt-6 mb-10 leading-[0.95]">Got a story<br><span class="italic text-ember">worth shooting?</span></h2>
+    <a href="mailto:hello@northlightreel.studio" id="magnetCta" class="inline-flex items-center gap-4 bg-ember text-ink font-medium rounded-full px-10 py-5 text-lg hover:bg-bone transition" data-cursor-big>
+      Start a project
+      <svg width="20" height="14" viewBox="0 0 20 14" fill="none"><path d="M13 1l6 6-6 6M19 7H1" stroke="currentColor" stroke-width="1.6"/></svg>
+    </a>
+    <p class="text-ash font-mono text-xs mt-8">hello@northlightreel.studio Â· +1 (310) 555-0114</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-white/8 py-14">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-7 h-7 rounded-full border border-ember flex items-center justify-center"><span class="w-2 h-2 bg-ember rounded-full block"></span></span>
+        <span class="font-display text-lg">Northlight <span class="text-ember italic">Reel</span></span>
+      </div>
+      <p class="text-ash text-sm leading-relaxed">A director-led film &amp; commercial production studio. Los Angeles Â· Lisbon.</p>
+    </div>
+    <div>
+      <p class="text-bone text-sm font-mono mb-4">STUDIO</p>
+      <ul class="space-y-2 text-ash text-sm">
+        <li><a href="#work" class="hover:text-ember transition" data-cursor>Work</a></li>
+        <li><a href="#services" class="hover:text-ember transition" data-cursor>Capabilities</a></li>
+        <li><a href="#studio" class="hover:text-ember transition" data-cursor>The Studio</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-bone text-sm font-mono mb-4">CONNECT</p>
+      <ul class="space-y-2 text-ash text-sm">
+        <li><a href="#" class="hover:text-ember transition" data-cursor>Instagram</a></li>
+        <li><a href="#" class="hover:text-ember transition" data-cursor>Vimeo</a></li>
+        <li><a href="#" class="hover:text-ember transition" data-cursor>LinkedIn</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="text-bone text-sm font-mono mb-4">SAY HELLO</p>
+      <a href="mailto:hello@northlightreel.studio" class="text-ash text-sm hover:text-ember transition block mb-1" data-cursor>hello@northlightreel.studio</a>
+      <p class="text-ash text-sm">+1 (310) 555-0114</p>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between gap-3 text-ash/60 text-xs font-mono">
+    <span>Â© 2026 Northlight Studio. All rights reserved.</span>
+    <span>Crafted frame by frame.</span>
+  </div>
+</footer>
+
+<!-- SHOWREEL MODAL -->
+<div id="reelModal" class="fixed inset-0 z-[80] hidden items-center justify-center bg-ink/95 px-5">
+  <button id="closeReel" class="absolute top-20 right-8 text-bone text-3xl" data-cursor>&times;</button>
+  <div class="w-full max-w-4xl aspect-video bg-coal rounded-sm border border-white/10 flex items-center justify-center vignette">
+    <div class="text-center">
+      <div class="w-16 h-16 mx-auto rounded-full bg-ember flex items-center justify-center mb-5">
+        <svg width="16" height="18" viewBox="0 0 14 16" fill="#070708"><path d="M0 0l14 8-14 8z"/></svg>
+      </div>
+      <p class="font-display text-2xl">Northlight â€” 2026</p>
+      <p class="text-ash font-mono text-xs mt-2">Showreel placeholder Â· embed your player here</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- custom cursor ---- */
+  const cursor = document.getElementById('cursor');
+  if(window.matchMedia('(hover:hover)').matches && !reduce){
+    let mx=innerWidth/2, my=innerHeight/2, cx=mx, cy=my;
+    addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; });
+    (function loop(){ cx+=(mx-cx)*.18; cy+=(my-cy)*.18; cursor.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-cursor]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>cursor.classList.remove('big'));
+    });
+    document.querySelectorAll('[data-cursor-big]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+      el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+    });
+  } else { cursor.style.display='none'; document.body.style.cursor='auto'; }
+
+  /* ---- showreel modal ---- */
+  const modal=document.getElementById('reelModal');
+  const open=()=>{ modal.classList.remove('hidden'); modal.classList.add('flex'); };
+  const close=()=>{ modal.classList.add('hidden'); modal.classList.remove('flex'); };
+  document.getElementById('showreel').addEventListener('click',open);
+  document.getElementById('closeReel').addEventListener('click',close);
+  modal.addEventListener('click',e=>{ if(e.target===modal) close(); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-q').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const body=btn.nextElementSibling, ic=btn.querySelector('.faq-ic');
+      const isOpen=body.style.maxHeight && body.style.maxHeight!=='0px';
+      document.querySelectorAll('.faq-body').forEach(b=>{ b.style.maxHeight='0px'; });
+      document.querySelectorAll('.faq-ic').forEach(i=>{ i.style.transform='rotate(0deg)'; });
+      if(!isOpen){ body.style.maxHeight=body.scrollHeight+'px'; ic.style.transform='rotate(45deg)'; }
+    });
+  });
+
+  if(reduce) return;
+
+  /* ---- GSAP ---- */
+  gsap.registerPlugin(ScrollTrigger);
+
+  // hero kinetic reveal
+  gsap.to('.reveal-line', { y:'0%', duration:1.1, ease:'power4.out', stagger:.12, delay:.25 });
+
+  // hero still subtle parallax
+  gsap.to('#heroStill img', { yPercent:14, ease:'none', scrollTrigger:{ trigger:'#top', start:'top top', end:'bottom top', scrub:true } });
+
+  // container parallax on stills
+  document.querySelectorAll('.parallax').forEach(img=>{
+    gsap.fromTo(img,{yPercent:-6},{yPercent:6, ease:'none', scrollTrigger:{ trigger:img, start:'top bottom', end:'bottom top', scrub:true }});
+  });
+
+  // section masked reveals
+  ['#work h2','#services h2','#services .svc','#studio h2','#process h2','.step','.award','#faq h2','#contact h2'].forEach(sel=>{
+    gsap.utils.toArray(sel).forEach(el=>{
+      gsap.from(el,{ y:46, opacity:0, duration:.9, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 86%' } });
+    });
+  });
+
+  // work cards stagger
+  gsap.from('.work-card',{ y:60, opacity:0, duration:.9, ease:'power3.out', stagger:.1,
+    scrollTrigger:{ trigger:'#work .rail', start:'top 85%' } });
+
+  // count-ups
+  document.querySelectorAll('.count').forEach(el=>{
+    const to=+el.dataset.to;
+    ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+      gsap.to({v:0},{ v:to, duration:1.8, ease:'power2.out',
+        onUpdate(){ el.textContent=Math.round(this.targets()[0].v); } });
+    }});
+  });
+
+  // magnetic CTA + nav cta
+  [document.getElementById('magnetCta'), document.getElementById('navCta')].forEach(btn=>{
+    if(!btn) return;
+    btn.addEventListener('mousemove',e=>{
+      const r=btn.getBoundingClientRect();
+      gsap.to(btn,{ x:(e.clientX-r.left-r.width/2)*.4, y:(e.clientY-r.top-r.height/2)*.5, duration:.4 });
+    });
+    btn.addEventListener('mouseleave',()=>gsap.to(btn,{ x:0, y:0, duration:.6, ease:'elastic.out(1,.3)' }));
+  });
+})();
+</script>
+</body>
+</html>
+
+

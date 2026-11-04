@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lucha Libre Taco Co. — Street Tacos, Loaded Burgers & Mayhem on Wheels</title>
+<meta name="description" content="Lucha Libre Taco Co. — a roaming street food truck slinging wood-smoked tacos, double-stacked smash burgers and ice-cold horchata. Find the truck, grab the goods." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:      '#1A1410',
+          masa:     '#FFF4E0',
+          chili:    '#FF3B14',
+          mango:    '#FFB200',
+          lime:     '#9BE000',
+          guac:     '#3FAE4A',
+          electric: '#00C2FF',
+          grape:    '#7A2FF7',
+          char:     '#241B14',
+        },
+        fontFamily: {
+          display: ['"Bungee"', 'cursive'],
+          fatface: ['"Rubik Mono One"', 'monospace'],
+          body:    ['"Rubik"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          chunk:   '6px 6px 0 0 #1A1410',
+          chunkbig:'10px 10px 0 0 #1A1410',
+          sticker: '0 0 0 4px #1A1410, 8px 8px 0 0 rgba(26,20,16,0.25)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik+Mono+One&family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: #FFF4E0;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(255,178,0,0.12) 0, transparent 38%),
+      radial-gradient(circle at 88% 12%, rgba(0,194,255,0.10) 0, transparent 40%),
+      radial-gradient(circle at 50% 95%, rgba(255,59,20,0.10) 0, transparent 45%);
+    overflow-x: hidden;
+  }
+  .stroke-ink {
+    -webkit-text-stroke: 3px #1A1410;
+    paint-order: stroke fill;
+  }
+  .stroke-thin {
+    -webkit-text-stroke: 2px #1A1410;
+    paint-order: stroke fill;
+  }
+  /* Dotted halftone texture */
+  .halftone {
+    background-image: radial-gradient(#1A1410 1.4px, transparent 1.6px);
+    background-size: 14px 14px;
+  }
+  /* Marquee */
+  .marquee { display: flex; width: max-content; will-change: transform; }
+  .marquee-track { animation: scrollx 26s linear infinite; }
+  .marquee-track-rev { animation: scrollx 22s linear infinite reverse; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+
+  .tag {
+    display: inline-block;
+    padding: 0.35rem 0.9rem;
+    border: 3px solid #1A1410;
+    border-radius: 999px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    box-shadow: 4px 4px 0 0 #1A1410;
+  }
+
+  /* Menu card hover */
+  .menu-card {
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
+    will-change: transform;
+  }
+  .menu-card:hover {
+    transform: translate(-4px,-6px) rotate(-1.2deg);
+    box-shadow: 12px 14px 0 0 #1A1410;
+  }
+
+  .accordion-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height .45s cubic-bezier(.4,0,.2,1);
+  }
+  .accordion-item.open .accordion-body { max-height: 320px; }
+  .accordion-item.open .acc-plus { transform: rotate(135deg); }
+  .acc-plus { transition: transform .35s cubic-bezier(.34,1.56,.64,1); }
+
+  /* Magnetic CTA */
+  .magnetic { will-change: transform; }
+
+  /* sticker spin idle */
+  @keyframes wobble {
+    0%,100% { transform: rotate(-6deg); }
+    50%     { transform: rotate(6deg); }
+  }
+  .wobble { animation: wobble 4s ease-in-out infinite; }
+
+  .reveal-init { opacity: 0; transform: translateY(40px); }
+
+  ::selection { background: #FFB200; color: #1A1410; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track, .marquee-track-rev, .wobble { animation: none !important; }
+    .reveal-init { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="font-body text-ink antialiased selection:bg-mango">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <nav class="mt-3 flex items-center justify-between rounded-2xl border-[3px] border-ink bg-masa/90 backdrop-blur px-4 sm:px-5 py-2.5 shadow-chunk">
+      <a href="#hero" class="flex items-center gap-2 group">
+        <span class="grid place-items-center w-10 h-10 rounded-xl bg-chili border-[3px] border-ink text-masa font-display text-lg shadow-[3px_3px_0_0_#1A1410] group-hover:rotate-6 transition-transform">L</span>
+        <span class="font-fatface text-[15px] sm:text-base leading-none tracking-tight">LUCHA<span class="text-chili">LIBRE</span></span>
+      </a>
+      <ul class="hidden lg:flex items-center gap-7 text-sm font-bold uppercase tracking-wide">
+        <li><a href="#menu" class="hover:text-chili transition">Menu</a></li>
+        <li><a href="#story" class="hover:text-chili transition">Story</a></li>
+        <li><a href="#catering" class="hover:text-chili transition">Catering</a></li>
+        <li><a href="#gallery" class="hover:text-chili transition">Gallery</a></li>
+        <li><a href="#schedule" class="hover:text-chili transition">Schedule</a></li>
+        <li><a href="#faq" class="hover:text-chili transition">FAQ</a></li>
+      </ul>
+      <a href="#find" id="nav-find" class="magnetic inline-flex items-center gap-2 rounded-full bg-lime border-[3px] border-ink px-4 sm:px-5 py-2 text-sm font-black uppercase tracking-wide shadow-[4px_4px_0_0_#1A1410] hover:shadow-[2px_2px_0_0_#1A1410] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+        📍 Find Us
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="relative pt-28 sm:pt-32 pb-16 overflow-hidden">
+  <!-- floating stickers -->
+  <div class="sticker absolute left-[4%] top-[22%] hidden md:block z-20">
+    <div class="wobble grid place-items-center w-24 h-24 rounded-full bg-mango border-[3px] border-ink text-center font-display text-[11px] leading-tight text-ink shadow-sticker -rotate-12">
+      EST.<br>2017<br>🌮
+    </div>
+  </div>
+  <div class="sticker absolute right-[5%] top-[16%] hidden md:block z-20">
+    <div class="wobble grid place-items-center w-28 h-28 rounded-full bg-electric border-[3px] border-ink text-center font-display text-[11px] leading-tight text-ink shadow-sticker rotate-12">
+      WOOD<br>SMOKED<br>DAILY
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-12 gap-10 items-center relative z-10">
+    <!-- text -->
+    <div class="lg:col-span-6 text-center lg:text-left">
+      <span class="tag bg-chili text-masa reveal-init">🔥 Roaming Street Kitchen</span>
+      <h1 class="mt-5 font-display leading-[0.92] text-masa text-[clamp(2.6rem,8vw,5.6rem)]">
+        <span class="hero-line block stroke-ink text-mango">TACOS THAT</span>
+        <span class="hero-line block stroke-ink text-chili">HIT DIFFERENT</span>
+        <span class="hero-line block stroke-ink text-electric">ON WHEELS.</span>
+      </h1>
+      <p class="hero-sub mt-6 max-w-md mx-auto lg:mx-0 text-base sm:text-lg font-medium text-ink/80">
+        Wood-smoked carne, double-stacked smash burgers and ice-cold horchata — slung from a chrome-trimmed truck somewhere near you right now.
+      </p>
+      <div class="hero-cta mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
+        <a href="#find" class="magnetic inline-flex items-center gap-2 rounded-full bg-lime border-[3px] border-ink px-7 py-3.5 font-black uppercase tracking-wide shadow-chunk hover:shadow-[3px_3px_0_0_#1A1410] hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
+          📍 Find The Truck
+        </a>
+        <a href="#menu" class="inline-flex items-center gap-2 rounded-full bg-masa border-[3px] border-ink px-7 py-3.5 font-black uppercase tracking-wide shadow-chunk hover:shadow-[3px_3px_0_0_#1A1410] hover:translate-x-[3px] hover:translate-y-[3px] transition-all">
+          See The Menu
+        </a>
+      </div>
+      <div class="hero-stats mt-10 grid grid-cols-3 gap-3 max-w-md mx-auto lg:mx-0">
+        <div class="rounded-xl border-[3px] border-ink bg-masa px-2 py-3 text-center shadow-[4px_4px_0_0_#1A1410]">
+          <div class="font-fatface text-2xl sm:text-3xl text-chili" data-count="412">0</div>
+          <div class="text-[10px] font-black uppercase tracking-wider text-ink/60">5★ Reviews</div>
+        </div>
+        <div class="rounded-xl border-[3px] border-ink bg-masa px-2 py-3 text-center shadow-[4px_4px_0_0_#1A1410]">
+          <div class="font-fatface text-2xl sm:text-3xl text-guac"><span data-count="38">0</span>K</div>
+          <div class="text-[10px] font-black uppercase tracking-wider text-ink/60">Tacos Sold</div>
+        </div>
+        <div class="rounded-xl border-[3px] border-ink bg-masa px-2 py-3 text-center shadow-[4px_4px_0_0_#1A1410]">
+          <div class="font-fatface text-2xl sm:text-3xl text-electric" data-count="9">0</div>
+          <div class="text-[10px] font-black uppercase tracking-wider text-ink/60">City Stops</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- image -->
+    <div class="lg:col-span-6 relative">
+      <div class="hero-img relative rounded-[2rem] border-[4px] border-ink overflow-hidden shadow-chunkbig bg-gradient-to-br from-chili via-mango to-electric aspect-[4/5] max-w-md mx-auto">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1600&q=80"
+             alt="Loaded street tacos" loading="eager"
+             onerror="this.style.display='none'"
+             class="w-full h-full object-cover mix-blend-multiply opacity-95" />
+        <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+          <span class="tag bg-masa text-ink text-xs">🌮 Al Pastor</span>
+          <span class="tag bg-mango text-ink text-xs">$4 each</span>
+        </div>
+      </div>
+      <div class="sticker absolute -bottom-5 -left-3 sm:-left-6 z-20">
+        <div class="grid place-items-center w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-grape border-[3px] border-ink text-center font-display text-[11px] leading-tight text-masa shadow-sticker -rotate-12">
+          TACO<br>TUESDAY<br>EVERY DAY
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE 1 ============ -->
+<div class="relative border-y-[4px] border-ink bg-chili text-masa py-3 overflow-hidden -rotate-1 my-2">
+  <div class="marquee marquee-track text-2xl sm:text-3xl font-fatface uppercase whitespace-nowrap">
+    <span class="px-6">🌮 Street Tacos</span><span class="px-6 text-mango">★</span><span class="px-6">Smash Burgers</span><span class="px-6 text-lime">★</span><span class="px-6">Loaded Fries</span><span class="px-6 text-electric">★</span><span class="px-6">Horchata</span><span class="px-6 text-mango">★</span>
+    <span class="px-6">🌮 Street Tacos</span><span class="px-6 text-mango">★</span><span class="px-6">Smash Burgers</span><span class="px-6 text-lime">★</span><span class="px-6">Loaded Fries</span><span class="px-6 text-electric">★</span><span class="px-6">Horchata</span><span class="px-6 text-mango">★</span>
+  </div>
+</div>
+
+<!-- ============ TODAY'S LOCATION STRIP ============ -->
+<section id="find" class="relative py-12">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="loc-card relative rounded-[2rem] border-[4px] border-ink bg-ink text-masa overflow-hidden shadow-chunkbig">
+      <div class="halftone absolute inset-0 opacity-[0.06]"></div>
+      <div class="relative grid md:grid-cols-[auto,1fr,auto] gap-6 items-center p-6 sm:p-8">
+        <div class="flex items-center gap-4">
+          <span class="relative grid place-items-center w-14 h-14 rounded-full bg-lime border-[3px] border-masa text-ink text-2xl">
+            📍
+            <span class="absolute inset-0 rounded-full border-[3px] border-lime animate-ping"></span>
+          </span>
+          <div>
+            <div class="text-[11px] font-black uppercase tracking-[0.25em] text-mango">Where's the truck?</div>
+            <div class="font-display text-xl sm:text-2xl leading-tight">Riverside Night Market</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="rounded-xl border-[3px] border-masa/40 px-3 py-2">
+            <div class="text-[10px] uppercase font-black tracking-wider text-masa/50">Today</div>
+            <div class="font-bold">5:00 – 11:00 PM</div>
+          </div>
+          <div class="rounded-xl border-[3px] border-masa/40 px-3 py-2">
+            <div class="text-[10px] uppercase font-black tracking-wider text-masa/50">Block</div>
+            <div class="font-bold">Bay 3, Pier Walk</div>
+          </div>
+          <div class="rounded-xl border-[3px] border-masa/40 px-3 py-2 col-span-2 sm:col-span-1">
+            <div class="text-[10px] uppercase font-black tracking-wider text-masa/50">Status</div>
+            <div class="font-bold text-lime">● Slinging now</div>
+          </div>
+        </div>
+        <a href="#schedule" class="magnetic inline-flex justify-center items-center gap-2 rounded-full bg-mango border-[3px] border-masa px-6 py-3 font-black uppercase tracking-wide text-ink shadow-[4px_4px_0_0_#FFF4E0] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#FFF4E0] transition-all whitespace-nowrap">
+          Full Schedule →
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MENU GRID ============ -->
+<section id="menu" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal-init flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="tag bg-electric text-ink">The Goods</span>
+        <h2 class="mt-4 font-display text-masa stroke-ink text-[clamp(2.2rem,6vw,4rem)] leading-[0.95] text-chili">FUEL THE FIESTA</h2>
+      </div>
+      <p class="max-w-sm font-medium text-ink/70">Handheld, messy, unapologetically loud. Everything griddle-fresh to order — no heat lamps, ever.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-mango to-chili overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1600&q=80" alt="Al Pastor tacos" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-chili text-masa text-xs wobble">🔥 Top Seller</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">El Campeón Pastor</h3>
+            <span class="font-fatface text-chili text-lg">$4</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">Spit-roasted pork, charred pineapple, onion, cilantro, salsa verde.</p>
+        </div>
+      </article>
+
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-electric to-grape overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=1600&q=80" alt="Smash burger" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-lime text-ink text-xs">Double Stack</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">The Body Slam</h3>
+            <span class="font-fatface text-chili text-lg">$9</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">Two smashed patties, queso, pickled jalapeño, chipotle crema, brioche.</p>
+        </div>
+      </article>
+
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-lime to-guac overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1600&q=80" alt="Loaded fries" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-mango text-ink text-xs">Shareable</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">Lucha Loaded Fries</h3>
+            <span class="font-fatface text-chili text-lg">$7</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">Crispy fries, carne asada, nacho queso, guac, pico, crema drizzle.</p>
+        </div>
+      </article>
+
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-chili to-grape overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80" alt="Birria tacos" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-electric text-ink text-xs wobble">Dippable</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">Birria Brawler</h3>
+            <span class="font-fatface text-chili text-lg">$5</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">Slow-braised beef, melted oaxaca, crispy edges, side of consommé.</p>
+        </div>
+      </article>
+
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-mango to-lime overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=1600&q=80" alt="Veggie taco" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-guac text-masa text-xs">Veggie 🌱</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">Green Mask Crunch</h3>
+            <span class="font-fatface text-chili text-lg">$4</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">Charred cauliflower, black bean, avocado, chipotle slaw, lime.</p>
+        </div>
+      </article>
+
+      <article class="menu-item reveal-init menu-card rounded-2xl border-[3px] border-ink bg-masa overflow-hidden shadow-chunk">
+        <div class="relative aspect-[5/4] bg-gradient-to-br from-electric to-mango overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1600&q=80" alt="Horchata drink" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+          <span class="absolute top-3 left-3 tag bg-chili text-masa text-xs">Wash It Down</span>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start gap-2">
+            <h3 class="font-display text-lg leading-tight">Cinnamon Knockout</h3>
+            <span class="font-fatface text-chili text-lg">$3</span>
+          </div>
+          <p class="mt-2 text-sm font-medium text-ink/70">House horchata, real cinnamon, vanilla, poured over crushed ice.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STORY ============ -->
+<section id="story" class="relative py-16 sm:py-24 overflow-hidden">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-6 relative">
+      <div class="story-img relative rounded-[2rem] border-[4px] border-ink overflow-hidden shadow-chunkbig bg-gradient-to-br from-grape via-chili to-mango aspect-square max-w-md mx-auto">
+        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80" alt="The truck kitchen" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply opacity-95" />
+      </div>
+      <div class="sticker absolute -top-4 -right-2 sm:-right-5 z-20">
+        <div class="wobble grid place-items-center w-24 h-24 rounded-full bg-mango border-[3px] border-ink text-center font-display text-[10px] leading-tight text-ink shadow-sticker rotate-12">
+          FAMILY<br>RECIPE<br>SINCE '17
+        </div>
+      </div>
+    </div>
+    <div class="lg:col-span-6">
+      <span class="tag bg-grape text-masa reveal-init">The Origin</span>
+      <h2 class="reveal-init mt-4 font-display text-masa stroke-ink text-[clamp(2rem,5.5vw,3.6rem)] leading-[0.95] text-electric">BORN IN A<br>PARKING LOT.</h2>
+      <p class="reveal-init mt-6 font-medium text-ink/80 text-lg">
+        It started with one beat-up truck, a luchador mask hanging off the mirror, and abuela's salsa recipe scribbled on a napkin. We grill loud, season louder, and never apologize for the mess.
+      </p>
+      <p class="reveal-init mt-4 font-medium text-ink/70">
+        Every tortilla is pressed in-house. Every cut of meat is wood-smoked low and slow before it ever hits the flat-top. No shortcuts, no freezer magic — just honest street food worth chasing across town.
+      </p>
+      <div class="reveal-init mt-8 grid grid-cols-2 gap-4">
+        <div class="rounded-2xl border-[3px] border-ink bg-masa p-4 shadow-chunk">
+          <div class="font-fatface text-3xl text-chili"><span data-count="100">0</span>%</div>
+          <div class="text-xs font-black uppercase tracking-wide text-ink/60">Made to order</div>
+        </div>
+        <div class="rounded-2xl border-[3px] border-ink bg-masa p-4 shadow-chunk">
+          <div class="font-fatface text-3xl text-guac"><span data-count="7">0</span>am</div>
+          <div class="text-xs font-black uppercase tracking-wide text-ink/60">Prep starts daily</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE 2 ============ -->
+<div class="relative border-y-[4px] border-ink bg-electric text-ink py-3 overflow-hidden rotate-1 my-2">
+  <div class="marquee marquee-track-rev text-2xl sm:text-3xl font-fatface uppercase whitespace-nowrap">
+    <span class="px-6">No Heat Lamps</span><span class="px-6 text-chili">●</span><span class="px-6">Pressed Tortillas</span><span class="px-6 text-grape">●</span><span class="px-6">Wood Smoked</span><span class="px-6 text-chili">●</span><span class="px-6">Big Flavor</span><span class="px-6 text-guac">●</span>
+    <span class="px-6">No Heat Lamps</span><span class="px-6 text-chili">●</span><span class="px-6">Pressed Tortillas</span><span class="px-6 text-grape">●</span><span class="px-6">Wood Smoked</span><span class="px-6 text-chili">●</span><span class="px-6">Big Flavor</span><span class="px-6 text-guac">●</span>
+  </div>
+</div>
+
+<!-- ============ CATERING / EVENTS ============ -->
+<section id="catering" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal-init relative rounded-[2.5rem] border-[4px] border-ink bg-chili text-masa overflow-hidden shadow-chunkbig">
+      <div class="halftone absolute inset-0 opacity-10"></div>
+      <div class="relative grid lg:grid-cols-2 gap-10 p-8 sm:p-12 items-center">
+        <div>
+          <span class="tag bg-masa text-ink">Bring The Truck</span>
+          <h2 class="mt-4 font-display text-[clamp(2rem,5vw,3.4rem)] leading-[0.95] text-mango stroke-ink">CATERING &amp; EVENTS</h2>
+          <p class="mt-5 font-medium text-masa/90 text-lg">
+            Weddings, office throwdowns, block parties, festivals — we roll the whole kitchen to your door and feed the whole crowd, no chafing dishes required.
+          </p>
+          <a href="#cta" class="magnetic mt-7 inline-flex items-center gap-2 rounded-full bg-lime border-[3px] border-ink px-7 py-3.5 font-black uppercase tracking-wide text-ink shadow-[5px_5px_0_0_#1A1410] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[2px_2px_0_0_#1A1410] transition-all">
+            Book The Truck →
+          </a>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="rounded-2xl border-[3px] border-masa bg-ink p-5">
+            <div class="text-3xl">🎉</div>
+            <h3 class="mt-2 font-display text-lg">Private Parties</h3>
+            <p class="mt-1 text-sm text-masa/70">25–300 guests, custom menus, live grilling on site.</p>
+          </div>
+          <div class="rounded-2xl border-[3px] border-masa bg-ink p-5">
+            <div class="text-3xl">💍</div>
+            <h3 class="mt-2 font-display text-lg">Weddings</h3>
+            <p class="mt-1 text-sm text-masa/70">Late-night taco bar that becomes the talk of the reception.</p>
+          </div>
+          <div class="rounded-2xl border-[3px] border-masa bg-ink p-5">
+            <div class="text-3xl">🏢</div>
+            <h3 class="mt-2 font-display text-lg">Corporate</h3>
+            <p class="mt-1 text-sm text-masa/70">Team lunches & launch days, invoiced and easy.</p>
+          </div>
+          <div class="rounded-2xl border-[3px] border-masa bg-ink p-5">
+            <div class="text-3xl">🎪</div>
+            <h3 class="mt-2 font-display text-lg">Festivals</h3>
+            <p class="mt-1 text-sm text-masa/70">High-volume vending with our full crew rolling deep.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section id="gallery" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal-init text-center mb-10">
+      <span class="tag bg-mango text-ink">The Feed</span>
+      <h2 class="mt-4 font-display text-masa stroke-ink text-[clamp(2rem,6vw,3.8rem)] text-grape leading-[0.95]">STRAIGHT FROM THE FLAT-TOP</h2>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="gal-item reveal-init rounded-2xl border-[3px] border-ink overflow-hidden shadow-chunk aspect-[3/4] bg-gradient-to-br from-chili to-mango lg:row-span-2 lg:aspect-auto lg:h-full">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1600&q=80" alt="Tacos" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+      <div class="gal-item reveal-init rounded-2xl border-[3px] border-ink overflow-hidden shadow-chunk aspect-square bg-gradient-to-br from-electric to-grape">
+        <img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=1600&q=80" alt="Burger" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+      <div class="gal-item reveal-init rounded-2xl border-[3px] border-ink overflow-hidden shadow-chunk aspect-square bg-gradient-to-br from-lime to-guac">
+        <img src="https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1600&q=80" alt="Fries" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+      <div class="gal-item reveal-init rounded-2xl border-[3px] border-ink overflow-hidden shadow-chunk aspect-square bg-gradient-to-br from-grape to-chili col-span-2 lg:col-span-1">
+        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80" alt="Kitchen" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+      <div class="gal-item reveal-init rounded-2xl border-[3px] border-ink overflow-hidden shadow-chunk aspect-square bg-gradient-to-br from-mango to-electric">
+        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1600&q=80" alt="More tacos" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover mix-blend-multiply" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section id="testimonials" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal-init text-center mb-10">
+      <span class="tag bg-lime text-ink">Word On The Street</span>
+      <h2 class="mt-4 font-display text-masa stroke-ink text-[clamp(2rem,6vw,3.8rem)] text-chili leading-[0.95]">THE HYPE IS REAL</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="tcard reveal-init rounded-2xl border-[3px] border-ink bg-masa p-6 shadow-chunk -rotate-1">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-medium text-ink/85">"Chased this truck three neighborhoods over. The birria with that consommé dip? Worth every mile. Lifechanging crunch."</blockquote>
+        <figcaption class="mt-4 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-chili border-[3px] border-ink text-masa font-display">M</span>
+          <div><div class="font-black text-sm">Marisol R.</div><div class="text-xs text-ink/50">Taco pilgrim</div></div>
+        </figcaption>
+      </figure>
+      <figure class="tcard reveal-init rounded-2xl border-[3px] border-ink bg-masa p-6 shadow-chunk rotate-1">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-medium text-ink/85">"Booked them for our office launch — they smashed 200 burgers in under an hour and the whole team won't stop talking."</blockquote>
+        <figcaption class="mt-4 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-electric border-[3px] border-ink text-ink font-display">D</span>
+          <div><div class="font-black text-sm">Devon K.</div><div class="text-xs text-ink/50">Office hero</div></div>
+        </figcaption>
+      </figure>
+      <figure class="tcard reveal-init rounded-2xl border-[3px] border-ink bg-masa p-6 shadow-chunk -rotate-1">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-medium text-ink/85">"The horchata alone is a reason to live. Got the loaded fries on a dare and now I have a problem. 10/10 mayhem."</blockquote>
+        <figcaption class="mt-4 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-full bg-guac border-[3px] border-ink text-masa font-display">J</span>
+          <div><div class="font-black text-sm">Jules P.</div><div class="text-xs text-ink/50">Repeat offender</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section id="schedule" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="reveal-init flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="tag bg-electric text-ink">This Week</span>
+        <h2 class="mt-4 font-display text-masa stroke-ink text-[clamp(2rem,6vw,3.6rem)] text-guac leading-[0.95]">CATCH THE TRUCK</h2>
+      </div>
+      <p class="max-w-sm font-medium text-ink/70">We move daily — bookmark this strip or follow the feed so you never miss the smoke signal.</p>
+    </div>
+    <div class="grid gap-3">
+      <!-- row -->
+      <div class="sch-row reveal-init grid grid-cols-[auto,1fr,auto] sm:grid-cols-[120px,1fr,1fr,auto] items-center gap-3 sm:gap-5 rounded-2xl border-[3px] border-ink bg-masa px-5 py-4 shadow-[4px_4px_0_0_#1A1410]">
+        <div class="font-display text-chili text-lg">MON</div>
+        <div class="font-bold">Downtown Lunch Lot</div>
+        <div class="hidden sm:block text-ink/60 font-medium">11:30 AM – 2:30 PM</div>
+        <span class="tag bg-lime text-ink text-xs whitespace-nowrap">Open</span>
+      </div>
+      <div class="sch-row reveal-init grid grid-cols-[auto,1fr,auto] sm:grid-cols-[120px,1fr,1fr,auto] items-center gap-3 sm:gap-5 rounded-2xl border-[3px] border-ink bg-masa px-5 py-4 shadow-[4px_4px_0_0_#1A1410]">
+        <div class="font-display text-chili text-lg">WED</div>
+        <div class="font-bold">Brewery Yard Pop-Up</div>
+        <div class="hidden sm:block text-ink/60 font-medium">5:00 PM – 10:00 PM</div>
+        <span class="tag bg-mango text-ink text-xs whitespace-nowrap">Beer + Tacos</span>
+      </div>
+      <div class="sch-row reveal-init grid grid-cols-[auto,1fr,auto] sm:grid-cols-[120px,1fr,1fr,auto] items-center gap-3 sm:gap-5 rounded-2xl border-[3px] border-ink bg-ink text-masa px-5 py-4 shadow-[4px_4px_0_0_#1A1410]">
+        <div class="font-display text-mango text-lg">FRI</div>
+        <div class="font-bold">Riverside Night Market</div>
+        <div class="hidden sm:block text-masa/60 font-medium">5:00 PM – 11:00 PM</div>
+        <span class="tag bg-lime text-ink text-xs whitespace-nowrap">● Live Now</span>
+      </div>
+      <div class="sch-row reveal-init grid grid-cols-[auto,1fr,auto] sm:grid-cols-[120px,1fr,1fr,auto] items-center gap-3 sm:gap-5 rounded-2xl border-[3px] border-ink bg-masa px-5 py-4 shadow-[4px_4px_0_0_#1A1410]">
+        <div class="font-display text-chili text-lg">SAT</div>
+        <div class="font-bold">Farmers Market Row</div>
+        <div class="hidden sm:block text-ink/60 font-medium">9:00 AM – 1:00 PM</div>
+        <span class="tag bg-electric text-ink text-xs whitespace-nowrap">Brunch Tacos</span>
+      </div>
+      <div class="sch-row reveal-init grid grid-cols-[auto,1fr,auto] sm:grid-cols-[120px,1fr,1fr,auto] items-center gap-3 sm:gap-5 rounded-2xl border-[3px] border-ink bg-masa px-5 py-4 shadow-[4px_4px_0_0_#1A1410]">
+        <div class="font-display text-chili text-lg">SUN</div>
+        <div class="font-bold">Skate Park Sessions</div>
+        <div class="hidden sm:block text-ink/60 font-medium">12:00 PM – 6:00 PM</div>
+        <span class="tag bg-grape text-masa text-xs whitespace-nowrap">All Day</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-16 sm:py-24">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6">
+    <div class="reveal-init text-center mb-10">
+      <span class="tag bg-chili text-masa">Got Questions?</span>
+      <h2 class="mt-4 font-display text-masa stroke-ink text-[clamp(2rem,6vw,3.6rem)] text-electric leading-[0.95]">REAL TALK</h2>
+    </div>
+    <div class="space-y-4" id="faq-list">
+      <div class="accordion-item reveal-init rounded-2xl border-[3px] border-ink bg-masa shadow-chunk overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-display text-base sm:text-lg">
+          <span>Do you take cards or cash only?</span>
+          <span class="acc-plus grid place-items-center w-8 h-8 shrink-0 rounded-full bg-mango border-[3px] border-ink font-fatface">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 font-medium text-ink/75">Both! We run tap, chip, and all the apps right on the truck. Cash gets you a faster line and our undying gratitude.</p></div>
+      </div>
+      <div class="accordion-item reveal-init rounded-2xl border-[3px] border-ink bg-masa shadow-chunk overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-display text-base sm:text-lg">
+          <span>Got vegetarian or vegan options?</span>
+          <span class="acc-plus grid place-items-center w-8 h-8 shrink-0 rounded-full bg-mango border-[3px] border-ink font-fatface">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 font-medium text-ink/75">Yep. The Green Mask Crunch is fully veggie, and we can flip most items vegan — just ask the crew at the window.</p></div>
+      </div>
+      <div class="accordion-item reveal-init rounded-2xl border-[3px] border-ink bg-masa shadow-chunk overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-display text-base sm:text-lg">
+          <span>How far ahead should I book catering?</span>
+          <span class="acc-plus grid place-items-center w-8 h-8 shrink-0 rounded-full bg-mango border-[3px] border-ink font-fatface">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 font-medium text-ink/75">Two weeks for most events, more for peak weekends and festival season. Hit the booking form and we'll lock your date fast.</p></div>
+      </div>
+      <div class="accordion-item reveal-init rounded-2xl border-[3px] border-ink bg-masa shadow-chunk overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-5 py-4 text-left font-display text-base sm:text-lg">
+          <span>How do I know where you'll be?</span>
+          <span class="acc-plus grid place-items-center w-8 h-8 shrink-0 rounded-full bg-mango border-[3px] border-ink font-fatface">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 font-medium text-ink/75">Check the schedule strip above, or follow the feed for live drops and surprise stops. The truck moves — stay sharp.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="relative py-20 sm:py-28">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6">
+    <div class="cta-card relative rounded-[2.5rem] border-[4px] border-ink bg-ink text-masa overflow-hidden shadow-chunkbig text-center px-6 sm:px-12 py-16">
+      <div class="halftone absolute inset-0 opacity-[0.07]"></div>
+      <div class="sticker absolute top-6 left-6 hidden sm:block">
+        <div class="wobble grid place-items-center w-20 h-20 rounded-full bg-chili border-[3px] border-masa text-center font-display text-[10px] leading-tight shadow-sticker -rotate-12">HUNGRY<br>YET?</div>
+      </div>
+      <div class="relative">
+        <span class="tag bg-mango text-ink">Last Call</span>
+        <h2 class="mt-5 font-display text-[clamp(2.3rem,7vw,4.5rem)] leading-[0.95]">
+          <span class="block text-mango stroke-thin">COME GET</span>
+          <span class="block text-lime stroke-thin">MESSY WITH US.</span>
+        </h2>
+        <p class="mt-5 max-w-md mx-auto font-medium text-masa/80 text-lg">Find the truck tonight, or book it for your next throwdown. Either way — you're eating good.</p>
+        <div class="mt-8 flex flex-wrap gap-4 justify-center">
+          <a href="#find" class="magnetic inline-flex items-center gap-2 rounded-full bg-lime border-[3px] border-masa px-8 py-4 font-black uppercase tracking-wide text-ink shadow-[5px_5px_0_0_#FFF4E0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[2px_2px_0_0_#FFF4E0] transition-all">📍 Find The Truck</a>
+          <a href="#catering" class="inline-flex items-center gap-2 rounded-full bg-chili border-[3px] border-masa px-8 py-4 font-black uppercase tracking-wide text-masa shadow-[5px_5px_0_0_#FFF4E0] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[2px_2px_0_0_#FFF4E0] transition-all">Book Catering</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative border-t-[4px] border-ink bg-masa pt-14 pb-8">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <a href="#hero" class="flex items-center gap-2">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-chili border-[3px] border-ink text-masa font-display text-lg shadow-[3px_3px_0_0_#1A1410]">L</span>
+          <span class="font-fatface text-base">LUCHA<span class="text-chili">LIBRE</span></span>
+        </a>
+        <p class="mt-4 text-sm font-medium text-ink/65 max-w-xs">Street tacos, smash burgers and mayhem on wheels. Made loud, served louder.</p>
+      </div>
+      <div>
+        <h4 class="font-display text-sm uppercase tracking-wide mb-3">Eat</h4>
+        <ul class="space-y-2 text-sm font-medium text-ink/70">
+          <li><a href="#menu" class="hover:text-chili">Full Menu</a></li>
+          <li><a href="#schedule" class="hover:text-chili">Find Us</a></li>
+          <li><a href="#gallery" class="hover:text-chili">Gallery</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display text-sm uppercase tracking-wide mb-3">Book</h4>
+        <ul class="space-y-2 text-sm font-medium text-ink/70">
+          <li><a href="#catering" class="hover:text-chili">Catering</a></li>
+          <li><a href="#catering" class="hover:text-chili">Weddings</a></li>
+          <li><a href="#cta" class="hover:text-chili">Events</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display text-sm uppercase tracking-wide mb-3">Follow The Smoke</h4>
+        <div class="flex gap-3">
+          <a href="#" aria-label="Instagram" class="grid place-items-center w-11 h-11 rounded-xl bg-mango border-[3px] border-ink shadow-[3px_3px_0_0_#1A1410] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_#1A1410] transition-all">📸</a>
+          <a href="#" aria-label="TikTok" class="grid place-items-center w-11 h-11 rounded-xl bg-electric border-[3px] border-ink shadow-[3px_3px_0_0_#1A1410] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_#1A1410] transition-all">🎵</a>
+          <a href="#" aria-label="Map" class="grid place-items-center w-11 h-11 rounded-xl bg-lime border-[3px] border-ink shadow-[3px_3px_0_0_#1A1410] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_#1A1410] transition-all">🗺️</a>
+        </div>
+        <p class="mt-4 text-xs font-medium text-ink/55">hola@luchalibretacos.example</p>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t-[3px] border-ink/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold uppercase tracking-wide text-ink/50">
+      <p>© 2026 Lucha Libre Taco Co. — Roam free, eat loud.</p>
+      <p class="flex gap-4"><a href="#" class="hover:text-chili">Privacy</a><a href="#" class="hover:text-chili">Terms</a><a href="#" class="hover:text-chili">Allergens</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav shrink on scroll ---- */
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 30) nav.classList.add('-translate-y-0.5');
+    else nav.classList.remove('-translate-y-0.5');
+  }, { passive: true });
+
+  if (reduce || typeof gsap === 'undefined') {
+    document.querySelectorAll('.reveal-init').forEach(function (el) {
+      el.style.opacity = 1; el.style.transform = 'none';
+    });
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      el.textContent = el.getAttribute('data-count');
+    });
+  } else {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero headline pop-in */
+    gsap.from('.hero-line', {
+      y: 60, opacity: 0, rotateX: -40, duration: 0.9,
+      ease: 'back.out(1.7)', stagger: 0.12, delay: 0.15
+    });
+    gsap.from(['.hero-sub', '.hero-cta', '.hero-stats'], {
+      y: 30, opacity: 0, duration: 0.7, ease: 'power3.out', stagger: 0.12, delay: 0.6
+    });
+    gsap.from('.hero-img', {
+      scale: 0.8, opacity: 0, rotate: -4, duration: 1,
+      ease: 'back.out(1.5)', delay: 0.3
+    });
+
+    /* Sticker rotate-ins */
+    gsap.utils.toArray('.sticker').forEach(function (s, i) {
+      gsap.from(s, {
+        scale: 0, rotate: 180, opacity: 0, duration: 0.8,
+        ease: 'back.out(2)', delay: 0.7 + i * 0.1,
+        scrollTrigger: { trigger: s, start: 'top 92%' }
+      });
+    });
+
+    /* Generic section reveals */
+    gsap.utils.toArray('.reveal-init').forEach(function (el) {
+      gsap.to(el, {
+        y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    /* Menu / gallery / testimonials / schedule pop stagger */
+    function popGroup(sel, trigSel) {
+      var items = gsap.utils.toArray(sel);
+      if (!items.length) return;
+      gsap.from(items, {
+        y: 50, opacity: 0, scale: 0.92, duration: 0.7,
+        ease: 'back.out(1.6)', stagger: 0.08,
+        scrollTrigger: { trigger: trigSel, start: 'top 80%' }
+      });
+    }
+    popGroup('.menu-item', '#menu');
+    popGroup('.gal-item', '#gallery');
+    popGroup('.tcard', '#testimonials');
+    popGroup('.sch-row', '#schedule');
+
+    /* Container parallax on images */
+    gsap.utils.toArray('.hero-img img, .story-img img').forEach(function (img) {
+      gsap.to(img, {
+        yPercent: 12, ease: 'none',
+        scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('[data-count]').forEach(function (el) {
+      var target = parseFloat(el.getAttribute('data-count'));
+      var obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: function () {
+          gsap.to(obj, {
+            v: target, duration: 1.6, ease: 'power2.out',
+            onUpdate: function () { el.textContent = Math.round(obj.v); }
+          });
+        }
+      });
+    });
+  }
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.acc-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var item = btn.closest('.accordion-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.accordion-item').forEach(function (i) { i.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---- Magnetic CTAs ---- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(function (el) {
+      el.addEventListener('mousemove', function (e) {
+        var r = el.getBoundingClientRect();
+        var x = e.clientX - r.left - r.width / 2;
+        var y = e.clientY - r.top - r.height / 2;
+        el.style.transform = 'translate(' + x * 0.3 + 'px,' + y * 0.4 + 'px)';
+      });
+      el.addEventListener('mouseleave', function () {
+        el.style.transform = 'translate(0,0)';
+      });
+    });
+
+    /* ---- Menu card tilt ---- */
+    document.querySelectorAll('.menu-card').forEach(function (card) {
+      card.addEventListener('mousemove', function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = 'perspective(700px) rotateY(' + px * 8 + 'deg) rotateX(' + (-py * 8) + 'deg) translateY(-6px)';
+      });
+      card.addEventListener('mouseleave', function () {
+        card.style.transform = '';
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Glyphd — Ship infrastructure from your terminal</title>
+<meta name="description" content="Glyphd is the developer-first edge platform. Define, deploy, and observe globally distributed services with a single CLI. Built for engineers who live in the terminal." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          sans: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          void: '#05070a',
+          coal: '#0a0e14',
+          slate2: '#0f141d',
+          line: '#1b2330',
+          fog: '#8b97a8',
+          mint: '#3ce98a',   // primary accent (green)
+          cyan: '#36d6e0',   // secondary accent
+          amber: '#f5c451',
+          violet: '#9d8cff',
+          rose: '#ff6b8a',
+        },
+        borderRadius: {
+          'xl2': '0.875rem',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background-color: #05070a;
+    color: #d6dde7;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Grid / scanline background ---------- */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      linear-gradient(to right, rgba(60,233,138,0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(60,233,138,0.035) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 100%);
+            mask-image: radial-gradient(120% 90% at 50% 0%, #000 35%, transparent 100%);
+  }
+  .glow-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -3;
+    background:
+      radial-gradient(900px 520px at 80% -8%, rgba(54,214,224,0.10), transparent 60%),
+      radial-gradient(820px 560px at 12% 4%, rgba(60,233,138,0.10), transparent 60%),
+      linear-gradient(180deg, #05070a 0%, #070a10 50%, #05070a 100%);
+  }
+
+  /* ---------- Terminal window chrome ---------- */
+  .term {
+    background: linear-gradient(180deg, #0b1018 0%, #090d14 100%);
+    border: 1px solid #1b2330;
+    border-radius: 0.875rem;
+    box-shadow: 0 24px 80px -32px rgba(0,0,0,0.9), 0 0 0 1px rgba(60,233,138,0.04) inset;
+  }
+  .term-bar {
+    border-bottom: 1px solid #1b2330;
+    background: rgba(255,255,255,0.015);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 9999px; }
+
+  /* ---------- Syntax tokens ---------- */
+  .tok-key { color: #9d8cff; }
+  .tok-fn  { color: #36d6e0; }
+  .tok-str { color: #3ce98a; }
+  .tok-num { color: #f5c451; }
+  .tok-com { color: #57657a; font-style: italic; }
+  .tok-pun { color: #6b7a8d; }
+  .tok-var { color: #e6edf5; }
+  .tok-flag{ color: #f5c451; }
+  .prompt-sym { color: #3ce98a; }
+
+  /* ---------- Blinking cursor ---------- */
+  .cursor {
+    display: inline-block;
+    width: 9px;
+    height: 1.05em;
+    margin-left: 2px;
+    background: #3ce98a;
+    vertical-align: -2px;
+    animation: blink 1s steps(2, start) infinite;
+  }
+  @keyframes blink { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+
+  /* ---------- Glow text + chips ---------- */
+  .glow-mint { text-shadow: 0 0 22px rgba(60,233,138,0.35); }
+  .chip {
+    border: 1px solid #1b2330;
+    background: rgba(255,255,255,0.02);
+  }
+  .gradient-text {
+    background: linear-gradient(100deg, #3ce98a 0%, #36d6e0 60%, #9d8cff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .btn-primary {
+    background: #3ce98a;
+    color: #05070a;
+    box-shadow: 0 10px 30px -8px rgba(60,233,138,0.5);
+  }
+  .btn-primary:hover { background: #5cf2a2; }
+
+  /* card hover */
+  .panel {
+    background: linear-gradient(180deg, #0b1018 0%, #080c12 100%);
+    border: 1px solid #1b2330;
+    transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+  .panel:hover {
+    border-color: rgba(60,233,138,0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 22px 60px -30px rgba(60,233,138,0.35);
+  }
+
+  /* faint corner brackets */
+  .bracket::before, .bracket::after {
+    content: "";
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: rgba(60,233,138,0.5);
+  }
+  .bracket::before { top: 10px; left: 10px; border-top: 1px solid; border-left: 1px solid; }
+  .bracket::after  { bottom: 10px; right: 10px; border-bottom: 1px solid; border-right: 1px solid; }
+
+  /* reveal default state (JS animates; fallback shows everything) */
+  .reveal { opacity: 1; }
+  .js-on .reveal { opacity: 0; transform: translateY(20px); }
+
+  /* FAQ accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  /* copy button */
+  .copy-btn { transition: color .2s ease, border-color .2s ease, background .2s ease; }
+
+  ::selection { background: rgba(60,233,138,0.3); color: #fff; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #070a10; }
+  ::-webkit-scrollbar-thumb { background: #1b2330; border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: #2a3548; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor { animation: none; opacity: 1; }
+    .js-on .reveal { opacity: 1; transform: none; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased">
+
+<div class="glow-bg"></div>
+<div class="grid-bg"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 border-b border-line/70 backdrop-blur-md bg-void/70">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-8 h-8 rounded-md bg-mint/10 border border-mint/30">
+        <span class="font-mono text-mint font-bold text-sm">&gt;_</span>
+      </span>
+      <span class="font-mono font-semibold tracking-tight text-white">glyphd</span>
+      <span class="font-mono text-[10px] text-fog hidden sm:inline-block px-1.5 py-0.5 chip rounded">v2.4</span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-7 font-mono text-[13px] text-fog">
+      <a href="#features" class="hover:text-mint transition">features</a>
+      <a href="#how" class="hover:text-mint transition">how-it-works</a>
+      <a href="#pricing" class="hover:text-mint transition">pricing</a>
+      <a href="#faq" class="hover:text-mint transition">faq</a>
+      <a href="#docs" class="hover:text-mint transition">docs</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="#" class="hidden sm:inline-block font-mono text-[13px] text-fog hover:text-white transition">sign in</a>
+      <a href="#docs" class="font-mono text-[13px] btn-primary px-4 py-2 rounded-lg font-semibold transition">$ npm i glyphd</a>
+    </div>
+  </nav>
+</header>
+
+<main id="top" class="pt-16">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="relative max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-20 pb-20">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-10 items-center">
+      <!-- left -->
+      <div>
+        <div class="inline-flex items-center gap-2 chip rounded-full px-3 py-1.5 mb-7 reveal" data-rv>
+          <span class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse"></span>
+          <span class="font-mono text-[12px] text-fog">edge runtime · 38 regions · 0ms cold start</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.05] font-semibold tracking-tight text-white reveal" data-rv>
+          Ship global infra<br/>
+          <span class="gradient-text glow-mint">from your terminal.</span>
+        </h1>
+
+        <p class="mt-6 text-fog text-[15px] sm:text-base leading-relaxed max-w-lg reveal" data-rv>
+          Glyphd is the developer-first edge platform. Define services as code,
+          deploy to 38 regions with one command, and watch live traces stream
+          back into your shell. No dashboards required — unless you want them.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3 reveal" data-rv>
+          <a href="#docs" class="btn-primary font-mono text-sm px-5 py-3 rounded-lg font-semibold text-center transition">
+            Start building →
+          </a>
+          <div class="group flex items-center gap-3 font-mono text-[13px] chip rounded-lg px-4 py-3 text-fog">
+            <span class="prompt-sym">$</span>
+            <span class="text-white" id="install-cmd">curl -fsSL glyphd.sh | sh</span>
+            <button id="copy-install" class="copy-btn ml-auto text-fog hover:text-mint border border-line rounded px-2 py-0.5 text-[11px]">copy</button>
+          </div>
+        </div>
+
+        <div class="mt-9 flex items-center gap-7 reveal" data-rv>
+          <div>
+            <div class="font-mono text-2xl font-semibold text-white" data-count="38" data-suffix="">0</div>
+            <div class="font-mono text-[11px] text-fog mt-0.5">edge regions</div>
+          </div>
+          <div class="w-px h-9 bg-line"></div>
+          <div>
+            <div class="font-mono text-2xl font-semibold text-white"><span data-count="11" data-suffix="">0</span>ms</div>
+            <div class="font-mono text-[11px] text-fog mt-0.5">p50 global latency</div>
+          </div>
+          <div class="w-px h-9 bg-line"></div>
+          <div>
+            <div class="font-mono text-2xl font-semibold text-white" data-count="99" data-suffix=".99%">0</div>
+            <div class="font-mono text-[11px] text-fog mt-0.5">uptime SLA</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: live terminal -->
+      <div class="relative reveal" data-rv>
+        <div class="term overflow-hidden">
+          <div class="term-bar flex items-center gap-2 px-4 py-3">
+            <span class="dot bg-rose/80"></span>
+            <span class="dot bg-amber/80"></span>
+            <span class="dot bg-mint/80"></span>
+            <span class="font-mono text-[11px] text-fog ml-3">— zsh — glyphd deploy — 80×24</span>
+          </div>
+          <div class="p-5 font-mono text-[12.5px] sm:text-[13px] leading-relaxed min-h-[330px]">
+            <div><span class="prompt-sym">~/api</span> <span class="text-cyan">❯</span> <span id="typed" class="text-white"></span><span class="cursor" id="hero-cursor"></span></div>
+            <div id="term-out" class="mt-1 space-y-0.5"></div>
+          </div>
+        </div>
+        <!-- floating chip -->
+        <div class="absolute -bottom-4 -left-4 sm:-left-6 chip rounded-lg px-3 py-2 bg-coal/90 backdrop-blur hidden sm:flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-mint animate-pulse"></span>
+          <span class="font-mono text-[11px] text-fog">deploy <span class="text-mint">live</span> · 1.8s</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TRUSTED BY ===================== -->
+  <section class="border-y border-line/60 bg-coal/40">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-8">
+      <p class="font-mono text-[11px] uppercase tracking-[0.25em] text-fog text-center mb-6 reveal" data-rv>// trusted by teams shipping at scale</p>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-5 items-center justify-items-center opacity-80">
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>◇ Northwind</span>
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>▲ Quanta</span>
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>⬡ Helix.io</span>
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>✦ Lumenlabs</span>
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>⌁ Voltstack</span>
+        <span class="font-mono text-fog hover:text-white transition text-sm reveal" data-rv>◈ Cobalt</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section id="features" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+    <div class="max-w-2xl mb-12">
+      <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 01 — capabilities</p>
+      <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white reveal" data-rv>
+        Everything is a primitive you can <span class="gradient-text">script</span>.
+      </h2>
+      <p class="mt-4 text-fog leading-relaxed reveal" data-rv>
+        No clicking through consoles. Every feature is exposed as a typed SDK,
+        a CLI flag, and a declarative config block. Compose them however your team works.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card 1 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-mint/10 border border-mint/25 text-mint font-mono text-sm">λ</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Edge functions</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="tok-key">export</span> <span class="tok-key">default</span> <span class="tok-fn">handler</span><span class="tok-pun">(</span><span class="tok-var">req</span><span class="tok-pun">) {</span><br/>
+&nbsp;&nbsp;<span class="tok-key">return</span> <span class="tok-fn">Response</span><span class="tok-pun">.</span><span class="tok-fn">json</span><span class="tok-pun">({</span> <span class="tok-var">ok</span><span class="tok-pun">:</span> <span class="tok-key">true</span> <span class="tok-pun">})</span><br/>
+<span class="tok-pun">}</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">Run TypeScript at the edge with zero cold starts. Auto-scales per region.</p>
+      </div>
+
+      <!-- card 2 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-cyan/10 border border-cyan/25 text-cyan font-mono text-sm">⛁</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Edge KV + SQL</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="prompt-sym">$</span> glyphd kv <span class="tok-fn">set</span> <span class="tok-flag">user:42</span> <span class="tok-str">"alex"</span><br/>
+<span class="tok-com"># replicated to 38 edges</span><br/>
+<span class="tok-key">→</span> <span class="tok-str">ok</span> <span class="tok-pun">(</span><span class="tok-num">3ms</span><span class="tok-pun">)</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">Strongly-consistent KV and serverless Postgres, replicated to the edge automatically.</p>
+      </div>
+
+      <!-- card 3 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-violet/10 border border-violet/25 text-violet font-mono text-sm">⟁</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Live tracing</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="tok-com"># tail spans in real time</span><br/>
+<span class="prompt-sym">$</span> glyphd logs <span class="tok-flag">--trace</span> <span class="tok-flag">-f</span><br/>
+<span class="tok-fn">GET</span> /v1/pay <span class="tok-num">204</span> <span class="tok-str">11ms</span> <span class="tok-num">sfo</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">Distributed traces, structured logs, and flame graphs — streamed to your shell.</p>
+      </div>
+
+      <!-- card 4 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-amber/10 border border-amber/25 text-amber font-mono text-sm">⎈</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Infra as config</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="tok-key">service</span><span class="tok-pun">:</span> <span class="tok-str">api</span><br/>
+<span class="tok-key">regions</span><span class="tok-pun">:</span> <span class="tok-pun">[</span><span class="tok-str">sfo</span><span class="tok-pun">,</span> <span class="tok-str">fra</span><span class="tok-pun">,</span> <span class="tok-str">sin</span><span class="tok-pun">]</span><br/>
+<span class="tok-key">scale</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">min</span><span class="tok-pun">:</span> <span class="tok-num">0</span><span class="tok-pun">,</span> <span class="tok-key">max</span><span class="tok-pun">:</span> <span class="tok-num">200</span> <span class="tok-pun">}</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">One <span class="text-white">glyphd.yaml</span> describes your whole topology. Diff, plan, apply.</p>
+      </div>
+
+      <!-- card 5 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-rose/10 border border-rose/25 text-rose font-mono text-sm">⚿</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Secrets & auth</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="prompt-sym">$</span> glyphd secret <span class="tok-fn">add</span> <span class="tok-flag">DB_URL</span><br/>
+<span class="tok-com"># encrypted at rest, scoped</span><br/>
+<span class="tok-key">→</span> <span class="tok-str">sealed</span> · <span class="tok-num">env=prod</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">Encrypted secrets, signed tokens, and per-env scoping baked into the runtime.</p>
+      </div>
+
+      <!-- card 6 -->
+      <div class="panel rounded-xl2 p-5 reveal" data-rv>
+        <div class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-mint/10 border border-mint/25 text-mint font-mono text-sm">↺</span>
+          <h3 class="font-mono text-white font-semibold text-sm">Instant rollback</h3>
+        </div>
+        <div class="rounded-lg bg-void/70 border border-line p-3 font-mono text-[11.5px] leading-relaxed overflow-x-auto">
+<span class="prompt-sym">$</span> glyphd rollback <span class="tok-flag">--to</span> <span class="tok-num">v2.3</span><br/>
+<span class="tok-com"># atomic, global, &lt;1s</span><br/>
+<span class="tok-key">→</span> <span class="tok-str">reverted</span> <span class="tok-pun">(</span><span class="tok-num">0.9s</span><span class="tok-pun">)</span>
+        </div>
+        <p class="mt-3 text-fog text-[13px] leading-relaxed">Every deploy is immutable and addressable. Roll back the world in under a second.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HOW IT WORKS ===================== -->
+  <section id="how" class="border-y border-line/60 bg-coal/30">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+      <div class="max-w-2xl mb-12">
+        <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 02 — workflow</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white reveal" data-rv>
+          Three commands. <span class="gradient-text">Production.</span>
+        </h2>
+        <p class="mt-4 text-fog leading-relaxed reveal" data-rv>
+          The whole loop fits in your muscle memory. No YAML archaeology, no portal hunting.
+        </p>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-5">
+        <!-- step 1 -->
+        <div class="relative panel rounded-xl2 p-6 bracket reveal" data-rv>
+          <div class="font-mono text-[42px] leading-none text-line font-bold">01</div>
+          <h3 class="mt-3 font-mono text-white font-semibold">Init your project</h3>
+          <p class="mt-2 text-fog text-[13.5px] leading-relaxed">Scaffold a typed project with a single command. Detects your stack automatically.</p>
+          <div class="mt-4 rounded-lg bg-void/70 border border-line p-3 font-mono text-[12px]">
+            <span class="prompt-sym">$</span> glyphd init <span class="tok-flag">--ts</span><br/>
+            <span class="tok-com"># created glyphd.yaml</span>
+          </div>
+        </div>
+        <!-- step 2 -->
+        <div class="relative panel rounded-xl2 p-6 bracket reveal" data-rv>
+          <div class="font-mono text-[42px] leading-none text-line font-bold">02</div>
+          <h3 class="mt-3 font-mono text-white font-semibold">Deploy globally</h3>
+          <p class="mt-2 text-fog text-[13.5px] leading-relaxed">Push immutable builds to every edge region in parallel with automatic health checks.</p>
+          <div class="mt-4 rounded-lg bg-void/70 border border-line p-3 font-mono text-[12px]">
+            <span class="prompt-sym">$</span> glyphd deploy <span class="tok-flag">--prod</span><br/>
+            <span class="tok-key">→</span> <span class="tok-str">live in 38 regions</span>
+          </div>
+        </div>
+        <!-- step 3 -->
+        <div class="relative panel rounded-xl2 p-6 bracket reveal" data-rv>
+          <div class="font-mono text-[42px] leading-none text-line font-bold">03</div>
+          <h3 class="mt-3 font-mono text-white font-semibold">Observe & iterate</h3>
+          <p class="mt-2 text-fog text-[13.5px] leading-relaxed">Stream live traces, set alerts, and roll forward or back without leaving the terminal.</p>
+          <div class="mt-4 rounded-lg bg-void/70 border border-line p-3 font-mono text-[12px]">
+            <span class="prompt-sym">$</span> glyphd watch <span class="tok-flag">--alerts</span><br/>
+            <span class="tok-key">→</span> <span class="tok-str">streaming…</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABOUT ===================== -->
+  <section id="about" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 03 — manifesto</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white leading-tight reveal" data-rv>
+          Built by engineers who were <span class="gradient-text">tired of dashboards.</span>
+        </h2>
+        <p class="mt-5 text-fog leading-relaxed reveal" data-rv>
+          We spent years context-switching between consoles, YAML files, and a dozen
+          observability tabs just to ship a small change. Glyphd is the platform we
+          wished existed: one binary, one config, one mental model.
+        </p>
+        <p class="mt-4 text-fog leading-relaxed reveal" data-rv>
+          Everything you can do in the dashboard, you can do in the CLI — and everything
+          in the CLI is scriptable, versionable, and reviewable in a pull request.
+          The terminal is the product.
+        </p>
+        <div class="mt-7 grid grid-cols-3 gap-4 reveal" data-rv>
+          <div class="panel rounded-lg p-4 text-center">
+            <div class="font-mono text-2xl font-semibold text-white" data-count="2018" data-suffix="">0</div>
+            <div class="font-mono text-[11px] text-fog mt-1">founded</div>
+          </div>
+          <div class="panel rounded-lg p-4 text-center">
+            <div class="font-mono text-2xl font-semibold text-white" data-count="14" data-suffix="k+">0</div>
+            <div class="font-mono text-[11px] text-fog mt-1">teams</div>
+          </div>
+          <div class="panel rounded-lg p-4 text-center">
+            <div class="font-mono text-2xl font-semibold text-white" data-count="6" data-suffix="B">0</div>
+            <div class="font-mono text-[11px] text-fog mt-1">reqs / day</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- code panel -->
+      <div class="reveal" data-rv>
+        <div class="term overflow-hidden">
+          <div class="term-bar flex items-center gap-2 px-4 py-3">
+            <span class="dot bg-rose/80"></span>
+            <span class="dot bg-amber/80"></span>
+            <span class="dot bg-mint/80"></span>
+            <span class="font-mono text-[11px] text-fog ml-3">glyphd.yaml</span>
+          </div>
+          <div class="p-5 font-mono text-[12.5px] leading-relaxed">
+<span class="tok-com"># declarative service topology</span><br/>
+<span class="tok-key">service</span><span class="tok-pun">:</span> <span class="tok-str">payments-api</span><br/>
+<span class="tok-key">runtime</span><span class="tok-pun">:</span> <span class="tok-str">edge-ts@2</span><br/>
+<span class="tok-key">regions</span><span class="tok-pun">:</span><br/>
+&nbsp;&nbsp;<span class="tok-pun">-</span> <span class="tok-str">sfo</span> &nbsp;<span class="tok-com"># us-west</span><br/>
+&nbsp;&nbsp;<span class="tok-pun">-</span> <span class="tok-str">fra</span> &nbsp;<span class="tok-com"># eu-central</span><br/>
+&nbsp;&nbsp;<span class="tok-pun">-</span> <span class="tok-str">sin</span> &nbsp;<span class="tok-com"># ap-southeast</span><br/>
+<span class="tok-key">scale</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">min</span><span class="tok-pun">:</span> <span class="tok-num">0</span><span class="tok-pun">,</span> <span class="tok-key">max</span><span class="tok-pun">:</span> <span class="tok-num">500</span> <span class="tok-pun">}</span><br/>
+<span class="tok-key">routes</span><span class="tok-pun">:</span><br/>
+&nbsp;&nbsp;<span class="tok-fn">/v1/*</span><span class="tok-pun">:</span> <span class="tok-str">./src/api.ts</span><br/>
+<span class="tok-key">secrets</span><span class="tok-pun">:</span> <span class="tok-pun">[</span><span class="tok-flag">DB_URL</span><span class="tok-pun">,</span> <span class="tok-flag">JWT_KEY</span><span class="tok-pun">]</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TESTIMONIALS ===================== -->
+  <section class="border-y border-line/60 bg-coal/30">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+      <div class="max-w-2xl mb-12">
+        <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 04 — from engineers</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white reveal" data-rv>
+          $ git log <span class="gradient-text">--praise</span>
+        </h2>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-5">
+        <!-- t1 -->
+        <figure class="panel rounded-xl2 p-6 reveal" data-rv>
+          <div class="font-mono text-[11px] text-fog mb-3">commit <span class="text-cyan">a1f9c2e</span></div>
+          <blockquote class="text-[14.5px] leading-relaxed text-white/90">
+            "We deleted three internal tools the week we adopted Glyphd. The CLI <span class="text-mint">is</span> the platform — and it's the cleanest DX I've shipped on."
+          </blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-md bg-mint/10 border border-mint/25 text-mint font-mono text-xs">JD</span>
+            <div class="font-mono text-[12px]">
+              <div class="text-white">jordan_dev</div>
+              <div class="text-fog">Staff Eng · Voltstack</div>
+            </div>
+          </figcaption>
+        </figure>
+
+        <!-- t2 -->
+        <figure class="panel rounded-xl2 p-6 reveal" data-rv>
+          <div class="font-mono text-[11px] text-fog mb-3">commit <span class="text-cyan">7be03d1</span></div>
+          <blockquote class="text-[14.5px] leading-relaxed text-white/90">
+            "Rolled back a bad release across 38 regions in <span class="text-mint">under a second</span> at 2am. Went straight back to sleep. That's the whole pitch."
+          </blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-md bg-cyan/10 border border-cyan/25 text-cyan font-mono text-xs">PM</span>
+            <div class="font-mono text-[12px]">
+              <div class="text-white">priya.m</div>
+              <div class="text-fog">SRE Lead · Helix.io</div>
+            </div>
+          </figcaption>
+        </figure>
+
+        <!-- t3 -->
+        <figure class="panel rounded-xl2 p-6 reveal" data-rv>
+          <div class="font-mono text-[11px] text-fog mb-3">commit <span class="text-cyan">c40e8aa</span></div>
+          <blockquote class="text-[14.5px] leading-relaxed text-white/90">
+            "Our infra now lives in a PR. Plan, review, apply — same as code. <span class="text-mint">Glyphd</span> made ops boring again, in the best way."
+          </blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <span class="grid place-items-center w-9 h-9 rounded-md bg-violet/10 border border-violet/25 text-violet font-mono text-xs">TК</span>
+            <div class="font-mono text-[12px]">
+              <div class="text-white">t_kovac</div>
+              <div class="text-fog">Platform · Cobalt</div>
+            </div>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRICING ===================== -->
+  <section id="pricing" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+    <div class="max-w-2xl mb-12">
+      <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 05 — pricing</p>
+      <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white reveal" data-rv>
+        Usage-based. <span class="gradient-text">No surprises.</span>
+      </h2>
+      <p class="mt-4 text-fog leading-relaxed reveal" data-rv>Start free, scale per request. Every tier includes all 38 regions.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-5">
+      <!-- hobby -->
+      <div class="panel rounded-xl2 p-6 reveal" data-rv>
+        <div class="font-mono text-[12px] text-fog">hobby</div>
+        <div class="mt-3 flex items-baseline gap-1">
+          <span class="font-mono text-4xl font-semibold text-white">$0</span>
+          <span class="font-mono text-fog text-sm">/mo</span>
+        </div>
+        <p class="mt-2 text-fog text-[13px]">For side projects and learning the ropes.</p>
+        <a href="#docs" class="mt-5 block text-center font-mono text-sm border border-line hover:border-mint/50 hover:text-mint text-white rounded-lg py-2.5 transition">Start free</a>
+        <ul class="mt-6 space-y-2.5 font-mono text-[12.5px] text-fog">
+          <li><span class="text-mint">✓</span> 1M edge requests/mo</li>
+          <li><span class="text-mint">✓</span> 3 services</li>
+          <li><span class="text-mint">✓</span> Community support</li>
+          <li><span class="text-mint">✓</span> Live trace tailing</li>
+        </ul>
+      </div>
+
+      <!-- pro (featured) -->
+      <div class="relative rounded-xl2 p-6 reveal" data-rv style="background:linear-gradient(180deg,#0c1219,#090d13);border:1px solid rgba(60,233,138,0.45);box-shadow:0 30px 80px -40px rgba(60,233,138,0.45);">
+        <div class="absolute -top-3 left-6 chip rounded-full px-3 py-1 bg-mint text-void font-mono text-[11px] font-semibold">most popular</div>
+        <div class="font-mono text-[12px] text-mint">pro</div>
+        <div class="mt-3 flex items-baseline gap-1">
+          <span class="font-mono text-4xl font-semibold text-white">$49</span>
+          <span class="font-mono text-fog text-sm">/mo + usage</span>
+        </div>
+        <p class="mt-2 text-fog text-[13px]">For teams shipping to production daily.</p>
+        <a href="#docs" class="mt-5 block text-center font-mono text-sm btn-primary rounded-lg py-2.5 font-semibold transition">Start 14-day trial</a>
+        <ul class="mt-6 space-y-2.5 font-mono text-[12.5px] text-fog">
+          <li><span class="text-mint">✓</span> 100M edge requests/mo</li>
+          <li><span class="text-mint">✓</span> Unlimited services</li>
+          <li><span class="text-mint">✓</span> Edge KV + SQL included</li>
+          <li><span class="text-mint">✓</span> Instant global rollback</li>
+          <li><span class="text-mint">✓</span> Priority support · SLA</li>
+        </ul>
+      </div>
+
+      <!-- enterprise -->
+      <div class="panel rounded-xl2 p-6 reveal" data-rv>
+        <div class="font-mono text-[12px] text-fog">enterprise</div>
+        <div class="mt-3 flex items-baseline gap-1">
+          <span class="font-mono text-4xl font-semibold text-white">Custom</span>
+        </div>
+        <p class="mt-2 text-fog text-[13px]">For platforms with compliance needs.</p>
+        <a href="#docs" class="mt-5 block text-center font-mono text-sm border border-line hover:border-mint/50 hover:text-mint text-white rounded-lg py-2.5 transition">Contact sales</a>
+        <ul class="mt-6 space-y-2.5 font-mono text-[12.5px] text-fog">
+          <li><span class="text-mint">✓</span> Unlimited everything</li>
+          <li><span class="text-mint">✓</span> Dedicated regions / VPC</li>
+          <li><span class="text-mint">✓</span> SOC2 · HIPAA · audit logs</li>
+          <li><span class="text-mint">✓</span> 24/7 on-call engineer</li>
+          <li><span class="text-mint">✓</span> 99.99% uptime SLA</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq" class="border-y border-line/60 bg-coal/30">
+    <div class="max-w-3xl mx-auto px-5 sm:px-8 py-20 sm:py-24">
+      <div class="mb-10">
+        <p class="font-mono text-[12px] text-mint mb-3 reveal" data-rv>// 06 — faq</p>
+        <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight text-white reveal" data-rv>man glyphd</h2>
+      </div>
+
+      <div class="divide-y divide-line">
+        <div class="faq-item reveal" data-rv>
+          <button class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+            <span class="font-mono text-[14.5px] text-white">Do I need to learn a new language?</span>
+            <span class="faq-plus text-mint text-xl transition-transform shrink-0">+</span>
+          </button>
+          <div class="faq-body"><p class="pb-5 text-fog text-[14px] leading-relaxed">No. Glyphd runs standard TypeScript and JavaScript at the edge with Web-standard APIs. If you know <span class="text-white font-mono">fetch</span> and <span class="text-white font-mono">Response</span>, you already know Glyphd.</p></div>
+        </div>
+
+        <div class="faq-item reveal" data-rv>
+          <button class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+            <span class="font-mono text-[14.5px] text-white">Can I bring my existing CI/CD?</span>
+            <span class="faq-plus text-mint text-xl transition-transform shrink-0">+</span>
+          </button>
+          <div class="faq-body"><p class="pb-5 text-fog text-[14px] leading-relaxed">Yes. The CLI is a single static binary that runs anywhere. Drop <span class="text-white font-mono">glyphd deploy</span> into GitHub Actions, GitLab, or any runner — it returns standard exit codes and JSON output.</p></div>
+        </div>
+
+        <div class="faq-item reveal" data-rv>
+          <button class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+            <span class="font-mono text-[14.5px] text-white">How does pricing scale with traffic?</span>
+            <span class="faq-plus text-mint text-xl transition-transform shrink-0">+</span>
+          </button>
+          <div class="faq-body"><p class="pb-5 text-fog text-[14px] leading-relaxed">You pay a flat base plus a metered rate per million requests beyond your tier's included volume. There are no per-region fees, no egress traps, and you can set hard spend caps from the CLI.</p></div>
+        </div>
+
+        <div class="faq-item reveal" data-rv>
+          <button class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+            <span class="font-mono text-[14.5px] text-white">Is my data and traffic secure?</span>
+            <span class="faq-plus text-mint text-xl transition-transform shrink-0">+</span>
+          </button>
+          <div class="faq-body"><p class="pb-5 text-fog text-[14px] leading-relaxed">All secrets are encrypted at rest and in transit, scoped per environment, and never logged. Enterprise tiers add SOC2, HIPAA, dedicated VPC isolation, and immutable audit logs.</p></div>
+        </div>
+
+        <div class="faq-item reveal" data-rv>
+          <button class="faq-trigger w-full flex items-center justify-between gap-4 py-5 text-left">
+            <span class="font-mono text-[14.5px] text-white">What happens if a region goes down?</span>
+            <span class="faq-plus text-mint text-xl transition-transform shrink-0">+</span>
+          </button>
+          <div class="faq-body"><p class="pb-5 text-fog text-[14px] leading-relaxed">Traffic fails over automatically to the nearest healthy region with zero config. Health checks run continuously and unhealthy edges are drained before they ever serve a request.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL CTA ===================== -->
+  <section id="docs" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+    <div class="relative term overflow-hidden reveal" data-rv>
+      <div class="term-bar flex items-center gap-2 px-4 py-3">
+        <span class="dot bg-rose/80"></span>
+        <span class="dot bg-amber/80"></span>
+        <span class="dot bg-mint/80"></span>
+        <span class="font-mono text-[11px] text-fog ml-3">— get started —</span>
+      </div>
+      <div class="p-8 sm:p-14 text-center">
+        <h2 class="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
+          Your next deploy is<br/><span class="gradient-text glow-mint">one command away.</span>
+        </h2>
+        <p class="mt-5 text-fog max-w-xl mx-auto leading-relaxed">Install the CLI, read the docs, and ship to 38 regions before your coffee gets cold.</p>
+
+        <div class="mt-8 max-w-md mx-auto flex items-center gap-3 font-mono text-[13px] sm:text-sm chip rounded-lg px-4 py-3.5 text-left">
+          <span class="prompt-sym">$</span>
+          <span class="text-white" id="cta-cmd">curl -fsSL glyphd.sh | sh</span>
+          <button id="copy-cta" class="copy-btn ml-auto text-fog hover:text-mint border border-line rounded px-2.5 py-1 text-[11px]">copy</button>
+        </div>
+
+        <div class="mt-7 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#" class="btn-primary font-mono text-sm px-6 py-3 rounded-lg font-semibold transition">Read the docs →</a>
+          <a href="#" class="font-mono text-sm border border-line hover:border-mint/50 hover:text-mint text-white px-6 py-3 rounded-lg transition">★ Star on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="border-t border-line/70 bg-void/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center w-8 h-8 rounded-md bg-mint/10 border border-mint/30">
+            <span class="font-mono text-mint font-bold text-sm">&gt;_</span>
+          </span>
+          <span class="font-mono font-semibold text-white">glyphd</span>
+        </a>
+        <p class="text-fog text-[13.5px] leading-relaxed max-w-xs">The developer-first edge platform. Define, deploy, and observe global infrastructure from a single terminal.</p>
+        <div class="mt-5 flex items-center gap-3 font-mono text-[12px] text-fog">
+          <span class="chip rounded px-2 py-1">⬡ GitHub</span>
+          <span class="chip rounded px-2 py-1">✦ Discord</span>
+          <span class="chip rounded px-2 py-1">⌁ Changelog</span>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="font-mono text-[12px] uppercase tracking-wider text-white mb-4">product</h4>
+        <ul class="space-y-2.5 font-mono text-[13px] text-fog">
+          <li><a href="#features" class="hover:text-mint transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-mint transition">Pricing</a></li>
+          <li><a href="#" class="hover:text-mint transition">Edge KV</a></li>
+          <li><a href="#" class="hover:text-mint transition">Status</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-mono text-[12px] uppercase tracking-wider text-white mb-4">developers</h4>
+        <ul class="space-y-2.5 font-mono text-[13px] text-fog">
+          <li><a href="#docs" class="hover:text-mint transition">Docs</a></li>
+          <li><a href="#" class="hover:text-mint transition">CLI reference</a></li>
+          <li><a href="#" class="hover:text-mint transition">API</a></li>
+          <li><a href="#" class="hover:text-mint transition">Examples</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-mono text-[12px] uppercase tracking-wider text-white mb-4">company</h4>
+        <ul class="space-y-2.5 font-mono text-[13px] text-fog">
+          <li><a href="#about" class="hover:text-mint transition">About</a></li>
+          <li><a href="#" class="hover:text-mint transition">Careers</a></li>
+          <li><a href="#" class="hover:text-mint transition">Security</a></li>
+          <li><a href="#" class="hover:text-mint transition">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="font-mono text-[12px] text-fog">© 2026 Glyphd Labs, Inc. <span class="text-line">//</span> all rights reserved.</p>
+      <p class="font-mono text-[12px] text-fog">built for the <span class="text-mint">terminal</span> <span class="cursor" style="height:0.9em"></span></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.documentElement.classList.add('js-on');
+
+  /* ---------- Copy buttons ---------- */
+  function bindCopy(btnId, textId) {
+    const btn = document.getElementById(btnId);
+    const src = document.getElementById(textId);
+    if (!btn || !src) return;
+    btn.addEventListener('click', function () {
+      const text = src.textContent.trim();
+      const done = function () {
+        const old = btn.textContent;
+        btn.textContent = '✓ copied';
+        btn.classList.add('text-mint');
+        setTimeout(function () { btn.textContent = old; btn.classList.remove('text-mint'); }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(done);
+      } else { done(); }
+    });
+  }
+  bindCopy('copy-install', 'install-cmd');
+  bindCopy('copy-cta', 'cta-cmd');
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(function (t) {
+    t.addEventListener('click', function () {
+      const item = t.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function (i) { i.classList.remove('open'); });
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Hero typewriter terminal ---------- */
+  const typed = document.getElementById('typed');
+  const out = document.getElementById('term-out');
+  const command = 'glyphd deploy --prod';
+  const lines = [
+    { html: '<span class="tok-com"># building edge bundle…</span>', d: 380 },
+    { html: '<span class="tok-key">→</span> <span class="tok-str">compiled</span> <span class="tok-pun">·</span> <span class="tok-num">214kb</span> <span class="tok-pun">·</span> <span class="tok-num">0.7s</span>', d: 420 },
+    { html: '<span class="tok-com"># uploading to 38 regions…</span>', d: 520 },
+    { html: '<span class="tok-fn">sfo</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-fn">fra</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-fn">sin</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-fn">gru</span> <span class="tok-str">✓</span>', d: 460 },
+    { html: '<span class="tok-fn">nrt</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-fn">iad</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-fn">syd</span> <span class="tok-str">✓</span>&nbsp;&nbsp;<span class="tok-pun">+31 more</span>', d: 520 },
+    { html: '<span class="tok-key">→</span> <span class="tok-str">deploy live</span> <span class="tok-pun">·</span> <span class="tok-num">v2.4.1</span> <span class="tok-pun">·</span> <span class="tok-num">1.8s</span>', d: 480 },
+    { html: '<span class="prompt-sym">🌐</span> <span class="tok-var">https://payments.glyphd.app</span>', d: 300 }
+  ];
+
+  function appendLine(i) {
+    if (i >= lines.length) { return; }
+    const el = document.createElement('div');
+    el.innerHTML = lines[i].html;
+    el.style.opacity = '0';
+    out.appendChild(el);
+    requestAnimationFrame(function () {
+      el.style.transition = 'opacity .35s ease, transform .35s ease';
+      el.style.transform = 'translateY(4px)';
+      requestAnimationFrame(function () { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
+    });
+    setTimeout(function () { appendLine(i + 1); }, lines[i].d);
+  }
+
+  function typeCommand(idx) {
+    if (idx > command.length) {
+      setTimeout(function () { appendLine(0); }, 350);
+      return;
+    }
+    typed.textContent = command.slice(0, idx);
+    setTimeout(function () { typeCommand(idx + 1); }, 55);
+  }
+
+  function startTerminal() {
+    if (reduce) {
+      typed.textContent = command;
+      lines.forEach(function (l) {
+        const el = document.createElement('div');
+        el.innerHTML = l.html;
+        out.appendChild(el);
+      });
+      return;
+    }
+    typeCommand(0);
+  }
+
+  /* trigger terminal when hero is on screen */
+  if ('IntersectionObserver' in window) {
+    const heroTerm = typed && typed.closest('.term');
+    if (heroTerm) {
+      const io = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { startTerminal(); obs.disconnect(); }
+        });
+      }, { threshold: 0.3 });
+      io.observe(heroTerm);
+    }
+  } else { startTerminal(); }
+
+  /* ---------- Count-up metrics ---------- */
+  function countUp(el) {
+    const target = parseFloat(el.getAttribute('data-count'));
+    const suffix = el.getAttribute('data-suffix') || '';
+    if (reduce) { el.textContent = target + suffix; return; }
+    const dur = 1200;
+    const start = performance.now();
+    function frame(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = Math.round(target * eased);
+      el.textContent = val + (p >= 1 ? suffix : '');
+      if (p < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+  if ('IntersectionObserver' in window) {
+    const co = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { countUp(e.target); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('[data-count]').forEach(function (el) { co.observe(el); });
+  } else {
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || '');
+    });
+  }
+
+  /* ---------- GSAP scroll reveals ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+    document.querySelectorAll('[data-rv]').forEach(function (el) {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.7, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+      });
+    });
+  } else {
+    document.querySelectorAll('[data-rv]').forEach(function (el) {
+      el.style.opacity = '1'; el.style.transform = 'none';
+    });
+  }
+})();
+</script>
+</body>
+</html>

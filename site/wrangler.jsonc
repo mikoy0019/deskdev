@@ -1,0 +1,88 @@
+// The Worker that serves the NixGen site and DeskDev, built by
+// `opennextjs-cloudflare build` (open-next.config.ts, README.md "Deploy").
+//
+// Two Workers come from this file: nixgen-site (production, the top level)
+// and nixgen-site-preview (`--env preview`, the pull-request previews in
+// .github/workflows/site-deploy.yml). An environment inherits none of the
+// bindings or secrets below, so "preview" lists the ones it needs again.
+// src/lib/cloudflareConfig.test.ts checks both.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Pinned so a deploy can't follow whichever account Wrangler is logged into.
+  // Nixgensolutions@gmail.com's Account.
+  "account_id": "5c6cabb0e7c2e306c3dd792599736a46",
+  "name": "nixgen-site",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    "not_found_handling": "none"
+  },
+  // Workers Logs is the error tracker (src/app/api/client-errors) and the
+  // place the routes' JSON lines are read, so it is declared, not left to the
+  // default.
+  "observability": { "enabled": true },
+
+  // The custom domains can only attach once the nixgensolutions.com zone is
+  // Active on this account (docs/runbooks/DNS-CUTOVER.md step 5). Until that
+  // day the Worker is served from its workers.dev address only: a deploy with
+  // the domains listed would stop at the domain step. At the cutover, turn
+  // "routes" on, set "workers_dev" to false, and deploy.
+  "workers_dev": true,
+  // "routes": [
+  //   { "pattern": "nixgensolutions.com", "custom_domain": true },
+  //   { "pattern": "workspace.nixgensolutions.com", "custom_domain": true }
+  // ],
+  // No address per uploaded version: left on, every version would also
+  // answer at <version>-nixgen-site.<subdomain>.workers.dev.
+  "preview_urls": false,
+
+  // A per-visitor ceiling in front of the public /api POST routes and the deep
+  // health check (src/lib/rateLimit.ts). Contact and subscribe have a database
+  // throttle as well; this only caps how often one network can make the
+  // database answer. 20 a minute per network is far above anything a person
+  // or a monitor does. The namespace is only a number that must be unique on
+  // the account.
+  "ratelimits": [{ "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }],
+  // Which deployed version is answering; /api/health reports it, so a
+  // rollback can be seen from outside.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
+
+  // The page cache (open-next.config.ts) is the static-assets one today: the
+  // pages the build rendered ride along with the assets above, so it needs no
+  // binding. R2 is not switched on for the account yet. When it is, the R2
+  // page cache needs, here and in "preview" (with its own bucket and service):
+  //   "r2_buckets": [{ "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "nixgen-site-cache" }],
+  //   "durable_objects": { "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }] },
+  //   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
+  //   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "nixgen-site" }],
+
+  // The lead-intake secrets (src/app/api/contact, src/app/api/subscribe,
+  // /f/<token>). Required, so a deploy refuses to go out until all three are
+  // set on the Worker (how: README.md, Deploy, "2. Worker secrets"): a site
+  // whose form silently stops recording leads must not ship.
+  // FORM_TOKEN_SECRET is optional in the route's code, but production should
+  // never run without the fill-time check. TURNSTILE_SECRET_KEY and
+  // BOOKING_API_SECRET stay off the list while their features are optional.
+  "secrets": { "required": ["LEAD_INTAKE_SECRET", "LEAD_IP_SALT", "FORM_TOKEN_SECRET"] },
+
+  "env": {
+    // Pull-request previews get a Worker of their own: no custom domain, its
+    // own page cache, and none of production's secrets, so a preview can never
+    // hold production's LEAD_INTAKE_SECRET. Its contact form falls back to
+    // email and DeskDev runs on demo data.
+    "preview": {
+      "name": "nixgen-site-preview",
+      "workers_dev": true,
+      "preview_urls": false,
+      "observability": { "enabled": true },
+      "ratelimits": [{ "name": "API_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }],
+      "version_metadata": { "binding": "CF_VERSION_METADATA" },
+      // Page cache: see the top level (bucket nixgen-site-preview-cache and
+      // service nixgen-site-preview once R2 is on).
+      "secrets": { "required": [] }
+    }
+  }
+}

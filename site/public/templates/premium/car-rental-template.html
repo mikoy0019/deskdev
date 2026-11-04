@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Driftly — Premium Car Rental, Booked in Seconds</title>
+<meta name="description" content="Driftly is the modern way to rent a car. Search a city, pick your dates, and drive away in minutes. Transparent pricing, spotless cars, 24/7 support." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0c1322',
+          night: '#111b30',
+          slate2: '#1c2940',
+          mist: '#f4f7fb',
+          drift: '#1fb6a6',     // friendly teal accent
+          driftdk: '#0e9486',
+          sky: '#3d8bff',
+          amberglow: '#ffb648',
+        },
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          body: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          float: '0 24px 60px -18px rgba(12,19,34,0.28)',
+          soft: '0 10px 30px -12px rgba(12,19,34,0.18)',
+          glow: '0 0 0 1px rgba(31,182,166,0.25), 0 18px 40px -16px rgba(31,182,166,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { color-scheme: light; }
+  * { -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Inter', sans-serif; background: #fbfcfe; color: #0c1322; overflow-x: hidden; }
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* Gradient text */
+  .text-grad {
+    background: linear-gradient(110deg, #1fb6a6 0%, #3d8bff 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Animated grid backdrop */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(31,182,166,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,182,166,0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollX 32s linear infinite; }
+  .marquee:hover { animation-play-state: paused; }
+  @keyframes scrollX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Class rail */
+  .rail { scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+
+  /* Tilt card */
+  .tilt { transform-style: preserve-3d; transition: transform .25s ease; will-change: transform; }
+  .tilt-inner { transform: translateZ(40px); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-ico { transform: rotate(45deg); }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(28px); }
+
+  /* Glow pulse on CTA */
+  .pulse-ring::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit;
+    box-shadow: 0 0 0 0 rgba(31,182,166,0.45); animation: pulse 2.6s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(31,182,166,0.40); }
+    70% { box-shadow: 0 0 0 16px rgba(31,182,166,0); }
+    100% { box-shadow: 0 0 0 0 rgba(31,182,166,0); }
+  }
+
+  .glass { background: rgba(255,255,255,0.72); backdrop-filter: blur(14px); }
+  .glass-dark { background: rgba(12,19,34,0.55); backdrop-filter: blur(12px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="glass mx-auto mt-3 max-w-7xl rounded-2xl px-5 py-3 shadow-soft flex items-center justify-between border border-white/60">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-drift to-sky text-white shadow-glow">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5"/><path d="M5 13h14v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/></svg>
+      </span>
+      <span class="font-display text-xl font-extrabold tracking-tight">Driftly</span>
+    </a>
+    <ul class="hidden lg:flex items-center gap-7 text-sm font-medium text-night/80">
+      <li><a href="#classes" class="hover:text-drift transition">Vehicles</a></li>
+      <li><a href="#how" class="hover:text-drift transition">How it works</a></li>
+      <li><a href="#locations" class="hover:text-drift transition">Locations</a></li>
+      <li><a href="#deals" class="hover:text-drift transition">Deals</a></li>
+      <li><a href="#faq" class="hover:text-drift transition">FAQ</a></li>
+    </ul>
+    <div class="flex items-center gap-2.5">
+      <a href="#" class="hidden sm:inline-flex text-sm font-semibold text-night/80 hover:text-drift transition px-3 py-2">Sign in</a>
+      <a href="#hero-search" id="navCta" class="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-night transition shadow-soft">
+        Book a car
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden grid-bg">
+  <!-- ambient blobs -->
+  <div class="pointer-events-none absolute -top-24 -left-24 h-80 w-80 rounded-full bg-drift/20 blur-3xl"></div>
+  <div class="pointer-events-none absolute top-20 -right-20 h-96 w-96 rounded-full bg-sky/20 blur-3xl"></div>
+
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
+      <!-- Left: copy + search -->
+      <div>
+        <span class="reveal inline-flex items-center gap-2 rounded-full border border-drift/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-driftdk shadow-soft">
+          <span class="h-1.5 w-1.5 rounded-full bg-drift animate-pulse"></span>
+          4.9/5 from 38,000+ trips
+        </span>
+
+        <h1 class="reveal mt-5 font-display text-[2.6rem] leading-[1.05] sm:text-6xl md:text-[4.1rem] font-extrabold tracking-tight">
+          Rent a car the <span class="text-grad">effortless</span> way.
+        </h1>
+        <p class="reveal mt-5 max-w-xl text-lg text-night/70">
+          Pick a city, choose your dates, and drive off in minutes. No hidden fees, spotless vehicles, and round-the-clock human support.
+        </p>
+
+        <!-- SEARCH BAR -->
+        <div id="hero-search" class="reveal mt-8 rounded-3xl bg-white p-3 shadow-float border border-mist">
+          <div class="grid sm:grid-cols-[1.2fr_1fr_1fr_auto] gap-2.5">
+            <!-- Location -->
+            <label class="group rounded-2xl bg-mist px-4 py-3 transition focus-within:ring-2 focus-within:ring-drift/40 cursor-text">
+              <span class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-night/50">
+                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 text-drift" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                Pick-up location
+              </span>
+              <input list="cities" placeholder="City or airport" class="mt-1 w-full bg-transparent text-sm font-semibold text-ink placeholder:text-night/35 focus:outline-none" />
+              <datalist id="cities">
+                <option value="Lisbon — Humberto Delgado"></option>
+                <option value="Barcelona — El Prat"></option>
+                <option value="Austin — Downtown Hub"></option>
+                <option value="Cape Town — Waterfront"></option>
+              </datalist>
+            </label>
+            <!-- Pick-up date -->
+            <label class="rounded-2xl bg-mist px-4 py-3 transition focus-within:ring-2 focus-within:ring-drift/40 cursor-text">
+              <span class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-night/50">
+                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 text-drift" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                Pick-up
+              </span>
+              <input type="date" class="mt-1 w-full bg-transparent text-sm font-semibold text-ink focus:outline-none" />
+            </label>
+            <!-- Return date -->
+            <label class="rounded-2xl bg-mist px-4 py-3 transition focus-within:ring-2 focus-within:ring-drift/40 cursor-text">
+              <span class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-night/50">
+                <svg viewBox="0 0 24 24" class="h-3.5 w-3.5 text-drift" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+                Return
+              </span>
+              <input type="date" class="mt-1 w-full bg-transparent text-sm font-semibold text-ink focus:outline-none" />
+            </label>
+            <!-- Magnetic Search CTA -->
+            <button id="searchBtn" class="pulse-ring relative inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-drift to-driftdk px-6 py-3 text-sm font-bold text-white shadow-glow hover:brightness-105 transition">
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-3.5-3.5"/></svg>
+              <span id="searchBtnLabel">Search cars</span>
+            </button>
+          </div>
+          <div class="mt-2.5 flex flex-wrap items-center gap-2 px-1 text-xs text-night/50">
+            <span class="font-semibold text-night/60">Popular:</span>
+            <button class="quick-pill rounded-full bg-mist px-3 py-1 font-medium hover:bg-drift/10 hover:text-driftdk transition">Weekend escape</button>
+            <button class="quick-pill rounded-full bg-mist px-3 py-1 font-medium hover:bg-drift/10 hover:text-driftdk transition">7-seat family</button>
+            <button class="quick-pill rounded-full bg-mist px-3 py-1 font-medium hover:bg-drift/10 hover:text-driftdk transition">Electric</button>
+            <button class="quick-pill rounded-full bg-mist px-3 py-1 font-medium hover:bg-drift/10 hover:text-driftdk transition">Airport pick-up</button>
+          </div>
+        </div>
+
+        <div class="reveal mt-6 flex items-center gap-6 text-sm text-night/60">
+          <span class="flex items-center gap-2"><svg viewBox="0 0 24 24" class="h-4 w-4 text-drift" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Free cancellation</span>
+          <span class="flex items-center gap-2"><svg viewBox="0 0 24 24" class="h-4 w-4 text-drift" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>No deposit holds</span>
+        </div>
+      </div>
+
+      <!-- Right: featured car tilt -->
+      <div class="relative">
+        <div id="featuredTilt" class="tilt relative rounded-[2rem] bg-gradient-to-br from-night to-ink p-2 shadow-float">
+          <div class="tilt-inner overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-slate2 to-night">
+            <div class="relative aspect-[4/3] w-full bg-gradient-to-br from-slate2 to-ink">
+              <img src="https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1600&q=80" alt="Featured rental car" loading="eager" onerror="this.style.display='none'" class="h-full w-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent"></div>
+              <span class="absolute top-4 left-4 rounded-full bg-amberglow px-3 py-1 text-xs font-bold text-ink">Most booked</span>
+            </div>
+          </div>
+        </div>
+        <!-- floating price chip -->
+        <div class="tilt-inner absolute -bottom-5 -left-4 rounded-2xl bg-white p-4 shadow-float border border-mist hidden sm:block">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-night/45">From</p>
+          <p class="font-display text-2xl font-extrabold text-ink">$39<span class="text-base font-semibold text-night/50">/day</span></p>
+        </div>
+        <!-- floating rating chip -->
+        <div class="tilt-inner absolute -top-4 -right-3 rounded-2xl glass p-3 shadow-float border border-white/60 hidden sm:flex items-center gap-2">
+          <div class="flex -space-x-2">
+            <span class="h-7 w-7 rounded-full bg-drift/80 ring-2 ring-white"></span>
+            <span class="h-7 w-7 rounded-full bg-sky/80 ring-2 ring-white"></span>
+            <span class="h-7 w-7 rounded-full bg-amberglow ring-2 ring-white"></span>
+          </div>
+          <div class="text-xs"><span class="font-bold text-ink">2,140</span><span class="text-night/50"> renting now</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRUST / STATS STRIP ================= -->
+<section class="relative -mt-4">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 rounded-3xl bg-ink p-6 md:p-9 shadow-float">
+      <div class="reveal text-center md:text-left">
+        <p class="font-display text-3xl md:text-4xl font-extrabold text-white"><span class="count" data-to="12400">0</span>+</p>
+        <p class="mt-1 text-sm text-white/55">Cars in the fleet</p>
+      </div>
+      <div class="reveal text-center md:text-left">
+        <p class="font-display text-3xl md:text-4xl font-extrabold text-white"><span class="count" data-to="180">0</span></p>
+        <p class="mt-1 text-sm text-white/55">Pick-up locations</p>
+      </div>
+      <div class="reveal text-center md:text-left">
+        <p class="font-display text-3xl md:text-4xl font-extrabold text-white"><span class="count" data-to="940">0</span>K</p>
+        <p class="mt-1 text-sm text-white/55">Rentals completed</p>
+      </div>
+      <div class="reveal text-center md:text-left">
+        <p class="font-display text-3xl md:text-4xl font-extrabold text-white"><span class="count" data-to="24">0</span>/7</p>
+        <p class="mt-1 text-sm text-white/55">Live human support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<section class="py-10 overflow-hidden">
+  <div class="relative">
+    <div class="marquee gap-12 px-6 text-night/35">
+      <!-- duplicated for seamless loop -->
+      <span class="font-display text-lg font-bold whitespace-nowrap flex items-center gap-12">
+        Insured by AllRoad · Verified clean · Instant keyless · 24/7 roadside · No deposit · Free cancel · EV charging included · Airport delivery ·
+      </span>
+      <span class="font-display text-lg font-bold whitespace-nowrap flex items-center gap-12" aria-hidden="true">
+        Insured by AllRoad · Verified clean · Instant keyless · 24/7 roadside · No deposit · Free cancel · EV charging included · Airport delivery ·
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VEHICLE CLASSES GRID ================= -->
+<section id="classes" class="py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">The fleet</span>
+        <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight">Find the class that fits the day.</h2>
+      </div>
+      <a href="#" class="reveal inline-flex items-center gap-2 text-sm font-semibold text-ink hover:text-drift transition">Browse all 12,400 cars
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <!-- class rail (horizontal) -->
+    <div class="rail flex gap-3 overflow-x-auto pb-4 mb-8 -mx-1 px-1">
+      <button class="rail-pill shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-white">All</button>
+      <button class="rail-pill shrink-0 rounded-full bg-mist px-5 py-2.5 text-sm font-semibold text-night/70 hover:bg-drift/10 hover:text-driftdk transition">City compact</button>
+      <button class="rail-pill shrink-0 rounded-full bg-mist px-5 py-2.5 text-sm font-semibold text-night/70 hover:bg-drift/10 hover:text-driftdk transition">SUV & family</button>
+      <button class="rail-pill shrink-0 rounded-full bg-mist px-5 py-2.5 text-sm font-semibold text-night/70 hover:bg-drift/10 hover:text-driftdk transition">Electric</button>
+      <button class="rail-pill shrink-0 rounded-full bg-mist px-5 py-2.5 text-sm font-semibold text-night/70 hover:bg-drift/10 hover:text-driftdk transition">Premium</button>
+      <button class="rail-pill shrink-0 rounded-full bg-mist px-5 py-2.5 text-sm font-semibold text-night/70 hover:bg-drift/10 hover:text-driftdk transition">Vans & cargo</button>
+    </div>
+
+    <!-- vehicle cards -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card 1 -->
+      <article class="vcard reveal group rounded-3xl bg-white p-3 shadow-soft border border-mist hover:shadow-float transition-all duration-300">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-mist to-slate-200 aspect-[5/3]">
+          <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1600&q=80" alt="City compact car" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <span class="absolute top-3 left-3 rounded-full glass px-2.5 py-1 text-[11px] font-bold text-driftdk">Electric</span>
+        </div>
+        <div class="p-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-display text-lg font-bold">Drift Volt EX</h3>
+              <p class="text-sm text-night/55">City compact · Automatic</p>
+            </div>
+            <p class="text-right"><span class="font-display text-xl font-extrabold text-ink">$39</span><span class="block text-xs text-night/45">/day</span></p>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs text-night/60">
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">5 seats</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">320 km range</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">2 bags</span>
+          </div>
+          <button class="mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white group-hover:bg-drift transition">Reserve now</button>
+        </div>
+      </article>
+
+      <!-- card 2 -->
+      <article class="vcard reveal group rounded-3xl bg-white p-3 shadow-soft border border-mist hover:shadow-float transition-all duration-300">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-mist to-slate-200 aspect-[5/3]">
+          <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80" alt="SUV family car" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <span class="absolute top-3 left-3 rounded-full glass px-2.5 py-1 text-[11px] font-bold text-amberglow">Popular</span>
+        </div>
+        <div class="p-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-display text-lg font-bold">Trail Ridge 7</h3>
+              <p class="text-sm text-night/55">SUV & family · Automatic</p>
+            </div>
+            <p class="text-right"><span class="font-display text-xl font-extrabold text-ink">$72</span><span class="block text-xs text-night/45">/day</span></p>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs text-night/60">
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">7 seats</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">All-wheel</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">5 bags</span>
+          </div>
+          <button class="mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white group-hover:bg-drift transition">Reserve now</button>
+        </div>
+      </article>
+
+      <!-- card 3 -->
+      <article class="vcard reveal group rounded-3xl bg-white p-3 shadow-soft border border-mist hover:shadow-float transition-all duration-300">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-mist to-slate-200 aspect-[5/3]">
+          <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1600&q=80" alt="Premium rental car" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <span class="absolute top-3 left-3 rounded-full glass px-2.5 py-1 text-[11px] font-bold text-sky">Premium</span>
+        </div>
+        <div class="p-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-display text-lg font-bold">Lumen GT Line</h3>
+              <p class="text-sm text-night/55">Premium · Automatic</p>
+            </div>
+            <p class="text-right"><span class="font-display text-xl font-extrabold text-ink">$118</span><span class="block text-xs text-night/45">/day</span></p>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2 text-xs text-night/60">
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">5 seats</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">Leather</span>
+            <span class="rounded-lg bg-mist px-2.5 py-1 font-medium">3 bags</span>
+          </div>
+          <button class="mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white group-hover:bg-drift transition">Reserve now</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" class="py-16 md:py-24 bg-ink relative overflow-hidden">
+  <div class="pointer-events-none absolute -bottom-24 left-1/3 h-80 w-80 rounded-full bg-drift/20 blur-3xl"></div>
+  <div class="mx-auto max-w-7xl px-5 relative">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-drift">Three steps</span>
+      <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight text-white">Search. Book. Drive.</h2>
+      <p class="reveal mt-4 text-white/55">From browsing to behind-the-wheel in under five minutes. No paperwork lines, no surprises.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal relative rounded-3xl glass-dark p-7 border border-white/10">
+        <span class="font-display text-5xl font-extrabold text-drift/30">01</span>
+        <div class="mt-4 grid h-12 w-12 place-items-center rounded-2xl bg-drift/15 text-drift">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-3.5-3.5"/></svg>
+        </div>
+        <h3 class="mt-4 font-display text-xl font-bold text-white">Search your city</h3>
+        <p class="mt-2 text-sm text-white/55">Enter a location and dates. We surface the cleanest, best-priced cars near you instantly.</p>
+      </div>
+      <div class="reveal relative rounded-3xl glass-dark p-7 border border-white/10">
+        <span class="font-display text-5xl font-extrabold text-sky/30">02</span>
+        <div class="mt-4 grid h-12 w-12 place-items-center rounded-2xl bg-sky/15 text-sky">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        <h3 class="mt-4 font-display text-xl font-bold text-white">Book in a tap</h3>
+        <p class="mt-2 text-sm text-white/55">Transparent total upfront. Confirm with no deposit hold and free cancellation up to 24h before.</p>
+      </div>
+      <div class="reveal relative rounded-3xl glass-dark p-7 border border-white/10">
+        <span class="font-display text-5xl font-extrabold text-amberglow/30">03</span>
+        <div class="mt-4 grid h-12 w-12 place-items-center rounded-2xl bg-amberglow/15 text-amberglow">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5"/><path d="M5 13h14v4H5z"/></svg>
+        </div>
+        <h3 class="mt-4 font-display text-xl font-bold text-white">Drive away</h3>
+        <p class="mt-2 text-sm text-white/55">Unlock with your phone at the pick-up point. Keys optional, adventure mandatory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHY US ================= -->
+<section class="py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">Why Driftly</span>
+        <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight">Rental, minus the rental headaches.</h2>
+        <p class="reveal mt-4 text-night/65 max-w-lg">We rebuilt every annoying part of renting a car — the lines, the fine print, the deposit holds — and made them disappear.</p>
+
+        <div class="mt-8 space-y-4">
+          <div class="reveal flex gap-4 rounded-2xl bg-white p-4 shadow-soft border border-mist">
+            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-drift/12 text-driftdk"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></svg></div>
+            <div><h3 class="font-display font-bold">Fully insured, every trip</h3><p class="text-sm text-night/60">Comprehensive cover and 24/7 roadside come standard — never an upsell.</p></div>
+          </div>
+          <div class="reveal flex gap-4 rounded-2xl bg-white p-4 shadow-soft border border-mist">
+            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky/12 text-sky"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M3 12h18M3 6h18M3 18h18"/></svg></div>
+            <div><h3 class="font-display font-bold">One transparent total</h3><p class="text-sm text-night/60">The price you see is the price you pay. No mystery airport surcharges.</p></div>
+          </div>
+          <div class="reveal flex gap-4 rounded-2xl bg-white p-4 shadow-soft border border-mist">
+            <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amberglow/15 text-amberglow"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <div><h3 class="font-display font-bold">Keyless in seconds</h3><p class="text-sm text-night/60">Skip the counter entirely. Unlock and start with the Driftly app.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- image collage with parallax -->
+      <div class="relative grid grid-cols-2 gap-4">
+        <div class="parallax-item space-y-4">
+          <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-mist to-slate-200 aspect-[3/4] shadow-soft">
+            <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1600&q=80" alt="Driver experience" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover" />
+          </div>
+          <div class="rounded-3xl bg-ink p-6 text-white shadow-soft">
+            <p class="font-display text-3xl font-extrabold">4 min</p>
+            <p class="text-sm text-white/55 mt-1">Average time from search to keys</p>
+          </div>
+        </div>
+        <div class="parallax-item space-y-4 mt-8">
+          <div class="rounded-3xl bg-gradient-to-br from-drift to-sky p-6 text-white shadow-glow">
+            <p class="font-display text-3xl font-extrabold">$0</p>
+            <p class="text-sm text-white/80 mt-1">Deposit holds, ever</p>
+          </div>
+          <div class="overflow-hidden rounded-3xl bg-gradient-to-br from-mist to-slate-200 aspect-[3/4] shadow-soft">
+            <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1600&q=80" alt="Clean premium car" loading="lazy" onerror="this.style.display='none'" class="h-full w-full object-cover" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOCATIONS ================= -->
+<section id="locations" class="py-16 md:py-24 bg-mist">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">Where we are</span>
+        <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight">180 cities. Pick yours.</h2>
+      </div>
+      <p class="reveal max-w-sm text-sm text-night/55">Airport desks, downtown hubs, and doorstep delivery in major metros across Europe, the Americas and Africa.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="loc reveal group relative overflow-hidden rounded-3xl bg-ink aspect-[4/5] shadow-soft">
+        <img src="https://images.unsplash.com/photo-1549924231-f129b911e442?auto=format&fit=crop&w=1600&q=80" alt="Lisbon" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:opacity-90 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display text-xl font-bold text-white">Lisbon</h3><p class="text-sm text-white/60">420 cars · from $34/day</p></div>
+      </div>
+      <div class="loc reveal group relative overflow-hidden rounded-3xl bg-ink aspect-[4/5] shadow-soft">
+        <img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1600&q=80" alt="Barcelona" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:opacity-90 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display text-xl font-bold text-white">Barcelona</h3><p class="text-sm text-white/60">610 cars · from $41/day</p></div>
+      </div>
+      <div class="loc reveal group relative overflow-hidden rounded-3xl bg-ink aspect-[4/5] shadow-soft">
+        <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1600&q=80" alt="Austin" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:opacity-90 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display text-xl font-bold text-white">Austin</h3><p class="text-sm text-white/60">390 cars · from $45/day</p></div>
+      </div>
+      <div class="loc reveal group relative overflow-hidden rounded-3xl bg-ink aspect-[4/5] shadow-soft">
+        <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=1600&q=80" alt="Cape Town" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:opacity-90 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display text-xl font-bold text-white">Cape Town</h3><p class="text-sm text-white/60">280 cars · from $38/day</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="py-16 md:py-24">
+  <div class="mx-auto max-w-5xl px-5 text-center">
+    <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">Our story</span>
+    <h2 class="reveal mt-3 font-display text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">
+      We started Driftly because renting a car felt <span class="text-grad">stuck in 2009</span>.
+    </h2>
+    <p class="reveal mt-6 text-lg text-night/65 max-w-3xl mx-auto">
+      Long counters, surprise fees, and cars that smelled like the last seven renters. So we built a platform that treats a rental like the start of something good — fast to book, honest on price, and spotless on arrival. Today we move hundreds of thousands of drivers a year, and we're just getting moving.
+    </p>
+    <div class="reveal mt-10 flex flex-wrap justify-center gap-3">
+      <span class="rounded-full bg-mist px-4 py-2 text-sm font-semibold text-night/70">Founded 2019</span>
+      <span class="rounded-full bg-mist px-4 py-2 text-sm font-semibold text-night/70">B-Corp certified</span>
+      <span class="rounded-full bg-mist px-4 py-2 text-sm font-semibold text-night/70">Carbon-offset fleet</span>
+      <span class="rounded-full bg-mist px-4 py-2 text-sm font-semibold text-night/70">3 continents</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="py-16 md:py-24 bg-ink overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-drift">Loved by drivers</span>
+      <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight text-white">38,000 trips. 4.9 stars.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl glass-dark p-7 border border-white/10">
+        <div class="flex gap-1 text-amberglow mb-3">★★★★★</div>
+        <blockquote class="text-white/85">"Booked at the airport gate, unlocked the car with my phone, gone in three minutes. This is how renting should always have worked."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-drift/70"></span><div><p class="font-semibold text-white text-sm">Mariana Reyes</p><p class="text-xs text-white/45">Lisbon → Sintra</p></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl glass-dark p-7 border border-white/10 md:mt-6">
+        <div class="flex gap-1 text-amberglow mb-3">★★★★★</div>
+        <blockquote class="text-white/85">"The total at checkout was the total. Coming from years of rental surprises, that alone made me a customer for life."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-sky/70"></span><div><p class="font-semibold text-white text-sm">Daniel Okonkwo</p><p class="text-xs text-white/45">Austin business trip</p></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl glass-dark p-7 border border-white/10">
+        <div class="flex gap-1 text-amberglow mb-3">★★★★★</div>
+        <blockquote class="text-white/85">"Needed a 7-seater last minute for a family weekend. Spotless, fully insured, delivered to the hotel. Genuinely impressed."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-amberglow"></span><div><p class="font-semibold text-white text-sm">Sofia Lindqvist</p><p class="text-xs text-white/45">Barcelona family trip</p></div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DEALS / PRICING ================= -->
+<section id="deals" class="py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">Deals & passes</span>
+      <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight">Pricing that rewards driving more.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 items-stretch">
+      <!-- Pay as you go -->
+      <div class="reveal rounded-3xl bg-white p-7 shadow-soft border border-mist flex flex-col">
+        <h3 class="font-display text-lg font-bold">Pay as you go</h3>
+        <p class="text-sm text-night/55 mt-1">Best for the occasional trip.</p>
+        <p class="mt-5 font-display text-4xl font-extrabold">$39<span class="text-base font-semibold text-night/50">/day</span></p>
+        <ul class="mt-5 space-y-2.5 text-sm text-night/65 flex-1">
+          <li class="flex gap-2"><span class="text-drift">✓</span> Full insurance included</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Free cancellation</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> 24/7 roadside</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> No membership fee</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl bg-mist py-3 text-sm font-bold text-ink hover:bg-slate-200 transition">Start free</button>
+      </div>
+      <!-- Drift+ (featured) -->
+      <div class="reveal relative rounded-3xl bg-ink p-7 shadow-float border border-ink flex flex-col scale-[1.02]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amberglow px-3 py-1 text-xs font-bold text-ink">Most popular</span>
+        <h3 class="font-display text-lg font-bold text-white">Drift+ Membership</h3>
+        <p class="text-sm text-white/55 mt-1">For frequent drivers.</p>
+        <p class="mt-5 font-display text-4xl font-extrabold text-white">$19<span class="text-base font-semibold text-white/50">/mo</span></p>
+        <ul class="mt-5 space-y-2.5 text-sm text-white/75 flex-1">
+          <li class="flex gap-2"><span class="text-drift">✓</span> 15% off every rental</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Free upgrades when available</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Priority pick-up lane</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Cancel anytime</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl bg-gradient-to-r from-drift to-driftdk py-3 text-sm font-bold text-white shadow-glow hover:brightness-105 transition">Join Drift+</button>
+      </div>
+      <!-- Business -->
+      <div class="reveal rounded-3xl bg-white p-7 shadow-soft border border-mist flex flex-col">
+        <h3 class="font-display text-lg font-bold">Business fleet</h3>
+        <p class="text-sm text-night/55 mt-1">For teams on the move.</p>
+        <p class="mt-5 font-display text-4xl font-extrabold">Custom</p>
+        <ul class="mt-5 space-y-2.5 text-sm text-night/65 flex-1">
+          <li class="flex gap-2"><span class="text-drift">✓</span> Centralized billing</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Volume pricing</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> Dedicated manager</li>
+          <li class="flex gap-2"><span class="text-drift">✓</span> API & expense sync</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl bg-mist py-3 text-sm font-bold text-ink hover:bg-slate-200 transition">Talk to sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="py-16 md:py-24 bg-mist">
+  <div class="mx-auto max-w-3xl px-5">
+    <div class="text-center mb-10">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-driftdk">Questions</span>
+      <h2 class="reveal mt-2 font-display text-3xl md:text-5xl font-extrabold tracking-tight">Good to know before you go.</h2>
+    </div>
+
+    <div class="space-y-3">
+      <div class="faq-item open rounded-2xl bg-white border border-mist shadow-soft overflow-hidden">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-bold">What do I need to rent a car?</span>
+          <span class="faq-ico grid h-7 w-7 shrink-0 place-items-center rounded-full bg-drift/12 text-driftdk text-lg transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-sm text-night/60">A valid driver's license, a credit or debit card, and the Driftly app. Drivers must be 21 or older for most classes, 25+ for premium.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl bg-white border border-mist shadow-soft overflow-hidden">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-bold">Is there really no deposit hold?</span>
+          <span class="faq-ico grid h-7 w-7 shrink-0 place-items-center rounded-full bg-drift/12 text-driftdk text-lg transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-sm text-night/60">Correct. We verify your account once and never freeze a deposit on your card. You're only ever charged the rental total.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl bg-white border border-mist shadow-soft overflow-hidden">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-bold">Can I cancel for free?</span>
+          <span class="faq-ico grid h-7 w-7 shrink-0 place-items-center rounded-full bg-drift/12 text-driftdk text-lg transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-sm text-night/60">Yes — cancel up to 24 hours before pick-up at no charge, directly in the app. After that, a single day's rate applies.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl bg-white border border-mist shadow-soft overflow-hidden">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-bold">How does keyless pick-up work?</span>
+          <span class="faq-ico grid h-7 w-7 shrink-0 place-items-center rounded-full bg-drift/12 text-driftdk text-lg transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-sm text-night/60">At the pick-up point, tap "Unlock" in the app. The car opens and starts without a physical key. A backup fob is in the glovebox for peace of mind.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl bg-white border border-mist shadow-soft overflow-hidden">
+        <button class="faq-toggle flex w-full items-center justify-between gap-4 p-5 text-left">
+          <span class="font-display font-bold">Is insurance included?</span>
+          <span class="faq-ico grid h-7 w-7 shrink-0 place-items-center rounded-full bg-drift/12 text-driftdk text-lg transition">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-sm text-night/60">Every rental includes comprehensive cover and 24/7 roadside assistance at no extra cost. Optional zero-excess upgrades are available at checkout.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="py-16 md:py-24">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-ink via-night to-slate2 p-10 md:p-16 shadow-float">
+      <div class="pointer-events-none absolute -top-16 -right-10 h-72 w-72 rounded-full bg-drift/25 blur-3xl"></div>
+      <div class="pointer-events-none absolute -bottom-20 -left-10 h-72 w-72 rounded-full bg-sky/20 blur-3xl"></div>
+      <div class="relative max-w-2xl">
+        <h2 class="reveal font-display text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-tight">Your next drive is two taps away.</h2>
+        <p class="reveal mt-4 text-white/65 text-lg">Search a city, pick your dates, and the perfect car is yours in minutes. No counters, no deposits, no surprises.</p>
+        <div class="reveal mt-8 flex flex-col sm:flex-row gap-3">
+          <a href="#hero-search" id="finalCta" class="pulse-ring relative inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-drift to-driftdk px-7 py-4 text-base font-bold text-white shadow-glow hover:brightness-105 transition">
+            Find my car
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#" class="inline-flex items-center justify-center rounded-2xl border border-white/20 px-7 py-4 text-base font-bold text-white hover:bg-white/10 transition">Download the app</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ink text-white/70 pt-16 pb-8">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+      <div>
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-drift to-sky text-white">
+            <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 13l2-5a3 3 0 0 1 2.8-2h8.4A3 3 0 0 1 19 8l2 5"/><path d="M5 13h14v4a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z"/></svg>
+          </span>
+          <span class="font-display text-xl font-extrabold text-white">Driftly</span>
+        </a>
+        <p class="mt-4 text-sm text-white/50 max-w-xs">The modern way to rent a car. Search, book, and drive in minutes — across 180 cities.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-white/10 hover:bg-drift transition" aria-label="Twitter">𝕏</a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-white/10 hover:bg-drift transition" aria-label="Instagram">◎</a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-white/10 hover:bg-drift transition" aria-label="LinkedIn">in</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Product</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#classes" class="hover:text-drift transition">Vehicle classes</a></li>
+          <li><a href="#deals" class="hover:text-drift transition">Deals & passes</a></li>
+          <li><a href="#locations" class="hover:text-drift transition">Locations</a></li>
+          <li><a href="#" class="hover:text-drift transition">Mobile app</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#about" class="hover:text-drift transition">About us</a></li>
+          <li><a href="#" class="hover:text-drift transition">Careers</a></li>
+          <li><a href="#" class="hover:text-drift transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-drift transition">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-white mb-4">Support</h4>
+        <ul class="space-y-2.5 text-sm">
+          <li><a href="#faq" class="hover:text-drift transition">Help center</a></li>
+          <li><a href="#" class="hover:text-drift transition">Contact</a></li>
+          <li><a href="#" class="hover:text-drift transition">Terms</a></li>
+          <li><a href="#" class="hover:text-drift transition">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/40">
+      <p>© 2026 Driftly Mobility, Inc. All rights reserved.</p>
+      <p>Crafted for drivers everywhere.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- NAV scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    const nv = nav.querySelector('nav');
+    if (window.scrollY > 20) { nv.classList.add('shadow-float'); nv.classList.remove('shadow-soft'); }
+    else { nv.classList.remove('shadow-float'); nv.classList.add('shadow-soft'); }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---- Class rail active state ---- */
+  document.querySelectorAll('.rail-pill').forEach((pill) => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.rail-pill').forEach((p) => {
+        p.classList.remove('bg-ink', 'text-white');
+        p.classList.add('bg-mist', 'text-night/70');
+      });
+      pill.classList.add('bg-ink', 'text-white');
+      pill.classList.remove('bg-mist', 'text-night/70');
+    });
+  });
+
+  /* ---- Quick pills fill search ---- */
+  const locInput = document.querySelector('#hero-search input[list="cities"]');
+  document.querySelectorAll('.quick-pill').forEach((p) => {
+    p.addEventListener('click', () => {
+      const btn = document.getElementById('searchBtnLabel');
+      btn.textContent = 'Searching…';
+      setTimeout(() => (btn.textContent = 'Search cars'), 1100);
+    });
+  });
+
+  /* ---- Search button feedback ---- */
+  const searchBtn = document.getElementById('searchBtn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', () => {
+      const lbl = document.getElementById('searchBtnLabel');
+      lbl.textContent = 'Finding cars…';
+      setTimeout(() => (lbl.textContent = 'Search cars'), 1300);
+    });
+  }
+
+  if (reduce) return; // ----- stop all motion below for reduced-motion users -----
+
+  /* ---- Magnetic CTAs ---- */
+  function magnetize(el, strength = 0.35) {
+    el.addEventListener('mousemove', (e) => {
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+  }
+  ['searchBtn', 'navCta', 'finalCta'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) magnetize(el, id === 'searchBtn' ? 0.28 : 0.32);
+  });
+
+  /* ---- Tilt 3D on featured car ---- */
+  const tilt = document.getElementById('featuredTilt');
+  if (tilt) {
+    tilt.addEventListener('mousemove', (e) => {
+      const r = tilt.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.transform = `perspective(900px) rotateY(${px * 12}deg) rotateX(${-py * 12}deg)`;
+    });
+    tilt.addEventListener('mouseleave', () => {
+      tilt.style.transform = 'perspective(900px) rotateY(0) rotateX(0)';
+    });
+  }
+
+  /* ---- GSAP ---- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero intro stagger */
+    gsap.from('section:first-of-type .reveal', {
+      y: 30, opacity: 0, duration: 0.85, ease: 'power3.out', stagger: 0.09, delay: 0.1,
+      onComplete: () => document.querySelectorAll('section:first-of-type .reveal').forEach(e => { e.style.opacity = 1; e.style.transform = 'none'; }),
+    });
+
+    /* Generic reveal-on-scroll */
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      if (el.closest('section:first-of-type')) return;
+      gsap.to(el, {
+        y: 0, opacity: 1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach((el) => {
+      const to = +el.dataset.to;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); },
+        }),
+      });
+    });
+
+    /* Container parallax on collage */
+    gsap.utils.toArray('.parallax-item').forEach((el, i) => {
+      gsap.to(el, {
+        yPercent: i % 2 === 0 ? -8 : 8,
+        ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+      });
+    });
+
+    /* Subtle vehicle card lift on scroll-in already handled by reveal */
+  }
+})();
+</script>
+</body>
+</html>

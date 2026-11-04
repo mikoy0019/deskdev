@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Saffron &amp; Spoon — Cook Smarter, Plan Tastier</title>
+<meta name="description" content="Saffron & Spoon is the recipe and meal-planning app that turns weekly cooking into a joy. Discover recipes, build smart meal plans, and shop in one tap." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#FFF8EF',
+          parchment: '#FBEEDC',
+          tomato: '#E2552E',
+          ember: '#C8431F',
+          saffron: '#F2A23B',
+          basil: '#3F6B4A',
+          herb: '#5C8A5E',
+          cocoa: '#3A2A22',
+          clay: '#7C5A47',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          soft: '0 20px 45px -20px rgba(58,42,34,0.35)',
+          card: '0 24px 60px -28px rgba(200,67,31,0.35)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background-color: #FFF8EF;
+    color: #3A2A22;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  ::selection { background: #F2A23B; color: #3A2A22; }
+
+  .font-display { font-family: 'Fraunces', serif; }
+
+  .grain {
+    background-image: radial-gradient(rgba(124,90,71,0.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .gtext {
+    background: linear-gradient(110deg, #E2552E, #F2A23B 60%, #C8431F);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scroll 28s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Phone tilt */
+  .phone-tilt { transform-style: preserve-3d; transition: transform 0.2s ease-out; will-change: transform; }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.22,1,0.36,1); }
+  .faq-item.open .faq-body { max-height: 240px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .magnetic { will-change: transform; }
+
+  .recipe-card { transition: transform 0.4s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease; }
+  .recipe-card:hover { transform: translateY(-10px) rotate(-0.6deg); box-shadow: 0 32px 70px -30px rgba(200,67,31,0.5); }
+
+  .blob { filter: blur(50px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation: none; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body class="grain antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <nav class="mt-4 flex items-center justify-between rounded-full border border-clay/10 bg-cream/80 backdrop-blur-md px-4 sm:px-6 py-3 shadow-soft">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-tomato text-cream shadow-card">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3v8a3 3 0 0 0 6 0V3M8 3v18M19 3c-1.5 1-2 3-2 6s.5 5 2 6v6"/></svg>
+        </span>
+        <span class="font-display text-xl font-600 tracking-tight">Saffron <span class="text-tomato">&amp;</span> Spoon</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm font-500 text-cocoa/75">
+        <a href="#features" class="hover:text-tomato transition">Features</a>
+        <a href="#recipes" class="hover:text-tomato transition">Recipes</a>
+        <a href="#planner" class="hover:text-tomato transition">Meal Plan</a>
+        <a href="#pricing" class="hover:text-tomato transition">Pricing</a>
+        <a href="#faq" class="hover:text-tomato transition">FAQ</a>
+      </div>
+      <a href="#download" id="navCta" class="magnetic inline-flex items-center gap-2 rounded-full bg-cocoa px-5 py-2.5 text-sm font-600 text-cream hover:bg-tomato transition-colors">
+        Get the app
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-36 pb-20 sm:pt-44 sm:pb-28">
+  <div class="absolute -top-10 -left-20 h-80 w-80 rounded-full bg-saffron/40 blob"></div>
+  <div class="absolute top-40 -right-16 h-96 w-96 rounded-full bg-tomato/25 blob"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center relative">
+    <!-- Copy -->
+    <div>
+      <span class="inline-flex items-center gap-2 rounded-full border border-tomato/20 bg-parchment px-4 py-1.5 text-xs font-600 uppercase tracking-wider text-ember reveal">
+        <span class="h-1.5 w-1.5 rounded-full bg-tomato animate-pulse"></span>
+        Now serving 1.2M kitchens
+      </span>
+      <h1 class="mt-6 font-display text-5xl sm:text-6xl lg:text-[4.4rem] leading-[1.02] font-600 tracking-tight">
+        Cook smarter,
+        <br class="hidden sm:block" />
+        <span class="gtext" id="rotator">plan tastier.</span>
+      </h1>
+      <p class="mt-6 max-w-md text-lg text-cocoa/70 reveal">
+        Saffron &amp; Spoon turns "what's for dinner?" into the best part of your day. Discover recipes, auto-build weekly meal plans, and send your groceries to checkout in a single tap.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-4 reveal">
+        <a href="#download" id="heroCta" class="magnetic inline-flex items-center gap-2 rounded-full bg-tomato px-7 py-4 text-base font-700 text-cream shadow-card hover:bg-ember transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.71-3.18-1.73-1.35-.14-2.64.79-3.32.79-.69 0-1.74-.78-2.86-.75-1.47.02-2.83.85-3.59 2.16-1.53 2.66-.39 6.6 1.1 8.76.72 1.06 1.59 2.25 2.72 2.21 1.09-.04 1.5-.7 2.82-.7 1.31 0 1.69.7 2.85.68 1.18-.02 1.92-1.08 2.64-2.14.83-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.5zM14.88 5.6c.6-.73 1.01-1.74.9-2.75-.87.04-1.92.58-2.54 1.3-.55.64-1.04 1.67-.91 2.65.97.08 1.96-.49 2.55-1.2z"/></svg>
+          Download free
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 rounded-full border border-cocoa/15 bg-cream px-6 py-4 text-base font-600 text-cocoa hover:border-tomato hover:text-tomato transition">
+          <span class="grid h-6 w-6 place-items-center rounded-full bg-tomato/10 text-tomato">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </span>
+          See how it works
+        </a>
+      </div>
+      <div class="mt-9 flex items-center gap-4 reveal">
+        <div class="flex -space-x-3">
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-saffron"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-herb"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-tomato"></span>
+          <span class="h-9 w-9 rounded-full border-2 border-cream bg-clay"></span>
+        </div>
+        <div class="text-sm text-cocoa/65">
+          <span class="font-700 text-cocoa">4.9 ★</span> from 84,000+ home cooks
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone mockup -->
+    <div class="flex justify-center lg:justify-end" id="phoneStage">
+      <div class="phone-tilt relative w-[280px] sm:w-[320px]">
+        <div class="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-saffron/30 to-tomato/20 blur-2xl"></div>
+        <div class="relative rounded-[2.6rem] border-[10px] border-cocoa bg-cocoa shadow-card overflow-hidden">
+          <div class="absolute top-2 left-1/2 -translate-x-1/2 h-5 w-24 rounded-full bg-cocoa z-20"></div>
+          <div class="bg-gradient-to-b from-parchment to-cream rounded-[2rem] overflow-hidden">
+            <div class="relative h-44 bg-gradient-to-br from-tomato to-saffron">
+              <img src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Plated dish" class="h-full w-full object-cover" />
+              <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-cocoa/70 to-transparent">
+                <p class="text-cream font-display text-lg font-600 leading-tight">Sunlit Citrus Bowl</p>
+                <p class="text-cream/80 text-xs">22 min · Vegetarian · 480 cal</p>
+              </div>
+            </div>
+            <div class="p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-700 uppercase tracking-wide text-clay">This week's plan</span>
+                <span class="text-xs font-600 text-tomato">Edit</span>
+              </div>
+              <div class="flex items-center gap-3 rounded-2xl bg-cream p-2.5 shadow-sm">
+                <span class="h-12 w-12 rounded-xl bg-saffron/30 grid place-items-center text-xl">🥗</span>
+                <div class="flex-1">
+                  <p class="text-sm font-700 text-cocoa">Mon · Garden Grain Bowl</p>
+                  <p class="text-[11px] text-cocoa/55">Ready in 18 min</p>
+                </div>
+                <span class="h-6 w-6 rounded-full bg-herb/20 grid place-items-center text-herb text-xs">✓</span>
+              </div>
+              <div class="flex items-center gap-3 rounded-2xl bg-cream p-2.5 shadow-sm">
+                <span class="h-12 w-12 rounded-xl bg-tomato/20 grid place-items-center text-xl">🍝</span>
+                <div class="flex-1">
+                  <p class="text-sm font-700 text-cocoa">Tue · Ember Tomato Pasta</p>
+                  <p class="text-[11px] text-cocoa/55">Ready in 25 min</p>
+                </div>
+                <span class="h-6 w-6 rounded-full bg-cocoa/10 grid place-items-center text-cocoa/40 text-xs">+</span>
+              </div>
+              <button class="w-full rounded-2xl bg-tomato py-3 text-sm font-700 text-cream">Send list to cart · 14 items</button>
+            </div>
+          </div>
+        </div>
+        <!-- floating chips -->
+        <div class="absolute -left-10 top-24 hidden sm:flex items-center gap-2 rounded-2xl bg-cream px-3 py-2 shadow-soft border border-clay/10 animate-bounce" style="animation-duration:3s">
+          <span class="text-lg">🔥</span>
+          <span class="text-xs font-700 text-cocoa">Smart swaps on</span>
+        </div>
+        <div class="absolute -right-8 bottom-20 hidden sm:flex items-center gap-2 rounded-2xl bg-cream px-3 py-2 shadow-soft border border-clay/10">
+          <span class="text-lg">🛒</span>
+          <span class="text-xs font-700 text-cocoa">Cart synced</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS STRIP ============ -->
+<section class="border-y border-clay/10 bg-parchment/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <p class="font-display text-4xl sm:text-5xl font-600 text-tomato"><span class="count" data-to="12500">0</span>+</p>
+      <p class="mt-1 text-sm font-500 text-cocoa/60">Original recipes</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl sm:text-5xl font-600 text-tomato"><span class="count" data-to="1240000">0</span>+</p>
+      <p class="mt-1 text-sm font-500 text-cocoa/60">Happy home cooks</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl sm:text-5xl font-600 text-tomato"><span class="count" data-to="38">0</span>%</p>
+      <p class="mt-1 text-sm font-500 text-cocoa/60">Less food wasted</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display text-4xl sm:text-5xl font-600 text-tomato"><span class="count" data-to="190">0</span>+</p>
+      <p class="mt-1 text-sm font-500 text-cocoa/60">Cuisines covered</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CUISINE MARQUEE ============ -->
+<section class="py-6 bg-cocoa text-cream overflow-hidden marquee-wrap">
+  <div class="marquee">
+    <div class="flex items-center gap-10 px-5 text-lg font-display font-500">
+      <span>🌿 Mediterranean</span><span class="text-saffron">•</span>
+      <span>🍜 Street Asian</span><span class="text-saffron">•</span>
+      <span>🌶 Smoky Tex-Mex</span><span class="text-saffron">•</span>
+      <span>🥖 Rustic French</span><span class="text-saffron">•</span>
+      <span>🍲 Warm Comfort</span><span class="text-saffron">•</span>
+      <span>🥑 Bright &amp; Vegan</span><span class="text-saffron">•</span>
+      <span>🍋 Coastal Citrus</span><span class="text-saffron">•</span>
+    </div>
+    <div class="flex items-center gap-10 px-5 text-lg font-display font-500" aria-hidden="true">
+      <span>🌿 Mediterranean</span><span class="text-saffron">•</span>
+      <span>🍜 Street Asian</span><span class="text-saffron">•</span>
+      <span>🌶 Smoky Tex-Mex</span><span class="text-saffron">•</span>
+      <span>🥖 Rustic French</span><span class="text-saffron">•</span>
+      <span>🍲 Warm Comfort</span><span class="text-saffron">•</span>
+      <span>🥑 Bright &amp; Vegan</span><span class="text-saffron">•</span>
+      <span>🍋 Coastal Citrus</span><span class="text-saffron">•</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-700 uppercase tracking-widest text-tomato">Everything in one kitchen</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">A whole sous-chef in your pocket</h2>
+      <p class="mt-4 text-lg text-cocoa/65">Tools that take the friction out of weeknight cooking — from inspiration to checkout.</p>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-tomato/10 text-2xl">🧠</span>
+        <h3 class="mt-5 font-display text-2xl font-600">Smart auto-planner</h3>
+        <p class="mt-2 text-cocoa/65">Tell us your taste, time, and household size. We plan a balanced week in seconds and learn as you cook.</p>
+      </div>
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-saffron/20 text-2xl">🛒</span>
+        <h3 class="mt-5 font-display text-2xl font-600">One-tap grocery lists</h3>
+        <p class="mt-2 text-cocoa/65">Every plan becomes a tidy, aisle-sorted list — then sends straight to your favorite delivery service.</p>
+      </div>
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-herb/15 text-2xl">🥕</span>
+        <h3 class="mt-5 font-display text-2xl font-600">Pantry-aware swaps</h3>
+        <p class="mt-2 text-cocoa/65">Out of an ingredient? Saffron suggests a swap that keeps the flavor and cuts the waste.</p>
+      </div>
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-tomato/10 text-2xl">⏱️</span>
+        <h3 class="mt-5 font-display text-2xl font-600">Hands-free cook mode</h3>
+        <p class="mt-2 text-cocoa/65">Step-by-step voice guidance, smart timers, and a screen that never dims mid-sauté.</p>
+      </div>
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-saffron/20 text-2xl">📊</span>
+        <h3 class="mt-5 font-display text-2xl font-600">Nutrition you can trust</h3>
+        <p class="mt-2 text-cocoa/65">Macros, calories, and dietary tags on every dish — auto-adjusted when you scale a recipe.</p>
+      </div>
+      <div class="reveal group rounded-3xl border border-clay/10 bg-cream p-7 shadow-soft hover:-translate-y-1.5 transition-transform">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-herb/15 text-2xl">👩‍🍳</span>
+        <h3 class="mt-5 font-display text-2xl font-600">Community cookbooks</h3>
+        <p class="mt-2 text-cocoa/65">Save, remix, and share collections with friends. Follow chefs whose taste matches yours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POPULAR RECIPES ============ -->
+<section id="recipes" class="py-24 bg-parchment/50 border-y border-clay/10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 reveal">
+      <div class="max-w-xl">
+        <span class="text-sm font-700 uppercase tracking-widest text-tomato">Trending this week</span>
+        <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Recipes the community can't stop saving</h2>
+      </div>
+      <a href="#download" class="text-sm font-700 text-tomato hover:text-ember inline-flex items-center gap-1">Browse all 12,500 <span>→</span></a>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+      <!-- card 1 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-tomato/40 to-saffron/40 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Fresh salad bowl" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">Vegetarian</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Sunlit Citrus Grain Bowl</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Bright, herby, and ready before the kettle boils.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 22 min</span><span>•</span><span>★ 4.9</span><span>•</span><span>480 cal</span>
+          </div>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-ember/40 to-tomato/40 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Hearty cooked dish" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">Comfort</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Ember Tomato Rigatoni</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Slow-roasted tomatoes, charred garlic, big flavor.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 35 min</span><span>•</span><span>★ 4.8</span><span>•</span><span>620 cal</span>
+          </div>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-saffron/50 to-herb/30 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Colorful plated meal" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">Vegan</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Golden Harvest Buddha Plate</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Roasted roots, tahini drizzle, toasted seeds.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 28 min</span><span>•</span><span>★ 4.9</span><span>•</span><span>510 cal</span>
+          </div>
+        </div>
+      </article>
+      <!-- card 4 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-herb/40 to-saffron/30 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Plated gourmet dish" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">High-protein</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Smoky Maple Tempeh Tacos</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Crisp slaw, lime crema, weeknight hero.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 30 min</span><span>•</span><span>★ 4.7</span><span>•</span><span>540 cal</span>
+          </div>
+        </div>
+      </article>
+      <!-- card 5 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-tomato/40 to-clay/30 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Fresh green bowl" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">15-minute</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Basil Lime Noodle Jars</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Make-ahead lunch that travels beautifully.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 15 min</span><span>•</span><span>★ 4.8</span><span>•</span><span>420 cal</span>
+          </div>
+        </div>
+      </article>
+      <!-- card 6 -->
+      <article class="recipe-card rounded-3xl bg-cream overflow-hidden shadow-soft border border-clay/10 reveal">
+        <div class="relative h-52 bg-gradient-to-br from-saffron/40 to-ember/30 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Colorful dinner plate" class="parallax-img h-full w-full object-cover" />
+          <span class="absolute top-3 left-3 rounded-full bg-cream/90 px-3 py-1 text-xs font-700 text-ember">Crowd-pleaser</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-cream/90 text-tomato hover:scale-110 transition">♥</button>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display text-xl font-600">Charred Corn &amp; Halloumi Skewers</h3>
+          <p class="mt-1 text-sm text-cocoa/60">Sweet, salty, smoky — the table's first to vanish.</p>
+          <div class="mt-4 flex items-center gap-4 text-xs font-600 text-clay">
+            <span>⏱ 25 min</span><span>•</span><span>★ 4.9</span><span>•</span><span>560 cal</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEAL PLANNER FEATURE ============ -->
+<section id="planner" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="reveal order-2 lg:order-1">
+      <span class="text-sm font-700 uppercase tracking-widest text-tomato">The weekly meal planner</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Your whole week, planned before your coffee cools</h2>
+      <p class="mt-5 text-lg text-cocoa/65">Drag dishes onto a calendar, balance your macros, and let Saffron fill the gaps. Change one meal and the grocery list updates itself.</p>
+      <ul class="mt-8 space-y-4">
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-herb/15 text-herb">✓</span>
+          <p class="text-cocoa/75"><span class="font-700 text-cocoa">Auto-balanced weeks</span> — variety, nutrition, and budget kept in check automatically.</p>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-herb/15 text-herb">✓</span>
+          <p class="text-cocoa/75"><span class="font-700 text-cocoa">Leftover loops</span> — cook once, remix Tuesday's roast into Thursday's wrap.</p>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-herb/15 text-herb">✓</span>
+          <p class="text-cocoa/75"><span class="font-700 text-cocoa">Shared family calendar</span> — everyone sees what's cooking and who's on dishes.</p>
+        </li>
+      </ul>
+    </div>
+    <div class="reveal order-1 lg:order-2">
+      <div class="rounded-3xl border border-clay/10 bg-cream p-6 shadow-card">
+        <div class="flex items-center justify-between mb-5">
+          <p class="font-display text-xl font-600">Week of June 8</p>
+          <span class="text-xs font-700 rounded-full bg-tomato/10 px-3 py-1 text-ember">Auto-filled</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="rounded-2xl bg-parchment p-3"><p class="text-[11px] font-700 text-clay">MON</p><p class="text-sm font-600 mt-1">Garden Grain Bowl</p></div>
+          <div class="rounded-2xl bg-tomato/10 p-3"><p class="text-[11px] font-700 text-clay">TUE</p><p class="text-sm font-600 mt-1">Ember Rigatoni</p></div>
+          <div class="rounded-2xl bg-saffron/15 p-3"><p class="text-[11px] font-700 text-clay">WED</p><p class="text-sm font-600 mt-1">Citrus Bowl</p></div>
+          <div class="rounded-2xl bg-herb/10 p-3"><p class="text-[11px] font-700 text-clay">THU</p><p class="text-sm font-600 mt-1">Tempeh Tacos</p></div>
+          <div class="rounded-2xl bg-parchment p-3"><p class="text-[11px] font-700 text-clay">FRI</p><p class="text-sm font-600 mt-1">Noodle Jars</p></div>
+          <div class="rounded-2xl border-2 border-dashed border-clay/20 p-3 grid place-items-center text-clay/50 text-sm font-600">+ Add</div>
+        </div>
+        <div class="mt-5 flex items-center justify-between rounded-2xl bg-cocoa p-4 text-cream">
+          <div><p class="text-xs text-cream/60">Estimated grocery total</p><p class="font-display text-2xl font-600">$74.20</p></div>
+          <button class="rounded-xl bg-tomato px-4 py-2.5 text-sm font-700">Checkout list</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-24 bg-cocoa text-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-700 uppercase tracking-widest text-saffron">Three steps to dinner</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">From craving to cooked, simply</h2>
+    </div>
+    <div class="mt-14 grid md:grid-cols-3 gap-8">
+      <div class="reveal relative rounded-3xl border border-cream/10 bg-cream/5 p-8">
+        <span class="font-display text-6xl font-600 text-saffron/40">01</span>
+        <h3 class="mt-3 font-display text-2xl font-600">Tell us your taste</h3>
+        <p class="mt-2 text-cream/70">Pick cuisines, diets, and how much time you've got. Two minutes, once.</p>
+      </div>
+      <div class="reveal relative rounded-3xl border border-cream/10 bg-cream/5 p-8">
+        <span class="font-display text-6xl font-600 text-saffron/40">02</span>
+        <h3 class="mt-3 font-display text-2xl font-600">Get your plan</h3>
+        <p class="mt-2 text-cream/70">A balanced week appears instantly. Swap anything you like with one tap.</p>
+      </div>
+      <div class="reveal relative rounded-3xl border border-cream/10 bg-cream/5 p-8">
+        <span class="font-display text-6xl font-600 text-saffron/40">03</span>
+        <h3 class="mt-3 font-display text-2xl font-600">Shop &amp; cook</h3>
+        <p class="mt-2 text-cream/70">Send the list to checkout, then follow hands-free cook mode to the plate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mx-auto text-center reveal">
+      <span class="text-sm font-700 uppercase tracking-widest text-tomato">Simple pricing</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Start free. Go premium when you're hooked.</h2>
+    </div>
+    <div class="mt-14 grid md:grid-cols-3 gap-7 max-w-5xl mx-auto items-start">
+      <!-- Free -->
+      <div class="reveal rounded-3xl border border-clay/15 bg-cream p-8 shadow-soft">
+        <p class="font-700 text-clay uppercase text-xs tracking-widest">Taster</p>
+        <p class="mt-4 font-display text-5xl font-600">$0</p>
+        <p class="text-cocoa/55 text-sm">Free forever</p>
+        <ul class="mt-6 space-y-3 text-sm text-cocoa/75">
+          <li class="flex gap-2"><span class="text-herb">✓</span> 50 recipes a month</li>
+          <li class="flex gap-2"><span class="text-herb">✓</span> Basic weekly planner</li>
+          <li class="flex gap-2"><span class="text-herb">✓</span> One grocery list</li>
+        </ul>
+        <a href="#download" class="mt-8 block rounded-full border border-cocoa/15 py-3 text-center text-sm font-700 hover:border-tomato hover:text-tomato transition">Start free</a>
+      </div>
+      <!-- Premium -->
+      <div class="reveal relative rounded-3xl border-2 border-tomato bg-cream p-8 shadow-card md:-mt-4">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-tomato px-4 py-1 text-xs font-700 text-cream">Most loved</span>
+        <p class="font-700 text-ember uppercase text-xs tracking-widest">Saffron Plus</p>
+        <p class="mt-4 font-display text-5xl font-600">$6<span class="text-xl text-cocoa/50">/mo</span></p>
+        <p class="text-cocoa/55 text-sm">Billed annually</p>
+        <ul class="mt-6 space-y-3 text-sm text-cocoa/75">
+          <li class="flex gap-2"><span class="text-tomato">✓</span> Unlimited recipes &amp; plans</li>
+          <li class="flex gap-2"><span class="text-tomato">✓</span> Smart auto-planner &amp; swaps</li>
+          <li class="flex gap-2"><span class="text-tomato">✓</span> Hands-free cook mode</li>
+          <li class="flex gap-2"><span class="text-tomato">✓</span> Delivery service sync</li>
+        </ul>
+        <a href="#download" class="mt-8 block rounded-full bg-tomato py-3 text-center text-sm font-700 text-cream hover:bg-ember transition">Get Saffron Plus</a>
+      </div>
+      <!-- Family -->
+      <div class="reveal rounded-3xl border border-clay/15 bg-cream p-8 shadow-soft">
+        <p class="font-700 text-clay uppercase text-xs tracking-widest">Family Table</p>
+        <p class="mt-4 font-display text-5xl font-600">$11<span class="text-xl text-cocoa/50">/mo</span></p>
+        <p class="text-cocoa/55 text-sm">Up to 6 cooks</p>
+        <ul class="mt-6 space-y-3 text-sm text-cocoa/75">
+          <li class="flex gap-2"><span class="text-herb">✓</span> Everything in Plus</li>
+          <li class="flex gap-2"><span class="text-herb">✓</span> Shared family calendar</li>
+          <li class="flex gap-2"><span class="text-herb">✓</span> Kid-friendly filters</li>
+          <li class="flex gap-2"><span class="text-herb">✓</span> Budget tracking</li>
+        </ul>
+        <a href="#download" class="mt-8 block rounded-full border border-cocoa/15 py-3 text-center text-sm font-700 hover:border-tomato hover:text-tomato transition">Choose Family</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 bg-parchment/50 border-y border-clay/10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="text-sm font-700 uppercase tracking-widest text-tomato">Loved at the table</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Home cooks, real reviews</h2>
+    </div>
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-cream p-7 shadow-soft border border-clay/10">
+        <div class="text-saffron text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-cocoa/75">"I used to dread Sunday planning. Now the app does it and I actually look forward to cooking again. We waste almost no food."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-tomato/20 grid place-items-center font-700 text-tomato">M</span>
+          <div><p class="font-700 text-sm">Mara Delaine</p><p class="text-xs text-cocoa/55">Busy parent of three</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream p-7 shadow-soft border border-clay/10">
+        <div class="text-saffron text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-cocoa/75">"The pantry swaps are genius. I cook with what I have and the flavors still land. It's like having a chef texting me ideas."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-herb/20 grid place-items-center font-700 text-herb">J</span>
+          <div><p class="font-700 text-sm">Jonah Reyes</p><p class="text-xs text-cocoa/55">Weeknight home cook</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream p-7 shadow-soft border border-clay/10">
+        <div class="text-saffron text-lg">★★★★★</div>
+        <blockquote class="mt-3 text-cocoa/75">"Cook mode keeps my hands free and my phone clean. The grocery sync alone saves me an hour every week. Worth every cent."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-saffron/30 grid place-items-center font-700 text-clay">P</span>
+          <div><p class="font-700 text-sm">Priya Okafor</p><p class="text-xs text-cocoa/55">Saffron Plus member</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center reveal">
+      <span class="text-sm font-700 uppercase tracking-widest text-tomato">Good to know</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Questions, answered</h2>
+    </div>
+    <div class="mt-12 space-y-4">
+      <div class="faq-item reveal rounded-2xl border border-clay/15 bg-cream overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-lg">Is Saffron &amp; Spoon really free to start?</span>
+          <span class="faq-icon text-2xl text-tomato transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/65">Yes. The Taster plan is free forever with 50 recipes and a basic planner each month. Upgrade only when you want unlimited everything.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-clay/15 bg-cream overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-lg">Which grocery delivery services do you support?</span>
+          <span class="faq-icon text-2xl text-tomato transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/65">Saffron syncs aisle-sorted lists to most major delivery and pickup providers in your region. You can also export a plain checklist anytime.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-clay/15 bg-cream overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-lg">Can it handle allergies and special diets?</span>
+          <span class="faq-icon text-2xl text-tomato transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/65">Absolutely. Set allergens to avoid and choose from vegan, gluten-free, low-carb, and more. Every plan and swap respects your rules.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-clay/15 bg-cream overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-lg">Does it work offline in the kitchen?</span>
+          <span class="faq-icon text-2xl text-tomato transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/65">Saved recipes and your current week download for offline cook mode, so a patchy kitchen signal never stops dinner.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-clay/15 bg-cream overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-lg">Can I cancel anytime?</span>
+          <span class="faq-icon text-2xl text-tomato transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-cocoa/65">Of course — cancel in two taps, keep your saved recipes, and drop back to the free Taster plan whenever you like.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="download" class="py-24">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-tomato via-ember to-saffron px-8 py-16 sm:px-16 text-center text-cream shadow-card">
+      <div class="absolute -top-16 -left-10 h-64 w-64 rounded-full bg-cream/10 blob"></div>
+      <div class="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-cocoa/20 blob"></div>
+      <div class="relative reveal">
+        <h2 class="font-display text-4xl sm:text-6xl font-600 leading-tight">Dinner, finally figured out.</h2>
+        <p class="mt-4 max-w-xl mx-auto text-lg text-cream/85">Join 1.2 million home cooks planning tastier weeks. Free to download — your first plan is ready in two minutes.</p>
+        <div class="mt-9 flex flex-wrap justify-center gap-4">
+          <a href="#" class="magnetic inline-flex items-center gap-3 rounded-2xl bg-cocoa px-6 py-4 text-cream hover:bg-cocoa/90 transition">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.71-3.18-1.73-1.35-.14-2.64.79-3.32.79-.69 0-1.74-.78-2.86-.75-1.47.02-2.83.85-3.59 2.16-1.53 2.66-.39 6.6 1.1 8.76.72 1.06 1.59 2.25 2.72 2.21 1.09-.04 1.5-.7 2.82-.7 1.31 0 1.69.7 2.85.68 1.18-.02 1.92-1.08 2.64-2.14.83-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.5zM14.88 5.6c.6-.73 1.01-1.74.9-2.75-.87.04-1.92.58-2.54 1.3-.55.64-1.04 1.67-.91 2.65.97.08 1.96-.49 2.55-1.2z"/></svg>
+            <span class="text-left"><span class="block text-[10px] text-cream/70">Download on the</span><span class="block font-700 -mt-0.5">App Store</span></span>
+          </a>
+          <a href="#" class="magnetic inline-flex items-center gap-3 rounded-2xl bg-cocoa px-6 py-4 text-cream hover:bg-cocoa/90 transition">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l.1.1 9.3-9.3v-.2L3.6 2.3zm12.4 12.5l-3.1-3.1 3.1-3.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 1.9zm-.9-2.8L5.9 21.2c.4.4 1 .4 1.7.1l8.6-4.9-2.1-3zM5.9 2.8l9.2 9.2 2.1-3L7.6 2.7c-.7-.4-1.3-.3-1.7.1z"/></svg>
+            <span class="text-left"><span class="block text-[10px] text-cream/70">Get it on</span><span class="block font-700 -mt-0.5">Google Play</span></span>
+          </a>
+        </div>
+        <p class="mt-6 text-sm text-cream/70">No card required · Cancel anytime · 4.9★ on both stores</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-clay/10 bg-cream pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid gap-10 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-tomato text-cream"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3v8a3 3 0 0 0 6 0V3M8 3v18M19 3c-1.5 1-2 3-2 6s.5 5 2 6v6"/></svg></span>
+          <span class="font-display text-xl font-600">Saffron <span class="text-tomato">&amp;</span> Spoon</span>
+        </a>
+        <p class="mt-4 max-w-xs text-cocoa/60 text-sm">The recipe and meal-planning app that makes everyday cooking a little more joyful.</p>
+      </div>
+      <div>
+        <p class="font-700 text-sm uppercase tracking-widest text-clay">Product</p>
+        <ul class="mt-4 space-y-2.5 text-sm text-cocoa/65">
+          <li><a href="#features" class="hover:text-tomato transition">Features</a></li>
+          <li><a href="#recipes" class="hover:text-tomato transition">Recipes</a></li>
+          <li><a href="#planner" class="hover:text-tomato transition">Meal planner</a></li>
+          <li><a href="#pricing" class="hover:text-tomato transition">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-sm uppercase tracking-widest text-clay">Company</p>
+        <ul class="mt-4 space-y-2.5 text-sm text-cocoa/65">
+          <li><a href="#" class="hover:text-tomato transition">Our story</a></li>
+          <li><a href="#" class="hover:text-tomato transition">Careers</a></li>
+          <li><a href="#" class="hover:text-tomato transition">Press kit</a></li>
+          <li><a href="#" class="hover:text-tomato transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-sm uppercase tracking-widest text-clay">Stay hungry</p>
+        <p class="mt-4 text-sm text-cocoa/60">Get a free seasonal recipe in your inbox each week.</p>
+        <form class="mt-3 flex gap-2" onsubmit="return false">
+          <input type="email" placeholder="you@kitchen.com" class="w-full rounded-full border border-clay/20 bg-parchment/60 px-4 py-2.5 text-sm outline-none focus:border-tomato" />
+          <button class="rounded-full bg-tomato px-4 py-2.5 text-sm font-700 text-cream hover:bg-ember transition">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-clay/10 pt-6 text-sm text-cocoa/55">
+      <p>© 2026 Saffron &amp; Spoon Kitchens. A fictional brand for demonstration.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-tomato transition">Privacy</a>
+        <a href="#" class="hover:text-tomato transition">Terms</a>
+        <a href="#" class="hover:text-tomato transition">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav shadow on scroll ---- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('shadow-lg', window.scrollY > 20);
+  });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---- Headline rotator ---- */
+  const rotator = document.getElementById('rotator');
+  const phrases = ['plan tastier.', 'waste nothing.', 'eat the rainbow.', 'love weeknights.'];
+  let rIndex = 0;
+  if (!reduceMotion && rotator) {
+    setInterval(() => {
+      rIndex = (rIndex + 1) % phrases.length;
+      rotator.style.transition = 'opacity .35s, transform .35s';
+      rotator.style.opacity = '0';
+      rotator.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        rotator.textContent = phrases[rIndex];
+        rotator.style.opacity = '1';
+        rotator.style.transform = 'translateY(0)';
+      }, 350);
+    }, 2600);
+  }
+
+  /* ---- Phone 3D tilt ---- */
+  const stage = document.getElementById('phoneStage');
+  const phone = stage ? stage.querySelector('.phone-tilt') : null;
+  if (phone && !reduceMotion) {
+    stage.addEventListener('mousemove', (e) => {
+      const r = stage.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      phone.style.transform = `perspective(900px) rotateY(${x * 16}deg) rotateX(${-y * 16}deg) translateZ(0)`;
+    });
+    stage.addEventListener('mouseleave', () => {
+      phone.style.transform = 'perspective(900px) rotateY(0) rotateX(0)';
+    });
+  }
+
+  /* ---- Magnetic buttons ---- */
+  if (!reduceMotion) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+      el.style.transition = 'transform .2s ease-out';
+    });
+  }
+
+  /* ---- GSAP reveals, parallax, count-ups ---- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduceMotion) {
+      gsap.utils.toArray('.reveal').forEach(el => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      /* container parallax on food images */
+      gsap.utils.toArray('.parallax-img').forEach(img => {
+        gsap.fromTo(img, { yPercent: -8 }, {
+          yPercent: 8, ease: 'none',
+          scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+    } else {
+      gsap.utils.toArray('.reveal').forEach(el => { el.style.opacity = 1; });
+    }
+
+    /* count-ups */
+    document.querySelectorAll('.count').forEach(el => {
+      const to = +el.dataset.to;
+      const fmt = (n) => to >= 1000 ? Math.round(n).toLocaleString() : Math.round(n);
+      if (reduceMotion) { el.textContent = fmt(to); return; }
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out', onUpdate: () => { el.textContent = fmt(obj.v); } })
+      });
+    });
+  }
+</script>
+</body>
+</html>

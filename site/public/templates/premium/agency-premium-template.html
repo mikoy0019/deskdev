@@ -1,0 +1,332 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Forge Studio â€” Creative Agency</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#ff3366;--s:#ff6b6b;--accent:#00d4ff;--bg:#0a0a0a;--card:rgba(255,255,255,.03);--bdr:rgba(255,255,255,.06);--txt:#fafafa;--m:#666;--font:'Space Grotesk','Inter',system-ui,sans-serif}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--p);color:#fff}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px)}}
+@keyframes rotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes glitch{0%,100%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(2px,-2px)}60%{transform:translate(-1px,-1px)}80%{transform:translate(1px,1px)}}
+@keyframes borderDash{to{stroke-dashoffset:0}}
+@keyframes textReveal{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+.reveal{opacity:0;transform:translateY(50px);transition:all 1s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-scale{opacity:0;transform:scale(.9);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-scale.visible{opacity:1;transform:scale(1)}
+.st1{transition-delay:.1s}.st2{transition-delay:.2s}.st3{transition-delay:.3s}.st4{transition-delay:.4s}.st5{transition-delay:.5s}
+
+.project-card{position:relative;overflow:hidden;cursor:pointer;transition:all .5s cubic-bezier(.16,1,.3,1)}
+.project-card:hover{transform:translateY(-12px) scale(1.02)}
+.project-card .overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.9) 100%);opacity:0;transition:opacity .4s}
+.project-card:hover .overlay{opacity:1}
+.project-card .info{position:absolute;bottom:0;left:0;right:0;padding:32px;transform:translateY(20px);opacity:0;transition:all .4s .1s}
+.project-card:hover .info{transform:translateY(0);opacity:1}
+
+.btn-agency{display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:var(--p);color:#fff;border:none;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;position:relative;overflow:hidden;border-radius:0}
+.btn-agency:hover{background:#ff1a53;transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,51,102,.3)}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;padding:16px 40px;background:transparent;color:var(--txt);border:1px solid var(--bdr);font-family:var(--font);font-size:15px;font-weight:500;cursor:pointer;transition:all .3s;border-radius:0}
+.btn-outline:hover{border-color:var(--p);color:var(--p)}
+
+/* Marquee */
+.marquee-track{display:flex;gap:64px;animation:marquee 20s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+
+#cursor{position:fixed;width:20px;height:20px;border:2px solid var(--p);border-radius:50%;pointer-events:none;z-index:9999;transition:width .3s,height .3s,border-color .3s,transform .15s;mix-blend-mode:difference}
+#cursor.hover{width:60px;height:60px;border-color:var(--accent)}
+
+@media(max-width:768px){
+  .grid-2{grid-template-columns:1fr!important}
+  .grid-3{grid-template-columns:1fr!important}
+  .hide-mobile{display:none!important}
+  section{padding:80px 20px!important}
+  .hero-text{font-size:48px!important}
+  #cursor{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- â•â•â• NAV â€” Minimal, bold â•â•â• -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between;transition:all .3s;mix-blend-mode:difference" id="nav">
+  <div style="font-size:22px;font-weight:700;letter-spacing:-.5px">FORGE<span style="color:var(--p)">.</span></div>
+  <div class="hide-mobile" style="display:flex;gap:36px;font-size:14px;font-weight:500">
+    <a href="#work" style="color:var(--txt);text-decoration:none;transition:color .2s" class="nav-link">Work</a>
+    <a href="#services" style="color:var(--txt);text-decoration:none;transition:color .2s" class="nav-link">Services</a>
+    <a href="#about" style="color:var(--txt);text-decoration:none;transition:color .2s" class="nav-link">About</a>
+    <a href="#contact" style="color:var(--txt);text-decoration:none;transition:color .2s" class="nav-link">Contact</a>
+  </div>
+  <button class="btn-agency" style="padding:10px 28px;font-size:13px">Let's Talk</button>
+</nav>
+
+<!-- â•â•â• HERO â€” Large type, asymmetric, bold â•â•â• -->
+<section style="min-height:100vh;display:flex;align-items:center;padding:0 48px;position:relative;overflow:hidden">
+  <!-- Background noise texture -->
+  <div style="position:absolute;inset:0;opacity:.03;background:url('data:image/svg+xml,<svg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"><filter id=\"noise\"><feTurbulence baseFrequency=\".65\" numOctaves=\"3\" stitchTiles=\"stitch\"/></filter><rect width=\"100%\" height=\"100%\" filter=\"url(%23noise)\"/></svg>')"></div>
+  <!-- Accent circle -->
+  <div style="position:absolute;top:10%;right:5%;width:500px;height:500px;border-radius:50%;border:1px solid rgba(255,51,102,.08);animation:rotate 30s linear infinite"></div>
+  <div style="position:absolute;top:15%;right:10%;width:300px;height:300px;border-radius:50%;border:1px solid rgba(0,212,255,.06);animation:rotate 25s linear infinite reverse"></div>
+
+  <div style="max-width:1400px;margin:0 auto;width:100%;position:relative;z-index:1;padding-top:80px">
+    <!-- Small label -->
+    <div style="font-size:13px;font-weight:500;color:var(--p);margin-bottom:24px;opacity:0;animation:slideIn .8s .2s forwards">Creative Studio â€” Est. 2019</div>
+
+    <!-- Massive headline -->
+    <h1 class="hero-text" style="font-size:clamp(56px,9vw,120px);font-weight:700;line-height:.92;letter-spacing:-4px;margin-bottom:32px;opacity:0;animation:fadeUp 1s .3s cubic-bezier(.16,1,.3,1) forwards">
+      We craft<br>
+      <span style="color:var(--p);font-style:italic">digital</span><br>
+      experiences<span style="color:var(--accent)">.</span>
+    </h1>
+
+    <div style="display:flex;gap:48px;align-items:flex-end;opacity:0;animation:fadeUp 1s .6s forwards">
+      <p style="font-size:18px;color:var(--m);line-height:1.7;max-width:420px;font-weight:400">
+        Award-winning agency specializing in brand strategy, web design, and digital products that drive measurable growth.
+      </p>
+      <div style="display:flex;gap:16px">
+        <button class="btn-agency">View Our Work â†’</button>
+        <button class="btn-outline">About Us</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• MARQUEE â€” Infinite scroll text â•â•â• -->
+<section style="padding:40px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);overflow:hidden">
+  <div class="marquee-track" style="font-size:14px;font-weight:500;letter-spacing:4px;text-transform:uppercase;color:var(--m)">
+    <span>Brand Strategy</span><span style="color:var(--p)">âœ¦</span>
+    <span>Web Design</span><span style="color:var(--accent)">âœ¦</span>
+    <span>UI/UX</span><span style="color:var(--p)">âœ¦</span>
+    <span>Motion Design</span><span style="color:var(--accent)">âœ¦</span>
+    <span>Development</span><span style="color:var(--p)">âœ¦</span>
+    <span>Digital Products</span><span style="color:var(--accent)">âœ¦</span>
+    <span>Brand Strategy</span><span style="color:var(--p)">âœ¦</span>
+    <span>Web Design</span><span style="color:var(--accent)">âœ¦</span>
+    <span>UI/UX</span><span style="color:var(--p)">âœ¦</span>
+    <span>Motion Design</span><span style="color:var(--accent)">âœ¦</span>
+    <span>Development</span><span style="color:var(--p)">âœ¦</span>
+    <span>Digital Products</span><span style="color:var(--accent)">âœ¦</span>
+  </div>
+</section>
+
+<!-- â•â•â• WORK â€” Project showcase grid â•â•â• -->
+<section id="work" style="padding:160px 48px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px">
+      <div>
+        <div class="reveal" style="font-size:13px;font-weight:500;color:var(--p);margin-bottom:12px">Selected Work</div>
+        <h2 class="reveal st1" style="font-size:clamp(32px,4vw,56px);font-weight:700;letter-spacing:-2px">Featured <span style="font-style:italic;color:var(--p)">projects</span></h2>
+      </div>
+      <button class="btn-outline reveal st2" style="padding:12px 28px;font-size:13px">View All â†’</button>
+    </div>
+
+    <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <!-- Project 1 â€” Large -->
+      <div class="project-card reveal" style="aspect-ratio:4/3;border-radius:4px;background:linear-gradient(135deg,rgba(255,51,102,.12),rgba(255,51,102,.03));border:1px solid var(--bdr)">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.08;font-weight:900">01</div>
+        <div class="overlay"></div>
+        <div class="info">
+          <div style="font-size:12px;color:var(--p);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Brand Identity</div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-1px">Nexus Finance</div>
+          <div style="font-size:14px;color:var(--m);margin-top:4px">Fintech Â· Brand Â· Web</div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project-card reveal st1" style="aspect-ratio:4/3;border-radius:4px;background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,212,255,.02));border:1px solid var(--bdr)">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.08;font-weight:900">02</div>
+        <div class="overlay"></div>
+        <div class="info">
+          <div style="font-size:12px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Digital Product</div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-1px">Pulse Health</div>
+          <div style="font-size:14px;color:var(--m);margin-top:4px">Healthcare Â· App Â· UX</div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project-card reveal st2" style="aspect-ratio:4/3;border-radius:4px;background:linear-gradient(135deg,rgba(255,107,107,.1),rgba(255,107,107,.02));border:1px solid var(--bdr)">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.08;font-weight:900">03</div>
+        <div class="overlay"></div>
+        <div class="info">
+          <div style="font-size:12px;color:var(--s);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">E-Commerce</div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-1px">Artisan Collective</div>
+          <div style="font-size:14px;color:var(--m);margin-top:4px">Retail Â· Shopify Â· Brand</div>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="project-card reveal st3" style="aspect-ratio:4/3;border-radius:4px;background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(168,85,247,.02));border:1px solid var(--bdr)">
+        <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;opacity:.08;font-weight:900">04</div>
+        <div class="overlay"></div>
+        <div class="info">
+          <div style="font-size:12px;color:#a855f7;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">SaaS Platform</div>
+          <div style="font-size:24px;font-weight:700;letter-spacing:-1px">CloudStack</div>
+          <div style="font-size:14px;color:var(--m);margin-top:4px">Tech Â· Platform Â· Design System</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• SERVICES â€” Numbered list, editorial â•â•â• -->
+<section id="services" style="padding:160px 48px;border-top:1px solid var(--bdr)">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="reveal" style="font-size:13px;font-weight:500;color:var(--p);margin-bottom:12px">What We Do</div>
+    <h2 class="reveal st1" style="font-size:clamp(32px,4vw,56px);font-weight:700;letter-spacing:-2px;margin-bottom:64px">Our <span style="font-style:italic;color:var(--p)">services</span></h2>
+
+    <div style="display:flex;flex-direction:column">
+      <!-- Service 1 -->
+      <div class="reveal" style="display:flex;align-items:center;gap:48px;padding:40px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:all .3s" onmouseover="this.style.paddingLeft='24px';this.querySelector('.num').style.color='var(--p)'" onmouseout="this.style.paddingLeft='0';this.querySelector('.num').style.color='var(--m)'">
+        <div class="num" style="font-size:48px;font-weight:700;color:var(--m);transition:color .3s;min-width:80px">01</div>
+        <div style="flex:1">
+          <h3 style="font-size:24px;font-weight:600;margin-bottom:8px">Brand Strategy & Identity</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">We build brands from the ground up. From positioning and naming to visual identity systems that scale across every touchpoint.</p>
+        </div>
+        <div style="font-size:24px;color:var(--m);transition:transform .3s" class="arrow">â†’</div>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="reveal st1" style="display:flex;align-items:center;gap:48px;padding:40px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:all .3s" onmouseover="this.style.paddingLeft='24px';this.querySelector('.num').style.color='var(--accent)'" onmouseout="this.style.paddingLeft='0';this.querySelector('.num').style.color='var(--m)'">
+        <div class="num" style="font-size:48px;font-weight:700;color:var(--m);transition:color .3s;min-width:80px">02</div>
+        <div style="flex:1">
+          <h3 style="font-size:24px;font-weight:600;margin-bottom:8px">Web Design & Development</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">High-performance websites and web applications that convert visitors into customers. Built with modern stacks for speed and scalability.</p>
+        </div>
+        <div style="font-size:24px;color:var(--m)">â†’</div>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="reveal st2" style="display:flex;align-items:center;gap:48px;padding:40px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:all .3s" onmouseover="this.style.paddingLeft='24px';this.querySelector('.num').style.color='var(--p)'" onmouseout="this.style.paddingLeft='0';this.querySelector('.num').style.color='var(--m)'">
+        <div class="num" style="font-size:48px;font-weight:700;color:var(--m);transition:color .3s;min-width:80px">03</div>
+        <div style="flex:1">
+          <h3 style="font-size:24px;font-weight:600;margin-bottom:8px">Digital Products & Apps</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">End-to-end product design and development. From user research to launch, we create products people love to use.</p>
+        </div>
+        <div style="font-size:24px;color:var(--m)">â†’</div>
+      </div>
+
+      <!-- Service 4 -->
+      <div class="reveal st3" style="display:flex;align-items:center;gap:48px;padding:40px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:all .3s" onmouseover="this.style.paddingLeft='24px';this.querySelector('.num').style.color='var(--accent)'" onmouseout="this.style.paddingLeft='0';this.querySelector('.num').style.color='var(--m)'">
+        <div class="num" style="font-size:48px;font-weight:700;color:var(--m);transition:color .3s;min-width:80px">04</div>
+        <div style="flex:1">
+          <h3 style="font-size:24px;font-weight:600;margin-bottom:8px">Motion & Interaction Design</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">Micro-interactions, page transitions, scroll animations, and brand motion systems that elevate digital experiences.</p>
+        </div>
+        <div style="font-size:24px;color:var(--m)">â†’</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• STATS â€” Bold numbers â•â•â• -->
+<section style="padding:100px 48px;background:linear-gradient(180deg,rgba(255,51,102,.02),transparent)">
+  <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:48px;text-align:center" class="grid-2">
+    <div class="reveal">
+      <div style="font-size:56px;font-weight:700;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">200+</div>
+      <div style="font-size:13px;color:var(--m);margin-top:8px;text-transform:uppercase;letter-spacing:2px">Projects Delivered</div>
+    </div>
+    <div class="reveal st1">
+      <div style="font-size:56px;font-weight:700;letter-spacing:-2px;background:linear-gradient(135deg,var(--accent),#00a3cc);-webkit-background-clip:text;-webkit-text-fill-color:transparent">50+</div>
+      <div style="font-size:13px;color:var(--m);margin-top:8px;text-transform:uppercase;letter-spacing:2px">Awards Won</div>
+    </div>
+    <div class="reveal st2">
+      <div style="font-size:56px;font-weight:700;letter-spacing:-2px">12</div>
+      <div style="font-size:13px;color:var(--m);margin-top:8px;text-transform:uppercase;letter-spacing:2px">Team Members</div>
+    </div>
+    <div class="reveal st3">
+      <div style="font-size:56px;font-weight:700;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent">$50M+</div>
+      <div style="font-size:13px;color:var(--m);margin-top:8px;text-transform:uppercase;letter-spacing:2px">Revenue Generated</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â€” Large, impactful â•â•â• -->
+<section id="contact" style="padding:160px 48px;text-align:center;position:relative">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(255,51,102,.04) 0%,transparent 50%)"></div>
+  <div style="position:relative;z-index:1;max-width:800px;margin:0 auto">
+    <div class="reveal" style="font-size:13px;font-weight:500;color:var(--p);margin-bottom:16px;letter-spacing:2px;text-transform:uppercase">Let's Work Together</div>
+    <h2 class="reveal st1" style="font-size:clamp(36px,6vw,72px);font-weight:700;letter-spacing:-3px;margin-bottom:24px;line-height:1">
+      Have a project<br>in <span style="font-style:italic;color:var(--p)">mind</span>?
+    </h2>
+    <p class="reveal st2" style="font-size:18px;color:var(--m);margin-bottom:48px;line-height:1.7;max-width:500px;display:inline-block">
+      We'd love to hear about your next big idea. Let's create something extraordinary together.
+    </p>
+    <div class="reveal st3">
+      <button class="btn-agency" style="padding:20px 56px;font-size:16px">Start a Project â†’</button>
+    </div>
+    <div class="reveal st4" style="margin-top:24px;font-size:14px;color:var(--m)">
+      or email us at <a href="mailto:hello@forge.studio" style="color:var(--p);text-decoration:none">hello@forge.studio</a>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer style="padding:48px;border-top:1px solid var(--bdr)">
+  <div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+    <div style="font-size:20px;font-weight:700">FORGE<span style="color:var(--p)">.</span></div>
+    <div style="display:flex;gap:32px;font-size:13px;color:var(--m)">
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Twitter</a>
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Instagram</a>
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">Dribbble</a>
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--p)'" onmouseout="this.style.color='var(--m)'">LinkedIn</a>
+    </div>
+    <div style="font-size:12px;color:var(--m)">Â© 2026 Forge Studio. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:.1,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal,.reveal-scale').forEach(el=>obs.observe(el));
+
+// Custom cursor
+const cursor = document.getElementById('cursor');
+let cx=0,cy=0,dx=0,dy=0;
+document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY});
+(function loop(){dx+=(cx-dx)*.12;dy+=(cy-dy)*.12;cursor.style.left=dx-10+'px';cursor.style.top=dy-10+'px';requestAnimationFrame(loop)})();
+
+// Hover effect on interactive elements
+document.querySelectorAll('a,button,.project-card,.nav-link').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));
+  el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'));
+});
+
+// Nav scroll
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  nav.style.mixBlendMode=window.scrollY>100?'normal':'difference';
+  if(window.scrollY>100){
+    nav.style.background='rgba(10,10,10,.9)';nav.style.backdropFilter='blur(20px)';nav.style.borderBottom='1px solid var(--bdr)';
+  }else{
+    nav.style.background='transparent';nav.style.backdropFilter='none';nav.style.borderBottom='none';
+  }
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth'})});
+});
+
+// Page load
+document.body.style.opacity='0';document.body.style.transition='opacity .5s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+
+</body>
+</html>
+

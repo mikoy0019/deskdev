@@ -1,0 +1,676 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STRYDUS‰ â€” Drop-Culture Footwear</title>
+<meta name="description" content="STRYDUS‰ is a drop-culture sneaker house. Limited runs, raw silhouettes, and members-only early access. Move loud." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0a0b0d',
+          coal: '#101216',
+          slate2: '#1a1d23',
+          fog: '#9aa0ac',
+          volt: '#c8ff2e',
+          voltdim: '#9bd11f',
+          ember: '#ff5a36',
+        },
+        fontFamily: {
+          black: ['"Archivo Black"', 'sans-serif'],
+          grotesk: ['"Space Grotesk"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { background: #0a0b0d; }
+  body { font-family: 'Space Grotesk', sans-serif; color: #eef0f2; overflow-x: hidden; cursor: none; }
+  ::selection { background: #c8ff2e; color: #0a0b0d; }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #0a0b0d; }
+  ::-webkit-scrollbar-thumb { background: #2a2e36; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: #c8ff2e; }
+
+  .display { font-family: 'Archivo Black', sans-serif; letter-spacing: -0.02em; line-height: 0.92; }
+  .grain::before {
+    content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* cursor */
+  .cursor-dot { position: fixed; top: 0; left: 0; width: 7px; height: 7px; background: #c8ff2e; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); }
+  .cursor-ring { position: fixed; top: 0; left: 0; width: 38px; height: 38px; border: 1px solid rgba(200,255,46,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .25s, height .25s, background .25s, border-color .25s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(200,255,46,0.08); border-color: rgba(200,255,46,0.9); }
+  @media (hover: none) { .cursor-dot, .cursor-ring { display: none; } body { cursor: auto; } }
+
+  .edge { border: 1px solid rgba(255,255,255,0.08); }
+  .volt-glow { box-shadow: 0 0 0 1px rgba(200,255,46,0.25), 0 18px 60px -18px rgba(200,255,46,0.4); }
+
+  .marquee-track { display: inline-flex; white-space: nowrap; will-change: transform; animation: marquee 26s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  .card-img-wrap { perspective: 1200px; }
+  .tilt-inner { transition: transform .35s cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; }
+  .swap-back { opacity: 0; transition: opacity .5s ease; }
+  .pcard:hover .swap-back { opacity: 1; }
+  .pcard:hover .swap-front { opacity: 0; }
+  .swap-front { transition: opacity .5s ease; }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .acc-item.open .acc-body { max-height: 320px; }
+  .acc-item.open .acc-plus { transform: rotate(45deg); }
+  .acc-plus { transition: transform .35s ease; }
+
+  .chip { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+  .outline-text { -webkit-text-stroke: 1.4px rgba(255,255,255,0.18); color: transparent; }
+  .underline-volt { background-image: linear-gradient(#c8ff2e,#c8ff2e); background-size: 0% 2px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size .4s ease; }
+  .underline-volt:hover { background-size: 100% 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+<body class="grain antialiased">
+
+<!-- cursor -->
+<div class="cursor-dot" id="cDot"></div>
+<div class="cursor-ring" id="cRing"></div>
+
+<!-- â–‘â–‘ NAV â–‘â–‘ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-2xl edge bg-ink/70 backdrop-blur-xl px-5 py-3">
+      <a href="#top" class="flex items-center gap-2 group" data-cursor>
+        <span class="grid place-items-center w-8 h-8 rounded-lg bg-volt text-ink display text-lg">V</span>
+        <span class="display text-lg tracking-tight">STRYDUS‰</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm text-fog">
+        <a href="#drop" class="underline-volt hover:text-white transition" data-cursor>Drop</a>
+        <a href="#best" class="underline-volt hover:text-white transition" data-cursor>Bestsellers</a>
+        <a href="#cats" class="underline-volt hover:text-white transition" data-cursor>Shop</a>
+        <a href="#club" class="underline-volt hover:text-white transition" data-cursor>Club</a>
+        <a href="#faq" class="underline-volt hover:text-white transition" data-cursor>FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button class="hidden sm:grid place-items-center w-9 h-9 rounded-lg edge text-fog hover:text-volt hover:border-volt/40 transition" data-cursor aria-label="Search">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button class="relative grid place-items-center w-9 h-9 rounded-lg edge text-fog hover:text-volt hover:border-volt/40 transition" data-cursor aria-label="Cart">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6 5 3H2"/></svg>
+          <span class="absolute -top-1.5 -right-1.5 grid place-items-center w-4 h-4 rounded-full bg-volt text-ink text-[10px] font-bold">3</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- â–‘â–‘ HERO â–‘â–‘ -->
+<section class="relative min-h-screen pt-32 pb-16 overflow-hidden">
+  <div class="absolute -top-32 -left-40 w-[42rem] h-[42rem] rounded-full bg-volt/10 blur-[140px]"></div>
+  <div class="absolute top-1/3 -right-40 w-[34rem] h-[34rem] rounded-full bg-ember/10 blur-[140px]"></div>
+
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center">
+    <div class="lg:col-span-6">
+      <p class="chip text-volt mb-5 flex items-center gap-2" id="heroChip">
+        <span class="inline-block w-2 h-2 rounded-full bg-volt animate-pulse"></span> Drop 014 â€” Live Soon
+      </p>
+      <h1 class="display text-[15vw] sm:text-7xl lg:text-[5.4rem] text-white">
+        <span class="block hero-line">MOVE</span>
+        <span class="block hero-line">LOUD,</span>
+        <span class="block hero-line"><span class="text-volt">LAND</span> FIRST.</span>
+      </h1>
+      <p class="mt-6 max-w-md text-fog leading-relaxed">
+        STRYDUS‰ builds footwear in tiny, ruthless runs. No restocks, no apologies â€”
+        only raw silhouettes engineered for people who refuse to blend in.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#best" data-cursor data-magnetic class="group relative inline-flex items-center gap-2 rounded-full bg-volt text-ink font-semibold px-7 py-3.5 volt-glow">
+          <span>Shop the line</span>
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#drop" data-cursor class="inline-flex items-center gap-2 rounded-full edge px-7 py-3.5 text-sm hover:border-volt/40 transition">
+          Next drop
+        </a>
+      </div>
+
+      <div class="mt-12 grid grid-cols-3 gap-6 max-w-md">
+        <div><div class="display text-3xl text-white" data-count="86">0</div><div class="chip text-fog mt-1">Drops shipped</div></div>
+        <div><div class="display text-3xl text-white"><span data-count="41">0</span>K</div><div class="chip text-fog mt-1">Club members</div></div>
+        <div><div class="display text-3xl text-white"><span data-count="3">0</span>min</div><div class="chip text-fog mt-1">Avg sellout</div></div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 relative">
+      <div class="relative" data-parallax="0.18">
+        <div class="absolute inset-0 -m-6 rounded-[2rem] bg-gradient-to-br from-volt/20 via-transparent to-ember/20 blur-2xl"></div>
+        <div class="relative rounded-[2rem] overflow-hidden edge bg-gradient-to-br from-slate2 to-ink">
+          <span class="absolute top-5 left-5 chip text-ink bg-volt px-2.5 py-1 rounded-md z-10">VLXâ€”07 Â«Phantom VoltÂ»</span>
+          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=80"
+               alt="Featured STRYDUS‰ sneaker" loading="eager"
+               onerror="this.style.display='none'"
+               class="w-full h-[60vh] lg:h-[70vh] object-cover" />
+          <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-ink to-transparent">
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="chip text-volt">Featured silhouette</p>
+                <p class="display text-2xl text-white mt-1">Phantom Volt</p>
+              </div>
+              <p class="font-mono text-xl text-white">$219</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="absolute -bottom-6 -left-6 hidden sm:block rounded-2xl edge bg-coal/90 backdrop-blur px-4 py-3" data-parallax="-0.1">
+        <p class="chip text-fog">Sizes left</p>
+        <p class="font-mono text-volt text-lg">7 Â· 8.5 Â· 11 Â· 12</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ MARQUEE â–‘â–‘ -->
+<section class="py-5 border-y border-white/10 bg-coal overflow-hidden">
+  <div class="marquee-track display text-2xl sm:text-3xl text-white/90">
+    <span class="px-6">LIMITED RUNS</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6 outline-text">NO RESTOCKS</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6">MEMBERS FIRST</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6 outline-text">FAST FEET</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6">LIMITED RUNS</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6 outline-text">NO RESTOCKS</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6">MEMBERS FIRST</span><span class="px-6 text-volt">âœ¦</span>
+    <span class="px-6 outline-text">FAST FEET</span><span class="px-6 text-volt">âœ¦</span>
+  </div>
+</section>
+
+<!-- â–‘â–‘ NEXT DROP COUNTDOWN â–‘â–‘ -->
+<section id="drop" class="relative py-24 overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="rounded-[2rem] edge bg-gradient-to-br from-coal to-ink p-8 sm:p-12 relative overflow-hidden reveal">
+      <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-volt/10 blur-3xl"></div>
+      <div class="grid lg:grid-cols-2 gap-10 items-center relative">
+        <div>
+          <p class="chip text-ember mb-4">Drop 014 â€” Eclipse Pack</p>
+          <h2 class="display text-4xl sm:text-6xl text-white">THE CLOCK<br/>IS <span class="text-volt">RUNNING.</span></h2>
+          <p class="mt-5 text-fog max-w-md">Three new silhouettes. 600 pairs total. When the timer hits zero, the vault opens for 9 minutes â€” then it's gone for good.</p>
+          <a href="#club" data-cursor data-magnetic class="mt-7 inline-flex items-center gap-2 rounded-full bg-white text-ink font-semibold px-6 py-3 hover:bg-volt transition">
+            Set my reminder
+          </a>
+        </div>
+        <div>
+          <div class="grid grid-cols-4 gap-3 sm:gap-4" id="countdown">
+            <div class="rounded-2xl edge bg-ink/60 p-4 text-center">
+              <div class="display text-4xl sm:text-5xl text-volt tabular-nums" id="cdDays">00</div>
+              <div class="chip text-fog mt-2">Days</div>
+            </div>
+            <div class="rounded-2xl edge bg-ink/60 p-4 text-center">
+              <div class="display text-4xl sm:text-5xl text-white tabular-nums" id="cdHrs">00</div>
+              <div class="chip text-fog mt-2">Hrs</div>
+            </div>
+            <div class="rounded-2xl edge bg-ink/60 p-4 text-center">
+              <div class="display text-4xl sm:text-5xl text-white tabular-nums" id="cdMin">00</div>
+              <div class="chip text-fog mt-2">Min</div>
+            </div>
+            <div class="rounded-2xl edge bg-ink/60 p-4 text-center">
+              <div class="display text-4xl sm:text-5xl text-ember tabular-nums" id="cdSec">00</div>
+              <div class="chip text-fog mt-2">Sec</div>
+            </div>
+          </div>
+          <p class="mt-4 text-center chip text-fog">Vault opens Â· 09 Jun Â· 18:00 GMT</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ BESTSELLERS GRID â–‘â–‘ -->
+<section id="best" class="py-12 sm:py-20">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-10 reveal">
+      <div>
+        <p class="chip text-volt mb-3">Always restocked-never</p>
+        <h2 class="display text-4xl sm:text-6xl text-white">BESTSELLERS</h2>
+      </div>
+      <a href="#cats" data-cursor class="hidden sm:inline-flex items-center gap-2 text-sm text-fog hover:text-volt transition underline-volt">View all 86 â†’</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- card -->
+      <article class="pcard group rounded-2xl edge bg-coal overflow-hidden reveal" data-cursor>
+        <div class="card-img-wrap relative aspect-square bg-gradient-to-br from-slate2 to-ink">
+          <div class="tilt-inner absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=80" alt="Phantom Volt sneaker" loading="lazy" onerror="this.style.display='none'" class="swap-front absolute inset-0 w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=1600&q=80" alt="Phantom Volt alternate angle" loading="lazy" onerror="this.style.display='none'" class="swap-back absolute inset-0 w-full h-full object-cover" />
+          </div>
+          <span class="absolute top-3 left-3 chip text-ink bg-volt px-2 py-0.5 rounded">Hot</span>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-white">Phantom Volt</h3>
+            <span class="font-mono text-volt">$219</span>
+          </div>
+          <p class="chip text-fog mt-1">Runner Â· Unisex</p>
+        </div>
+      </article>
+
+      <article class="pcard group rounded-2xl edge bg-coal overflow-hidden reveal" data-cursor>
+        <div class="card-img-wrap relative aspect-square bg-gradient-to-br from-slate2 to-ink">
+          <div class="tilt-inner absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=1600&q=80" alt="Eclipse Mid sneaker" loading="lazy" onerror="this.style.display='none'" class="swap-front absolute inset-0 w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1600&q=80" alt="Eclipse Mid alternate angle" loading="lazy" onerror="this.style.display='none'" class="swap-back absolute inset-0 w-full h-full object-cover" />
+          </div>
+          <span class="absolute top-3 left-3 chip text-white bg-ember px-2 py-0.5 rounded">Low stock</span>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-white">Eclipse Mid</h3>
+            <span class="font-mono text-volt">$245</span>
+          </div>
+          <p class="chip text-fog mt-1">Mid-top Â· High abrasion</p>
+        </div>
+      </article>
+
+      <article class="pcard group rounded-2xl edge bg-coal overflow-hidden reveal" data-cursor>
+        <div class="card-img-wrap relative aspect-square bg-gradient-to-br from-slate2 to-ink">
+          <div class="tilt-inner absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1600&q=80" alt="Drift Low sneaker" loading="lazy" onerror="this.style.display='none'" class="swap-front absolute inset-0 w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1600&q=80" alt="Drift Low alternate angle" loading="lazy" onerror="this.style.display='none'" class="swap-back absolute inset-0 w-full h-full object-cover" />
+          </div>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-white">Drift Low</h3>
+            <span class="font-mono text-volt">$189</span>
+          </div>
+          <p class="chip text-fog mt-1">Low-top Â· Everyday</p>
+        </div>
+      </article>
+
+      <article class="pcard group rounded-2xl edge bg-coal overflow-hidden reveal" data-cursor>
+        <div class="card-img-wrap relative aspect-square bg-gradient-to-br from-slate2 to-ink">
+          <div class="tilt-inner absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1600&q=80" alt="Apex Trail sneaker" loading="lazy" onerror="this.style.display='none'" class="swap-front absolute inset-0 w-full h-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=80" alt="Apex Trail alternate angle" loading="lazy" onerror="this.style.display='none'" class="swap-back absolute inset-0 w-full h-full object-cover" />
+          </div>
+          <span class="absolute top-3 left-3 chip text-ink bg-volt px-2 py-0.5 rounded">New</span>
+        </div>
+        <div class="p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-semibold text-white">Apex Trail</h3>
+            <span class="font-mono text-volt">$268</span>
+          </div>
+          <p class="chip text-fog mt-1">Trail Â· Gore-shell</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ CATEGORIES â–‘â–‘ -->
+<section id="cats" class="py-12 sm:py-20">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <h2 class="display text-4xl sm:text-6xl text-white mb-10 reveal">SHOP BY <span class="outline-text">TERRAIN</span></h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <a href="#best" data-cursor class="reveal group relative rounded-2xl overflow-hidden edge aspect-[4/5] bg-gradient-to-br from-slate2 to-ink">
+        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=80" alt="Street category" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <p class="chip text-volt">24 styles</p>
+          <h3 class="display text-3xl text-white mt-1">Street</h3>
+        </div>
+      </a>
+      <a href="#best" data-cursor class="reveal group relative rounded-2xl overflow-hidden edge aspect-[4/5] bg-gradient-to-br from-slate2 to-ink">
+        <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1600&q=80" alt="Trail category" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <p class="chip text-volt">18 styles</p>
+          <h3 class="display text-3xl text-white mt-1">Trail</h3>
+        </div>
+      </a>
+      <a href="#best" data-cursor class="reveal group relative rounded-2xl overflow-hidden edge aspect-[4/5] bg-gradient-to-br from-slate2 to-ink">
+        <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1600&q=80" alt="Track category" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-0 p-6">
+          <p class="chip text-volt">12 styles</p>
+          <h3 class="display text-3xl text-white mt-1">Track</h3>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ ABOUT / BRAND â–‘â–‘ -->
+<section class="py-20 sm:py-28 relative overflow-hidden">
+  <div class="absolute -left-32 top-1/4 w-96 h-96 rounded-full bg-volt/5 blur-[120px]"></div>
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-5 reveal">
+      <div class="rounded-[2rem] overflow-hidden edge bg-gradient-to-br from-slate2 to-ink" data-parallax="0.12">
+        <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=1600&q=80" alt="STRYDUS‰ workshop" loading="lazy" onerror="this.style.display='none'" class="w-full h-[28rem] object-cover" />
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <p class="chip text-volt mb-4 reveal">Since 2021 Â· Built in small batches</p>
+      <h2 class="display text-4xl sm:text-6xl text-white reveal">WE DON'T<br/>CHASE TRENDS.<br/><span class="text-volt">WE OUTRUN THEM.</span></h2>
+      <p class="mt-6 text-fog max-w-xl leading-relaxed reveal">
+        STRYDUS‰ started in a two-bench garage with a single belief: a sneaker should feel
+        like it was tuned for one person â€” you. Every silhouette is prototyped on real feet,
+        on real pavement, until it earns the box. Then we make 200, maybe 600. Never more.
+      </p>
+      <div class="mt-8 grid sm:grid-cols-3 gap-6 reveal">
+        <div class="rounded-xl edge bg-coal p-5"><div class="display text-2xl text-volt">100%</div><p class="chip text-fog mt-1">Recycled outsoles</p></div>
+        <div class="rounded-xl edge bg-coal p-5"><div class="display text-2xl text-volt">48hr</div><p class="chip text-fog mt-1">Member ship time</p></div>
+        <div class="rounded-xl edge bg-coal p-5"><div class="display text-2xl text-volt">14</div><p class="chip text-fog mt-1">Drops a year</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ LOOKBOOK BAND â–‘â–‘ -->
+<section class="py-12 overflow-hidden">
+  <div class="flex gap-5 px-5" id="lookbook" data-parallax-x="0.2">
+    <div class="shrink-0 w-64 sm:w-80 aspect-[3/4] rounded-2xl overflow-hidden edge bg-gradient-to-br from-slate2 to-ink">
+      <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 1" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+    </div>
+    <div class="shrink-0 w-64 sm:w-80 aspect-[3/4] rounded-2xl overflow-hidden edge bg-gradient-to-br from-slate2 to-ink">
+      <img src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 2" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+    </div>
+    <div class="shrink-0 w-64 sm:w-80 aspect-[3/4] rounded-2xl overflow-hidden edge bg-gradient-to-br from-slate2 to-ink">
+      <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 3" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+    </div>
+    <div class="shrink-0 w-64 sm:w-80 aspect-[3/4] rounded-2xl overflow-hidden edge bg-gradient-to-br from-slate2 to-ink">
+      <img src="https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=1600&q=80" alt="Lookbook 4" loading="lazy" onerror="this.style.display='none'" class="w-full h-full object-cover" />
+    </div>
+    <div class="shrink-0 w-64 sm:w-80 aspect-[3/4] rounded-2xl overflow-hidden edge bg-gradient-to-br from-slate2 to-ink grid place-items-center">
+      <div class="text-center px-6">
+        <p class="display text-3xl text-volt">EP.014</p>
+        <p class="chip text-fog mt-2">Eclipse lookbook</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ TESTIMONIALS â–‘â–‘ -->
+<section class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <h2 class="display text-4xl sm:text-6xl text-white mb-12 reveal">WORD ON<br/>THE <span class="text-volt">PAVEMENT</span></h2>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="rounded-2xl edge bg-coal p-7 reveal" data-cursor>
+        <div class="text-volt text-2xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-white/90 leading-relaxed">"Copped the Phantom Volt in the last drop. Lightest pair I own and somehow the loudest. Got stopped twice on my block."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-9 h-9 rounded-full bg-volt/20 text-volt display text-sm">RM</span>
+          <div><p class="text-sm font-semibold">Renzo M.</p><p class="chip text-fog">Member Â· Tier Gold</p></div>
+        </figcaption>
+      </figure>
+      <figure class="rounded-2xl edge bg-coal p-7 reveal" data-cursor>
+        <div class="text-volt text-2xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-white/90 leading-relaxed">"Sold out in three minutes and I still got mine because of early access. The membership pays for itself in one drop."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-9 h-9 rounded-full bg-volt/20 text-volt display text-sm">JD</span>
+          <div><p class="text-sm font-semibold">Joelle D.</p><p class="chip text-fog">Member Â· Tier Volt</p></div>
+        </figcaption>
+      </figure>
+      <figure class="rounded-2xl edge bg-coal p-7 reveal" data-cursor>
+        <div class="text-volt text-2xl mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-white/90 leading-relaxed">"Apex Trail held up through a wet 40k. Grip is unreal and they still look clean. These people actually test their shoes."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid place-items-center w-9 h-9 rounded-full bg-volt/20 text-volt display text-sm">KP</span>
+          <div><p class="text-sm font-semibold">Kai P.</p><p class="chip text-fog">Member Â· Tier Silver</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ MEMBERSHIP / EARLY ACCESS â–‘â–‘ -->
+<section id="club" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="rounded-[2rem] edge bg-gradient-to-br from-volt/15 via-coal to-ink p-8 sm:p-14 relative overflow-hidden reveal">
+      <div class="absolute -right-24 -bottom-24 w-80 h-80 rounded-full bg-volt/15 blur-3xl"></div>
+      <div class="grid lg:grid-cols-2 gap-12 items-center relative">
+        <div>
+          <p class="chip text-volt mb-4">The STRYDUS‰ Club</p>
+          <h2 class="display text-4xl sm:text-6xl text-white">GET IN<br/>BEFORE THE<br/><span class="text-volt">VAULT OPENS.</span></h2>
+          <ul class="mt-7 space-y-3 text-fog">
+            <li class="flex items-center gap-3"><span class="text-volt">â†’</span> 30-minute early access to every drop</li>
+            <li class="flex items-center gap-3"><span class="text-volt">â†’</span> Members-only colorways & restock-free pairs</li>
+            <li class="flex items-center gap-3"><span class="text-volt">â†’</span> Free 48-hour shipping, free returns</li>
+            <li class="flex items-center gap-3"><span class="text-volt">â†’</span> Birthday pair credit, every year</li>
+          </ul>
+        </div>
+        <div class="rounded-2xl edge bg-ink/70 backdrop-blur p-7">
+          <p class="font-semibold text-white">Claim early access</p>
+          <p class="chip text-fog mt-1 mb-5">Free to join Â· No spam, just drops</p>
+          <form class="space-y-3" onsubmit="return false;">
+            <input type="email" placeholder="you@email.com" required class="w-full rounded-xl bg-coal edge px-4 py-3 text-sm text-white placeholder:text-fog focus:outline-none focus:border-volt/60" />
+            <select class="w-full rounded-xl bg-coal edge px-4 py-3 text-sm text-fog focus:outline-none focus:border-volt/60">
+              <option>My size â€” US 7</option><option>US 8</option><option>US 9</option><option>US 10</option><option>US 11</option><option>US 12+</option>
+            </select>
+            <button data-cursor data-magnetic class="w-full rounded-xl bg-volt text-ink font-semibold py-3 hover:brightness-110 transition">Lock my spot</button>
+          </form>
+          <p class="chip text-fog mt-4 text-center">Joining <span class="text-volt">41,208</span> members</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ FAQ â–‘â–‘ -->
+<section id="faq" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <h2 class="display text-4xl sm:text-6xl text-white mb-10 text-center reveal">QUESTIONS</h2>
+    <div class="space-y-3" id="faqList">
+      <div class="acc-item rounded-2xl edge bg-coal overflow-hidden reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold text-white">Why no restocks?</span>
+          <span class="acc-plus text-volt text-2xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-fog leading-relaxed">Scarcity is the point. Every silhouette is made once, in a fixed run. When it sells out, it retires â€” so the pair on your feet stays rare.</p></div>
+      </div>
+      <div class="acc-item rounded-2xl edge bg-coal overflow-hidden reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold text-white">How does early access work?</span>
+          <span class="acc-plus text-volt text-2xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-fog leading-relaxed">Club members get a private link 30 minutes before public launch. You check out from the same stock, but with a head start â€” which usually decides who lands a pair.</p></div>
+      </div>
+      <div class="acc-item rounded-2xl edge bg-coal overflow-hidden reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold text-white">What's your return policy?</span>
+          <span class="acc-plus text-volt text-2xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-fog leading-relaxed">Unworn pairs can be returned within 30 days for a full refund. Members ship returns free; everyone else covers the label. Sizing too off? We'll swap it.</p></div>
+      </div>
+      <div class="acc-item rounded-2xl edge bg-coal overflow-hidden reveal">
+        <button class="acc-head w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-semibold text-white">Do you ship worldwide?</span>
+          <span class="acc-plus text-volt text-2xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-fog leading-relaxed">We ship to 60+ countries. Duties are calculated at checkout so there are no surprises at your door. Member orders move first out of the warehouse.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â–‘â–‘ FINAL CTA â–‘â–‘ -->
+<section class="py-20 sm:py-32 relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-t from-volt/5 to-transparent"></div>
+  <div class="mx-auto max-w-5xl px-5 sm:px-8 text-center relative">
+    <p class="chip text-volt mb-5 reveal">Drop 014 â€” 09 Jun Â· 18:00 GMT</p>
+    <h2 class="display text-5xl sm:text-8xl text-white reveal">DON'T<br/>WALK. <span class="text-volt">RUN.</span></h2>
+    <p class="mt-6 text-fog max-w-lg mx-auto reveal">600 pairs. 9 minutes. One shot. The only people who land are the ones who showed up early.</p>
+    <div class="mt-9 flex flex-wrap justify-center gap-4 reveal">
+      <a href="#club" data-cursor data-magnetic class="inline-flex items-center gap-2 rounded-full bg-volt text-ink font-semibold px-8 py-4 volt-glow">Join the club</a>
+      <a href="#best" data-cursor class="inline-flex items-center gap-2 rounded-full edge px-8 py-4 text-sm hover:border-volt/40 transition">Browse the line</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- â–‘â–‘ FOOTER â–‘â–‘ -->
+<footer class="border-t border-white/10 bg-coal">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-14">
+    <div class="grid md:grid-cols-12 gap-10">
+      <div class="md:col-span-5">
+        <a href="#top" class="flex items-center gap-2 mb-4" data-cursor>
+          <span class="grid place-items-center w-8 h-8 rounded-lg bg-volt text-ink display text-lg">V</span>
+          <span class="display text-lg">STRYDUS‰</span>
+        </a>
+        <p class="text-fog max-w-sm leading-relaxed">Drop-culture footwear, built in small batches for people who move loud. No restocks. Members first.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="#" data-cursor class="grid place-items-center w-9 h-9 rounded-lg edge text-fog hover:text-volt hover:border-volt/40 transition" aria-label="Instagram"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.1.4.3 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.1-1 .3-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.1-.4-.3-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.1 1-.3 2.2-.4C8.4 2.2 8.8 2.2 12 2.2Zm0 1.8c-3.1 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.2.4-.3 1-.4 2.1-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3.4.4.8.6 1.3.8.4.2 1 .3 2.1.4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8.4-.4.6-.8.8-1.3.2-.4.3-1 .4-2.1.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3-.4-.4-.8-.6-1.3-.8-.4-.2-1-.3-2.1-.4-1.2-.1-1.6-.1-4.7-.1Zm0 3.1a4.9 4.9 0 1 1 0 9.8 4.9 4.9 0 0 1 0-9.8Zm0 8.1a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm6.3-8.3a1.15 1.15 0 1 1-2.3 0 1.15 1.15 0 0 1 2.3 0Z"/></svg></a>
+          <a href="#" data-cursor class="grid place-items-center w-9 h-9 rounded-lg edge text-fog hover:text-volt hover:border-volt/40 transition" aria-label="TikTok"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M16 2c.3 2.2 1.6 3.9 3.8 4.2v2.6c-1.4.1-2.7-.3-3.8-1v6.4c0 3.5-2.5 6.1-5.9 6.1a5.7 5.7 0 0 1-5.7-5.7c0-3.3 2.8-5.9 6.4-5.5v2.7c-.4-.1-.9-.2-1.3-.2-1.6 0-2.9 1.3-2.9 3s1.3 3 2.9 3c1.7 0 3-1.3 3-3.1V2H16Z"/></svg></a>
+          <a href="#" data-cursor class="grid place-items-center w-9 h-9 rounded-lg edge text-fog hover:text-volt hover:border-volt/40 transition" aria-label="X"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.2 2H21l-6.6 7.5L22 22h-6.3l-4.9-6.4L5 22H2.2l7-8L2 2h6.4l4.4 5.9L18.2 2Zm-1.1 18h1.5L7 3.8H5.4L17.1 20Z"/></svg></a>
+        </div>
+      </div>
+      <div class="md:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8">
+        <div><p class="chip text-white mb-4">Shop</p><ul class="space-y-2.5 text-sm text-fog"><li><a href="#best" class="hover:text-volt transition" data-cursor>Bestsellers</a></li><li><a href="#drop" class="hover:text-volt transition" data-cursor>Next drop</a></li><li><a href="#cats" class="hover:text-volt transition" data-cursor>By terrain</a></li><li><a href="#cats" class="hover:text-volt transition" data-cursor>Gift cards</a></li></ul></div>
+        <div><p class="chip text-white mb-4">Club</p><ul class="space-y-2.5 text-sm text-fog"><li><a href="#club" class="hover:text-volt transition" data-cursor>Join</a></li><li><a href="#club" class="hover:text-volt transition" data-cursor>Tiers</a></li><li><a href="#club" class="hover:text-volt transition" data-cursor>Early access</a></li><li><a href="#faq" class="hover:text-volt transition" data-cursor>FAQ</a></li></ul></div>
+        <div><p class="chip text-white mb-4">Help</p><ul class="space-y-2.5 text-sm text-fog"><li><a href="#" class="hover:text-volt transition" data-cursor>Sizing</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Shipping</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Returns</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Contact</a></li></ul></div>
+        <div><p class="chip text-white mb-4">Brand</p><ul class="space-y-2.5 text-sm text-fog"><li><a href="#" class="hover:text-volt transition" data-cursor>Story</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Sustainability</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Careers</a></li><li><a href="#" class="hover:text-volt transition" data-cursor>Press</a></li></ul></div>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="chip text-fog">Â© 2026 STRYDUS‰ Footwear Co. Â· Move loud.</p>
+      <div class="flex gap-6 chip text-fog">
+        <a href="#" class="hover:text-volt transition" data-cursor>Privacy</a>
+        <a href="#" class="hover:text-volt transition" data-cursor>Terms</a>
+        <a href="#" class="hover:text-volt transition" data-cursor>Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- â–‘â–‘ SCRIPTS â–‘â–‘ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Cursor ---------- */
+  const dot = document.getElementById('cDot');
+  const ring = document.getElementById('cRing');
+  if (fine && !reduce) {
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; dot.style.left = mx + 'px'; dot.style.top = my + 'px'; });
+    (function loop() { rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  } else { if (dot) dot.style.display = 'none'; if (ring) ring.style.display = 'none'; document.body.style.cursor = 'auto'; }
+
+  /* ---------- Magnetic CTAs ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.28}px, ${y * 0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; el.style.transition = 'transform .35s ease'; setTimeout(() => el.style.transition = '', 350); });
+    });
+  }
+
+  /* ---------- Card 3D tilt ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('.pcard').forEach(card => {
+      const inner = card.querySelector('.tilt-inner');
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        inner.style.transform = `rotateY(${px * 12}deg) rotateX(${-py * 12}deg) scale(1.04)`;
+      });
+      card.addEventListener('mouseleave', () => { inner.style.transform = 'rotateY(0) rotateX(0) scale(1)'; });
+    });
+  }
+
+  /* ---------- Nav shrink ---------- */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => {
+    if (scrollY > 24) nav.classList.add('py-0'); else nav.classList.remove('py-0');
+  });
+
+  /* ---------- Countdown ---------- */
+  const target = new Date('2026-06-09T18:00:00Z').getTime();
+  const dEl = document.getElementById('cdDays'), hEl = document.getElementById('cdHrs'), mEl = document.getElementById('cdMin'), sEl = document.getElementById('cdSec');
+  const pad = n => String(Math.max(0, n)).padStart(2, '0');
+  function tick() {
+    let diff = target - Date.now();
+    if (diff < 0) diff = 0;
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor(diff % 86400000 / 3600000);
+    const m = Math.floor(diff % 3600000 / 60000);
+    const s = Math.floor(diff % 60000 / 1000);
+    if (dEl) dEl.textContent = pad(d); if (hEl) hEl.textContent = pad(h); if (mEl) mEl.textContent = pad(m); if (sEl) sEl.textContent = pad(s);
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.acc-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.acc-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.from('.hero-line', { yPercent: 115, opacity: 0, duration: 1, ease: 'power4.out', stagger: 0.12, delay: 0.15 });
+    gsap.from('#heroChip', { opacity: 0, y: 14, duration: 0.8, delay: 0.1 });
+
+    gsap.utils.toArray('.reveal').forEach(el => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 86%' }
+      });
+    });
+
+    /* count-ups */
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const end = +el.dataset.count;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, { v: end, duration: 1.6, ease: 'power2.out', onUpdate: () => el.textContent = Math.round(obj.v) })
+      });
+    });
+
+    /* container parallax */
+    document.querySelectorAll('[data-parallax]').forEach(el => {
+      gsap.to(el, { yPercent: -parseFloat(el.dataset.parallax) * 100, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    /* lookbook horizontal drift */
+    const lb = document.getElementById('lookbook');
+    if (lb) gsap.fromTo(lb, { x: 80 }, { x: -120, ease: 'none',
+      scrollTrigger: { trigger: lb, start: 'top bottom', end: 'bottom top', scrub: true } });
+  }
+})();
+</script>
+</body>
+</html>
+

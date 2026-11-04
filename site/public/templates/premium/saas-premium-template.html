@@ -1,0 +1,833 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>NexaFlow â€” Ship Faster</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--p:#6366f1;--s:#818cf8;--a:#f59e0b;--bg:#030712;--card:rgba(255,255,255,0.03);--bdr:rgba(255,255,255,0.06);--txt:#f1f5f9;--m:#64748b;--r:12px}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--p);color:#fff}
+
+/* â•â•â• ANIMATIONS â•â•â• */
+
+/* Entrance Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(60px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes rotateIn{from{opacity:0;transform:rotate(-5deg) scale(.95)}to{opacity:1;transform:rotate(0) scale(1)}}
+
+/* Background & Ambient */
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-25px) rotate(2deg)}}
+@keyframes floatSlow{0%,100%{transform:translateY(0) translateX(0)}33%{transform:translateY(-15px) translateX(10px)}66%{transform:translateY(5px) translateX(-5px)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes breathe{0%,100%{transform:scale(1);opacity:.12}50%{transform:scale(1.08);opacity:.18}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes borderGlow{0%,100%{border-color:rgba(99,102,241,.15)}50%{border-color:rgba(99,102,241,.35)}}
+@keyframes particleFloat{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-800px) translateX(100px);opacity:0}}
+
+/* Micro-interactions */
+@keyframes glow{0%,100%{box-shadow:0 0 20px var(--p),0 0 60px rgba(99,102,241,0.1)}50%{box-shadow:0 0 30px var(--p),0 0 80px rgba(99,102,241,0.2)}}
+@keyframes ripple{to{transform:scale(4);opacity:0}}
+@keyframes typewriter{from{width:0}to{width:100%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes countUp{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}
+@keyframes bounceIn{0%{transform:scale(0);opacity:0}50%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+
+/* 3D Effects */
+@keyframes tilt3d{0%,100%{transform:perspective(1000px) rotateX(0) rotateY(0)}25%{transform:perspective(1000px) rotateX(2deg) rotateY(-2deg)}75%{transform:perspective(1000px) rotateX(-2deg) rotateY(2deg)}}
+
+/* Scroll Reveal */
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(.9);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal-scale.visible{opacity:1;transform:scale(1)}
+.stagger-1{transition-delay:.1s}.stagger-2{transition-delay:.2s}.stagger-3{transition-delay:.3s}.stagger-4{transition-delay:.4s}.stagger-5{transition-delay:.5s}
+
+/* Hover micro-interactions */
+.hover-lift{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.hover-lift:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(99,102,241,.12)}
+.hover-glow{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.hover-glow:hover{box-shadow:0 0 30px rgba(99,102,241,.15),0 20px 50px rgba(0,0,0,.2)}
+.hover-scale{transition:all .3s cubic-bezier(.16,1,.3,1)}
+.hover-scale:hover{transform:scale(1.03)}
+.hover-tilt{transition:all .3s cubic-bezier(.16,1,.3,1)}
+.hover-tilt:hover{transform:perspective(800px) rotateX(-2deg) rotateY(3deg) translateY(-4px)}
+.hover-border{transition:all .3s}
+.hover-border:hover{border-color:var(--p)!important}
+
+/* Loading shimmer */
+.loading-shimmer{background:linear-gradient(90deg,transparent,rgba(255,255,255,.04),transparent);background-size:200% 100%;animation:shimmer 2s infinite}
+
+/* Cursor follower */
+#cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.06) 0%,transparent 70%);pointer-events:none;z-index:0;transition:transform .3s ease-out,opacity .3s;opacity:0;transform:translate(-50%,-50%)}
+body:hover #cursor-glow{opacity:1}
+
+/* Particles */
+.particle{position:fixed;width:3px;height:3px;border-radius:50%;background:var(--p);pointer-events:none;z-index:0;opacity:0;animation:particleFloat linear infinite}
+
+/* Gradient text animation */
+.gradient-animate{background-size:200% auto;animation:gradientShift 4s ease infinite}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;border:none;cursor:pointer;transition:all .3s cubic-bezier(.16,1,.3,1);font-family:inherit}
+.btn-primary{padding:14px 32px;border-radius:var(--r);background:linear-gradient(135deg,var(--p),var(--s));color:#fff;font-size:15px;box-shadow:0 4px 20px rgba(99,102,241,.25)}
+.btn-primary:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 30px rgba(99,102,241,.4)}
+.btn-secondary{padding:14px 32px;border-radius:var(--r);background:transparent;color:var(--txt);font-size:15px;border:1px solid var(--bdr)}
+.btn-secondary:hover{border-color:var(--p);color:var(--p)}
+.btn-ghost{padding:10px 20px;border-radius:8px;background:rgba(255,255,255,.04);color:var(--m);font-size:13px}
+.btn-ghost:hover{background:rgba(255,255,255,.08);color:var(--txt)}
+
+/* Cards */
+.glass-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);backdrop-filter:blur(12px);transition:all .4s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.3),transparent);opacity:0;transition:opacity .4s}
+.glass-card:hover{transform:translateY(-8px) scale(1.01);border-color:rgba(99,102,241,.3);box-shadow:0 25px 60px rgba(99,102,241,.1),0 0 0 1px rgba(99,102,241,.1)}
+.glass-card:hover::before{opacity:1}
+.glass-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mouse-x,50%) var(--mouse-y,50%),rgba(99,102,241,.06) 0%,transparent 60%);opacity:0;transition:opacity .4s;pointer-events:none}
+.glass-card:hover::after{opacity:1}
+
+/* Grid */
+.container{max-width:1200px;margin:0 auto;padding:0 48px}
+.section{padding:120px 0}
+.section-label{font-size:13px;font-weight:600;color:var(--p);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:16px}
+.section-title{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:20px}
+.section-desc{font-size:17px;color:var(--m);max-width:550px;line-height:1.7}
+
+/* Container Animations */
+.container-glow{position:relative}
+.container-glow::before{content:'';position:absolute;inset:-1px;border-radius:var(--r);background:linear-gradient(135deg,var(--p),var(--s),var(--p));opacity:0;transition:opacity .6s;z-index:-1;filter:blur(20px)}
+.container-glow:hover::before{opacity:.15}
+
+.section-animate{position:relative;overflow:hidden}
+.section-animate::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--p),transparent);opacity:0;transition:opacity .8s,width .8s}
+.section-animate.visible::before{opacity:1;width:400px}
+
+.feature-grid-container{position:relative}
+.feature-grid-container::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(99,102,241,.04) 0%,transparent 60%);pointer-events:none;opacity:0;transition:opacity 1s}
+.feature-grid-container.visible::after{opacity:1}
+
+/* Pricing highlight pulse */
+.pricing-popular{animation:borderGlow 3s ease-in-out infinite}
+
+/* Testimonial card shimmer on hover */
+.testimonial-card{position:relative;overflow:hidden}
+.testimonial-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.02),transparent);transition:left .6s}
+.testimonial-card:hover::before{left:100%}
+
+/* Stats counter glow */
+.stat-number{position:relative;display:inline-block}
+.stat-number::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--p),transparent);opacity:0;transition:opacity .6s}
+.stat-number:hover::after{opacity:1}
+
+/* Nav link underline animation */
+nav a{position:relative}
+nav a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;background:var(--p);transition:width .3s cubic-bezier(.16,1,.3,1)}
+nav a:hover::after{width:100%}
+
+/* Responsive */
+@media(max-width:768px){
+  .container{padding:0 20px}
+  .section{padding:80px 0}
+  .hide-mobile{display:none!important}
+  .grid-2{grid-template-columns:1fr!important}
+  .grid-3{grid-template-columns:1fr!important}
+  .grid-4{grid-template-columns:1fr 1fr!important}
+  .hero-grid{grid-template-columns:1fr!important}
+}
+</style>
+</head>
+<body>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 1: NAVIGATION                                              -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s" id="nav">
+<div class="container" style="display:flex;align-items:center;justify-content:space-between">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--s));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff">N</div>
+    <span style="font-weight:800;font-size:18px;letter-spacing:-.5px">NexaFlow</span>
+  </div>
+  <div class="hide-mobile" style="display:flex;gap:36px;font-size:14px;font-weight:500">
+    <a href="#features" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Features</a>
+    <a href="#pricing" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Pricing</a>
+    <a href="#testimonials" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Testimonials</a>
+    <a href="#faq" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">FAQ</a>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <a href="#" class="btn btn-ghost hide-mobile">Log in</a>
+    <a href="#" class="btn btn-primary" style="padding:10px 24px;font-size:14px">Start Free â†’</a>
+  </div>
+</div>
+</nav>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 2: HERO                                                    -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section style="min-height:100vh;display:flex;align-items:center;padding-top:80px;position:relative;overflow:hidden">
+  <!-- Background Effects -->
+  <div style="position:absolute;top:15%;right:10%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12) 0%,transparent 70%);filter:blur(80px);animation:float 8s ease-in-out infinite"></div>
+  <div style="position:absolute;bottom:10%;left:-5%;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(129,140,248,.08) 0%,transparent 70%);filter:blur(60px);animation:float 10s ease-in-out infinite reverse"></div>
+  <div style="position:absolute;inset:0;background-image:radial-gradient(circle at 1px 1px,rgba(99,102,241,.04) 1px,transparent 0);background-size:48px 48px"></div>
+
+  <div class="container" style="position:relative;z-index:1">
+    <div class="hero-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center">
+      <!-- Left: Content -->
+      <div>
+        <!-- Badge -->
+        <div class="reveal" style="display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.15);margin-bottom:28px">
+          <span style="font-size:13px;color:var(--p);font-weight:500">New: AI-Powered Workflows</span>
+          <span style="padding:4px 12px;border-radius:999px;background:var(--p);color:#fff;font-size:11px;font-weight:700">v3.0</span>
+        </div>
+
+        <!-- Headline -->
+        <h1 class="reveal stagger-1" style="font-size:clamp(42px,5.5vw,72px);font-weight:900;line-height:.98;letter-spacing:-3px;margin-bottom:24px">
+          Ship products<br>
+          <span style="background:linear-gradient(135deg,var(--p),var(--s),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent">10x faster</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="reveal stagger-2" style="font-size:19px;line-height:1.65;color:var(--m);max-width:480px;margin-bottom:36px">
+          The modern platform for engineering teams. Build, test, deploy â€” all in one place with zero configuration.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="reveal stagger-3" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:48px">
+          <button class="btn btn-primary" style="padding:16px 36px;font-size:16px">
+            Start Building Free
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn btn-secondary">Watch Demo</button>
+        </div>
+
+        <!-- Social Proof -->
+        <div class="reveal stagger-4" style="display:flex;align-items:center;gap:16px">
+          <div style="display:flex">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f97316,#fb923c);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">JK</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">SM</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#a78bfa);border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">AL</div>
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#f472b6);border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">+5K</div>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600">Trusted by 5,000+ teams</div>
+            <div style="display:flex;gap:2px;margin-top:2px">
+              <span style="color:var(--a)">â˜…â˜…â˜…â˜…â˜…</span>
+              <span style="font-size:12px;color:var(--m);margin-left:4px">4.9/5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Product Screenshot / Visual -->
+      <div class="reveal stagger-2" style="position:relative">
+        <div style="border-radius:16px;border:1px solid var(--bdr);background:var(--card);overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.4)">
+          <!-- Window chrome -->
+          <div style="padding:12px 16px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px">
+            <div style="width:12px;height:12px;border-radius:50%;background:#ef4444"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:#f59e0b"></div>
+            <div style="width:12px;height:12px;border-radius:50%;background:#22c55e"></div>
+            <div style="flex:1;margin-left:12px;padding:6px 12px;border-radius:6px;background:rgba(255,255,255,.04);font-size:12px;color:var(--m)">app.nexaflow.io/dashboard</div>
+          </div>
+          <!-- Dashboard mockup -->
+          <div style="padding:24px;min-height:360px">
+            <div style="display:flex;gap:16px;margin-bottom:24px">
+              <div style="flex:1;padding:20px;border-radius:10px;background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(99,102,241,.03));border:1px solid rgba(99,102,241,.1)">
+                <div style="font-size:12px;color:var(--m);margin-bottom:4px">Total Deploys</div>
+                <div style="font-size:28px;font-weight:800;color:var(--p)">12,847</div>
+                <div style="font-size:11px;color:#22c55e;margin-top:4px">â†‘ 24% vs last month</div>
+              </div>
+              <div style="flex:1;padding:20px;border-radius:10px;background:var(--card);border:1px solid var(--bdr)">
+                <div style="font-size:12px;color:var(--m);margin-bottom:4px">Avg Build Time</div>
+                <div style="font-size:28px;font-weight:800">1.2s</div>
+                <div style="font-size:11px;color:#22c55e;margin-top:4px">â†“ 40% faster</div>
+              </div>
+            </div>
+            <!-- Chart placeholder -->
+            <div style="height:120px;border-radius:10px;background:linear-gradient(180deg,rgba(99,102,241,.08) 0%,transparent 100%);border:1px solid var(--bdr);display:flex;align-items:flex-end;padding:16px;gap:6px">
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:30%;opacity:.4"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:50%;opacity:.5"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:40%;opacity:.5"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:70%;opacity:.6"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:60%;opacity:.6"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:85%;opacity:.7"></div>
+              <div style="flex:1;background:var(--p);border-radius:4px 4px 0 0;height:75%;opacity:.7"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--p),var(--s));border-radius:4px 4px 0 0;height:95%;opacity:1"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Floating badge -->
+        <div style="position:absolute;bottom:-16px;left:-16px;padding:12px 20px;border-radius:12px;background:var(--bg);border:1px solid var(--bdr);box-shadow:0 10px 30px rgba(0,0,0,.3);animation:glow 3s ease-in-out infinite">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite"></div>
+            <span style="font-size:13px;font-weight:600">Deploy successful</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 3: LOGO BAR / SOCIAL PROOF                                 -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section style="padding:60px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)">
+<div class="container">
+  <p style="text-align:center;font-size:13px;color:var(--m);margin-bottom:32px;text-transform:uppercase;letter-spacing:2px;font-weight:500">Trusted by industry leaders</p>
+  <div style="display:flex;justify-content:center;align-items:center;gap:48px;flex-wrap:wrap;opacity:.4">
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Vercel</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Stripe</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Notion</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Linear</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Figma</span>
+    <span style="font-size:22px;font-weight:800;letter-spacing:-1px">Supabase</span>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 4: FEATURES GRID                                           -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section id="features" class="section section-animate reveal">
+<div class="container">
+  <div style="text-align:center;margin-bottom:72px">
+    <div class="section-label reveal">Features</div>
+    <h2 class="section-title reveal stagger-1" style="max-width:600px;margin:0 auto 20px">Everything you need to ship with confidence</h2>
+    <p class="section-desc reveal stagger-2" style="margin:0 auto">From code to production in seconds. No DevOps required.</p>
+  </div>
+
+  <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="glass-card reveal" style="padding:36px;grid-column:span 2">
+      <div style="display:flex;align-items:flex-start;gap:24px">
+        <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--p),var(--s));display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size:20px;font-weight:700;margin-bottom:8px">Instant Deployments</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">Push your code and watch it go live in under 2 seconds. Zero-downtime deployments with automatic rollbacks. Every commit creates a unique preview URL.</p>
+        </div>
+      </div>
+      <!-- Mini code mockup -->
+      <div style="margin-top:24px;padding:16px 20px;border-radius:10px;background:rgba(0,0,0,.3);font-family:'SF Mono',monospace;font-size:13px;border:1px solid rgba(255,255,255,.04)">
+        <span style="color:#64748b">$</span> <span style="color:var(--s)">nexaflow deploy</span><br>
+        <span style="color:#22c55e">âœ“</span> Build completed in <span style="color:var(--a)">1.2s</span><br>
+        <span style="color:#22c55e">âœ“</span> Deployed to <span style="color:var(--s)">nexaflow.app/preview/a8f2d</span>
+      </div>
+    </div>
+
+    <div class="glass-card reveal stagger-1" style="padding:36px">
+      <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#22c55e,#4ade80);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Auto Testing</h3>
+      <p style="font-size:14px;color:var(--m);line-height:1.7">Run your entire test suite in parallel. Get results in seconds, not minutes.</p>
+    </div>
+
+    <div class="glass-card reveal stagger-2" style="padding:36px">
+      <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#f59e0b,#fbbf24);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Edge Functions</h3>
+      <p style="font-size:14px;color:var(--m);line-height:1.7">Run serverless functions at the edge. 50ms cold starts across 200+ global locations.</p>
+    </div>
+
+    <div class="glass-card reveal stagger-3" style="padding:36px">
+      <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#ec4899,#f472b6);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px">Real-time Monitoring</h3>
+      <p style="font-size:14px;color:var(--m);line-height:1.7">Live logs, performance metrics, and error tracking built right into your dashboard.</p>
+    </div>
+
+    <div class="glass-card reveal stagger-4" style="padding:36px;grid-column:span 2">
+      <div style="display:flex;align-items:flex-start;gap:24px">
+        <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#06b6d4,#22d3ee);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size:20px;font-weight:700;margin-bottom:8px">Team Collaboration</h3>
+          <p style="font-size:15px;color:var(--m);line-height:1.7">Built for teams of all sizes. Branch previews, review comments, and approval workflows make collaboration seamless. RBAC, SSO, and audit logs for enterprise.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 5: STATS / METRICS                                         -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section style="padding:80px 0;background:linear-gradient(180deg,rgba(99,102,241,.03) 0%,transparent 100%)">
+<div class="container">
+  <div class="grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center">
+    <div class="reveal">
+      <div style="font-size:48px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">99.99%</div>
+      <div style="font-size:14px;color:var(--m);margin-top:8px;font-weight:500">Uptime SLA</div>
+    </div>
+    <div class="reveal stagger-1">
+      <div style="font-size:48px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">&lt;50ms</div>
+      <div style="font-size:14px;color:var(--m);margin-top:8px;font-weight:500">Global Latency</div>
+    </div>
+    <div class="reveal stagger-2">
+      <div style="font-size:48px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">200+</div>
+      <div style="font-size:14px;color:var(--m);margin-top:8px;font-weight:500">Edge Locations</div>
+    </div>
+    <div class="reveal stagger-3">
+      <div style="font-size:48px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">10M+</div>
+      <div style="font-size:14px;color:var(--m);margin-top:8px;font-weight:500">Deploys / Month</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 6: PRICING                                                 -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section id="pricing" class="section section-animate reveal">
+<div class="container">
+  <div style="text-align:center;margin-bottom:72px">
+    <div class="section-label reveal">Pricing</div>
+    <h2 class="section-title reveal stagger-1">Simple, transparent pricing</h2>
+    <p class="section-desc reveal stagger-2" style="margin:0 auto">Start free. Scale as you grow. No surprise bills.</p>
+  </div>
+
+  <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch">
+    <!-- Starter -->
+    <div class="glass-card reveal" style="padding:40px">
+      <div style="font-size:14px;font-weight:600;color:var(--m);margin-bottom:8px">Starter</div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+        <span style="font-size:48px;font-weight:900;letter-spacing:-2px">$0</span>
+        <span style="font-size:14px;color:var(--m)">/month</span>
+      </div>
+      <p style="font-size:14px;color:var(--m);margin-bottom:32px;line-height:1.6">Perfect for personal projects and experiments.</p>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:32px">Get Started</button>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:14px">
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> 3 projects</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> 100 deploys/month</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> 1GB bandwidth</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Community support</li>
+      </ul>
+    </div>
+
+    <!-- Pro (Popular) -->
+    <div class="reveal stagger-1" style="padding:40px;border-radius:var(--r);background:linear-gradient(180deg,rgba(99,102,241,.08) 0%,var(--card) 100%);border:1px solid rgba(99,102,241,.25);position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--p),var(--s))"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:600;color:var(--p)">Pro</div>
+        <span style="padding:4px 12px;border-radius:999px;background:var(--p);color:#fff;font-size:11px;font-weight:700">Popular</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+        <span style="font-size:48px;font-weight:900;letter-spacing:-2px">$29</span>
+        <span style="font-size:14px;color:var(--m)">/month</span>
+      </div>
+      <p style="font-size:14px;color:var(--m);margin-bottom:32px;line-height:1.6">For growing teams that need more power.</p>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:32px">Start Free Trial</button>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:14px">
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Unlimited projects</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Unlimited deploys</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> 100GB bandwidth</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Priority support</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Custom domains</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Analytics</li>
+      </ul>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="glass-card reveal stagger-2" style="padding:40px">
+      <div style="font-size:14px;font-weight:600;color:var(--m);margin-bottom:8px">Enterprise</div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+        <span style="font-size:48px;font-weight:900;letter-spacing:-2px">Custom</span>
+      </div>
+      <p style="font-size:14px;color:var(--m);margin-bottom:32px;line-height:1.6">For organizations that need full control.</p>
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-bottom:32px">Contact Sales</button>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:14px">
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Everything in Pro</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> SSO / SAML</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> SLA guarantee</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Dedicated support</li>
+        <li style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="color:#22c55e">âœ“</span> Custom integrations</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 7: TESTIMONIALS                                            -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section id="testimonials" class="section section-animate reveal" style="background:linear-gradient(180deg,transparent,rgba(99,102,241,.02),transparent)">
+<div class="container">
+  <div style="text-align:center;margin-bottom:72px">
+    <div class="section-label reveal">Testimonials</div>
+    <h2 class="section-title reveal stagger-1">Loved by developers worldwide</h2>
+  </div>
+
+  <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    <div class="glass-card reveal" style="padding:32px">
+      <div style="font-size:20px;color:var(--a);margin-bottom:20px">â˜…â˜…â˜…â˜…â˜…</div>
+      <p style="font-size:15px;line-height:1.7;color:var(--m);margin-bottom:24px;font-style:italic">"NexaFlow completely transformed our deployment pipeline. We went from 30-minute deploys to under 2 seconds. Game changer."</p>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#f97316,#fb923c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px">SK</div>
+        <div>
+          <div style="font-weight:600;font-size:14px">Sarah Kim</div>
+          <div style="font-size:12px;color:var(--m)">CTO, TechVentures</div>
+        </div>
+      </div>
+    </div>
+    <div class="glass-card reveal stagger-1" style="padding:32px">
+      <div style="font-size:20px;color:var(--a);margin-bottom:20px">â˜…â˜…â˜…â˜…â˜…</div>
+      <p style="font-size:15px;line-height:1.7;color:var(--m);margin-bottom:24px;font-style:italic">"The developer experience is unmatched. Preview deployments for every PR changed how our team does code review."</p>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#a78bfa);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px">MC</div>
+        <div>
+          <div style="font-weight:600;font-size:14px">Marcus Chen</div>
+          <div style="font-size:12px;color:var(--m)">Lead Engineer, ScaleUp</div>
+        </div>
+      </div>
+    </div>
+    <div class="glass-card reveal stagger-2" style="padding:32px">
+      <div style="font-size:20px;color:var(--a);margin-bottom:20px">â˜…â˜…â˜…â˜…â˜…</div>
+      <p style="font-size:15px;line-height:1.7;color:var(--m);margin-bottom:24px;font-style:italic">"We migrated 200+ microservices in a weekend. The edge functions are incredibly fast and the pricing is transparent."</p>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px">ER</div>
+        <div>
+          <div style="font-weight:600;font-size:14px">Elena Rodriguez</div>
+          <div style="font-size:12px;color:var(--m)">VP Engineering, DataFlow</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 8: FAQ                                                     -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section id="faq" class="section">
+<div class="container" style="max-width:800px">
+  <div style="text-align:center;margin-bottom:72px">
+    <div class="section-label reveal">FAQ</div>
+    <h2 class="section-title reveal stagger-1">Common questions</h2>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="glass-card reveal" style="padding:0;overflow:hidden">
+      <button onclick="this.parentElement.classList.toggle('open');this.querySelector('.arrow').style.transform=this.parentElement.classList.contains('open')?'rotate(180deg)':''" style="width:100%;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;background:none;border:none;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;text-align:left;font-family:inherit">
+        How fast are deployments?
+        <span class="arrow" style="transition:transform .3s;font-size:12px;color:var(--m)">â–¼</span>
+      </button>
+      <div style="max-height:0;overflow:hidden;transition:max-height .3s">
+        <div style="padding:0 24px 20px;font-size:14px;color:var(--m);line-height:1.7">Average deployment time is 1.2 seconds from git push to live. We use incremental builds and edge caching to ensure the fastest possible deploys.</div>
+      </div>
+    </div>
+    <div class="glass-card reveal stagger-1" style="padding:0;overflow:hidden">
+      <button onclick="this.parentElement.classList.toggle('open');this.querySelector('.arrow').style.transform=this.parentElement.classList.contains('open')?'rotate(180deg)':''" style="width:100%;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;background:none;border:none;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;text-align:left;font-family:inherit">
+        Do I need DevOps experience?
+        <span class="arrow" style="transition:transform .3s;font-size:12px;color:var(--m)">â–¼</span>
+      </button>
+      <div style="max-height:0;overflow:hidden;transition:max-height .3s">
+        <div style="padding:0 24px 20px;font-size:14px;color:var(--m);line-height:1.7">No! NexaFlow handles all infrastructure automatically. Just push your code and we take care of builds, deploys, SSL, CDN, and scaling.</div>
+      </div>
+    </div>
+    <div class="glass-card reveal stagger-2" style="padding:0;overflow:hidden">
+      <button onclick="this.parentElement.classList.toggle('open');this.querySelector('.arrow').style.transform=this.parentElement.classList.contains('open')?'rotate(180deg)':''" style="width:100%;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;background:none;border:none;color:var(--txt);font-size:15px;font-weight:600;cursor:pointer;text-align:left;font-family:inherit">
+        Can I migrate from Vercel / Netlify?
+        <span class="arrow" style="transition:transform .3s;font-size:12px;color:var(--m)">â–¼</span>
+      </button>
+      <div style="max-height:0;overflow:hidden;transition:max-height .3s">
+        <div style="padding:0 24px 20px;font-size:14px;color:var(--m);line-height:1.7">Yes! We provide one-click migration tools for Vercel, Netlify, and AWS. Most teams migrate in under 15 minutes with zero downtime.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 9: CTA                                                     -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<section class="section" style="text-align:center;position:relative;overflow:hidden">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(99,102,241,.06) 0%,transparent 60%)"></div>
+  <div class="container" style="position:relative;z-index:1">
+    <h2 class="reveal" style="font-size:clamp(32px,5vw,56px);font-weight:900;letter-spacing:-2px;margin-bottom:20px;line-height:1.1">
+      Ready to ship<br>
+      <span style="background:linear-gradient(135deg,var(--p),var(--s));-webkit-background-clip:text;-webkit-text-fill-color:transparent">10x faster?</span>
+    </h2>
+    <p class="reveal stagger-1" style="font-size:18px;color:var(--m);max-width:500px;margin:0 auto 40px;line-height:1.6">
+      Join 5,000+ engineering teams already building on NexaFlow.
+    </p>
+    <div class="reveal stagger-2" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" style="padding:18px 44px;font-size:17px">Start Building Free â†’</button>
+      <button class="btn btn-secondary" style="padding:18px 44px;font-size:17px">Talk to Sales</button>
+    </div>
+    <p class="reveal stagger-3" style="margin-top:20px;font-size:13px;color:var(--m)">No credit card required Â· Free forever plan Â· Setup in 30 seconds</p>
+  </div>
+</section>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SECTION 10: FOOTER                                                 -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<footer style="padding:80px 0 40px;border-top:1px solid var(--bdr)">
+<div class="container">
+  <div class="grid-4" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:64px">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--p),var(--s));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff">N</div>
+        <span style="font-weight:800;font-size:16px">NexaFlow</span>
+      </div>
+      <p style="font-size:14px;color:var(--m);line-height:1.7;max-width:280px">The modern deployment platform for engineering teams. Ship faster, scale effortlessly.</p>
+      <div style="display:flex;gap:12px;margin-top:20px">
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--m);text-decoration:none;transition:all .2s;font-size:14px" onmouseover="this.style.background='var(--p)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='var(--m)'">ð•</a>
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--m);text-decoration:none;transition:all .2s;font-size:14px" onmouseover="this.style.background='var(--p)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='var(--m)'">in</a>
+        <a href="#" style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--m);text-decoration:none;transition:all .2s;font-size:14px" onmouseover="this.style.background='var(--p)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.04)';this.style.color='var(--m)'">GH</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;color:var(--m)">Product</div>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Features</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Pricing</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Integrations</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Changelog</a>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;color:var(--m)">Company</div>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">About</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Blog</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Careers</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Press</a>
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;color:var(--m)">Support</div>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Documentation</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">API Reference</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Status</a>
+      <a href="#" style="display:block;font-size:14px;color:var(--m);text-decoration:none;margin-bottom:12px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Contact</a>
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--bdr);padding-top:32px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--m);flex-wrap:wrap;gap:16px">
+    <span>Â© 2026 NexaFlow, Inc. All rights reserved.</span>
+    <div style="display:flex;gap:24px">
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Privacy</a>
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Terms</a>
+      <a href="#" style="color:var(--m);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--m)'">Security</a>
+    </div>
+  </div>
+</div>
+</footer>
+
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- SCRIPTS                                                            -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- Cursor Glow -->
+<div id="cursor-glow"></div>
+
+<!-- Floating Particles -->
+<div id="particles" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden"></div>
+
+<script>
+// â•â•â• Scroll Reveal with multiple directions â•â•â•
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      // Counter animation for stat numbers
+      if (e.target.dataset.count) {
+        animateCount(e.target, e.target.dataset.count);
+      }
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => revealObserver.observe(el));
+
+// â•â•â• Nav Scroll with progress bar â•â•â•
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  if (scrolled > 50) {
+    nav.style.background = 'rgba(3,7,18,0.85)';
+    nav.style.backdropFilter = 'blur(20px) saturate(180%)';
+    nav.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+    nav.style.padding = '12px 0';
+  } else {
+    nav.style.background = 'transparent';
+    nav.style.backdropFilter = 'none';
+    nav.style.borderBottom = 'none';
+    nav.style.padding = '16px 0';
+  }
+});
+
+// â•â•â• Cursor Glow Follow â•â•â•
+const cursorGlow = document.getElementById('cursor-glow');
+let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  // Update card spotlight effect
+  document.querySelectorAll('.glass-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mouse-x', x + '%');
+    card.style.setProperty('--mouse-y', y + '%');
+  });
+});
+
+// Smooth cursor follow
+function animateCursor() {
+  glowX += (mouseX - glowX) * 0.08;
+  glowY += (mouseY - glowY) * 0.08;
+  cursorGlow.style.transform = `translate(${glowX - 200}px, ${glowY - 200}px)`;
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+// â•â•â• Floating Particles â•â•â•
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 15; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.top = (80 + Math.random() * 20) + '%';
+    particle.style.width = (1 + Math.random() * 3) + 'px';
+    particle.style.height = particle.style.width;
+    particle.style.animationDuration = (8 + Math.random() * 12) + 's';
+    particle.style.animationDelay = Math.random() * 10 + 's';
+    particle.style.opacity = 0;
+    container.appendChild(particle);
+  }
+}
+createParticles();
+
+// â•â•â• Button Ripple Effect â•â•â•
+document.querySelectorAll('.btn-primary').forEach(btn => {
+  btn.style.position = 'relative';
+  btn.style.overflow = 'hidden';
+  btn.addEventListener('click', function(e) {
+    const ripple = document.createElement('span');
+    const rect = this.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.cssText = `position:absolute;width:${size}px;height:${size}px;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:ripple .6s ease-out;pointer-events:none;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+    this.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+});
+
+// â•â•â• 3D Tilt on Hero Product Card â•â•â•
+const heroCard = document.querySelector('[style*="box-shadow: 0 25px 80px"]') || document.querySelector('.glass-card');
+document.querySelectorAll('.glass-card').forEach(card => {
+  card.addEventListener('mousemove', function(e) {
+    const rect = this.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    this.style.transform = `translateY(-8px) scale(1.01) perspective(800px) rotateX(${-y*4}deg) rotateY(${x*4}deg)`;
+  });
+  card.addEventListener('mouseleave', function() {
+    this.style.transform = '';
+  });
+});
+
+// â•â•â• Magnetic Buttons â•â•â•
+document.querySelectorAll('.btn-primary, .btn-secondary').forEach(btn => {
+  btn.addEventListener('mousemove', function(e) {
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    this.style.transform = `translate(${x*0.15}px, ${y*0.15}px) translateY(-2px) scale(1.02)`;
+  });
+  btn.addEventListener('mouseleave', function() {
+    this.style.transform = '';
+  });
+});
+
+// â•â•â• FAQ Accordion â•â•â•
+document.querySelectorAll('#faq .glass-card').forEach(faq => {
+  const btn = faq.querySelector('button');
+  const content = btn ? btn.nextElementSibling : null;
+  if (btn && content) {
+    btn.addEventListener('click', () => {
+      const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+      // Close all
+      document.querySelectorAll('#faq .glass-card').forEach(other => {
+        const otherContent = other.querySelector('button')?.nextElementSibling;
+        if (otherContent) otherContent.style.maxHeight = '0px';
+        const otherArrow = other.querySelector('.arrow');
+        if (otherArrow) otherArrow.style.transform = '';
+      });
+      // Toggle current
+      if (!isOpen) {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        const arrow = btn.querySelector('.arrow');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+      }
+    });
+  }
+});
+
+// â•â•â• Animated Counter â•â•â•
+function animateCount(el, target) {
+  const isNumeric = /^[\d.]+/.test(target);
+  if (!isNumeric) return;
+  const num = parseFloat(target);
+  const suffix = target.replace(/[\d.]+/, '');
+  const duration = 2000;
+  const start = performance.now();
+  function update(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const current = Math.floor(num * eased);
+    el.textContent = current.toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(update);
+}
+
+// â•â•â• Smooth Parallax on Hero â•â•â•
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const heroOrbs = document.querySelectorAll('[style*="animation:float"]');
+  heroOrbs.forEach((orb, i) => {
+    const speed = i === 0 ? 0.3 : 0.15;
+    orb.style.transform = `translateY(${scrolled * speed}px)`;
+  });
+});
+
+// â•â•â• Loading Animation â•â•â•
+window.addEventListener('load', () => {
+  document.body.style.opacity = '0';
+  document.body.style.transition = 'opacity .5s ease';
+  requestAnimationFrame(() => {
+    document.body.style.opacity = '1';
+  });
+});
+
+// â•â•â• Smooth Scroll for Nav Links â•â•â•
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
+

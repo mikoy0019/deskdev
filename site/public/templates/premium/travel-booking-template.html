@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wanderly — Search, compare & book stays, flights and cars</title>
+<meta name="description" content="Wanderly is the online travel marketplace where you search once and compare millions of stays, flights, and car rentals to book the perfect trip in minutes." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          display: ['Sora', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: { DEFAULT: '#0e1a2b', soft: '#33485f', faint: '#6b7f95' },
+          paper: '#f6f9fc',
+          mist: '#eef4f9',
+          coral: { 50:'#fff1ee', 100:'#ffe0d8', 400:'#ff8a6b', 500:'#ff6b47', 600:'#f24e26', 700:'#cc3c19' },
+          teal: { 400:'#2dd4bf', 500:'#10b5a4', 600:'#0a8c80' },
+          sky: { 500:'#2f80ed', 600:'#1f63c4' },
+        },
+        boxShadow: {
+          float: '0 24px 60px -22px rgba(14,26,43,0.28)',
+          card: '0 16px 40px -20px rgba(14,26,43,0.22)',
+          pill: '0 10px 26px -10px rgba(255,107,71,0.55)',
+        },
+        borderRadius: { '4xl': '2rem' },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #f6f9fc; color: #0e1a2b; }
+  ::selection { background: #ff6b47; color: #fff; }
+  .reveal { opacity: 0; transform: translateY(30px); }
+  .grad-mesh {
+    background:
+      radial-gradient(900px 500px at 15% 10%, rgba(47,128,237,0.18), transparent 60%),
+      radial-gradient(800px 520px at 90% 0%, rgba(45,212,191,0.20), transparent 55%),
+      radial-gradient(700px 600px at 60% 90%, rgba(255,107,71,0.16), transparent 60%);
+  }
+  .glass { background: rgba(255,255,255,0.72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .word { display: inline-block; will-change: transform, opacity; }
+  .rail { scrollbar-width: none; -ms-overflow-style: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .tilt { transform-style: preserve-3d; will-change: transform; }
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.16,1,.3,1); }
+  .faq.open .faq-body { max-height: 320px; }
+  .faq.open .faq-icon { transform: rotate(45deg); }
+  .underline-grow { background-image: linear-gradient(#ff6b47,#ff6b47); background-size: 0% 2px; background-repeat: no-repeat; background-position: 0 100%; transition: background-size .35s ease; }
+  .underline-grow:hover { background-size: 100% 2px; }
+  .marquee-track { animation: marquee 32s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .marquee-track { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased selection:bg-coral-500">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <nav class="mt-3 flex items-center justify-between rounded-2xl glass shadow-card ring-1 ring-ink/5 px-4 sm:px-6 py-3">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-coral-500 to-coral-600 text-white shadow-pill">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg>
+        </span>
+        <span class="font-display text-lg font-800 tracking-tight">Wanderly</span>
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-sm font-600 text-ink-soft">
+        <a href="#trending" class="underline-grow hover:text-ink">Destinations</a>
+        <a href="#how" class="underline-grow hover:text-ink">How it works</a>
+        <a href="#deals" class="underline-grow hover:text-ink">Deals</a>
+        <a href="#experiences" class="underline-grow hover:text-ink">Experiences</a>
+        <a href="#faq" class="underline-grow hover:text-ink">Help</a>
+      </div>
+      <div class="flex items-center gap-2.5">
+        <a href="#app" class="hidden sm:inline-flex text-sm font-600 text-ink-soft hover:text-ink px-3 py-2">Sign in</a>
+        <a href="#search" data-magnetic class="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-700 text-white shadow-float hover:bg-ink/90 transition">
+          Start exploring
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="top" class="relative min-h-[100svh] flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- background imagery + parallax -->
+  <div data-parallax class="absolute inset-0 -z-10 will-change-transform">
+    <div class="absolute inset-0 bg-gradient-to-br from-sky-500/30 via-teal-400/20 to-coral-500/20"></div>
+    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Mountain lake at golden hour"
+         class="h-full w-full object-cover opacity-90" />
+  </div>
+  <div class="absolute inset-0 -z-10 bg-gradient-to-t from-paper via-paper/40 to-transparent"></div>
+  <div class="absolute inset-0 -z-10 grad-mesh opacity-70"></div>
+
+  <div class="mx-auto max-w-7xl w-full px-5 sm:px-8">
+    <div class="max-w-3xl">
+      <span class="reveal inline-flex items-center gap-2 rounded-full glass ring-1 ring-ink/10 px-4 py-1.5 text-xs font-700 text-ink-soft shadow-card">
+        <span class="h-2 w-2 rounded-full bg-teal-500 animate-pulse"></span>
+        Live prices from 1,200+ travel partners
+      </span>
+      <h1 id="headline" class="mt-5 font-display text-4xl sm:text-6xl lg:text-7xl font-800 leading-[1.02] tracking-tight text-ink">
+        Your whole trip,<br class="hidden sm:block"/> booked in one search.
+      </h1>
+      <p class="reveal mt-5 max-w-xl text-lg text-ink-soft">
+        Compare millions of stays, flights and car rentals side by side. Transparent prices, no hidden fees, and free cancellation on most bookings.
+      </p>
+    </div>
+
+    <!-- SEARCH PANEL with animated tabs -->
+    <div id="search" class="reveal mt-8 max-w-4xl rounded-4xl glass shadow-float ring-1 ring-ink/10 p-3 sm:p-4">
+      <div class="relative flex gap-1 rounded-2xl bg-mist/70 p-1 text-sm font-700">
+        <span id="tab-pill" class="absolute top-1 bottom-1 left-1 w-[33.33%] rounded-xl bg-white shadow-card transition-transform duration-300"></span>
+        <button data-tab="0" class="search-tab relative z-10 flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-ink transition-colors">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg> Stays
+        </button>
+        <button data-tab="1" class="search-tab relative z-10 flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-ink-soft transition-colors">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16l20-7-7 13-3-6-10 0z"/></svg> Flights
+        </button>
+        <button data-tab="2" class="search-tab relative z-10 flex-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-ink-soft transition-colors">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l1-4h12l1 4M3 17h18M6 17v2M18 17v2"/><circle cx="7.5" cy="13.5" r="1.5"/><circle cx="16.5" cy="13.5" r="1.5"/></svg> Cars
+        </button>
+      </div>
+
+      <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <label class="rounded-2xl bg-white ring-1 ring-ink/10 px-4 py-3 hover:ring-coral-400 transition cursor-text">
+          <span class="block text-[11px] font-700 uppercase tracking-wide text-ink-faint" id="f-where-label">Where to</span>
+          <input id="f-where" type="text" placeholder="Lisbon, Portugal" class="w-full bg-transparent text-sm font-600 text-ink placeholder:text-ink-faint outline-none" />
+        </label>
+        <label class="rounded-2xl bg-white ring-1 ring-ink/10 px-4 py-3 hover:ring-coral-400 transition cursor-text">
+          <span class="block text-[11px] font-700 uppercase tracking-wide text-ink-faint">Check in</span>
+          <input type="text" value="Jun 14" class="w-full bg-transparent text-sm font-600 text-ink outline-none" />
+        </label>
+        <label class="rounded-2xl bg-white ring-1 ring-ink/10 px-4 py-3 hover:ring-coral-400 transition cursor-text">
+          <span class="block text-[11px] font-700 uppercase tracking-wide text-ink-faint">Check out</span>
+          <input type="text" value="Jun 21" class="w-full bg-transparent text-sm font-600 text-ink outline-none" />
+        </label>
+        <label class="rounded-2xl bg-white ring-1 ring-ink/10 px-4 py-3 hover:ring-coral-400 transition cursor-text">
+          <span class="block text-[11px] font-700 uppercase tracking-wide text-ink-faint" id="f-guests-label">Guests</span>
+          <input type="text" value="2 adults" class="w-full bg-transparent text-sm font-600 text-ink outline-none" />
+        </label>
+      </div>
+
+      <div class="mt-3 flex flex-col sm:flex-row items-center gap-3">
+        <button data-magnetic class="group relative w-full sm:w-auto sm:flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-coral-500 to-coral-600 px-6 py-3.5 text-base font-800 text-white shadow-pill hover:shadow-float transition">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          Search trips
+        </button>
+        <div class="flex items-center gap-4 text-xs font-600 text-ink-soft">
+          <span class="inline-flex items-center gap-1.5"><svg viewBox="0 0 24 24" class="h-4 w-4 text-teal-500" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>Free cancellation</span>
+          <span class="inline-flex items-center gap-1.5"><svg viewBox="0 0 24 24" class="h-4 w-4 text-teal-500" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>No booking fees</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- quick chips -->
+    <div class="reveal mt-5 flex flex-wrap items-center gap-2 text-sm">
+      <span class="text-ink-soft font-600 mr-1">Popular:</span>
+      <a href="#trending" class="rounded-full bg-white/80 ring-1 ring-ink/10 px-3.5 py-1.5 font-600 text-ink-soft hover:text-ink hover:ring-coral-400 transition">Bali villas</a>
+      <a href="#trending" class="rounded-full bg-white/80 ring-1 ring-ink/10 px-3.5 py-1.5 font-600 text-ink-soft hover:text-ink hover:ring-coral-400 transition">Tokyo flights</a>
+      <a href="#trending" class="rounded-full bg-white/80 ring-1 ring-ink/10 px-3.5 py-1.5 font-600 text-ink-soft hover:text-ink hover:ring-coral-400 transition">Alps cabins</a>
+      <a href="#trending" class="rounded-full bg-white/80 ring-1 ring-ink/10 px-3.5 py-1.5 font-600 text-ink-soft hover:text-ink hover:ring-coral-400 transition">Coastal road trips</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRUST / STATS ================= -->
+<section class="relative -mt-6 z-10">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal rounded-4xl bg-ink text-white shadow-float overflow-hidden">
+      <div class="grid grid-cols-2 lg:grid-cols-4 divide-x divide-white/10">
+        <div class="p-6 sm:p-8">
+          <div class="font-display text-3xl sm:text-4xl font-800"><span class="count" data-to="5400">0</span><span class="text-coral-400">+</span></div>
+          <p class="mt-1 text-sm text-white/60 font-600">Destinations covered</p>
+        </div>
+        <div class="p-6 sm:p-8">
+          <div class="font-display text-3xl sm:text-4xl font-800"><span class="count" data-to="38" data-suffix="M">0</span></div>
+          <p class="mt-1 text-sm text-white/60 font-600">Travelers booked</p>
+        </div>
+        <div class="p-6 sm:p-8">
+          <div class="font-display text-3xl sm:text-4xl font-800"><span class="count" data-to="12">0</span><span class="text-teal-400">k+</span></div>
+          <p class="mt-1 text-sm text-white/60 font-600">Live deals today</p>
+        </div>
+        <div class="p-6 sm:p-8">
+          <div class="font-display text-3xl sm:text-4xl font-800"><span class="count" data-to="4.8" data-dec="1">0</span><span class="text-coral-400">★</span></div>
+          <p class="mt-1 text-sm text-white/60 font-600">Avg. traveler rating</p>
+        </div>
+      </div>
+      <!-- partner marquee -->
+      <div class="border-t border-white/10 overflow-hidden py-4">
+        <div class="marquee-track flex w-max items-center gap-12 px-8 text-white/40 text-sm font-700 tracking-wide">
+          <span>SKYLINE AIR</span><span>HARBOR STAYS</span><span>NOMAD RENTALS</span><span>BLUE COAST RESORTS</span><span>ALPINE LODGES</span><span>METRO CARS</span>
+          <span>SKYLINE AIR</span><span>HARBOR STAYS</span><span>NOMAD RENTALS</span><span>BLUE COAST RESORTS</span><span>ALPINE LODGES</span><span>METRO CARS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TRENDING DESTINATIONS ================= -->
+<section id="trending" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal flex flex-wrap items-end justify-between gap-4 mb-10">
+      <div>
+        <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Trending now</span>
+        <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Destinations on the rise</h2>
+      </div>
+      <p class="max-w-sm text-ink-soft">Swipe the rail to explore where travelers are booking this season — prices update in real time.</p>
+    </div>
+
+    <!-- horizontal trending rail -->
+    <div class="rail -mx-5 sm:-mx-8 px-5 sm:px-8 flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4">
+      <!-- card -->
+      <article class="dest-card snap-start shrink-0 w-[78%] sm:w-[46%] lg:w-[31%] rounded-4xl overflow-hidden bg-white shadow-card ring-1 ring-ink/5 group">
+        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-sky-500/30 to-teal-400/30">
+          <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Paris" class="dest-img h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-700 text-ink">From $86 / night</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-ink hover:text-coral-500 transition"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-xl font-700">Paris, France</h3>
+            <span class="inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="h-4 w-4 text-coral-500" fill="currentColor"><path d="M12 17.3l-6.2 3.7 1.6-7L2 9.3l7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z"/></svg>4.9</span>
+          </div>
+          <p class="mt-1 text-sm text-ink-soft">1,842 stays · flights from $214</p>
+          <div class="mt-4 flex items-center gap-2 text-xs font-600 text-ink-faint">
+            <span class="rounded-full bg-mist px-2.5 py-1">City break</span><span class="rounded-full bg-mist px-2.5 py-1">Culture</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="dest-card snap-start shrink-0 w-[78%] sm:w-[46%] lg:w-[31%] rounded-4xl overflow-hidden bg-white shadow-card ring-1 ring-ink/5 group">
+        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-teal-400/30 to-coral-500/30">
+          <img src="https://images.unsplash.com/photo-1538332576228-eb5b4c4de6f5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Coastal escape" class="dest-img h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-700 text-ink">From $112 / night</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-ink hover:text-coral-500 transition"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-xl font-700">Amalfi Coast, Italy</h3>
+            <span class="inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="h-4 w-4 text-coral-500" fill="currentColor"><path d="M12 17.3l-6.2 3.7 1.6-7L2 9.3l7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z"/></svg>4.8</span>
+          </div>
+          <p class="mt-1 text-sm text-ink-soft">963 stays · flights from $289</p>
+          <div class="mt-4 flex items-center gap-2 text-xs font-600 text-ink-faint">
+            <span class="rounded-full bg-mist px-2.5 py-1">Coastal</span><span class="rounded-full bg-mist px-2.5 py-1">Romantic</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="dest-card snap-start shrink-0 w-[78%] sm:w-[46%] lg:w-[31%] rounded-4xl overflow-hidden bg-white shadow-card ring-1 ring-ink/5 group">
+        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-coral-500/30 to-sky-500/30">
+          <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cityscape" class="dest-img h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-700 text-ink">From $74 / night</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-ink hover:text-coral-500 transition"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-xl font-700">Tokyo, Japan</h3>
+            <span class="inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="h-4 w-4 text-coral-500" fill="currentColor"><path d="M12 17.3l-6.2 3.7 1.6-7L2 9.3l7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z"/></svg>4.9</span>
+          </div>
+          <p class="mt-1 text-sm text-ink-soft">2,310 stays · flights from $612</p>
+          <div class="mt-4 flex items-center gap-2 text-xs font-600 text-ink-faint">
+            <span class="rounded-full bg-mist px-2.5 py-1">Food</span><span class="rounded-full bg-mist px-2.5 py-1">Nightlife</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="dest-card snap-start shrink-0 w-[78%] sm:w-[46%] lg:w-[31%] rounded-4xl overflow-hidden bg-white shadow-card ring-1 ring-ink/5 group">
+        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-sky-500/30 to-teal-400/30">
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Mountain lake" class="dest-img h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+          <span class="absolute top-3 left-3 rounded-full bg-white/90 px-3 py-1 text-xs font-700 text-ink">From $98 / night</span>
+          <button class="absolute top-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/85 text-ink hover:text-coral-500 transition"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-xl font-700">Banff, Canada</h3>
+            <span class="inline-flex items-center gap-1 text-sm font-700"><svg viewBox="0 0 24 24" class="h-4 w-4 text-coral-500" fill="currentColor"><path d="M12 17.3l-6.2 3.7 1.6-7L2 9.3l7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z"/></svg>4.7</span>
+          </div>
+          <p class="mt-1 text-sm text-ink-soft">748 stays · flights from $341</p>
+          <div class="mt-4 flex items-center gap-2 text-xs font-600 text-ink-faint">
+            <span class="rounded-full bg-mist px-2.5 py-1">Outdoors</span><span class="rounded-full bg-mist px-2.5 py-1">Nature</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WHY BOOK WITH US ================= -->
+<section class="py-20 sm:py-28 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal text-center max-w-2xl mx-auto mb-14">
+      <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Why Wanderly</span>
+      <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Booking that actually has your back</h2>
+      <p class="mt-4 text-ink-soft">One account, every part of your trip — protected by price guarantees and human support whenever you need it.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-coral-100 text-coral-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 .9-4.5 4.3L17.5 20 12 16.8 6.5 20l1-6.8L3 8.9 9 8z"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">Best-price promise</h3>
+        <p class="mt-2 text-ink-soft text-sm">Find it cheaper elsewhere within 24 hours and we refund the difference, no questions asked.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-teal-400/20 text-teal-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">Flexible & protected</h3>
+        <p class="mt-2 text-ink-soft text-sm">Free cancellation on most stays and trip protection that covers delays, weather and last-minute changes.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-sky-500/15 text-sky-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6A8.4 8.4 0 0 1 12.5 3H13a8.5 8.5 0 0 1 8 8z"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">24/7 real humans</h3>
+        <p class="mt-2 text-ink-soft text-sm">Stuck at midnight in a new city? Our support team answers in under two minutes, every day of the year.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-coral-100 text-coral-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 2 4-5"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">Smart price tracking</h3>
+        <p class="mt-2 text-ink-soft text-sm">Watch any route or stay and we'll ping you the moment prices drop — book at the perfect time.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-teal-400/20 text-teal-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><circle cx="16" cy="14" r="1.5"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">One wallet, no fees</h3>
+        <p class="mt-2 text-ink-soft text-sm">Pay in your own currency with zero booking fees and earn travel credit on every trip you take.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-paper ring-1 ring-ink/5 p-7 hover:shadow-card transition">
+        <span class="grid h-12 w-12 place-items-center rounded-2xl bg-sky-500/15 text-sky-600"><svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg></span>
+        <h3 class="mt-5 font-display text-xl font-700">Verified everywhere</h3>
+        <p class="mt-2 text-ink-soft text-sm">Every property and partner is vetted with real traveler reviews — what you book is what you get.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section id="how" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal mb-14 max-w-2xl">
+      <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">How it works</span>
+      <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">From idea to itinerary in three steps</h2>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-6 relative">
+      <div class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-8">
+        <div class="flex items-center gap-3"><span class="grid h-10 w-10 place-items-center rounded-full bg-ink text-white font-800">1</span><span class="text-xs font-800 uppercase tracking-widest text-ink-faint">Search</span></div>
+        <h3 class="mt-5 font-display text-2xl font-700">Tell us where & when</h3>
+        <p class="mt-2 text-ink-soft">One search pulls live stays, flights and cars together so you can compare every option on a single screen.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-8">
+        <div class="flex items-center gap-3"><span class="grid h-10 w-10 place-items-center rounded-full bg-coral-500 text-white font-800">2</span><span class="text-xs font-800 uppercase tracking-widest text-ink-faint">Compare</span></div>
+        <h3 class="mt-5 font-display text-2xl font-700">Filter to your perfect trip</h3>
+        <p class="mt-2 text-ink-soft">Sort by price, vibe, neighborhood or cancellation policy. Bundle and save when you book together.</p>
+      </div>
+      <div class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-8">
+        <div class="flex items-center gap-3"><span class="grid h-10 w-10 place-items-center rounded-full bg-teal-500 text-white font-800">3</span><span class="text-xs font-800 uppercase tracking-widest text-ink-faint">Book</span></div>
+        <h3 class="mt-5 font-display text-2xl font-700">Confirm in one tap</h3>
+        <p class="mt-2 text-ink-soft">Secure checkout, instant confirmation, and your full trip in one tidy itinerary — synced to your phone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= POPULAR EXPERIENCES ================= -->
+<section id="experiences" class="py-20 sm:py-28 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal flex flex-wrap items-end justify-between gap-4 mb-12">
+      <div>
+        <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Things to do</span>
+        <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Popular experiences</h2>
+      </div>
+      <a href="#search" class="text-sm font-700 text-coral-600 underline-grow">Browse all experiences →</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <article class="reveal exp-card group rounded-4xl overflow-hidden bg-paper ring-1 ring-ink/5">
+        <div class="relative h-40 overflow-hidden bg-gradient-to-br from-coral-500/30 to-teal-400/30">
+          <img src="https://images.unsplash.com/photo-1538332576228-eb5b4c4de6f5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Sunset cruise" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+        </div>
+        <div class="p-5"><h3 class="font-700 text-lg">Sunset catamaran cruise</h3><p class="mt-1 text-sm text-ink-soft">3 hrs · drinks included</p><p class="mt-3 font-800 text-coral-600">from $42</p></div>
+      </article>
+      <article class="reveal exp-card group rounded-4xl overflow-hidden bg-paper ring-1 ring-ink/5">
+        <div class="relative h-40 overflow-hidden bg-gradient-to-br from-sky-500/30 to-coral-500/30">
+          <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="City food tour" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+        </div>
+        <div class="p-5"><h3 class="font-700 text-lg">Old town food crawl</h3><p class="mt-1 text-sm text-ink-soft">2.5 hrs · small group</p><p class="mt-3 font-800 text-coral-600">from $58</p></div>
+      </article>
+      <article class="reveal exp-card group rounded-4xl overflow-hidden bg-paper ring-1 ring-ink/5">
+        <div class="relative h-40 overflow-hidden bg-gradient-to-br from-teal-400/30 to-sky-500/30">
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Mountain hike" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+        </div>
+        <div class="p-5"><h3 class="font-700 text-lg">Alpine summit hike</h3><p class="mt-1 text-sm text-ink-soft">Full day · guided</p><p class="mt-3 font-800 text-coral-600">from $75</p></div>
+      </article>
+      <article class="reveal exp-card group rounded-4xl overflow-hidden bg-paper ring-1 ring-ink/5">
+        <div class="relative h-40 overflow-hidden bg-gradient-to-br from-coral-500/30 to-sky-500/30">
+          <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Museum pass" class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+        </div>
+        <div class="p-5"><h3 class="font-700 text-lg">Skip-the-line museum pass</h3><p class="mt-1 text-sm text-ink-soft">Flexible · 48 hrs</p><p class="mt-3 font-800 text-coral-600">from $29</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DEALS ================= -->
+<section id="deals" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal mb-12 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Limited time</span>
+        <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Deals dropping this week</h2>
+      </div>
+      <span class="rounded-full bg-coral-100 text-coral-700 px-4 py-2 text-sm font-700">Ends in 3 days</span>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-5">
+      <div class="reveal lg:col-span-2 rounded-4xl overflow-hidden bg-ink text-white shadow-float relative">
+        <div class="absolute inset-0 opacity-40">
+          <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="h-full w-full object-cover"/>
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-transparent"></div>
+        <div class="relative p-8 sm:p-12 max-w-md">
+          <span class="rounded-full bg-coral-500 px-3 py-1 text-xs font-800">SAVE 35%</span>
+          <h3 class="mt-5 font-display text-3xl font-800">Mediterranean summer escapes</h3>
+          <p class="mt-3 text-white/70">7-night stays in Greece, Italy & Croatia with flexible dates and free cancellation. Bundle a flight to save more.</p>
+          <a href="#search" data-magnetic class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white text-ink px-6 py-3 font-800 hover:bg-coral-50 transition">Grab the deal →</a>
+        </div>
+      </div>
+      <div class="grid gap-5">
+        <div class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-6">
+          <span class="text-xs font-800 text-teal-600 uppercase tracking-widest">Flights</span>
+          <h3 class="mt-2 font-display text-xl font-700">Off-season Asia fares</h3>
+          <p class="mt-1 text-sm text-ink-soft">Round trips from <span class="font-800 text-ink">$389</span></p>
+          <a href="#search" class="mt-3 inline-block text-sm font-700 text-coral-600 underline-grow">See routes →</a>
+        </div>
+        <div class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-6">
+          <span class="text-xs font-800 text-teal-600 uppercase tracking-widest">Cars</span>
+          <h3 class="mt-2 font-display text-xl font-700">Road-trip rentals, -20%</h3>
+          <p class="mt-1 text-sm text-ink-soft">SUVs from <span class="font-800 text-ink">$31/day</span></p>
+          <a href="#search" class="mt-3 inline-block text-sm font-700 text-coral-600 underline-grow">Reserve →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="py-20 sm:py-28 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div data-parallax-wrap class="reveal relative rounded-4xl overflow-hidden shadow-float bg-gradient-to-br from-sky-500/30 to-teal-400/30 aspect-[4/5]">
+      <img data-parallax-img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Travelers exploring" class="h-[115%] w-full object-cover will-change-transform"/>
+      <div class="absolute bottom-5 left-5 right-5 rounded-3xl glass ring-1 ring-white/30 p-5 shadow-card">
+        <p class="font-display text-2xl font-800 text-ink">38M+ trips planned</p>
+        <p class="text-sm text-ink-soft">and counting, across 190 countries</p>
+      </div>
+    </div>
+    <div>
+      <span class="reveal text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Our story</span>
+      <h2 class="reveal mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Built by travelers, for travelers</h2>
+      <p class="reveal mt-5 text-ink-soft">Wanderly started with a frustrating truth: planning a single trip meant juggling a dozen tabs, mismatched prices, and fine print no one reads. We thought booking a holiday should feel as good as taking one.</p>
+      <p class="reveal mt-4 text-ink-soft">So we built one place to search everything, compare honestly, and book with confidence — backed by a price promise and people who pick up the phone. Today millions of travelers start their journeys here.</p>
+      <div class="reveal mt-8 grid grid-cols-3 gap-4">
+        <div><p class="font-display text-2xl font-800">190</p><p class="text-xs text-ink-faint font-600">countries served</p></div>
+        <div><p class="font-display text-2xl font-800">1,200+</p><p class="text-xs text-ink-faint font-600">travel partners</p></div>
+        <div><p class="font-display text-2xl font-800">0%</p><p class="text-xs text-ink-faint font-600">booking fees</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal text-center max-w-2xl mx-auto mb-14">
+      <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Traveler love</span>
+      <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Trips they'll never forget</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-7">
+        <div class="flex gap-1 text-coral-500">★★★★★</div>
+        <blockquote class="mt-4 text-ink-soft">"Booked flights, a villa and a car in one search and saved nearly $400. The price-drop alert paid for our airport transfer."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-coral-100 text-coral-700 font-800">MA</span>
+          <span><span class="block font-700">Mara Aldous</span><span class="block text-xs text-ink-faint">Lisbon → Bali</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-7">
+        <div class="flex gap-1 text-coral-500">★★★★★</div>
+        <blockquote class="mt-4 text-ink-soft">"Our flight got cancelled at midnight and support had us rebooked in ten minutes. I've never felt this looked-after by a travel app."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-teal-400/20 text-teal-600 font-800">DK</span>
+          <span><span class="block font-700">Dev Kapoor</span><span class="block text-xs text-ink-faint">Tokyo road trip</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-4xl bg-white shadow-card ring-1 ring-ink/5 p-7">
+        <div class="flex gap-1 text-coral-500">★★★★★</div>
+        <blockquote class="mt-4 text-ink-soft">"Free cancellation meant I could lock in a great rate early and still tweak my plans later. The whole itinerary lives on my phone."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid h-11 w-11 place-items-center rounded-full bg-sky-500/15 text-sky-600 font-800">EL</span>
+          <span><span class="block font-700">Elena Sorensen</span><span class="block text-xs text-ink-faint">Amalfi Coast</span></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= APP DOWNLOAD ================= -->
+<section id="app" class="py-20 sm:py-28 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal rounded-4xl bg-gradient-to-br from-ink to-[#13263d] text-white shadow-float overflow-hidden">
+      <div class="grid lg:grid-cols-2 gap-8 items-center">
+        <div class="p-8 sm:p-12">
+          <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-400">Wanderly app</span>
+          <h2 class="mt-3 font-display text-3xl sm:text-4xl font-800">Your trip, in your pocket</h2>
+          <p class="mt-4 text-white/70 max-w-md">Manage every booking offline, get gate-change alerts, and unlock members-only mobile deals. Switch seamlessly between web and app.</p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="#" data-magnetic class="inline-flex items-center gap-3 rounded-2xl bg-white text-ink px-5 py-3 font-700 hover:bg-coral-50 transition">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="currentColor"><path d="M16.5 1.6c.1 1-.3 2-1 2.8-.7.8-1.8 1.4-2.8 1.3-.1-1 .4-2 1-2.7.7-.8 1.9-1.4 2.8-1.4zM20 17.2c-.5 1.2-.8 1.7-1.5 2.7-1 1.4-2.3 3.1-4 3.1-1.5 0-1.9-1-3.9-1s-2.5 1-3.9 1c-1.7 0-3-1.6-4-3-2.7-3.9-3-8.4-1.3-10.8 1.2-1.7 3-2.7 4.8-2.7 1.7 0 2.8 1 4.2 1 1.4 0 2.2-1 4.2-1 1.5 0 3.2.8 4.3 2.3-3.8 2-3.2 7.4.1 9.1z"/></svg>
+              <span class="text-left leading-tight"><span class="block text-[10px] font-600">Download on the</span><span class="block text-sm font-800 -mt-0.5">App Store</span></span>
+            </a>
+            <a href="#" data-magnetic class="inline-flex items-center gap-3 rounded-2xl bg-white/10 ring-1 ring-white/20 text-white px-5 py-3 font-700 hover:bg-white/20 transition">
+              <svg viewBox="0 0 24 24" class="h-6 w-6" fill="currentColor"><path d="M3.6 2.2c-.3.3-.5.7-.5 1.3v17c0 .6.2 1 .5 1.3l.1.1L13 12.6v-.2L3.7 2.1l-.1.1zM17 16.3l-3.1-3.1 3.2-3.2 3.7 2.1c1.1.6 1.1 1.6 0 2.2L17 16.3zm-1-1L12.9 12 16 8.9l1 .6-2.5 2.5L16 14.7l1-.6-1 1.2z"/></svg>
+              <span class="text-left leading-tight"><span class="block text-[10px] font-600">Get it on</span><span class="block text-sm font-800 -mt-0.5">Google Play</span></span>
+            </a>
+          </div>
+          <p class="mt-5 text-xs text-white/50">★ 4.8 average · 280k+ ratings</p>
+        </div>
+        <div class="relative h-72 lg:h-full min-h-[18rem]">
+          <div class="absolute inset-0 bg-gradient-to-br from-coral-500/40 to-teal-400/30"></div>
+          <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="h-full w-full object-cover opacity-80"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="reveal text-center mb-12">
+      <span class="text-xs font-800 uppercase tracking-[0.2em] text-coral-600">Good to know</span>
+      <h2 class="mt-2 font-display text-3xl sm:text-5xl font-800 tracking-tight">Frequently asked</h2>
+    </div>
+    <div class="space-y-3">
+      <div class="faq reveal rounded-3xl bg-white ring-1 ring-ink/5 shadow-card overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-700 text-lg">Is it really free to use Wanderly?</span>
+          <svg class="faq-icon h-5 w-5 shrink-0 text-coral-500 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink-soft">Yes. Searching, comparing and booking on Wanderly is completely free — we never add booking fees. We earn a small commission from partners, which doesn't change your price.</p></div>
+      </div>
+      <div class="faq reveal rounded-3xl bg-white ring-1 ring-ink/5 shadow-card overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-700 text-lg">Can I cancel or change a booking?</span>
+          <svg class="faq-icon h-5 w-5 shrink-0 text-coral-500 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink-soft">Most stays offer free cancellation up to 24–48 hours before check-in. Each listing clearly shows its policy before you book, and changes can be made right from your trip dashboard.</p></div>
+      </div>
+      <div class="faq reveal rounded-3xl bg-white ring-1 ring-ink/5 shadow-card overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-700 text-lg">How does the best-price promise work?</span>
+          <svg class="faq-icon h-5 w-5 shrink-0 text-coral-500 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink-soft">If you find the identical booking cheaper elsewhere within 24 hours of reserving, send us the link and we'll refund the difference as travel credit or back to your card.</p></div>
+      </div>
+      <div class="faq reveal rounded-3xl bg-white ring-1 ring-ink/5 shadow-card overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-700 text-lg">Can I book a flight, stay and car together?</span>
+          <svg class="faq-icon h-5 w-5 shrink-0 text-coral-500 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-ink-soft">Absolutely — that's the whole point. Bundle any combination in a single checkout, often unlocking package discounts, and manage the entire trip from one itinerary.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal relative rounded-4xl overflow-hidden bg-gradient-to-br from-coral-500 to-coral-600 text-white shadow-float p-10 sm:p-16 text-center">
+      <div class="absolute inset-0 grad-mesh opacity-30"></div>
+      <div class="relative">
+        <h2 class="font-display text-3xl sm:text-5xl font-800 tracking-tight">Where to next?</h2>
+        <p class="mt-4 max-w-xl mx-auto text-white/90">Join 38 million travelers booking smarter. Your next adventure is one search away — and the best price comes with it.</p>
+        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#search" data-magnetic class="inline-flex items-center gap-2 rounded-2xl bg-white text-coral-600 px-7 py-3.5 font-800 shadow-card hover:bg-coral-50 transition">Start your search</a>
+          <a href="#app" class="inline-flex items-center gap-2 rounded-2xl bg-white/15 ring-1 ring-white/30 px-7 py-3.5 font-700 hover:bg-white/25 transition">Get the app</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="border-t border-ink/10 bg-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-14">
+    <div class="grid gap-10 md:grid-cols-5">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-coral-500 to-coral-600 text-white"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-7-7 18-2.5-7.5L3 11z"/></svg></span>
+          <span class="font-display text-lg font-800">Wanderly</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm text-ink-soft">Search once, compare everything, book the whole trip. The travel marketplace that puts travelers first.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-mist text-ink-soft hover:text-coral-500 transition" aria-label="Twitter"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M22 5.8c-.7.3-1.5.5-2.3.6.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4 4 0 0 0-6.8 3.6A11.3 11.3 0 0 1 3.9 4.6a4 4 0 0 0 1.2 5.3c-.6 0-1.2-.2-1.8-.5a4 4 0 0 0 3.2 4 4 4 0 0 1-1.8 0 4 4 0 0 0 3.7 2.8A8 8 0 0 1 2 17.5a11.3 11.3 0 0 0 6.1 1.8c7.3 0 11.4-6.1 11.4-11.4v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-mist text-ink-soft hover:text-coral-500 transition" aria-label="Instagram"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+          <a href="#" class="grid h-9 w-9 place-items-center rounded-full bg-mist text-ink-soft hover:text-coral-500 transition" aria-label="YouTube"><svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M22 8.2a3 3 0 0 0-2.1-2.1C18 5.5 12 5.5 12 5.5s-6 0-7.9.6A3 3 0 0 0 2 8.2 31 31 0 0 0 1.6 12 31 31 0 0 0 2 15.8a3 3 0 0 0 2.1 2.1c1.9.6 7.9.6 7.9.6s6 0 7.9-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.4 12 31 31 0 0 0 22 8.2zM10 15V9l5.2 3L10 15z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm">Explore</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-ink-soft">
+          <li><a href="#trending" class="hover:text-coral-600">Destinations</a></li>
+          <li><a href="#deals" class="hover:text-coral-600">Deals</a></li>
+          <li><a href="#experiences" class="hover:text-coral-600">Experiences</a></li>
+          <li><a href="#search" class="hover:text-coral-600">Flights</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm">Company</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-ink-soft">
+          <li><a href="#about" class="hover:text-coral-600">About us</a></li>
+          <li><a href="#" class="hover:text-coral-600">Careers</a></li>
+          <li><a href="#" class="hover:text-coral-600">Press</a></li>
+          <li><a href="#" class="hover:text-coral-600">Partners</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-700 text-sm">Support</h4>
+        <ul class="mt-4 space-y-2.5 text-sm text-ink-soft">
+          <li><a href="#faq" class="hover:text-coral-600">Help center</a></li>
+          <li><a href="#" class="hover:text-coral-600">Trip protection</a></li>
+          <li><a href="#" class="hover:text-coral-600">Contact us</a></li>
+          <li><a href="#" class="hover:text-coral-600">Cancellations</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-ink/10 pt-6 text-sm text-ink-faint">
+      <p>© 2026 Wanderly Travel, Inc. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-coral-600">Privacy</a>
+        <a href="#" class="hover:text-coral-600">Terms</a>
+        <a href="#" class="hover:text-coral-600">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= SCRIPTS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- NAV shrink on scroll ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) nav.querySelector('nav').classList.add('shadow-float');
+    else nav.querySelector('nav').classList.remove('shadow-float');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---- SEARCH TABS ---- */
+  const tabs = document.querySelectorAll('.search-tab');
+  const pill = document.getElementById('tab-pill');
+  const whereLabel = document.getElementById('f-where-label');
+  const whereInput = document.getElementById('f-where');
+  const guestsLabel = document.getElementById('f-guests-label');
+  const presets = [
+    { where: 'Where to', place: 'Lisbon, Portugal', guests: 'Guests' },
+    { where: 'Flying to', place: 'Tokyo (HND)', guests: 'Travelers' },
+    { where: 'Pick-up city', place: 'Barcelona, Spain', guests: 'Driver age' },
+  ];
+  tabs.forEach((t) => {
+    t.addEventListener('click', () => {
+      const i = +t.dataset.tab;
+      pill.style.transform = `translateX(${i * 100}%)`;
+      tabs.forEach((x) => { x.classList.remove('text-ink'); x.classList.add('text-ink-soft'); });
+      t.classList.add('text-ink'); t.classList.remove('text-ink-soft');
+      whereLabel.textContent = presets[i].where;
+      whereInput.placeholder = presets[i].place;
+      guestsLabel.textContent = presets[i].guests;
+      if (!reduced) gsap.fromTo(t, { scale: 0.94 }, { scale: 1, duration: 0.3, ease: 'back.out(2)' });
+    });
+  });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const faq = btn.closest('.faq');
+      const open = faq.classList.contains('open');
+      document.querySelectorAll('.faq').forEach((f) => f.classList.remove('open'));
+      if (!open) faq.classList.add('open');
+    });
+  });
+
+  /* ---- reduced motion: bail on heavy animation ---- */
+  if (reduced || typeof gsap === 'undefined') {
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    return;
+  }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---- Headline word-by-word ---- */
+  const headline = document.getElementById('headline');
+  const wrapWords = (node) => {
+    const frag = document.createDocumentFragment();
+    node.childNodes.forEach((child) => {
+      if (child.nodeType === 3) {
+        child.textContent.split(/(\s+)/).forEach((part) => {
+          if (part.trim() === '') { frag.appendChild(document.createTextNode(part)); return; }
+          const span = document.createElement('span');
+          span.className = 'word'; span.textContent = part;
+          frag.appendChild(span);
+        });
+      } else {
+        frag.appendChild(child.cloneNode(true));
+      }
+    });
+    node.innerHTML = ''; node.appendChild(frag);
+  };
+  wrapWords(headline);
+  gsap.from(headline.querySelectorAll('.word'), {
+    yPercent: 115, opacity: 0, rotateX: -40, duration: 0.85,
+    ease: 'power3.out', stagger: 0.06, delay: 0.15,
+  });
+
+  /* ---- generic reveals ---- */
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    if (el.id === 'headline') return;
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' },
+    });
+  });
+
+  /* ---- count-ups ---- */
+  document.querySelectorAll('.count').forEach((el) => {
+    const to = parseFloat(el.dataset.to);
+    const dec = parseInt(el.dataset.dec || '0', 10);
+    const suffix = el.dataset.suffix || '';
+    const obj = { v: 0 };
+    gsap.to(obj, {
+      v: to, duration: 1.8, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 90%' },
+      onUpdate() {
+        el.textContent = obj.v.toLocaleString('en-US', {
+          minimumFractionDigits: dec, maximumFractionDigits: dec,
+        }) + suffix;
+      },
+    });
+  });
+
+  /* ---- hero background parallax ---- */
+  gsap.to('[data-parallax]', {
+    yPercent: 18, ease: 'none',
+    scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true },
+  });
+
+  /* ---- about image container parallax ---- */
+  const aImg = document.querySelector('[data-parallax-img]');
+  if (aImg) {
+    gsap.fromTo(aImg, { yPercent: -8 }, {
+      yPercent: 8, ease: 'none',
+      scrollTrigger: { trigger: '[data-parallax-wrap]', start: 'top bottom', end: 'bottom top', scrub: true },
+    });
+  }
+
+  /* ---- destination card tilt ---- */
+  document.querySelectorAll('.dest-card').forEach((card) => {
+    card.classList.add('tilt');
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(card, { rotateY: px * 8, rotateX: -py * 8, duration: 0.4, ease: 'power2.out', transformPerspective: 800 });
+    });
+    card.addEventListener('mouseleave', () => {
+      gsap.to(card, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'power3.out' });
+    });
+  });
+
+  /* ---- magnetic CTAs ---- */
+  document.querySelectorAll('[data-magnetic]').forEach((btn) => {
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      gsap.to(btn, { x: (e.clientX - r.left - r.width / 2) * 0.35, y: (e.clientY - r.top - r.height / 2) * 0.5, duration: 0.4, ease: 'power2.out' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' });
+    });
+  });
+
+  /* ---- experience cards subtle rise on hover ---- */
+  document.querySelectorAll('.exp-card').forEach((card) => {
+    card.addEventListener('mouseenter', () => gsap.to(card, { y: -6, duration: 0.3, ease: 'power2.out' }));
+    card.addEventListener('mouseleave', () => gsap.to(card, { y: 0, duration: 0.4, ease: 'power2.out' }));
+  });
+})();
+</script>
+</body>
+</html>

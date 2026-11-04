@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Meridian â€” Luxury Hotel & Spa</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{
+  colors:{gold:'#b8860b','gold-light':'#d4a843',cream:'#f5f0e6','cream-dark':'#e8dcc8',surface:'#0c0b09',card:'rgba(184,134,11,.03)',txt:'#f5f0e6',muted:'#8a8070',border:'rgba(184,134,11,.1)'},
+  fontFamily:{serif:['Cormorant Garamond','Georgia','serif'],sans:['Inter','system-ui','sans-serif']}
+}}}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes parallax{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes lineExpand{from{width:0}to{width:60px}}
+.reveal{opacity:0;transform:translateY(30px);transition:all 1s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.15s}.st2{transition-delay:.3s}.st3{transition-delay:.45s}.st4{transition-delay:.6s}
+.room-card{transition:all .6s cubic-bezier(.16,1,.3,1)}
+.room-card:hover{transform:translateY(-6px)}
+.room-card:hover .room-overlay{opacity:1}
+.room-overlay{opacity:0;transition:opacity .5s}
+.gold-line{width:0;height:1px;background:linear-gradient(90deg,transparent,#b8860b,transparent);transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.gold-line.visible{width:60px}
+</style>
+</head>
+<body class="bg-surface text-txt font-sans antialiased overflow-x-hidden">
+
+<!-- â•â•â• NAV â•â•â• -->
+<nav class="fixed top-0 left-0 right-0 z-50 transition-all" id="nav" style="padding:24px 48px">
+  <div class="max-w-7xl mx-auto flex items-center justify-between">
+    <div class="font-serif text-2xl font-300 tracking-[0.15em] text-gold">THE MERIDIAN</div>
+    <div class="hidden md:flex gap-10 text-xs font-medium tracking-[0.2em] uppercase text-muted">
+      <a href="#rooms" class="hover:text-gold transition-colors">Rooms</a>
+      <a href="#dining" class="hover:text-gold transition-colors">Dining</a>
+      <a href="#spa" class="hover:text-gold transition-colors">Spa</a>
+      <a href="#experiences" class="hover:text-gold transition-colors">Experiences</a>
+    </div>
+    <button class="border border-gold/30 text-gold px-6 py-2.5 text-xs font-medium tracking-[0.15em] uppercase hover:bg-gold hover:text-surface transition-all duration-500">
+      Reserve
+    </button>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” Full-viewport, cinematic â•â•â• -->
+<section class="min-h-screen flex items-center justify-center text-center relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-surface via-surface/80 to-surface"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_30%,rgba(184,134,11,.06)_0%,transparent_60%)]"></div>
+  <!-- Decorative frame corners -->
+  <div class="absolute top-16 left-16 w-24 h-24 border-t border-l border-gold/15"></div>
+  <div class="absolute top-16 right-16 w-24 h-24 border-t border-r border-gold/15"></div>
+  <div class="absolute bottom-16 left-16 w-24 h-24 border-b border-l border-gold/15"></div>
+  <div class="absolute bottom-16 right-16 w-24 h-24 border-b border-r border-gold/15"></div>
+
+  <div class="relative z-10 max-w-3xl px-6">
+    <div class="text-xs tracking-[0.5em] uppercase text-gold/60 mb-8" style="animation:fadeUp .8s .3s both">Est. 1928 Â· Five-Star Luxury</div>
+    <div class="gold-line mx-auto mb-10" style="animation:lineExpand 1.5s .5s both"></div>
+    <h1 class="font-serif text-6xl md:text-7xl lg:text-8xl font-300 leading-[0.95] tracking-tight mb-8" style="animation:fadeUp 1s .4s both">
+      Where Luxury<br>Meets <span class="italic text-gold">Serenity</span>
+    </h1>
+    <p class="text-muted text-lg leading-relaxed max-w-lg mx-auto mb-12 font-light" style="animation:fadeUp 1s .6s both">
+      An oasis of refined elegance in the heart of the city. Impeccable service, breathtaking views, and experiences crafted for the discerning traveler.
+    </p>
+    <div class="flex gap-6 justify-center" style="animation:fadeUp 1s .8s both">
+      <button class="bg-gold text-surface px-10 py-4 text-xs font-semibold tracking-[0.2em] uppercase hover:bg-gold-light transition-all duration-500">
+        Book Your Stay
+      </button>
+      <button class="border border-gold/30 text-gold px-10 py-4 text-xs font-medium tracking-[0.2em] uppercase hover:bg-gold/5 transition-all duration-500">
+        Virtual Tour
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• ROOMS â€” Elegant card showcase â•â•â• -->
+<section id="rooms" class="py-32 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-20">
+      <div class="reveal text-xs tracking-[0.4em] uppercase text-gold/60 mb-4">Accommodations</div>
+      <div class="gold-line reveal mx-auto mb-8"></div>
+      <h2 class="reveal st1 font-serif text-4xl md:text-5xl font-300">Our <span class="italic text-gold">Rooms & Suites</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="reveal room-card cursor-pointer group">
+        <div class="aspect-[3/4] bg-card border border-border rounded-sm overflow-hidden relative mb-6">
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-20 h-20 rounded-full border border-gold/20 flex items-center justify-center font-serif text-2xl text-gold/30 italic">D</div>
+          </div>
+          <div class="room-overlay absolute inset-0 bg-gold/5 flex items-end p-6">
+            <span class="text-gold text-xs font-medium tracking-[0.2em] uppercase">View Room â†’</span>
+          </div>
+        </div>
+        <div class="text-xs tracking-[0.3em] uppercase text-gold/60 mb-2">From $450/night</div>
+        <h3 class="font-serif text-2xl font-400 mb-2">Deluxe Room</h3>
+        <p class="text-muted text-sm leading-relaxed">45 sqm of refined comfort with city views, marble bath, and premium amenities.</p>
+      </div>
+
+      <div class="reveal st1 room-card cursor-pointer group">
+        <div class="aspect-[3/4] bg-card border border-border rounded-sm overflow-hidden relative mb-6">
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-20 h-20 rounded-full border border-gold/20 flex items-center justify-center font-serif text-2xl text-gold/30 italic">S</div>
+          </div>
+          <div class="room-overlay absolute inset-0 bg-gold/5 flex items-end p-6">
+            <span class="text-gold text-xs font-medium tracking-[0.2em] uppercase">View Suite â†’</span>
+          </div>
+        </div>
+        <div class="text-xs tracking-[0.3em] uppercase text-gold/60 mb-2">From $850/night</div>
+        <h3 class="font-serif text-2xl font-400 mb-2">Executive Suite</h3>
+        <p class="text-muted text-sm leading-relaxed">90 sqm with separate living area, panoramic terrace, and butler service.</p>
+      </div>
+
+      <div class="reveal st2 room-card cursor-pointer group">
+        <div class="aspect-[3/4] bg-card border border-gold/15 rounded-sm overflow-hidden relative mb-6">
+          <div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-20 h-20 rounded-full border border-gold/30 flex items-center justify-center font-serif text-2xl text-gold/50 italic">P</div>
+          </div>
+          <div class="room-overlay absolute inset-0 bg-gold/5 flex items-end p-6">
+            <span class="text-gold text-xs font-medium tracking-[0.2em] uppercase">View Penthouse â†’</span>
+          </div>
+          <div class="absolute top-4 right-4 bg-gold text-surface text-[10px] font-bold tracking-wider uppercase px-3 py-1">Signature</div>
+        </div>
+        <div class="text-xs tracking-[0.3em] uppercase text-gold mb-2">From $2,200/night</div>
+        <h3 class="font-serif text-2xl font-400 mb-2">The Meridian Penthouse</h3>
+        <p class="text-muted text-sm leading-relaxed">200 sqm penthouse with private rooftop terrace, grand piano, and personal chef.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• AMENITIES STRIP â•â•â• -->
+<section class="py-16 px-6 border-y border-border">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-12 text-center">
+    <div class="reveal">
+      <div class="text-2xl mb-3">ðŸŠ</div>
+      <div class="font-serif text-lg">Infinity Pool</div>
+      <div class="text-muted text-xs mt-1">Rooftop, heated</div>
+    </div>
+    <div class="reveal st1">
+      <div class="text-2xl mb-3">ðŸ’†</div>
+      <div class="font-serif text-lg">Full Spa</div>
+      <div class="text-muted text-xs mt-1">Treatments & sauna</div>
+    </div>
+    <div class="reveal st2">
+      <div class="text-2xl mb-3">ðŸ½ï¸</div>
+      <div class="font-serif text-lg">Fine Dining</div>
+      <div class="text-muted text-xs mt-1">2 Michelin stars</div>
+    </div>
+    <div class="reveal st3">
+      <div class="text-2xl mb-3">ðŸ›Žï¸</div>
+      <div class="font-serif text-lg">24/7 Concierge</div>
+      <div class="text-muted text-xs mt-1">Personal service</div>
+    </div>
+    <div class="reveal st4">
+      <div class="text-2xl mb-3">ðŸš—</div>
+      <div class="font-serif text-lg">Valet Parking</div>
+      <div class="text-muted text-xs mt-1">Complimentary</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• QUOTE â•â•â• -->
+<section class="py-32 px-6 text-center relative">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(184,134,11,.03)_0%,transparent_50%)]"></div>
+  <div class="max-w-3xl mx-auto relative z-10">
+    <div class="reveal font-serif text-8xl text-gold/10 leading-none mb-[-20px]">"</div>
+    <blockquote class="reveal st1 font-serif text-2xl md:text-3xl font-300 leading-relaxed italic mb-8">
+      The Meridian doesn't just meet expectations â€” it redefines them. Every detail, from the thread count to the sunset views, speaks of <span class="text-gold">timeless excellence</span>.
+    </blockquote>
+    <div class="reveal st2">
+      <div class="gold-line mx-auto mb-4"></div>
+      <div class="text-sm font-semibold tracking-wider">TRAVEL + LEISURE</div>
+      <div class="text-xs text-muted mt-1">Best Hotels of 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â•â•â• -->
+<section class="py-32 px-6 text-center">
+  <div class="max-w-2xl mx-auto">
+    <div class="reveal text-xs tracking-[0.4em] uppercase text-gold/60 mb-4">Your Journey Awaits</div>
+    <h2 class="reveal st1 font-serif text-4xl md:text-5xl font-300 mb-6">Experience <span class="italic text-gold">The Meridian</span></h2>
+    <p class="reveal st2 text-muted leading-relaxed mb-10">Reserve your sanctuary today. Exclusive rates available for extended stays.</p>
+    <div class="reveal st3 flex gap-4 justify-center flex-wrap">
+      <button class="bg-gold text-surface px-10 py-4 text-xs font-semibold tracking-[0.2em] uppercase hover:bg-gold-light transition-all duration-500">
+        Reserve Now
+      </button>
+      <a href="tel:+12125550100" class="border border-gold/30 text-gold px-10 py-4 text-xs font-medium tracking-[0.2em] uppercase hover:bg-gold/5 transition-all duration-500">
+        +1 (212) 555-0100
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-16 px-6">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12">
+    <div>
+      <div class="font-serif text-xl tracking-[0.15em] text-gold mb-4">THE MERIDIAN</div>
+      <p class="text-muted text-sm max-w-xs leading-relaxed font-light">A five-star experience defined by timeless elegance, exceptional service, and attention to every detail.</p>
+    </div>
+    <div class="grid grid-cols-3 gap-12 text-sm">
+      <div>
+        <div class="text-xs tracking-[0.2em] uppercase text-gold/40 mb-4">Hotel</div>
+        <div class="flex flex-col gap-2.5 text-muted font-light"><a href="#" class="hover:text-gold transition-colors">Rooms & Suites</a><a href="#" class="hover:text-gold transition-colors">Dining</a><a href="#" class="hover:text-gold transition-colors">Spa & Wellness</a><a href="#" class="hover:text-gold transition-colors">Events</a></div>
+      </div>
+      <div>
+        <div class="text-xs tracking-[0.2em] uppercase text-gold/40 mb-4">Info</div>
+        <div class="flex flex-col gap-2.5 text-muted font-light"><a href="#" class="hover:text-gold transition-colors">About</a><a href="#" class="hover:text-gold transition-colors">Careers</a><a href="#" class="hover:text-gold transition-colors">Press</a><a href="#" class="hover:text-gold transition-colors">Contact</a></div>
+      </div>
+      <div>
+        <div class="text-xs tracking-[0.2em] uppercase text-gold/40 mb-4">Visit</div>
+        <div class="flex flex-col gap-2.5 text-muted font-light"><span>One Meridian Place</span><span>New York, NY 10019</span><span class="text-gold">+1 (212) 555-0100</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-border flex justify-between text-xs text-muted/50">
+    <span>Â© 2026 The Meridian. All rights reserved.</span>
+    <div class="flex gap-4"><a href="#" class="hover:text-gold transition-colors">Privacy</a><a href="#" class="hover:text-gold transition-colors">Terms</a></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal,.gold-line').forEach(el=>obs.observe(el));
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>80){nav.style.background='rgba(12,11,9,.95)';nav.style.backdropFilter='blur(20px)';nav.style.borderBottom='1px solid rgba(184,134,11,.08)';nav.style.padding='12px 48px';}
+  else{nav.style.background='transparent';nav.style.backdropFilter='none';nav.style.borderBottom='none';nav.style.padding='24px 48px';}
+});
+document.body.style.opacity='0';document.body.style.transition='opacity .5s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

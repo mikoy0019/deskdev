@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VOLTARIS — The Electric Apex | All-Electric Hypercar Reservation</title>
+<meta name="description" content="VOLTARIS APEX — an all-electric hypercar engineered for silence and violence. Reserve the future of motion." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: "#05060a",
+          carbon: "#0b0d14",
+          steel: "#11141d",
+          chrome: "#c7cdd6",
+          mist: "#8a93a6",
+          volt: "#23f0c7",
+          neon: "#7a5cff",
+          ember: "#ff4d6d",
+        },
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          mono: ['"Space Grotesk"', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --volt:#23f0c7; --neon:#7a5cff; --ember:#ff4d6d; }
+  html, body { background:#05060a; }
+  body { overflow-x:hidden; color:#c7cdd6; font-family:'Sora',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::selection { background:rgba(35,240,199,.3); color:#fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:10px; }
+  ::-webkit-scrollbar-track { background:#05060a; }
+  ::-webkit-scrollbar-thumb { background:linear-gradient(180deg,#23f0c7,#7a5cff); border-radius:99px; }
+
+  .grad-text {
+    background:linear-gradient(110deg,#ffffff 0%,#c7cdd6 40%,#23f0c7 70%,#7a5cff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .chrome-text {
+    background:linear-gradient(180deg,#ffffff,#9aa3b4 45%,#4a505e 55%,#cdd3dd);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  /* Grid backdrop */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(199,205,214,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(199,205,214,.05) 1px, transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+    -webkit-mask-image:radial-gradient(circle at 50% 40%, #000 0%, transparent 75%);
+  }
+
+  .glow-ring { box-shadow:0 0 0 1px rgba(199,205,214,.08), 0 30px 80px -30px rgba(35,240,199,.35); }
+  .card-glass { background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01)); border:1px solid rgba(199,205,214,.09); backdrop-filter:blur(12px); }
+
+  /* Masked line reveal for headlines */
+  .line-mask { overflow:hidden; display:block; }
+  .line-inner { display:block; transform:translateY(110%); }
+
+  /* ===== CSS 3D CAR ===== */
+  .stage3d { perspective:1400px; }
+  .car3d {
+    position:relative; width:min(640px,82vw); aspect-ratio:16/9; margin:0 auto;
+    transform-style:preserve-3d; transform:rotateX(58deg) rotateZ(0deg);
+    will-change:transform;
+  }
+  .car-shadow {
+    position:absolute; inset:8% 6% 6% 6%; border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(35,240,199,.32), rgba(122,92,255,.12) 45%, transparent 70%);
+    filter:blur(26px); transform:translateZ(-60px) scale(1.05);
+  }
+  .car-body {
+    position:absolute; left:8%; right:8%; top:22%; bottom:22%;
+    border-radius:46% 46% 38% 38%/70% 70% 60% 60%;
+    background:
+      linear-gradient(115deg, rgba(35,240,199,.28), transparent 30%),
+      linear-gradient(180deg,#2b3140 0%, #161a24 38%, #0a0c12 100%);
+    box-shadow: inset 0 14px 30px rgba(255,255,255,.10), inset 0 -22px 40px rgba(0,0,0,.7), 0 24px 60px rgba(0,0,0,.6);
+    transform:translateZ(34px);
+  }
+  .car-cabin {
+    position:absolute; left:30%; right:30%; top:8%; height:42%;
+    border-radius:60% 60% 30% 30%/100% 100% 40% 40%;
+    background:linear-gradient(180deg, rgba(122,92,255,.5), rgba(10,12,18,.92));
+    box-shadow: inset 0 6px 18px rgba(255,255,255,.18);
+    transform:translateZ(58px);
+  }
+  .car-light {
+    position:absolute; top:46%; width:16%; height:7%; border-radius:99px;
+    background:linear-gradient(90deg,#23f0c7,#7a5cff); filter:blur(.5px);
+    box-shadow:0 0 22px var(--volt), 0 0 44px rgba(122,92,255,.7);
+    transform:translateZ(40px);
+  }
+  .car-light.l { left:11%; }
+  .car-light.r { right:11%; }
+  .wheel {
+    position:absolute; width:13%; aspect-ratio:1; border-radius:50%; bottom:14%;
+    background:radial-gradient(circle at 40% 35%, #3a414f, #0a0b10 60%);
+    box-shadow: inset 0 0 0 4px rgba(199,205,214,.18), 0 0 24px rgba(0,0,0,.7);
+    transform:translateZ(20px);
+  }
+  .wheel::after { content:""; position:absolute; inset:32%; border-radius:50%; background:radial-gradient(circle,#23f0c7,#11141d 70%); box-shadow:0 0 14px rgba(35,240,199,.6); }
+  .wheel.fl { left:16%; } .wheel.fr { right:16%; }
+  .car-streak {
+    position:absolute; left:-30%; top:48%; width:60%; height:2px;
+    background:linear-gradient(90deg, transparent, #23f0c7, transparent);
+    filter:blur(1px); transform:translateZ(50px); opacity:.0;
+  }
+
+  .magnetic { will-change:transform; }
+  .tilt { transform-style:preserve-3d; will-change:transform; }
+
+  .reserve-glow { box-shadow:0 0 0 1px rgba(35,240,199,.4), 0 18px 50px -12px rgba(35,240,199,.55); }
+
+  .faq-item .faq-body { max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height:320px; }
+  .faq-item.open .faq-ico { transform:rotate(45deg); }
+
+  .marquee { display:flex; width:max-content; animation:scrollx 26s linear infinite; }
+  @keyframes scrollx { to { transform:translateX(-50%); } }
+
+  .noise:after {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line-inner { transform:none !important; }
+    .marquee { animation:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="noise antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <nav class="mt-4 flex items-center justify-between rounded-2xl card-glass px-5 py-3">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="relative grid place-items-center w-9 h-9 rounded-lg bg-gradient-to-br from-volt to-neon">
+          <span class="w-3 h-3 rotate-45 bg-ink rounded-[3px]"></span>
+        </span>
+        <span class="font-display font-extrabold tracking-tight text-white text-lg">VOLTARIS</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-8 text-sm font-mono text-mist">
+        <a href="#specs" class="hover:text-white transition">Performance</a>
+        <a href="#features" class="hover:text-white transition">Engineering</a>
+        <a href="#config" class="hover:text-white transition">Configure</a>
+        <a href="#pricing" class="hover:text-white transition">Reserve</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </div>
+      <a href="#pricing" class="magnetic relative inline-flex items-center gap-2 rounded-xl bg-white text-ink font-semibold text-sm px-5 py-2.5 hover:scale-[1.03] transition">
+        Reserve Apex <span class="text-ember">→</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-[100svh] flex flex-col items-center justify-center overflow-hidden">
+  <div class="absolute inset-0 grid-bg"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(122,92,255,.16),transparent_55%)]"></div>
+  <div class="absolute -bottom-40 left-1/2 -translate-x-1/2 w-[120vw] h-[60vh] bg-[radial-gradient(ellipse_at_center,rgba(35,240,199,.12),transparent_70%)]"></div>
+
+  <div id="heroPin" class="relative z-10 w-full max-w-7xl mx-auto px-5 sm:px-8 text-center pt-28">
+    <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-mono text-volt mb-7" data-fade>
+      <span class="w-1.5 h-1.5 rounded-full bg-volt animate-pulse"></span> NEXT-GEN EV · LIMITED 999 UNITS
+    </div>
+
+    <h1 class="font-display font-extrabold leading-[0.92] text-[13vw] sm:text-[10vw] lg:text-[8.5rem] tracking-tighter">
+      <span class="line-mask"><span class="line-inner chrome-text">SILENCE.</span></span>
+      <span class="line-mask"><span class="line-inner grad-text">THEN VIOLENCE.</span></span>
+    </h1>
+
+    <p class="max-w-xl mx-auto mt-7 text-base sm:text-lg text-mist" data-fade>
+      Meet the <span class="text-white font-semibold">VOLTARIS APEX</span> — an all-electric hypercar engineered to bend physics and break the silence with 1,540 horsepower of pure voltage.
+    </p>
+
+    <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4" data-fade>
+      <a href="#config" class="magnetic reserve-glow inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-volt to-neon text-ink font-bold px-7 py-4 hover:scale-[1.03] transition">
+        Configure Yours
+      </a>
+      <a href="#specs" class="inline-flex items-center gap-2 rounded-xl border border-white/15 px-7 py-4 text-white font-semibold hover:bg-white/5 transition">
+        View Performance ↓
+      </a>
+    </div>
+
+    <!-- 3D CAR -->
+    <div class="stage3d mt-16 sm:mt-20" data-fade>
+      <div class="car3d" id="car3d">
+        <div class="car-shadow"></div>
+        <div class="car-body"></div>
+        <div class="car-cabin"></div>
+        <div class="car-light l"></div>
+        <div class="car-light r"></div>
+        <div class="wheel fl"></div>
+        <div class="wheel fr"></div>
+        <span class="car-streak" id="streak1"></span>
+        <span class="car-streak" id="streak2" style="top:62%"></span>
+      </div>
+      <p class="mt-8 text-xs font-mono text-mist/70 tracking-widest">DRAG · SCROLL · THE APEX RESPONDS</p>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-mist text-xs font-mono tracking-[0.3em]">SCROLL</div>
+</section>
+
+<!-- ============ SPEC STRIP / COUNT-UP ============ -->
+<section id="specs" class="relative py-24 border-y border-white/5 bg-carbon">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden glow-ring">
+      <div class="bg-ink p-8 sm:p-10 text-center stat" data-target="1.7" data-suffix="s" data-dec="1">
+        <div class="text-4xl sm:text-6xl font-display font-extrabold grad-text stat-num">0</div>
+        <p class="mt-3 text-xs sm:text-sm font-mono text-mist tracking-wide">0–100 KM/H</p>
+      </div>
+      <div class="bg-ink p-8 sm:p-10 text-center stat" data-target="1540" data-suffix="" data-dec="0">
+        <div class="text-4xl sm:text-6xl font-display font-extrabold chrome-text stat-num">0</div>
+        <p class="mt-3 text-xs sm:text-sm font-mono text-mist tracking-wide">HORSEPOWER</p>
+      </div>
+      <div class="bg-ink p-8 sm:p-10 text-center stat" data-target="742" data-suffix="km" data-dec="0">
+        <div class="text-4xl sm:text-6xl font-display font-extrabold grad-text stat-num">0</div>
+        <p class="mt-3 text-xs sm:text-sm font-mono text-mist tracking-wide">RANGE (WLTP)</p>
+      </div>
+      <div class="bg-ink p-8 sm:p-10 text-center stat" data-target="358" data-suffix="" data-dec="0">
+        <div class="text-4xl sm:text-6xl font-display font-extrabold chrome-text stat-num">0</div>
+        <p class="mt-3 text-xs sm:text-sm font-mono text-mist tracking-wide">TOP SPEED KM/H</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES (alternating scenes) ============ -->
+<section id="features" class="relative py-28 sm:py-36 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <div class="max-w-2xl mb-20">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// ENGINEERING DOCTRINE</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl tracking-tight text-white leading-tight">
+        <span class="line-mask"><span class="line-inner">Built around the</span></span>
+        <span class="line-mask"><span class="line-inner grad-text">battery, not the engine.</span></span>
+      </h2>
+    </div>
+
+    <!-- Feature 1 -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-28 feature-row">
+      <div data-parallax="40">
+        <div class="relative rounded-3xl overflow-hidden card-glass aspect-[4/3] flex items-center justify-center">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(35,240,199,.25),transparent_60%)]"></div>
+          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80" alt="EV silhouette" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" />
+          <div class="relative z-10 text-center px-8">
+            <div class="text-7xl font-display font-extrabold grad-text">800V</div>
+            <p class="font-mono text-mist text-sm mt-2 tracking-widest">SOLID-STATE ARCHITECTURE</p>
+          </div>
+        </div>
+      </div>
+      <div data-parallax="-30">
+        <h3 class="font-display font-bold text-3xl sm:text-4xl text-white mb-5">The Voltcore™ Pack</h3>
+        <p class="text-mist leading-relaxed mb-6">A 124 kWh solid-state battery wrapped in an aerospace monocoque. Charge from 10–80% in eleven minutes, then unleash uninterrupted torque from a standstill to terminal velocity — no gears, no lag, no apology.</p>
+        <ul class="space-y-3 font-mono text-sm">
+          <li class="flex items-center gap-3"><span class="text-volt">◆</span> 124 kWh solid-state cells</li>
+          <li class="flex items-center gap-3"><span class="text-volt">◆</span> 11-minute 10–80% recharge</li>
+          <li class="flex items-center gap-3"><span class="text-volt">◆</span> Active liquid thermal jacket</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2 (reversed) -->
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center feature-row">
+      <div class="lg:order-2" data-parallax="40">
+        <div class="relative rounded-3xl overflow-hidden card-glass aspect-[4/3] flex items-center justify-center">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_40%,rgba(122,92,255,.28),transparent_60%)]"></div>
+          <img src="https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1600&q=80" alt="aero detail" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" />
+          <div class="relative z-10 text-center px-8">
+            <div class="text-7xl font-display font-extrabold chrome-text">0.19</div>
+            <p class="font-mono text-mist text-sm mt-2 tracking-widest">DRAG COEFFICIENT</p>
+          </div>
+        </div>
+      </div>
+      <div class="lg:order-1" data-parallax="-30">
+        <h3 class="font-display font-bold text-3xl sm:text-4xl text-white mb-5">Active Morphing Aero</h3>
+        <p class="text-mist leading-relaxed mb-6">Twelve adaptive surfaces read the road 1,000 times per second, reshaping the body between slipstream and downforce modes. The APEX is quiet because it cheats the wind — then it makes the wind work.</p>
+        <ul class="space-y-3 font-mono text-sm">
+          <li class="flex items-center gap-3"><span class="text-neon">◆</span> 12 adaptive aero surfaces</li>
+          <li class="flex items-center gap-3"><span class="text-neon">◆</span> Auto deploy rear blade</li>
+          <li class="flex items-center gap-3"><span class="text-neon">◆</span> 540 kg cornering downforce</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONFIGURATOR / COLORWAYS ============ -->
+<section id="config" class="relative py-28 sm:py-36 bg-carbon border-y border-white/5 overflow-hidden">
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(35,240,199,.12),transparent_60%)]"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// MAKE IT YOURS</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl tracking-tight text-white">Configure the <span class="grad-text">Apex</span></h2>
+    </div>
+
+    <div class="grid lg:grid-cols-5 gap-10 items-center">
+      <!-- Preview -->
+      <div class="lg:col-span-3">
+        <div class="relative rounded-[2rem] card-glass glow-ring aspect-video flex items-center justify-center overflow-hidden">
+          <div id="configGlow" class="absolute inset-0 transition-all duration-700" style="background:radial-gradient(circle at 50% 60%, rgba(35,240,199,.30), transparent 60%)"></div>
+          <div class="stage3d w-full">
+            <div class="car3d" id="carConfig" style="transform:rotateX(56deg) rotateZ(-14deg); width:min(520px,72vw)">
+              <div class="car-shadow"></div>
+              <div class="car-body" id="cfgBody"></div>
+              <div class="car-cabin"></div>
+              <div class="car-light l"></div><div class="car-light r"></div>
+              <div class="wheel fl"></div><div class="wheel fr"></div>
+            </div>
+          </div>
+          <span id="cfgName" class="absolute bottom-5 left-6 font-mono text-sm tracking-widest text-white">VOLT GREEN</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="lg:col-span-2 space-y-8">
+        <div>
+          <p class="font-mono text-xs text-mist tracking-widest mb-4">EXTERIOR FINISH</p>
+          <div class="flex flex-wrap gap-3" id="swatches">
+            <button class="swatch w-12 h-12 rounded-full ring-2 ring-volt ring-offset-2 ring-offset-carbon transition" data-c1="#23f0c7" data-c2="#0a0c12" data-name="VOLT GREEN" style="background:linear-gradient(135deg,#23f0c7,#0a0c12)"></button>
+            <button class="swatch w-12 h-12 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-carbon transition" data-c1="#7a5cff" data-c2="#0a0c12" data-name="NEBULA VIOLET" style="background:linear-gradient(135deg,#7a5cff,#0a0c12)"></button>
+            <button class="swatch w-12 h-12 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-carbon transition" data-c1="#ff4d6d" data-c2="#0a0c12" data-name="EMBER RED" style="background:linear-gradient(135deg,#ff4d6d,#0a0c12)"></button>
+            <button class="swatch w-12 h-12 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-carbon transition" data-c1="#c7cdd6" data-c2="#11141d" data-name="LIQUID CHROME" style="background:linear-gradient(135deg,#c7cdd6,#11141d)"></button>
+            <button class="swatch w-12 h-12 rounded-full ring-2 ring-transparent ring-offset-2 ring-offset-carbon transition" data-c1="#f5c451" data-c2="#0a0c12" data-name="SOLAR GOLD" style="background:linear-gradient(135deg,#f5c451,#0a0c12)"></button>
+          </div>
+        </div>
+
+        <div class="space-y-3" id="trims">
+          <button class="trim w-full text-left card-glass rounded-xl px-5 py-4 flex justify-between items-center border-volt/60" data-trim="LAUNCH" data-price="284,000">
+            <span><span class="block text-white font-semibold">Launch Edition</span><span class="text-xs font-mono text-mist">Carbon aero · forged 22"</span></span>
+            <span class="font-mono text-volt">$284k</span>
+          </button>
+          <button class="trim w-full text-left card-glass rounded-xl px-5 py-4 flex justify-between items-center" data-trim="TRACK" data-price="331,500">
+            <span><span class="block text-white font-semibold">Track Pack</span><span class="text-xs font-mono text-mist">Ceramic brakes · roll cage</span></span>
+            <span class="font-mono text-mist">$331k</span>
+          </button>
+          <button class="trim w-full text-left card-glass rounded-xl px-5 py-4 flex justify-between items-center" data-trim="FOUNDERS" data-price="412,000">
+            <span><span class="block text-white font-semibold">Founders 001</span><span class="text-xs font-mono text-mist">Numbered · bespoke cabin</span></span>
+            <span class="font-mono text-mist">$412k</span>
+          </button>
+        </div>
+
+        <a href="#pricing" class="reserve-glow block text-center rounded-xl bg-gradient-to-r from-volt to-neon text-ink font-bold px-7 py-4 hover:scale-[1.02] transition">
+          Reserve — from $<span id="cfgPrice">284,000</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / ENGINEERING ============ -->
+<section class="relative py-28 sm:py-36 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div data-parallax="-24">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// THE WORKSHOP</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl text-white leading-tight mb-6">
+        Forged in a clean room.<br /><span class="chrome-text">Tested on the edge.</span>
+      </h2>
+      <p class="text-mist leading-relaxed mb-8">VOLTARIS was founded by ex-aerospace and motorsport engineers who refused to compromise. Every APEX is hand-assembled in our carbon-neutral atelier outside Geneva, then validated across 38,000 km of proving ground before it earns its badge.</p>
+      <div class="grid grid-cols-3 gap-6">
+        <div><div class="text-3xl font-display font-bold grad-text">2021</div><p class="font-mono text-xs text-mist mt-1">FOUNDED</p></div>
+        <div><div class="text-3xl font-display font-bold grad-text">38k</div><p class="font-mono text-xs text-mist mt-1">TEST KM / UNIT</p></div>
+        <div><div class="text-3xl font-display font-bold grad-text">100%</div><p class="font-mono text-xs text-mist mt-1">CARBON NEUTRAL</p></div>
+      </div>
+    </div>
+    <div data-parallax="28">
+      <div class="relative rounded-3xl overflow-hidden card-glass aspect-[4/5]">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(122,92,255,.3),transparent_60%)]"></div>
+        <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1600&q=80" alt="workshop" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-55 mix-blend-luminosity" />
+        <div class="absolute bottom-6 left-6 right-6 card-glass rounded-2xl p-5">
+          <p class="font-mono text-xs text-volt tracking-widest mb-1">GENEVA ATELIER · BAY 07</p>
+          <p class="text-white font-semibold">Each chassis takes 19 days to assemble.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRESS MARQUEE ============ -->
+<section class="py-10 border-y border-white/5 bg-carbon overflow-hidden">
+  <div class="marquee gap-16 text-mist/60 font-display font-bold text-2xl sm:text-3xl tracking-tight whitespace-nowrap">
+    <span>APEX REVIEW</span><span class="text-volt">★</span><span>DRIVE QUARTERLY</span><span class="text-neon">★</span><span>VOLT JOURNAL</span><span class="text-ember">★</span><span>HYPER MAGAZINE</span><span class="text-volt">★</span>
+    <span>APEX REVIEW</span><span class="text-volt">★</span><span>DRIVE QUARTERLY</span><span class="text-neon">★</span><span>VOLT JOURNAL</span><span class="text-ember">★</span><span>HYPER MAGAZINE</span><span class="text-volt">★</span>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-28 sm:py-36">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// FROM THE PRESS</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl text-white">The verdict is <span class="grad-text">unanimous.</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="tilt card-glass rounded-2xl p-8 hover:border-volt/40 transition">
+        <div class="text-volt text-2xl mb-4">★★★★★</div>
+        <blockquote class="text-chrome leading-relaxed">"The APEX rewrites what 'fast' feels like. It's eerily silent until it isn't — then your stomach files a complaint."</blockquote>
+        <figcaption class="mt-6 font-mono text-sm text-mist">— Marlow Reyes, <span class="text-white">Drive Quarterly</span></figcaption>
+      </figure>
+      <figure class="tilt card-glass rounded-2xl p-8 hover:border-neon/40 transition">
+        <div class="text-neon text-2xl mb-4">★★★★★</div>
+        <blockquote class="text-chrome leading-relaxed">"Solid-state range that embarrasses the gas era. We charged once and forgot the word 'station' existed."</blockquote>
+        <figcaption class="mt-6 font-mono text-sm text-mist">— Iris Kapoor, <span class="text-white">Volt Journal</span></figcaption>
+      </figure>
+      <figure class="tilt card-glass rounded-2xl p-8 hover:border-ember/40 transition">
+        <div class="text-ember text-2xl mb-4">★★★★★</div>
+        <blockquote class="text-chrome leading-relaxed">"Morphing aero is witchcraft. The car shapes itself to the corner before you've even committed to it."</blockquote>
+        <figcaption class="mt-6 font-mono text-sm text-mist">— Theo Vance, <span class="text-white">Hyper Magazine</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / RESERVE ============ -->
+<section id="pricing" class="relative py-28 sm:py-36 bg-carbon border-y border-white/5 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-30"></div>
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 relative">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// SECURE YOUR ALLOCATION</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl text-white">Reserve the <span class="grad-text">Apex</span></h2>
+      <p class="text-mist mt-5">Only 999 will ever be built. A fully refundable deposit holds your build slot.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="card-glass rounded-3xl p-8">
+        <p class="font-mono text-mist text-sm tracking-widest">LAUNCH</p>
+        <div class="mt-4 text-4xl font-display font-extrabold text-white">$284k</div>
+        <p class="text-mist text-sm mt-1">$5,000 deposit</p>
+        <ul class="mt-6 space-y-3 text-sm text-chrome/90 font-mono">
+          <li>◆ 1,540 hp dual motor</li>
+          <li>◆ Forged 22" wheels</li>
+          <li>◆ Volt Green finish</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 block text-center rounded-xl border border-white/15 py-3 font-semibold text-white hover:bg-white/5 transition">Reserve Launch</a>
+      </div>
+      <div class="relative rounded-3xl p-8 bg-gradient-to-b from-volt/15 to-neon/10 border border-volt/40 reserve-glow scale-[1.03]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-volt text-ink text-xs font-bold px-3 py-1 font-mono">MOST RESERVED</span>
+        <p class="font-mono text-volt text-sm tracking-widest">TRACK PACK</p>
+        <div class="mt-4 text-4xl font-display font-extrabold text-white">$331k</div>
+        <p class="text-mist text-sm mt-1">$10,000 deposit</p>
+        <ul class="mt-6 space-y-3 text-sm text-white/90 font-mono">
+          <li>◆ Carbon-ceramic brakes</li>
+          <li>◆ Track telemetry suite</li>
+          <li>◆ Any colorway</li>
+          <li>◆ Priority delivery</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 block text-center rounded-xl bg-gradient-to-r from-volt to-neon text-ink py-3 font-bold hover:scale-[1.02] transition">Reserve Track</a>
+      </div>
+      <div class="card-glass rounded-3xl p-8">
+        <p class="font-mono text-mist text-sm tracking-widest">FOUNDERS 001</p>
+        <div class="mt-4 text-4xl font-display font-extrabold text-white">$412k</div>
+        <p class="text-mist text-sm mt-1">$25,000 deposit</p>
+        <ul class="mt-6 space-y-3 text-sm text-chrome/90 font-mono">
+          <li>◆ Numbered 1–99</li>
+          <li>◆ Bespoke atelier cabin</li>
+          <li>◆ Owner driving day</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 block text-center rounded-xl border border-white/15 py-3 font-semibold text-white hover:bg-white/5 transition">Reserve Founders</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-28 sm:py-36">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="font-mono text-volt text-sm tracking-widest mb-4" data-fade>// QUESTIONS</p>
+      <h2 class="font-display font-extrabold text-4xl sm:text-5xl text-white">Frequently asked</h2>
+    </div>
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item card-glass rounded-2xl px-6">
+        <button class="faq-head w-full flex justify-between items-center py-5 text-left">
+          <span class="text-white font-semibold">Is the deposit refundable?</span>
+          <span class="faq-ico text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="text-mist pb-5 leading-relaxed">Yes — fully refundable any time before your build enters the assembly queue. Your allocation number is held the moment your deposit clears.</p></div>
+      </div>
+      <div class="faq-item card-glass rounded-2xl px-6">
+        <button class="faq-head w-full flex justify-between items-center py-5 text-left">
+          <span class="text-white font-semibold">When does delivery begin?</span>
+          <span class="faq-ico text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="text-mist pb-5 leading-relaxed">First Launch Edition deliveries start Q2 2027, rolling out by reservation order. Track Pack reservations receive priority slots in the same window.</p></div>
+      </div>
+      <div class="faq-item card-glass rounded-2xl px-6">
+        <button class="faq-head w-full flex justify-between items-center py-5 text-left">
+          <span class="text-white font-semibold">What is the real-world range?</span>
+          <span class="faq-ico text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="text-mist pb-5 leading-relaxed">742 km WLTP. In mixed real-world driving, owners average 600–660 km. The 800V solid-state pack adds ~520 km in an 11-minute charge stop.</p></div>
+      </div>
+      <div class="faq-item card-glass rounded-2xl px-6">
+        <button class="faq-head w-full flex justify-between items-center py-5 text-left">
+          <span class="text-white font-semibold">Can I change my configuration later?</span>
+          <span class="faq-ico text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="text-mist pb-5 leading-relaxed">Absolutely. Your spec stays editable until the build lock date, roughly 60 days before assembly. Your concierge will confirm every detail before lock.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-32 overflow-hidden">
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(35,240,199,.16),transparent_60%)]"></div>
+  <div class="absolute inset-0 grid-bg opacity-30"></div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center relative">
+    <h2 class="font-display font-extrabold text-5xl sm:text-7xl tracking-tighter text-white leading-[0.95] mb-8">
+      <span class="line-mask"><span class="line-inner">The quiet ones</span></span>
+      <span class="line-mask"><span class="line-inner grad-text">win the loudest.</span></span>
+    </h2>
+    <p class="text-mist max-w-xl mx-auto mb-10">999 units. One of them could be yours. Lock your allocation before the queue closes.</p>
+    <a href="#pricing" class="magnetic reserve-glow inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-volt to-neon text-ink font-bold px-9 py-5 text-lg hover:scale-[1.03] transition">
+      Reserve the Apex →
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-white/5 bg-carbon">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2 mb-4">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-gradient-to-br from-volt to-neon">
+            <span class="w-3 h-3 rotate-45 bg-ink rounded-[3px]"></span>
+          </span>
+          <span class="font-display font-extrabold text-white text-lg">VOLTARIS</span>
+        </a>
+        <p class="text-mist max-w-sm leading-relaxed">All-electric hypercars hand-built in Geneva. Engineered for silence. Tuned for violence.</p>
+      </div>
+      <div>
+        <p class="font-mono text-xs text-volt tracking-widest mb-4">EXPLORE</p>
+        <ul class="space-y-2 text-mist text-sm">
+          <li><a href="#specs" class="hover:text-white transition">Performance</a></li>
+          <li><a href="#config" class="hover:text-white transition">Configure</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Reserve</a></li>
+          <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-mono text-xs text-volt tracking-widest mb-4">COMPANY</p>
+        <ul class="space-y-2 text-mist text-sm">
+          <li><a href="#" class="hover:text-white transition">The Atelier</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+          <li><a href="#" class="hover:text-white transition">Press Kit</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-14 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between gap-4 text-xs font-mono text-mist/60">
+      <p>© 2026 VOLTARIS Motors. A fictional concept brand. All specs illustrative.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-white transition">Privacy</a>
+        <a href="#" class="hover:text-white transition">Terms</a>
+        <a href="#" class="hover:text-white transition">Legal</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const gsapOK = typeof gsap !== 'undefined';
+  if (gsapOK && typeof ScrollTrigger !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Nav shrink on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.querySelector('nav').classList.add('!py-2','shadow-2xl');
+    else nav.querySelector('nav').classList.remove('!py-2','shadow-2xl');
+  };
+  window.addEventListener('scroll', onScroll, { passive:true }); onScroll();
+
+  /* ---------- Reduced motion: reveal everything, skip animation ---------- */
+  if (reduce || !gsapOK) {
+    document.querySelectorAll('.line-inner').forEach(e => e.style.transform = 'none');
+    document.querySelectorAll('[data-fade]').forEach(e => { e.style.opacity = 1; });
+    runCountsImmediate();
+    bindUI();
+    return;
+  }
+
+  /* ---------- Headline masked-line reveals ---------- */
+  document.querySelectorAll('.line-mask').forEach(mask => {
+    const inner = mask.querySelector('.line-inner');
+    gsap.to(inner, {
+      yPercent: 0, ease: 'power4.out', duration: 1.1,
+      scrollTrigger: { trigger: mask, start: 'top 88%' }
+    });
+  });
+
+  /* ---------- data-fade ---------- */
+  gsap.utils.toArray('[data-fade]').forEach(el => {
+    gsap.fromTo(el, { y: 30, opacity: 0 }, {
+      y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 90%' }
+    });
+  });
+
+  /* ---------- Pinned hero scrub: car drives in + tilts ---------- */
+  const car = document.getElementById('car3d');
+  if (car) {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: '#top', start: 'top top', end: '+=120%',
+        scrub: 1, pin: '#heroPin', pinSpacing: true
+      }
+    });
+    tl.fromTo(car, { rotateZ: -22, scale: 0.9 }, { rotateZ: 16, scale: 1.06, ease: 'none' }, 0)
+      .to('#streak1', { left: '70%', opacity: 1, ease: 'none' }, 0)
+      .to('#streak2', { left: '70%', opacity: 1, ease: 'none' }, 0.1)
+      .to('#streak1', { opacity: 0, ease: 'none' }, 0.6)
+      .to('#streak2', { opacity: 0, ease: 'none' }, 0.7);
+  }
+
+  /* ---------- Parallax containers ---------- */
+  gsap.utils.toArray('[data-parallax]').forEach(el => {
+    const amt = parseFloat(el.dataset.parallax) || 0;
+    gsap.fromTo(el, { y: amt }, {
+      y: -amt, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  /* ---------- Count-up ---------- */
+  document.querySelectorAll('.stat').forEach(stat => {
+    const num = stat.querySelector('.stat-num');
+    const target = parseFloat(stat.dataset.target);
+    const dec = parseInt(stat.dataset.dec || '0', 10);
+    const suffix = stat.dataset.suffix || '';
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: stat, start: 'top 85%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: target, duration: 2, ease: 'power2.out',
+        onUpdate: () => { num.textContent = obj.v.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + suffix; }
+      })
+    });
+  });
+
+  bindUI();
+
+  function runCountsImmediate() {
+    document.querySelectorAll('.stat').forEach(stat => {
+      const num = stat.querySelector('.stat-num');
+      const dec = parseInt(stat.dataset.dec || '0', 10);
+      num.textContent = parseFloat(stat.dataset.target).toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (stat.dataset.suffix || '');
+    });
+  }
+
+  /* ---------- UI: magnetic, tilt, faq, config, car drag ---------- */
+  function bindUI() {
+    // Magnetic buttons
+    if (!reduce) {
+      document.querySelectorAll('.magnetic').forEach(btn => {
+        btn.addEventListener('mousemove', e => {
+          const r = btn.getBoundingClientRect();
+          const x = e.clientX - r.left - r.width / 2;
+          const y = e.clientY - r.top - r.height / 2;
+          btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+        });
+        btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+      });
+
+      // Tilt cards
+      document.querySelectorAll('.tilt').forEach(card => {
+        card.addEventListener('mousemove', e => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `perspective(800px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg)`;
+        });
+        card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(800px) rotateY(0) rotateX(0)'; });
+      });
+
+      // Hero car: drag to rotate
+      const stageCar = document.getElementById('car3d');
+      if (stageCar) {
+        let dragging = false, startX = 0, baseZ = 0;
+        const getZ = () => {
+          const t = stageCar.style.transform.match(/rotateZ\(([-\d.]+)deg\)/);
+          return t ? parseFloat(t[1]) : 0;
+        };
+        const setZ = z => { stageCar.style.transform = `rotateX(58deg) rotateZ(${z}deg)`; };
+        stageCar.addEventListener('pointerdown', e => { dragging = true; startX = e.clientX; baseZ = getZ(); stageCar.setPointerCapture(e.pointerId); });
+        stageCar.addEventListener('pointermove', e => { if (dragging) setZ(baseZ + (e.clientX - startX) * 0.4); });
+        stageCar.addEventListener('pointerup', () => { dragging = false; });
+        stageCar.addEventListener('pointercancel', () => { dragging = false; });
+      }
+    }
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+      item.querySelector('.faq-head').addEventListener('click', () => {
+        const open = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!open) item.classList.add('open');
+      });
+    });
+
+    // Configurator colorways
+    const cfgBody = document.getElementById('cfgBody');
+    const cfgName = document.getElementById('cfgName');
+    const cfgGlow = document.getElementById('configGlow');
+    document.querySelectorAll('.swatch').forEach(sw => {
+      sw.addEventListener('click', () => {
+        document.querySelectorAll('.swatch').forEach(s => s.classList.replace('ring-volt', 'ring-transparent'));
+        sw.classList.remove('ring-transparent'); sw.classList.add('ring-volt');
+        const c1 = sw.dataset.c1, c2 = sw.dataset.c2;
+        if (cfgBody) cfgBody.style.background =
+          `linear-gradient(115deg, ${c1}55, transparent 30%), linear-gradient(180deg, ${c1}aa 0%, ${c2} 55%, #06070b 100%)`;
+        if (cfgName) cfgName.textContent = sw.dataset.name;
+        if (cfgGlow) cfgGlow.style.background = `radial-gradient(circle at 50% 60%, ${c1}55, transparent 60%)`;
+      });
+    });
+
+    // Trims -> price
+    const cfgPrice = document.getElementById('cfgPrice');
+    document.querySelectorAll('.trim').forEach(tr => {
+      tr.addEventListener('click', () => {
+        document.querySelectorAll('.trim').forEach(t => t.classList.remove('border-volt/60'));
+        tr.classList.add('border-volt/60');
+        if (cfgPrice) cfgPrice.textContent = tr.dataset.price;
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

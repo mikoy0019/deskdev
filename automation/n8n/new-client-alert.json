@@ -1,0 +1,201 @@
+{
+  "name": "[deskdev] new-client-alert",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-new-client",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-new-client",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/clients?select=name,company,email,status,engagement,created_at&order=created_at.desc&limit=10",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "fetch",
+      "name": "Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipients come from profiles (the Recipients node), never a hardcoded\n// personal address: the mail follows whoever holds the role today, and a\n// deactivated account (profiles.deactivated_at, migration 032) stops getting\n// it. The company inbox is used only when nobody qualifies.\nconst FALLBACK_TO = 'nixgensolutions@gmail.com';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst people = $('Recipients').all().map(i => i.json).flat()\n  .filter(p => p && p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\nconst can = (p, feature, level) => p.role === 'admin'\n  || (p.permissions || {})[feature] === 'edit'\n  || (level === 'view' && (p.permissions || {})[feature] === 'view');\nconst addressOf = (list) => [...new Set(list.map(p => String(p.email).trim().toLowerCase()))].join(',');\nconst TO = addressOf(people.filter(p => can(p, 'clients', 'edit'))) || FALLBACK_TO;\n\nconst rows = $input.all().map(i => i.json).flat()\n  .filter(x => x && typeof x === 'object' && Object.keys(x).length > 0);\nconst MNL = 'Asia/Manila';\nconst dkey = (d) => new Intl.DateTimeFormat('en-CA',{timeZone:MNL,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d));\nconst today = dkey(new Date());\nconst peso = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});\nconst wrap = (title, sub, body) => `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 4px\">${title}</h2><p style=\"margin:0 0 16px;color:#666\">${sub}</p>${body}\n  <p style=\"margin-top:20px;color:#999;font-size:12px\">Sent by n8n</p></div>`;\nconst table = (headers, trs) => `<table style=\"border-collapse:collapse;font-size:14px\">\n  <tr style=\"text-align:left;color:#666;font-size:12px;text-transform:uppercase\">${headers.map(h=>`<th style=\"padding:6px 12px\">${h}</th>`).join('')}</tr>\n  ${trs}</table>`;\n// Cell values are DB text (task titles, client names) members edit: always escaped.\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst td = (v, extra='') => `<td style=\"padding:6px 12px;border-bottom:1px solid #eee;${extra}\">${esc(v)}</td>`;\n\nconst trs = rows.map(c => `<tr>${td(c.name)}${td(c.company||'—')}${td(c.email||'—')}${td(c.status||'—')}</tr>`).join('')\n  || `<tr>${td('No clients','color:#999')}${td('')}${td('')}${td('')}</tr>`;\nconst html = wrap('DeskDev — Latest clients', `${rows.length} most recent`, table(['Name','Company','Email','Status'], trs));\nconst __n = rows.length; return (true && !__n) ? [] : [{ json: { html, count: __n, to: TO } }];\n"
+      },
+      "id": "build",
+      "name": "Build",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "=DeskDev — latest clients ({{ $json.count }})",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "aa512e75-13ef-44be-8d9d-81848938d5a5"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_7494873874672194724"
+        ]
+      },
+      "id": "label",
+      "name": "Label",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "fc5a9664-34a5-4c2c-8119-d838ecc9742f",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch": {
+      "main": [
+        [
+          {
+            "node": "Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email": {
+      "main": [
+        [
+          {
+            "node": "Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

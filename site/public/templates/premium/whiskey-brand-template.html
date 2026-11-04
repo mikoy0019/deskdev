@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cask &amp; Ember — Small-Batch Highland Whiskey</title>
+<meta name="description" content="Cask & Ember — a small-batch Highland distillery. Single malt expressions aged in hand-charred oak. Crafted slow, drawn from the ember." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0c0907',
+          ink2: '#16110d',
+          ember: '#c5772e',
+          amber: '#e0a13c',
+          copper: '#b06a36',
+          gold: '#f0cf8e',
+          smoke: '#a99a89',
+          parchment: '#efe5d6',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans: ['Jost', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; background: #0c0907; color: #efe5d6; }
+  body { font-family: 'Jost', sans-serif; cursor: none; }
+  ::selection { background: #c5772e; color: #0c0907; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #f0cf8e; }
+  .cursor-ring { width: 38px; height: 38px; border: 1px solid rgba(224,161,60,.6);
+    transition: width .25s, height .25s, background .25s, border-color .25s; }
+  .cursor-ring.is-hover { width: 64px; height: 64px; background: rgba(197,119,46,.12); border-color: rgba(240,207,142,.9); }
+
+  /* Copper shimmer text */
+  .shimmer {
+    background: linear-gradient(100deg, #b06a36 0%, #f0cf8e 25%, #fff4dc 40%, #f0cf8e 55%, #b06a36 80%);
+    background-size: 250% 100%;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -250% 0; } }
+
+  /* Masked reveal */
+  .reveal-mask { overflow: hidden; }
+  .reveal-line { display: inline-block; transform: translateY(110%); }
+
+  /* Liquid pour glass */
+  .glass {
+    position: relative; width: 120px; height: 200px; margin: 0 auto;
+    border: 2px solid rgba(176,106,54,.5); border-top: none;
+    border-radius: 6px 6px 60px 60px / 6px 6px 30px 30px;
+    background: rgba(255,255,255,.02); overflow: hidden;
+  }
+  .liquid {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+    background: linear-gradient(180deg, #e0a13c, #b06a36 70%, #8a4d24);
+    box-shadow: inset 0 6px 14px rgba(255,240,200,.4);
+    transition: height 2.4s cubic-bezier(.6,0,.2,1);
+  }
+  .liquid::before {
+    content: ''; position: absolute; top: -8px; left: 0; right: 0; height: 16px;
+    background: radial-gradient(ellipse at 50% 50%, #f0cf8e, #e0a13c);
+    border-radius: 50%; animation: ripple 3s ease-in-out infinite;
+  }
+  @keyframes ripple { 0%,100% { transform: scaleX(1) translateY(0); } 50% { transform: scaleX(1.04) translateY(-2px); } }
+
+  .pour-stream {
+    position: absolute; top: -120px; left: 50%; width: 4px; height: 120px;
+    background: linear-gradient(180deg, transparent, #e0a13c);
+    transform: translateX(-50%); opacity: 0;
+  }
+
+  /* Marquee */
+  .marquee { display: flex; gap: 4rem; width: max-content; animation: marquee 32s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* Bottle tilt */
+  .tilt-wrap { perspective: 1000px; }
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+
+  /* Section divider */
+  .rule { height: 1px; background: linear-gradient(90deg, transparent, rgba(176,106,54,.6), transparent); }
+
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer, .liquid::before, .marquee { animation: none !important; }
+    .reveal-line { transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="relative">
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="w-9 h-9 rounded-full border border-copper/60 flex items-center justify-center text-amber font-serif text-lg group-hover:bg-copper/20 transition">C</span>
+      <span class="font-serif text-xl tracking-[.2em] text-parchment">CASK &amp; EMBER</span>
+    </a>
+    <ul class="hidden lg:flex items-center gap-9 text-[13px] tracking-widest uppercase text-smoke">
+      <li><a href="#expressions" class="hover:text-gold transition">Expressions</a></li>
+      <li><a href="#process" class="hover:text-gold transition">Distillery</a></li>
+      <li><a href="#heritage" class="hover:text-gold transition">Heritage</a></li>
+      <li><a href="#cask" class="hover:text-gold transition">Cask Program</a></li>
+      <li><a href="#visit" class="hover:text-gold transition">Visit</a></li>
+    </ul>
+    <a href="#expressions" id="shopCta" class="relative inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-amber/60 text-amber text-[13px] tracking-widest uppercase overflow-hidden">
+      <span class="relative z-10">Shop</span>
+      <span class="relative z-10 text-base">→</span>
+    </a>
+  </nav>
+  <div class="rule mx-6 opacity-0" id="navRule"></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-ink2 via-ink to-ink"></div>
+    <div class="absolute -top-40 -right-40 w-[40rem] h-[40rem] rounded-full bg-ember/10 blur-3xl"></div>
+    <div class="absolute bottom-0 left-1/4 w-[30rem] h-[30rem] rounded-full bg-copper/10 blur-3xl"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <!-- copy -->
+    <div>
+      <div class="reveal-mask mb-6"><span class="reveal-line text-[12px] tracking-[.5em] uppercase text-ember">Small-Batch · Est. 1987 · Highland</span></div>
+      <h1 class="font-serif leading-[.92] text-parchment text-6xl sm:text-7xl xl:text-8xl mb-8">
+        <span class="reveal-mask block"><span class="reveal-line">Drawn from</span></span>
+        <span class="reveal-mask block"><span class="reveal-line shimmer italic">the ember.</span></span>
+      </h1>
+      <p class="reveal-mask"><span class="reveal-line block max-w-md text-smoke text-lg leading-relaxed mb-10">
+        Hand-charred oak. Slow Highland air. A single malt distilled in copper and rested in patience — never hurried, never repeated.
+      </span></p>
+      <div class="flex flex-wrap items-center gap-5">
+        <a href="#expressions" class="magnetic px-8 py-4 rounded-full bg-gradient-to-r from-ember to-copper text-ink font-medium tracking-widest uppercase text-sm hover:shadow-[0_0_40px_-6px_rgba(197,119,46,.7)] transition">Shop the Collection</a>
+        <a href="#process" class="text-smoke hover:text-gold tracking-widest uppercase text-sm border-b border-copper/40 pb-1 transition">Our Process</a>
+      </div>
+
+      <!-- count ups -->
+      <div class="grid grid-cols-3 gap-6 mt-16 max-w-lg">
+        <div><div class="font-serif text-4xl text-amber" data-count="37" data-suffix="">0</div><div class="text-[11px] tracking-widest uppercase text-smoke mt-1">Years Aged</div></div>
+        <div><div class="font-serif text-4xl text-amber" data-count="1200" data-suffix="">0</div><div class="text-[11px] tracking-widest uppercase text-smoke mt-1">Resting Casks</div></div>
+        <div><div class="font-serif text-4xl text-amber" data-count="9" data-suffix="">0</div><div class="text-[11px] tracking-widest uppercase text-smoke mt-1">Gold Medals</div></div>
+      </div>
+    </div>
+
+    <!-- bottle -->
+    <div class="relative flex justify-center tilt-wrap" data-parallax>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="w-80 h-80 rounded-full bg-gradient-radial from-ember/25 to-transparent blur-2xl"></div>
+      </div>
+      <div class="tilt relative w-[280px] sm:w-[340px] rounded-2xl overflow-hidden bg-gradient-to-b from-ink2 to-black border border-copper/20 shadow-[0_30px_80px_-20px_rgba(0,0,0,.9)]">
+        <img src="https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Cask & Ember single malt bottle"
+             class="w-full h-[460px] object-cover opacity-90" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+        <div class="absolute bottom-5 left-5 right-5">
+          <div class="font-serif text-2xl text-gold">Ember Reserve</div>
+          <div class="text-xs tracking-widest uppercase text-smoke">15 Year · Cask Strength · 54.6%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-smoke text-[11px] tracking-[.4em] uppercase animate-pulse">Scroll</div>
+</section>
+
+<!-- ============ AWARDS MARQUEE ============ -->
+<section class="py-8 border-y border-copper/15 bg-ink2/60 overflow-hidden">
+  <div class="marquee text-smoke font-serif text-xl italic">
+    <span class="flex gap-16">
+      <span>★ World Whiskey Gold 2024</span><span>★ San Francisco Double Gold</span>
+      <span>★ Best Highland Single Malt</span><span>★ Master Distiller's Choice</span>
+      <span>★ International Spirits Trophy</span>
+    </span>
+    <span class="flex gap-16" aria-hidden="true">
+      <span>★ World Whiskey Gold 2024</span><span>★ San Francisco Double Gold</span>
+      <span>★ Best Highland Single Malt</span><span>★ Master Distiller's Choice</span>
+      <span>★ International Spirits Trophy</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ EXPRESSIONS ============ -->
+<section id="expressions" class="py-28 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div>
+        <span class="text-[12px] tracking-[.5em] uppercase text-ember">The Collection</span>
+        <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 anim-head">Our Expressions</h2>
+      </div>
+      <p class="text-smoke max-w-sm">Four single malts, each drawn from a different corner of our warehouse and a different season of fire.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card template -->
+      <article class="expr group relative rounded-2xl overflow-hidden border border-copper/15 bg-ink2/50 hover:border-amber/50 transition-all duration-500">
+        <div class="relative h-72 overflow-hidden bg-gradient-to-b from-ink2 to-black">
+          <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Ember Reserve" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-baseline">
+            <h3 class="font-serif text-2xl text-gold">Ember Reserve</h3>
+            <span class="text-amber text-sm">£128</span>
+          </div>
+          <p class="text-xs tracking-widest uppercase text-smoke mt-1 mb-4">15 Year · Cask Strength</p>
+          <p class="text-smoke text-sm leading-relaxed">Charred oak, dark toffee, a long smoky finish.</p>
+          <button class="magnetic mt-5 w-full py-2.5 rounded-full border border-copper/40 text-amber text-xs tracking-widest uppercase hover:bg-copper/20 transition">Add to Cask</button>
+        </div>
+      </article>
+
+      <article class="expr group relative rounded-2xl overflow-hidden border border-copper/15 bg-ink2/50 hover:border-amber/50 transition-all duration-500">
+        <div class="relative h-72 overflow-hidden bg-gradient-to-b from-ink2 to-black">
+          <img src="https://images.unsplash.com/photo-1582819509237-d5d8db8c3f0a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Highland Mist" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-baseline">
+            <h3 class="font-serif text-2xl text-gold">Highland Mist</h3>
+            <span class="text-amber text-sm">£96</span>
+          </div>
+          <p class="text-xs tracking-widest uppercase text-smoke mt-1 mb-4">12 Year · Sherry Cask</p>
+          <p class="text-smoke text-sm leading-relaxed">Dried fig, orange peel, gentle heather honey.</p>
+          <button class="magnetic mt-5 w-full py-2.5 rounded-full border border-copper/40 text-amber text-xs tracking-widest uppercase hover:bg-copper/20 transition">Add to Cask</button>
+        </div>
+      </article>
+
+      <article class="expr group relative rounded-2xl overflow-hidden border border-copper/15 bg-ink2/50 hover:border-amber/50 transition-all duration-500">
+        <div class="relative h-72 overflow-hidden bg-gradient-to-b from-ink2 to-black">
+          <img src="https://images.unsplash.com/photo-1608885898957-91d2e5d2d2d2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Black Cask" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-baseline">
+            <h3 class="font-serif text-2xl text-gold">Black Cask</h3>
+            <span class="text-amber text-sm">£174</span>
+          </div>
+          <p class="text-xs tracking-widest uppercase text-smoke mt-1 mb-4">21 Year · Peated</p>
+          <p class="text-smoke text-sm leading-relaxed">Bonfire smoke, sea salt, bittersweet cocoa.</p>
+          <button class="magnetic mt-5 w-full py-2.5 rounded-full border border-copper/40 text-amber text-xs tracking-widest uppercase hover:bg-copper/20 transition">Add to Cask</button>
+        </div>
+      </article>
+
+      <article class="expr group relative rounded-2xl overflow-hidden border border-copper/15 bg-ink2/50 hover:border-amber/50 transition-all duration-500">
+        <div class="relative h-72 overflow-hidden bg-gradient-to-b from-ink2 to-black">
+          <img src="https://images.unsplash.com/photo-1569529465841-dfecdab7503b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Solstice Edition" class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-baseline">
+            <h3 class="font-serif text-2xl text-gold">Solstice</h3>
+            <span class="text-amber text-sm">£245</span>
+          </div>
+          <p class="text-xs tracking-widest uppercase text-smoke mt-1 mb-4">Rare · Limited 600</p>
+          <p class="text-smoke text-sm leading-relaxed">Candied ginger, wild plum, a whisper of clove.</p>
+          <button class="magnetic mt-5 w-full py-2.5 rounded-full border border-copper/40 text-amber text-xs tracking-widest uppercase hover:bg-copper/20 transition">Add to Cask</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="py-28 px-6 bg-ink2/40 border-y border-copper/15 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative" data-parallax>
+      <div class="rounded-2xl overflow-hidden border border-copper/20 bg-gradient-to-b from-ink2 to-black h-[520px]">
+        <img src="https://images.unsplash.com/photo-1582819509237-d5d8db8c3f0a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Copper stills" class="w-full h-full object-cover opacity-85" />
+      </div>
+      <!-- pour glass overlay -->
+      <div class="absolute -bottom-8 -right-4 sm:right-8 bg-ink/90 backdrop-blur rounded-xl p-6 border border-copper/30">
+        <div class="glass"><span class="pour-stream"></span><div class="liquid" data-liquid></div></div>
+        <p class="text-center text-[11px] tracking-widest uppercase text-smoke mt-3">Cask Strength Pour</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">The Distillery</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 mb-8 anim-head">Fire, Copper &amp; Time</h2>
+      <ol class="space-y-8">
+        <li class="flex gap-5 process-step">
+          <span class="font-serif text-3xl text-copper/70 w-12 shrink-0">01</span>
+          <div><h3 class="font-serif text-2xl text-gold">Malting &amp; Mash</h3><p class="text-smoke mt-1">Floor-malted Highland barley, kilned over local peat and beechwood for a layered smoke.</p></div>
+        </li>
+        <li class="flex gap-5 process-step">
+          <span class="font-serif text-3xl text-copper/70 w-12 shrink-0">02</span>
+          <div><h3 class="font-serif text-2xl text-gold">Copper Distillation</h3><p class="text-smoke mt-1">Twice through hand-beaten copper stills, cut narrow for a cleaner, fuller spirit.</p></div>
+        </li>
+        <li class="flex gap-5 process-step">
+          <span class="font-serif text-3xl text-copper/70 w-12 shrink-0">03</span>
+          <div><h3 class="font-serif text-2xl text-gold">The Char</h3><p class="text-smoke mt-1">Casks charred by hand to a deep alligator finish — the ember that names us.</p></div>
+        </li>
+        <li class="flex gap-5 process-step">
+          <span class="font-serif text-3xl text-copper/70 w-12 shrink-0">04</span>
+          <div><h3 class="font-serif text-2xl text-gold">Patient Rest</h3><p class="text-smoke mt-1">Years in cool stone warehouses where Highland air does the slow, quiet work.</p></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HERITAGE ============ -->
+<section id="heritage" class="py-28 px-6 relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-[35rem] h-[35rem] rounded-full bg-ember/8 blur-3xl -z-10"></div>
+  <div class="max-w-5xl mx-auto text-center">
+    <span class="text-[12px] tracking-[.5em] uppercase text-ember">Since 1987</span>
+    <h2 class="font-serif text-5xl sm:text-7xl text-parchment mt-4 mb-10 anim-head leading-tight">
+      A family of <span class="italic shimmer">three generations</span><br/>tending one fire.
+    </h2>
+    <p class="text-smoke text-lg leading-relaxed max-w-3xl mx-auto">
+      Cask &amp; Ember was founded on a single belief: that whiskey worth keeping cannot be rushed. From a stone barn on the edge of the glen, founder Eilidh MacArran lit the first kiln and laid down forty casks. Today her grandchildren keep the same flame — same water, same wood, same refusal to compromise.
+    </p>
+    <div class="grid sm:grid-cols-3 gap-8 mt-16">
+      <div class="border-t border-copper/30 pt-6"><div class="font-serif text-2xl text-gold">Spring-Fed Water</div><p class="text-smoke text-sm mt-2">Drawn from the same glen spring since the first batch.</p></div>
+      <div class="border-t border-copper/30 pt-6"><div class="font-serif text-2xl text-gold">Hand-Built Casks</div><p class="text-smoke text-sm mt-2">Coopered and charred on-site by our own makers.</p></div>
+      <div class="border-t border-copper/30 pt-6"><div class="font-serif text-2xl text-gold">Family-Owned</div><p class="text-smoke text-sm mt-2">Never sold, never franchised — still independent.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TASTING NOTES ============ -->
+<section class="py-28 px-6 bg-ink2/40 border-y border-copper/15">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">On the Palate</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 anim-head">Tasting Notes</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="text-center">
+        <div class="font-serif text-amber text-5xl mb-4">Nose</div>
+        <div class="rule mb-6"></div>
+        <p class="text-smoke leading-relaxed">Warm toffee and charred oak rise first, then orchard fruit and a thread of distant peat smoke.</p>
+      </div>
+      <div class="text-center">
+        <div class="font-serif text-amber text-5xl mb-4">Palate</div>
+        <div class="rule mb-6"></div>
+        <p class="text-smoke leading-relaxed">Dark honey, dried fig and baking spice coat the tongue, balanced by a clean copper minerality.</p>
+      </div>
+      <div class="text-center">
+        <div class="font-serif text-amber text-5xl mb-4">Finish</div>
+        <div class="rule mb-6"></div>
+        <p class="text-smoke leading-relaxed">Long and glowing — embers of smoke, bittersweet cocoa and a final lick of sea salt.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CASK PROGRAM ============ -->
+<section id="cask" class="py-28 px-6 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">Own a Cask</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 mb-6 anim-head">The Cask Program</h2>
+      <p class="text-smoke text-lg leading-relaxed mb-8">Lay down your own cask of new-make spirit and let time make it yours. Visit it, taste it as it matures, and bottle it under your own name when it's ready.</p>
+      <ul class="space-y-4 mb-10">
+        <li class="flex items-center gap-3 text-parchment"><span class="text-amber">✦</span> Choose your oak: bourbon, sherry or virgin char</li>
+        <li class="flex items-center gap-3 text-parchment"><span class="text-amber">✦</span> Annual cask-side tastings at the distillery</li>
+        <li class="flex items-center gap-3 text-parchment"><span class="text-amber">✦</span> Personalised label &amp; up to 300 bottles</li>
+      </ul>
+      <a href="#visit" class="magnetic inline-block px-8 py-4 rounded-full bg-gradient-to-r from-ember to-copper text-ink font-medium tracking-widest uppercase text-sm hover:shadow-[0_0_40px_-6px_rgba(197,119,46,.7)] transition">Reserve a Cask</a>
+    </div>
+    <div class="grid grid-cols-2 gap-5">
+      <div class="rounded-2xl border border-copper/20 p-8 bg-ink2/50"><div class="font-serif text-4xl text-gold">£4,800</div><p class="text-xs tracking-widest uppercase text-smoke mt-2">Quarter Cask</p></div>
+      <div class="rounded-2xl border border-amber/40 p-8 bg-gradient-to-b from-copper/15 to-ink2/50 translate-y-6"><div class="font-serif text-4xl text-gold">£9,500</div><p class="text-xs tracking-widest uppercase text-smoke mt-2">Hogshead</p></div>
+      <div class="rounded-2xl border border-amber/40 p-8 bg-gradient-to-b from-copper/15 to-ink2/50 -translate-y-2"><div class="font-serif text-4xl text-gold">£14,200</div><p class="text-xs tracking-widest uppercase text-smoke mt-2">Butt</p></div>
+      <div class="rounded-2xl border border-copper/20 p-8 bg-ink2/50 translate-y-4"><div class="font-serif text-4xl text-gold">Bespoke</div><p class="text-xs tracking-widest uppercase text-smoke mt-2">Private Blend</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VISIT ============ -->
+<section id="visit" class="py-28 px-6 bg-ink2/40 border-y border-copper/15">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+    <div class="rounded-2xl overflow-hidden border border-copper/20 bg-gradient-to-b from-ink2 to-black h-[420px]" data-parallax>
+      <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="The distillery glen" class="w-full h-full object-cover opacity-85" />
+    </div>
+    <div>
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">Find Us</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 mb-6 anim-head">Visit the Glen</h2>
+      <p class="text-smoke text-lg leading-relaxed mb-8">Tour the stillhouse, walk the warehouses, and taste straight from the cask. Tours run Thursday through Sunday by reservation.</p>
+      <dl class="space-y-4 text-parchment">
+        <div class="flex gap-4"><dt class="w-28 text-smoke text-sm tracking-widest uppercase shrink-0">Address</dt><dd>Glen Arran Road, Highland, Scotland IV24</dd></div>
+        <div class="flex gap-4"><dt class="w-28 text-smoke text-sm tracking-widest uppercase shrink-0">Tours</dt><dd>Thu–Sun · 11:00, 14:00 &amp; 16:30</dd></div>
+        <div class="flex gap-4"><dt class="w-28 text-smoke text-sm tracking-widest uppercase shrink-0">Contact</dt><dd>visit@caskandember.co · +44 1349 000 000</dd></div>
+      </dl>
+      <a href="#" class="magnetic inline-block mt-8 px-8 py-4 rounded-full border border-amber/60 text-amber font-medium tracking-widest uppercase text-sm hover:bg-amber/10 transition">Book a Tour</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-28 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">In Their Words</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 anim-head">What They're Saying</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="rounded-2xl border border-copper/15 bg-ink2/50 p-8"><blockquote class="font-serif text-xl text-parchment italic leading-relaxed">"The Black Cask is the most complete peated malt I've poured in a decade — restrained, deep, unforgettable."</blockquote><figcaption class="mt-6 text-sm tracking-widest uppercase text-amber">— Whiskey Quarterly</figcaption></figure>
+      <figure class="rounded-2xl border border-copper/15 bg-ink2/50 p-8"><blockquote class="font-serif text-xl text-parchment italic leading-relaxed">"You can taste the patience. Ember Reserve drinks like a story told slowly by the fire."</blockquote><figcaption class="mt-6 text-sm tracking-widest uppercase text-amber">— The Dram Society</figcaption></figure>
+      <figure class="rounded-2xl border border-copper/15 bg-ink2/50 p-8"><blockquote class="font-serif text-xl text-parchment italic leading-relaxed">"A rare small-batch house still doing it the old way, and doing it better than most."</blockquote><figcaption class="mt-6 text-sm tracking-widest uppercase text-amber">— Spirits &amp; Oak</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="py-28 px-6 bg-ink2/40 border-y border-copper/15">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-16">
+      <span class="text-[12px] tracking-[.5em] uppercase text-ember">Good to Know</span>
+      <h2 class="font-serif text-5xl sm:text-6xl text-parchment mt-3 anim-head">Questions</h2>
+    </div>
+    <div class="space-y-3" id="faq">
+      <div class="faq-item border border-copper/20 rounded-xl overflow-hidden bg-ink/40">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 text-parchment font-serif text-xl">Do you ship internationally?<span class="faq-ico text-amber text-2xl transition-transform">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke">Yes — we ship to most countries where the import of spirits is permitted. Duties and age-verification apply at checkout and on delivery.</p></div>
+      </div>
+      <div class="faq-item border border-copper/20 rounded-xl overflow-hidden bg-ink/40">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 text-parchment font-serif text-xl">What does "cask strength" mean?<span class="faq-ico text-amber text-2xl transition-transform">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke">It's bottled undiluted, straight from the cask — typically 54–58% ABV. Add a few drops of water to open up the aromas.</p></div>
+      </div>
+      <div class="faq-item border border-copper/20 rounded-xl overflow-hidden bg-ink/40">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 text-parchment font-serif text-xl">How long until my cask is ready?<span class="faq-ico text-amber text-2xl transition-transform">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke">Most casks mature beautifully between 8 and 18 years. We'll taste it with you annually and bottle whenever you decide it's right.</p></div>
+      </div>
+      <div class="faq-item border border-copper/20 rounded-xl overflow-hidden bg-ink/40">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 text-parchment font-serif text-xl">Are tours suitable for non-drinkers?<span class="faq-ico text-amber text-2xl transition-transform">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke">Absolutely. Every tour includes the full distillery experience, and we offer soft alternatives and take-home miniatures for drivers and guests.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-32 px-6 relative overflow-hidden text-center">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink via-ink2 to-ink"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] rounded-full bg-ember/12 blur-3xl -z-10"></div>
+  <div class="max-w-3xl mx-auto">
+    <h2 class="font-serif text-5xl sm:text-7xl text-parchment mb-6 anim-head leading-tight">Pour something<br/><span class="italic shimmer">worth waiting for.</span></h2>
+    <p class="text-smoke text-lg mb-10">Join the Ember Circle for early access to rare releases, cask offers and invitations to the glen.</p>
+    <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="return false">
+      <input type="email" placeholder="Your email" class="flex-1 px-6 py-4 rounded-full bg-ink/60 border border-copper/30 text-parchment placeholder-smoke/60 focus:outline-none focus:border-amber" />
+      <button class="magnetic px-8 py-4 rounded-full bg-gradient-to-r from-ember to-copper text-ink font-medium tracking-widest uppercase text-sm hover:shadow-[0_0_40px_-6px_rgba(197,119,46,.7)] transition">Join</button>
+    </form>
+    <p class="text-smoke/70 text-xs tracking-widest uppercase mt-8">You must be 21+ (18+ in the UK) to enter · Please enjoy responsibly</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-copper/20 bg-ink px-6 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-10 mb-12">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-9 h-9 rounded-full border border-copper/60 flex items-center justify-center text-amber font-serif text-lg">C</span>
+        <span class="font-serif text-xl tracking-[.2em] text-parchment">CASK &amp; EMBER</span>
+      </div>
+      <p class="text-smoke text-sm leading-relaxed">Small-batch Highland single malt. Drawn from the ember since 1987.</p>
+    </div>
+    <div>
+      <h4 class="text-amber text-xs tracking-widest uppercase mb-4">Shop</h4>
+      <ul class="space-y-2 text-smoke text-sm">
+        <li><a href="#expressions" class="hover:text-gold transition">Expressions</a></li>
+        <li><a href="#cask" class="hover:text-gold transition">Cask Program</a></li>
+        <li><a href="#" class="hover:text-gold transition">Gift Sets</a></li>
+        <li><a href="#" class="hover:text-gold transition">Merchandise</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-amber text-xs tracking-widest uppercase mb-4">Distillery</h4>
+      <ul class="space-y-2 text-smoke text-sm">
+        <li><a href="#process" class="hover:text-gold transition">Our Process</a></li>
+        <li><a href="#heritage" class="hover:text-gold transition">Heritage</a></li>
+        <li><a href="#visit" class="hover:text-gold transition">Visit the Glen</a></li>
+        <li><a href="#" class="hover:text-gold transition">Sustainability</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-amber text-xs tracking-widest uppercase mb-4">Follow</h4>
+      <ul class="space-y-2 text-smoke text-sm">
+        <li><a href="#" class="hover:text-gold transition">Instagram</a></li>
+        <li><a href="#" class="hover:text-gold transition">Newsletter</a></li>
+        <li><a href="#" class="hover:text-gold transition">The Ember Circle</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="rule mb-6"></div>
+  <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between gap-4 text-smoke/60 text-xs">
+    <p>© 1987–2026 Cask &amp; Ember Distillery. All rights reserved.</p>
+    <p class="tracking-widest uppercase">Enjoy responsibly · 21+ / 18+ UK</p>
+  </div>
+</footer>
+
+<script>
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Custom cursor ---------- */
+(function(){
+  const dot = document.querySelector('.cursor-dot');
+  const ring = document.querySelector('.cursor-ring');
+  if (!dot || window.matchMedia('(max-width:768px)').matches) return;
+  let rx=0, ry=0, x=0, y=0;
+  window.addEventListener('mousemove', e => { x=e.clientX; y=e.clientY; dot.style.left=x+'px'; dot.style.top=y+'px'; });
+  (function loop(){ rx+=(x-rx)*.18; ry+=(y-ry)*.18; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a, button, .magnetic, .expr').forEach(el=>{
+    el.addEventListener('mouseenter', ()=> ring.classList.add('is-hover'));
+    el.addEventListener('mouseleave', ()=> ring.classList.remove('is-hover'));
+  });
+})();
+
+/* ---------- Magnetic buttons ---------- */
+if (!reduced) document.querySelectorAll('.magnetic').forEach(el=>{
+  el.addEventListener('mousemove', e=>{
+    const r = el.getBoundingClientRect();
+    const mx = e.clientX - r.left - r.width/2;
+    const my = e.clientY - r.top - r.height/2;
+    el.style.transform = `translate(${mx*.3}px, ${my*.4}px)`;
+  });
+  el.addEventListener('mouseleave', ()=> el.style.transform = 'translate(0,0)');
+});
+
+/* ---------- 3D tilt bottle ---------- */
+if (!reduced){
+  const tilt = document.querySelector('.tilt');
+  const wrap = document.querySelector('.tilt-wrap');
+  if (tilt && wrap){
+    wrap.addEventListener('mousemove', e=>{
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      tilt.style.transform = `rotateY(${px*16}deg) rotateX(${-py*16}deg) translateZ(20px)`;
+    });
+    wrap.addEventListener('mouseleave', ()=> tilt.style.transform = 'rotateY(0) rotateX(0)');
+  }
+}
+
+/* ---------- Nav scroll state ---------- */
+const nav = document.getElementById('nav');
+const navRule = document.getElementById('navRule');
+window.addEventListener('scroll', ()=>{
+  const s = window.scrollY > 40;
+  nav.style.background = s ? 'rgba(12,9,7,.85)' : 'transparent';
+  nav.style.backdropFilter = s ? 'blur(12px)' : 'none';
+  if (navRule) navRule.style.opacity = s ? '1' : '0';
+});
+
+/* ---------- FAQ accordion ---------- */
+document.querySelectorAll('.faq-q').forEach(q=>{
+  q.addEventListener('click', ()=>{
+    const body = q.nextElementSibling;
+    const ico = q.querySelector('.faq-ico');
+    const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+    document.querySelectorAll('.faq-body').forEach(b=>{ b.style.maxHeight='0px'; });
+    document.querySelectorAll('.faq-ico').forEach(i=>{ i.style.transform='rotate(0)'; });
+    if (!open){ body.style.maxHeight = body.scrollHeight + 'px'; ico.style.transform='rotate(45deg)'; }
+  });
+});
+
+/* ---------- GSAP ---------- */
+if (typeof gsap !== 'undefined'){
+  gsap.registerPlugin(ScrollTrigger);
+
+  if (!reduced){
+    // Hero masked reveal
+    gsap.to('.reveal-line', { y: 0, duration: 1.2, ease: 'expo.out', stagger: .12, delay: .2 });
+
+    // Headlines
+    gsap.utils.toArray('.anim-head').forEach(h=>{
+      gsap.from(h, { y: 40, opacity: 0, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: h, start: 'top 85%' } });
+    });
+
+    // Cards
+    gsap.utils.toArray('.expr').forEach((c,i)=>{
+      gsap.from(c, { y: 60, opacity: 0, duration: .8, ease: 'power3.out', delay: i*.08,
+        scrollTrigger: { trigger: c, start: 'top 88%' } });
+    });
+
+    // Process steps
+    gsap.utils.toArray('.process-step').forEach(s=>{
+      gsap.from(s, { x: -30, opacity: 0, duration: .7, ease: 'power2.out',
+        scrollTrigger: { trigger: s, start: 'top 88%' } });
+    });
+
+    // Parallax on imagery
+    gsap.utils.toArray('[data-parallax]').forEach(el=>{
+      gsap.to(el, { yPercent: -8, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+  }
+
+  // Count-ups
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const target = +el.dataset.count;
+    ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: ()=>{
+      const obj = { v: 0 };
+      gsap.to(obj, { v: target, duration: 2, ease: 'power2.out',
+        onUpdate: ()=> el.textContent = Math.floor(obj.v).toLocaleString() });
+    }});
+  });
+
+  // Liquid pour fill
+  const liquid = document.querySelector('[data-liquid]');
+  if (liquid){
+    ScrollTrigger.create({ trigger: '#process', start: 'top 70%', once: true,
+      onEnter: ()=> liquid.style.height = '78%' });
+  }
+}
+</script>
+</body>
+</html>

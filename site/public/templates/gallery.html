@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Template Gallery — NixGen</title>
+<meta name="color-scheme" content="dark light">
+<script>
+/* Follow the site theme exactly like src/lib/theme.ts: cookie 'nixgen-theme' first,
+   then localStorage, then the OS. Runs before paint (no flash), and switches live
+   when the parent page toggles (storage event) or the OS changes with no stored choice. */
+(function(){
+  var d=document.documentElement,k='nixgen-theme';
+  function stored(){var s=null;try{var m=document.cookie.match(/(?:^|; )nixgen-theme=(light|dark)/);s=m?m[1]:localStorage.getItem(k);}catch(e){}return s==='light'||s==='dark'?s:null;}
+  function system(){return window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}
+  function apply(t,animate){
+    if(d.getAttribute('data-theme')===t)return;
+    if(animate){d.classList.add('theme-switching');setTimeout(function(){d.classList.remove('theme-switching');},400);}
+    d.setAttribute('data-theme',t);d.style.colorScheme=t;
+  }
+  var first=stored()||system();d.setAttribute('data-theme',first);d.style.colorScheme=first;
+  window.addEventListener('storage',function(e){if(e.key===k&&(e.newValue==='light'||e.newValue==='dark'))apply(e.newValue,true);});
+  try{window.matchMedia('(prefers-color-scheme: light)').addEventListener('change',function(){if(!stored())apply(system(),true);});}catch(e){}
+})();
+</script>
+<!-- The site's four faces (Geist, Geist Mono, Space Grotesk, Instrument Serif italic), served from
+     this origin like every other page: latin subsets copied from the build into ./fonts. -->
+<link rel="preload" href="fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Geist';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/geist-latin.woff2) format('woff2')}
+@font-face{font-family:'Geist Mono';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/geist-mono-latin.woff2) format('woff2')}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:300 700;font-display:swap;src:url(fonts/space-grotesk-latin.woff2) format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(fonts/instrument-serif-italic-latin.woff2) format('woff2')}
+*{margin:0;padding:0;box-sizing:border-box}
+
+/* ── Tokens (mirror src/styles/nx.css; light --dim = nx --fg-3. Dark --dim is deliberately
+   brighter than nx --fg-3 (#7f899e): the gallery sets long runs of 11–12px mono labels on --card) ── */
+:root,html[data-theme="dark"]{
+  --bg:#06080d;--bg2:#0a0d14;--card:#0d1119;--card2:#131926;
+  --bdr:rgba(226,232,255,.08);--bdr2:rgba(226,232,255,.15);
+  --txt:#f3f5fa;--txt2:#b4bccd;--dim:#98a1b3;
+  --accent:#3566e3;--accent-hover:#3e6de5;--accent-text:#8aa8f0;--accent-soft:rgba(53,102,227,.13);--accent-fg:#fff;
+  --glass:rgba(9,12,18,.74);--ring:#8aa8f0;
+  --shadow:0 24px 60px -28px rgba(2,4,10,.7);
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --bg:#f5f6f8;--bg2:#eceff3;--card:#ffffff;--card2:#f0f2f5;
+  --bdr:rgba(12,16,28,.09);--bdr2:rgba(12,16,28,.17);
+  --txt:#0c0f17;--txt2:#444c5d;--dim:#5f6779;
+  --accent:#1f4ed1;--accent-hover:#1b44b6;--accent-text:#1f4ed1;--accent-soft:rgba(31,78,209,.08);--accent-fg:#fff;
+  --glass:rgba(245,246,248,.82);--ring:#1f4ed1;
+  --shadow:0 24px 56px -30px rgba(12,16,28,.28);
+  color-scheme:light;
+}
+:root{
+  --font:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --font-heading:'Space Grotesk','Geist',ui-sans-serif,system-ui,sans-serif;
+  --font-serif:'Instrument Serif',ui-serif,Georgia,serif;
+  --font-mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --gutter:clamp(20px,4vw,48px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+html.theme-switching,html.theme-switching *,html.theme-switching *::before,html.theme-switching *::after{
+  transition:background-color .35s ease,border-color .35s ease,color .35s ease,box-shadow .35s ease!important;
+}
+
+body{font-family:var(--font);background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+::selection{background:var(--accent-soft);color:var(--txt)}
+:focus-visible{outline:2px solid var(--ring);outline-offset:3px;border-radius:6px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.wrap{width:100%;max-width:calc(1320px + var(--gutter)*2);margin-inline:auto;padding-inline:var(--gutter)}
+
+/* ── Header ── */
+.header{position:relative;overflow:hidden;padding:clamp(28px,5vw,64px) 0 clamp(24px,3.5vw,40px)}
+.header::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(to right,var(--bdr) 1px,transparent 1px),linear-gradient(to bottom,var(--bdr) 1px,transparent 1px);
+  background-size:64px 64px;-webkit-mask-image:radial-gradient(ellipse 70% 90% at 20% 0%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse 70% 90% at 20% 0%,#000 25%,transparent 75%)}
+/* Same neutral light pool as the site's page heroes (the raised surface tone, no coloured glow). */
+.header::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 70% at 14% 0%,var(--card) 0%,transparent 72%)}
+.header .wrap{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:32px 48px}
+.eyebrow{display:inline-flex;align-items:center;gap:12px;margin-bottom:20px;font-family:var(--font-mono);font-size:11.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--accent-text)}
+.header h1{font-family:var(--font-heading);font-weight:500;font-size:clamp(2.6rem,6vw,5.5rem);line-height:.95;letter-spacing:-.042em;color:var(--txt)}
+.header h1 span{font-family:var(--font-serif);font-style:italic;font-weight:400;letter-spacing:-.01em;font-size:1.06em;color:var(--txt)}
+.header-stats{display:grid;grid-template-columns:repeat(4,auto);border-top:1px solid var(--bdr2)}
+.header-stats>div{display:flex;flex-direction:column;gap:8px;padding:16px 28px 0 0;margin-right:28px;border-right:1px solid var(--bdr);font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.header-stats>div:last-child{border-right:0;margin-right:0;padding-right:0}
+.header-stats .num{font-family:var(--font-heading);font-size:clamp(1.5rem,2.4vw,2.25rem);font-weight:500;letter-spacing:-.04em;line-height:1;text-transform:none;color:var(--txt);font-variant-numeric:tabular-nums}
+.header-stats>div:first-child .num{color:var(--accent-text)}
+
+/* ── Filters ── */
+/* Near-opaque: at the site's glass alpha the cards scrolling under the stuck bar showed through
+   as dark and blue smudges behind the chips. The hairlines sit on it, so the bar ends on a line. */
+.filters{position:relative;z-index:100;border-block:1px solid var(--bdr);background:color-mix(in oklab,var(--bg) 94%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.filters-inner{display:grid;grid-template-columns:minmax(0,1fr) 300px;align-items:start;gap:14px 40px;padding-block:16px}
+.filter-groups{display:flex;flex-wrap:wrap;gap:12px 32px;min-width:0}
+.filter-group{display:flex;gap:6px;align-items:center;min-width:0}
+.filter-label{font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--dim);margin-right:8px;font-weight:500}
+.filter-btn{display:inline-flex;align-items:center;height:34px;padding:0 14px;border:1px solid var(--bdr2);background:transparent;color:var(--txt2);font-size:13px;font-weight:500;cursor:pointer;border-radius:999px;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:color .2s,background-color .2s,border-color .2s,scale .14s var(--ease)}
+.filter-btn:hover{color:var(--txt);border-color:var(--dim)}
+.filter-btn:active{scale:.97}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.filter-btn .count{font-size:10px;opacity:.6;margin-left:4px}
+.search-field{position:relative;display:block}
+.search-field svg{position:absolute;left:16px;top:50%;translate:0 -50%;color:var(--dim);pointer-events:none}
+.search{width:100%;height:40px;padding:0 16px 0 42px;background:var(--card);border:1px solid var(--bdr2);color:var(--txt);font-family:var(--font);font-size:14px;border-radius:999px;transition:border-color .2s,box-shadow .2s}
+.search:hover{border-color:var(--dim)}
+.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+/* Same 2px ring as every other control (the soft halo alone is too faint in light theme). */
+.search:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.search::placeholder{color:var(--dim)}
+@media (min-width:900px) and (min-height:560px){.filters{position:sticky;top:0}}
+/* Touch screens wider than the phone layout (tablets in landscape) still get 44px chips. */
+@media (pointer:coarse){.filter-btn{height:44px}}
+
+/* ── Grid ── */
+.grid-spacer{width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:32px 0 72px}
+
+/* ── Card ── */
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--bdr);border-radius:20px;overflow:hidden;cursor:pointer;position:relative;opacity:0;transform:translateY(14px);
+  transition:opacity .6s var(--ease),transform .6s var(--ease),border-color .3s ease,box-shadow .4s ease}
+.card.visible{opacity:1;transform:translateY(0)}
+.card-preview{--tint:var(--accent);aspect-ratio:16/9;margin:8px 8px 0;border-radius:13px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;isolation:isolate;
+  background:linear-gradient(135deg,color-mix(in oklab,var(--tint) 24%,var(--card2)),var(--card2) 72%)}
+.card-preview::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px var(--bdr);pointer-events:none}
+.card-preview img{width:100%;height:100%;object-fit:cover;object-position:left top;transition:transform 1.1s var(--ease)}
+.card-preview .placeholder{font-family:var(--font-heading);font-size:64px;font-weight:500;letter-spacing:-.05em;color:var(--txt);opacity:.16}
+.card-body{flex:1;padding:18px 20px 16px}
+.card-title{font-family:var(--font-heading);font-size:17px;font-weight:500;letter-spacing:-.015em;margin-bottom:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.card-meta{display:block;font-family:var(--font-mono);font-size:12px;letter-spacing:.02em;color:var(--dim);margin-bottom:14px;line-height:1.6}
+.card-meta .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:-1px;box-shadow:inset 0 0 0 1px rgba(127,137,158,.35)}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-family:var(--font-mono);font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--bdr)}
+/* The PRO chip is a neutral hairline: the one cobalt accent stays with the type chip. */
+.tag-pro{color:var(--txt2);background:transparent;border-color:var(--bdr2)}
+.tag-type{background:var(--accent-soft);color:var(--accent-text);border-color:color-mix(in oklab,var(--accent) 30%,transparent)}
+.card-pages{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);list-style:none}
+.card-pages li{display:inline-flex;align-items:center;height:26px;padding:0 9px;border-radius:7px;background:var(--card2);color:var(--txt2);font-family:var(--font-mono);font-size:12px}
+.card-actions{padding:0 20px 20px;display:flex;gap:8px}
+.btn-open{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;background:transparent;color:var(--txt);border:none;box-shadow:inset 0 0 0 1px var(--bdr2);font-size:14px;font-weight:500;cursor:pointer;border-radius:999px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background-color .25s,color .25s,scale .14s var(--ease)}
+.btn-open svg{transition:transform .35s var(--ease)}
+.btn-open[href]:active{scale:.97}
+/* Hover belongs to a mouse or trackpad: on touch it would stick after the tap that opened the template. */
+@media (hover:hover) and (pointer:fine){
+  .card.visible:hover{transform:translateY(-4px);border-color:var(--bdr2);box-shadow:var(--shadow)}
+  .card:hover .card-preview img{transform:scale(1.04)}
+  .btn-open:hover,.card:hover .btn-open{background:var(--accent);color:var(--accent-fg);box-shadow:inset 0 0 0 1px var(--accent)}
+  .btn-open:hover svg,.card:hover .btn-open svg{transform:translateX(3px)}
+}
+
+/* ── Scroll to top ── */
+.scroll-top{position:fixed;bottom:24px;right:24px;width:48px;height:48px;border-radius:50%;background:var(--glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--bdr2);color:var(--txt);cursor:pointer;display:none;align-items:center;justify-content:center;z-index:50;font-size:18px;box-shadow:var(--shadow);transition:border-color .2s,background-color .2s,color .2s}
+.scroll-top.show{display:flex}
+.scroll-top:hover{border-color:var(--accent);background:var(--accent);color:var(--accent-fg)}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:96px 0 140px;color:var(--dim)}
+.empty h2{font-family:var(--font-heading);font-size:clamp(1.75rem,3vw,2.5rem);font-weight:500;letter-spacing:-.03em;margin-bottom:10px;color:var(--txt)}
+.btn-reset{display:inline-flex;align-items:center;justify-content:center;height:44px;margin-top:28px;padding:0 22px;background:transparent;color:var(--txt);border:none;box-shadow:inset 0 0 0 1px var(--bdr2);font-size:14px;font-weight:500;cursor:pointer;border-radius:999px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:background-color .2s,box-shadow .2s,scale .14s var(--ease)}
+.btn-reset:active{scale:.97}
+@media (hover:hover) and (pointer:fine){.btn-reset:hover{background:var(--card2);box-shadow:inset 0 0 0 1px var(--dim)}}
+
+/* ── Responsive ── */
+@media(max-width:1080px){
+  .header .wrap{grid-template-columns:1fr}
+  .header-stats{justify-self:start}
+}
+@media(max-width:899px){
+  /* Phone frame: keep header + filters compact enough that the first card peeks above the fold. */
+  .header{padding:18px 0 14px}
+  .header .wrap{gap:14px}
+  .eyebrow{margin-bottom:8px}
+  .header-stats>div{gap:4px;padding-top:10px}
+  .filters-inner{grid-template-columns:1fr;gap:10px;padding-block:12px}
+  .filter-groups{flex-direction:column;flex-wrap:nowrap;gap:6px}
+  /* Label sits beside its chip row (one line per group) instead of above it. */
+  .filter-group{flex-direction:row;align-items:center;gap:0}
+  .filter-label{flex:0 0 56px;margin-right:0;font-size:11px}
+  .filter-row{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:-4px calc(var(--gutter) * -1) -4px 0;padding:4px var(--gutter) 4px 10px;
+    /* The fade widths follow the scroll position (set by the script): the right edge fades only
+       while chips are still off-screen, the left once the row has moved. */
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 var(--fade-l,10px),#000 calc(100% - var(--fade-r,56px)),transparent);mask-image:linear-gradient(90deg,transparent,#000 var(--fade-l,10px),#000 calc(100% - var(--fade-r,56px)),transparent)}
+  .filter-row::-webkit-scrollbar{display:none}
+  .filter-btn{height:44px;padding:0 14px;font-size:14px}
+  .search{height:48px;font-size:16px}
+  .search-field{order:-1}
+}
+@media(min-width:900px){.filter-row{display:contents}}
+@media(max-width:768px){
+  .grid{grid-template-columns:1fr;gap:20px;padding-top:24px}
+  /* One column has room for the full name: wrap to two lines instead of cutting it. */
+  .card-title{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
+}
+@media(max-width:520px){
+  .header-stats{grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+  .header-stats>div{margin-right:0;padding:10px 8px 0 0;font-size:11px;letter-spacing:.08em}
+  .header-stats>div+div{padding-left:8px}
+  .header-stats .num{font-size:1.2rem;letter-spacing:-.03em}
+}
+@media (prefers-reduced-motion:reduce){
+  .card{opacity:1;transform:none;transition:border-color .3s ease}
+  .card.visible:hover{transform:none}
+  .card-preview img,.btn-open svg{transition:none}
+  .filter-btn:active,.btn-open[href]:active,.btn-reset:active{scale:1}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Template Gallery</p>
+      <h1>PRO <span>Templates</span></h1>
+    </div>
+    <div class="header-stats">
+      <div><span class="num" id="total-count">&ndash;</span> PRO templates</div>
+    </div>
+  </div>
+</header>
+
+<div class="filters" role="search" aria-label="Filter templates">
+  <div class="wrap filters-inner">
+    <div class="filter-groups">
+      <div class="filter-group" role="group" aria-label="Type">
+        <span class="filter-label" aria-hidden="true">Type</span>
+        <div class="filter-row">
+          <button type="button" class="filter-btn active" aria-pressed="true" data-filter="type" data-value="all">All</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="saas">SaaS</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="agency">Agency</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="portfolio">Portfolio</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="ecommerce">E-commerce</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="corporate">Corporate</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="landing">Landing</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="blog">Blog</button>
+          <button type="button" class="filter-btn" aria-pressed="false" data-filter="type" data-value="event">Event</button>
+        </div>
+      </div>
+    </div>
+    <label class="search-field">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="search" class="search" placeholder="Search PRO templates..." aria-label="Search PRO templates" id="search-input" autocomplete="off">
+    </label>
+  </div>
+</div>
+
+<main class="grid-wrapper wrap">
+  <div class="grid-spacer" id="grid-spacer"></div>
+  <div class="grid" id="template-grid"></div>
+
+  <div class="empty" id="empty-state" style="display:none">
+    <h2>No templates found</h2>
+    <p>Adjust your filters or search query</p>
+    <button type="button" class="btn-reset" id="reset-filters">Clear search and filters</button>
+  </div>
+
+  <button type="button" class="scroll-top" id="scroll-top" aria-label="Scroll to top">&uarr;</button>
+  <p class="sr-only" id="results-status" role="status" aria-live="polite"></p>
+</main>
+
+<!-- The 128 PRO templates are NixGen originals, listed inline below and self-hosted in
+     ./premium (page, full-size capture, 640w WebP thumbnail each). -->
+
+<script>
+
+// The PRO templates (hand-crafted, one self-contained HTML file each)
+const premiumTemplates = [
+  { id:"agency-premium", title:"Forge Studio — Creative Agency", type:"Agency/Studio", tier:"pro", source:"premium",
+    pages:["home","work","services","about","contact","careers"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff3366", file_count:1, built_at:"2026-04-23",
+    path:"agency-premium-template", is_premium_html:true },
+  { id:"coffee-premium", title:"Ember Roasters — Specialty Coffee", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","menu","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"light", accent_color:"#b87333", file_count:1, built_at:"2026-04-24",
+    path:"coffee-premium-template", is_premium_html:true },
+  { id:"construction-premium", title:"Apex Build — Construction & Development", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","projects","services","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#f59e0b", file_count:1, built_at:"2026-04-24",
+    path:"construction-premium-template", is_premium_html:true },
+  { id:"ecommerce-premium", title:"LUXE — Premium Shopping", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","collections","cart","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#e2c799", file_count:1, built_at:"2026-04-23",
+    path:"ecommerce-premium-template", is_premium_html:true },
+  { id:"education-premium", title:"Luminary — Online Learning Platform", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","courses","pricing","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"light", accent_color:"#8b5cf6", file_count:1, built_at:"2026-04-24",
+    path:"education-premium-template", is_premium_html:true },
+  { id:"fitness-premium", title:"IRON — Premium Fitness", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","classes","trainers","pricing","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#ef4444", file_count:1, built_at:"2026-04-24",
+    path:"fitness-premium-template", is_premium_html:true },
+  { id:"healthcare-premium", title:"Vitality Health — Modern Healthcare", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","services","doctors","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"light", accent_color:"#10b981", file_count:1, built_at:"2026-04-23",
+    path:"healthcare-premium-template", is_premium_html:true },
+  { id:"hotel-premium", title:"The Meridian — Luxury Hotel & Spa", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","rooms","dining","spa","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#b8860b", file_count:1, built_at:"2026-04-24",
+    path:"hotel-premium-template", is_premium_html:true },
+  { id:"law-premium", title:"Sterling & Associates — Attorneys at Law", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","practice-areas","attorneys","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"light", accent_color:"#c4a35a", file_count:1, built_at:"2026-04-24",
+    path:"law-premium-template", is_premium_html:true },
+  { id:"portfolio-premium", title:"Alex Chen — Designer & Developer", type:"Portfolio", tier:"pro", source:"premium",
+    pages:["home","work","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#a3e635", file_count:1, built_at:"2026-04-23",
+    path:"portfolio-premium-template", is_premium_html:true },
+  { id:"restaurant-premium", title:"Ambrosia — Fine Dining", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","menu","reservations","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"dark", accent_color:"#c8a97e", file_count:1, built_at:"2026-04-23",
+    path:"restaurant-premium-template", is_premium_html:true },
+  { id:"saas-premium", title:"NexaFlow — Ship Faster", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","docs","about","contact","blog","changelog"], animations:["gsap","animejs","three"],
+    original_url:"", theme_mode:"dark", accent_color:"#6366f1", file_count:1, built_at:"2026-04-23",
+    path:"saas-premium-template", is_premium_html:true },
+  { id:"spa-premium", title:"Serenity — Luxury Spa & Wellness", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","treatments","about","contact"], animations:["gsap","animejs"],
+    original_url:"", theme_mode:"light", accent_color:"#8fae8b", file_count:1, built_at:"2026-04-24",
+    path:"spa-premium-template", is_premium_html:true },
+  { id:"real-estate-premium", title:"Marlowe & Vance — Luxury Real Estate", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","listings","about","process","contact"], animations:["scroll-reveal","parallax","count-up"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a35b", file_count:1, built_at:"2026-06-03",
+    path:"real-estate-premium-template", is_premium_html:true },
+  { id:"travel-premium", title:"Wanderlume — Travel & Tours", type:"Landing", tier:"pro", source:"premium",
+    pages:["journeys","story","how","voices","contact"], animations:["scroll-reveal","parallax","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#c9683f", file_count:1, built_at:"2026-06-03",
+    path:"travel-premium-template", is_premium_html:true },
+  { id:"dental-premium", title:"Lumio Dental — Modern Dentistry", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","services","about","process","book"], animations:["scroll-reveal","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#0fb9b1", file_count:1, built_at:"2026-06-03",
+    path:"dental-premium-template", is_premium_html:true },
+  { id:"studio-brutalist", title:"CONCRETE&CO — Creative Studio", type:"Agency/Studio", tier:"pro", source:"premium",
+    pages:["home","work","studio","process","contact"], animations:["gsap","marquee","cursor-follow"],
+    original_url:"", theme_mode:"light", accent_color:"#c6fb50", file_count:1, built_at:"2026-06-03",
+    path:"studio-brutalist-template", is_premium_html:true },
+  { id:"fintech-glass", title:"Lumora — Fintech Platform", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","about","contact"], animations:["gsap","parallax","count-up"],
+    original_url:"", theme_mode:"dark", accent_color:"#7c6bff", file_count:1, built_at:"2026-06-03",
+    path:"fintech-glass-template", is_premium_html:true },
+  { id:"app-neobrutalist", title:"Boop — Mobile App", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","features","pricing","how-it-works","download"], animations:["gsap","spring","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#ff5a5f", file_count:1, built_at:"2026-06-03",
+    path:"app-neobrutalist-template", is_premium_html:true },
+  { id:"consulting-swiss", title:"Meridian Partners — Consulting", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","practice","approach","firm","contact"], animations:["gsap","reveal","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#b5562b", file_count:1, built_at:"2026-06-03",
+    path:"consulting-swiss-template", is_premium_html:true },
+  { id:"launch-cinematic", title:"Aurelius Halo — Product Launch", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","features","how-it-works","story","pre-order"], animations:["gsap","pinned-scroll","parallax"],
+    original_url:"", theme_mode:"dark", accent_color:"#7b5cff", file_count:1, built_at:"2026-06-03",
+    path:"launch-cinematic-template", is_premium_html:true },
+  { id:"magazine-editorial", title:"The Margin — Magazine", type:"Blog/Media", tier:"pro", source:"premium",
+    pages:["latest","culture","ideas","design","essays"], animations:["gsap","parallax","progress"],
+    original_url:"", theme_mode:"light", accent_color:"#b4541f", file_count:1, built_at:"2026-06-03",
+    path:"magazine-editorial-template", is_premium_html:true },
+  { id:"devtool-terminal", title:"Glyphd — Developer Platform", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","docs","about"], animations:["gsap","typewriter","count-up"],
+    original_url:"", theme_mode:"dark", accent_color:"#3ce98a", file_count:1, built_at:"2026-06-03",
+    path:"devtool-terminal-template", is_premium_html:true },
+  { id:"event-y2k", title:"Hyperdrive 2099 — Festival", type:"Event", tier:"pro", source:"premium",
+    pages:["home","lineup","schedule","venue","tickets"], animations:["gsap","countdown","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff2bd6", file_count:1, built_at:"2026-06-03",
+    path:"event-y2k-template", is_premium_html:true },
+  { id:"wellness-organic", title:"Verdura — Natural Skincare", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","ingredients","our-story","rituals"], animations:["gsap","parallax","float"],
+    original_url:"", theme_mode:"light", accent_color:"#4a663e", file_count:1, built_at:"2026-06-03",
+    path:"wellness-organic-template", is_premium_html:true },
+  { id:"streetwear-maximalist", title:"VOLTKICKS — Streetwear", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","lookbook","drop","early-access"], animations:["gsap","marquee","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#caff00", file_count:1, built_at:"2026-06-03",
+    path:"streetwear-maximalist-template", is_premium_html:true },
+  { id:"edtech-clay", title:"Wobblio — Kids Learning", type:"Landing", tier:"pro", source:"premium",
+    pages:["play","how-it-works","plans","about","faq"], animations:["gsap","spring","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#7c5cff", file_count:1, built_at:"2026-06-03",
+    path:"edtech-clay-template", is_premium_html:true },
+  { id:"fashion-lookbook", title:"Maison Séraphine — Fashion House", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["collection","shop","lookbook","atelier","press"], animations:["gsap","clip-reveal","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#a8856b", file_count:1, built_at:"2026-06-03",
+    path:"fashion-lookbook-template", is_premium_html:true },
+  { id:"automotive-3d", title:"Voltaris — Electric Hypercar", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","performance","configure","reserve","faq"], animations:["gsap","3d","scrub"],
+    original_url:"", theme_mode:"dark", accent_color:"#23f0c7", file_count:1, built_at:"2026-06-03",
+    path:"automotive-3d-template", is_premium_html:true },
+  { id:"web3-gradient", title:"Lumiflux — Web3 Protocol", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["protocol","how-it-works","token","roadmap","faq"], animations:["gsap","gradient-mesh","scramble"],
+    original_url:"", theme_mode:"dark", accent_color:"#8b5cf6", file_count:1, built_at:"2026-06-03",
+    path:"web3-gradient-template", is_premium_html:true },
+  { id:"architecture-grid", title:"Meridian Atelier — Architecture", type:"Agency/Studio", tier:"pro", source:"premium",
+    pages:["work","studio","expertise","process","contact"], animations:["gsap","horizontal-scroll","cursor-follow"],
+    original_url:"", theme_mode:"light", accent_color:"#a4592a", file_count:1, built_at:"2026-06-03",
+    path:"architecture-grid-template", is_premium_html:true },
+  { id:"photography-portfolio", title:"Lume Sable — Photography", type:"Portfolio", tier:"pro", source:"premium",
+    pages:["series","about","services","pricing","book"], animations:["lenis","parallax","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a36a", file_count:1, built_at:"2026-06-03",
+    path:"photography-portfolio-template", is_premium_html:true },
+  { id:"fooddelivery-app", title:"Forkly — Food Delivery", type:"Landing", tier:"pro", source:"premium",
+    pages:["how-it-works","cuisines","features","for-restaurants","download"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#ff5a1f", file_count:1, built_at:"2026-06-03",
+    path:"fooddelivery-app-template", is_premium_html:true },
+  { id:"fitness-kinetic", title:"Velocité — Fitness Club", type:"Landing", tier:"pro", source:"premium",
+    pages:["programs","trainers","pricing","schedule","faq"], animations:["gsap","kinetic-type","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#d6ff2e", file_count:1, built_at:"2026-06-03",
+    path:"fitness-kinetic-template", is_premium_html:true },
+  { id:"saas-pastel", title:"Plumora — Team SaaS", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","integrations","about"], animations:["gsap","tilt-3d","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#8b6ff0", file_count:1, built_at:"2026-06-03",
+    path:"saas-pastel-template", is_premium_html:true },
+  { id:"winery-estate", title:"Mauvecrest — Winery Estate", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","wines","cellar-club","tastings","visit"], animations:["gsap","parallax","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#4a1325", file_count:1, built_at:"2026-06-03",
+    path:"winery-estate-template", is_premium_html:true },
+  { id:"podcast-show", title:"Frequency — Podcast", type:"Blog/Media", tier:"pro", source:"premium",
+    pages:["home","episodes","about","guests","reviews"], animations:["gsap","waveform","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#c6f04a", file_count:1, built_at:"2026-06-03",
+    path:"podcast-show-template", is_premium_html:true },
+  { id:"nonprofit-impact", title:"Clearwell Trust — Nonprofit", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","mission","programs","stories","ways-to-give"], animations:["gsap","count-up","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#13a89e", file_count:1, built_at:"2026-06-03",
+    path:"nonprofit-impact-template", is_premium_html:true },
+  { id:"furniture-store", title:"Marrow & Oak — Furniture", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","collections","our-craft","lookbook"], animations:["gsap","parallax","hover-swap"],
+    original_url:"", theme_mode:"light", accent_color:"#9c6a45", file_count:1, built_at:"2026-06-03",
+    path:"furniture-store-template", is_premium_html:true },
+  { id:"coworking-space", title:"Halcyon Works — Coworking", type:"Corporate", tier:"pro", source:"premium",
+    pages:["spaces","locations","membership","community","faq"], animations:["gsap","parallax","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#ff5a3c", file_count:1, built_at:"2026-06-03",
+    path:"coworking-space-template", is_premium_html:true },
+  { id:"mental-health-app", title:"Serenova — Meditation App", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","sessions","pricing","about","therapists"], animations:["gsap","breathing","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#8a66e8", file_count:1, built_at:"2026-06-03",
+    path:"mental-health-app-template", is_premium_html:true },
+  { id:"barber-grooming", title:"Ironhide & Co. — Barbershop", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","barbers","gallery","book"], animations:["gsap","parallax","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#c79a45", file_count:1, built_at:"2026-06-03",
+    path:"barber-grooming-template", is_premium_html:true },
+  { id:"proptech-listings", title:"Hearthly — Home Search", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","listings","how-it-works","features","for-agents"], animations:["gsap","map-pins","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#1f74f5", file_count:1, built_at:"2026-06-03",
+    path:"proptech-listings-template", is_premium_html:true },
+  { id:"trading-app", title:"Veltra — Investing App", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","markets","pricing","security","download"], animations:["gsap","chart-draw","ticker"],
+    original_url:"", theme_mode:"dark", accent_color:"#27e0a3", file_count:1, built_at:"2026-06-03",
+    path:"trading-app-template", is_premium_html:true },
+  { id:"language-app", title:"Lingaboo — Language App", type:"Landing", tier:"pro", source:"premium",
+    pages:["languages","how","features","pricing","faq"], animations:["gsap","spring","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#5b2ff2", file_count:1, built_at:"2026-06-03",
+    path:"language-app-template", is_premium_html:true },
+  { id:"jewelry-luxury", title:"Aurélise — Fine Jewelry", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["collections","atelier","materials","bespoke","press"], animations:["gsap","shimmer","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a24b", file_count:1, built_at:"2026-06-03",
+    path:"jewelry-luxury-template", is_premium_html:true },
+  { id:"gaming-esports", title:"Voltage Nine — Esports", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","roster","schedule","about","merch"], animations:["gsap","glitch","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#b35bff", file_count:1, built_at:"2026-06-03",
+    path:"gaming-esports-template", is_premium_html:true },
+  { id:"cosmetics-brand", title:"Velveté — Cosmetics", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","shades","made-clean","how-to","about"], animations:["gsap","marquee","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff2d7e", file_count:1, built_at:"2026-06-03",
+    path:"cosmetics-brand-template", is_premium_html:true },
+  { id:"insurance-insurtech", title:"Northvale — Insurance", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","coverage","how-it-works","plans","about"], animations:["gsap","count-up","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#1f7fae", file_count:1, built_at:"2026-06-03",
+    path:"insurance-insurtech-template", is_premium_html:true },
+  { id:"car-marketplace", title:"Drivora — Car Marketplace", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","inventory","financing","sell-trade","about"], animations:["gsap","tilt-3d","brand-rail"],
+    original_url:"", theme_mode:"light", accent_color:"#1f6feb", file_count:1, built_at:"2026-06-03",
+    path:"car-marketplace-template", is_premium_html:true },
+  { id:"wedding-planner", title:"Maison Aurelle — Wedding Planner", type:"Landing", tier:"pro", source:"premium",
+    pages:["atelier","services","weddings","process","packages"], animations:["gsap","clip-reveal","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#c99a93", file_count:1, built_at:"2026-06-03",
+    path:"wedding-planner-template", is_premium_html:true },
+  { id:"craft-brewery", title:"Ironhollow — Craft Brewery", type:"Landing", tier:"pro", source:"premium",
+    pages:["beers","taproom","process","story","events"], animations:["gsap","marquee","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#e08a1e", file_count:1, built_at:"2026-06-03",
+    path:"craft-brewery-template", is_premium_html:true },
+  { id:"music-artist", title:"Nocterra — Music Artist", type:"Blog/Media", tier:"pro", source:"premium",
+    pages:["album","tour","about","visuals","merch"], animations:["gsap","waveform","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff3d6e", file_count:1, built_at:"2026-06-03",
+    path:"music-artist-template", is_premium_html:true },
+  { id:"conference-tech", title:"Horizon Summit — Conference", type:"Event", tier:"pro", source:"premium",
+    pages:["about","speakers","schedule","venue","tickets"], animations:["gsap","countdown","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#7c4dff", file_count:1, built_at:"2026-06-03",
+    path:"conference-tech-template", is_premium_html:true },
+  { id:"agency-3d", title:"Novaform — 3D Agency", type:"Agency/Studio", tier:"pro", source:"premium",
+    pages:["services","work","process","about","contact"], animations:["threejs","webgl","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c8ff3d", file_count:1, built_at:"2026-06-03",
+    path:"agency-3d-template", is_premium_html:true },
+  { id:"electronics-store", title:"Voltra — Electronics Store", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","deals","about","support"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#3b5bff", file_count:1, built_at:"2026-06-03",
+    path:"electronics-store-template", is_premium_html:true },
+  { id:"steakhouse", title:"Ember & Ash — Steakhouse", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","menu","chef","private-dining","reserve"], animations:["gsap","clip-reveal","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c2410c", file_count:1, built_at:"2026-06-03",
+    path:"steakhouse-template", is_premium_html:true },
+  { id:"travel-booking", title:"Wanderly — Travel Booking", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","destinations","deals","experiences","app"], animations:["gsap","tilt-3d","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#ff6b47", file_count:1, built_at:"2026-06-03",
+    path:"travel-booking-template", is_premium_html:true },
+  { id:"pet-care", title:"Pawmel — Pet Care", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","plans","how-it-works","about"], animations:["gsap","spring","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#ff7a59", file_count:1, built_at:"2026-06-03",
+    path:"pet-care-template", is_premium_html:true },
+  { id:"solar-energy", title:"SolHaven — Solar Energy", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","systems","financing","how-it-works","about"], animations:["gsap","count-up","calculator"],
+    original_url:"", theme_mode:"light", accent_color:"#16a34a", file_count:1, built_at:"2026-06-03",
+    path:"solar-energy-template", is_premium_html:true },
+  { id:"bookstore", title:"Margin & Marrow — Bookstore", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","staff-picks","events","membership"], animations:["gsap","tilt-3d","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#7c2d2d", file_count:1, built_at:"2026-06-03",
+    path:"bookstore-template", is_premium_html:true },
+  { id:"cleaning-service", title:"SparkleNest — Cleaning", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","pricing","service-areas","about"], animations:["gsap","sparkle","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#0aa6f0", file_count:1, built_at:"2026-06-03",
+    path:"cleaning-service-template", is_premium_html:true },
+  { id:"jobs-board", title:"Roleplate — Job Board", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["jobs","categories","employers","pricing","about"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#4338e8", file_count:1, built_at:"2026-06-03",
+    path:"jobs-board-template", is_premium_html:true },
+  { id:"dance-studio", title:"Kinētic — Dance Studio", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","classes","schedule","membership","events"], animations:["gsap","kinetic-type","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff2e63", file_count:1, built_at:"2026-06-03",
+    path:"dance-studio-template", is_premium_html:true },
+  { id:"ai-tool", title:"Cortexa — AI Tool", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["features","how-it-works","use-cases","pricing","about"], animations:["gsap","prompt-demo","parallax"],
+    original_url:"", theme_mode:"dark", accent_color:"#8b5cf6", file_count:1, built_at:"2026-06-03",
+    path:"ai-tool-template", is_premium_html:true },
+  { id:"yoga-studio", title:"Sundara — Yoga Studio", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","classes","schedule","teachers","membership"], animations:["gsap","parallax","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#c07b57", file_count:1, built_at:"2026-06-03",
+    path:"yoga-studio-template", is_premium_html:true },
+  { id:"tattoo-studio", title:"Ironwake — Tattoo Studio", type:"Landing", tier:"pro", source:"premium",
+    pages:["work","artists","styles","process","book"], animations:["gsap","parallax","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#b2122a", file_count:1, built_at:"2026-06-03",
+    path:"tattoo-studio-template", is_premium_html:true },
+  { id:"florist", title:"Fleuriste — Florist", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","occasions","atelier","subscriptions","faq"], animations:["gsap","clip-reveal","petals"],
+    original_url:"", theme_mode:"light", accent_color:"#c98b86", file_count:1, built_at:"2026-06-03",
+    path:"florist-template", is_premium_html:true },
+  { id:"home-renovation", title:"Hearthstone & Co. — Renovation", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","work","services","process","about"], animations:["gsap","before-after","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#d9633b", file_count:1, built_at:"2026-06-03",
+    path:"home-renovation-template", is_premium_html:true },
+  { id:"nft-marketplace", title:"Lumavault — NFT Marketplace", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["explore","auctions","creators","how-it-works","faq"], animations:["gsap","tilt-3d","glow"],
+    original_url:"", theme_mode:"dark", accent_color:"#a06bff", file_count:1, built_at:"2026-06-03",
+    path:"nft-marketplace-template", is_premium_html:true },
+  { id:"energy-drink", title:"Voltrage — Energy Drink", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","flavors","our-story","where-to-buy","bundles"], animations:["gsap","3d-can","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#00f0ff", file_count:1, built_at:"2026-06-03",
+    path:"energy-drink-template", is_premium_html:true },
+  { id:"sneaker-store", title:"Strydus — Sneakers", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","drops","club","about"], animations:["gsap","countdown","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#c8ff2e", file_count:1, built_at:"2026-06-03",
+    path:"sneaker-store-template", is_premium_html:true },
+  { id:"telehealth", title:"Pulseline — Telehealth", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","care","how-it-works","membership","employers"], animations:["gsap","tilt-3d","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#14b394", file_count:1, built_at:"2026-06-03",
+    path:"telehealth-template", is_premium_html:true },
+  { id:"childcare", title:"Sproutling — Preschool", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","programs","tuition","about","tour"], animations:["gsap","spring","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#ff7aa2", file_count:1, built_at:"2026-06-03",
+    path:"childcare-template", is_premium_html:true },
+  { id:"moving-company", title:"Northpoint — Movers", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","pricing","service-areas","about"], animations:["gsap","truck","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#ff5a1f", file_count:1, built_at:"2026-06-03",
+    path:"moving-company-template", is_premium_html:true },
+  { id:"email-marketing", title:"Sendlark — Email Marketing", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["features","how-it-works","templates","pricing","about"], animations:["gsap","flow-nodes","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#ff6b5e", file_count:1, built_at:"2026-06-03",
+    path:"email-marketing-template", is_premium_html:true },
+  { id:"landscaping", title:"Verdaleaf — Landscaping", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","our-work","service-areas","about"], animations:["gsap","before-after","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#357328", file_count:1, built_at:"2026-06-03",
+    path:"landscaping-template", is_premium_html:true },
+  { id:"smart-home", title:"Halo — Smart Home", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","features","devices","pricing","about"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#f5a623", file_count:1, built_at:"2026-06-03",
+    path:"smart-home-template", is_premium_html:true },
+  { id:"subscription-box", title:"Snackbloom — Subscription Box", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","plans","whats-inside","gift","about"], animations:["gsap","unbox-3d","confetti"],
+    original_url:"", theme_mode:"light", accent_color:"#7c3aed", file_count:1, built_at:"2026-06-03",
+    path:"subscription-box-template", is_premium_html:true },
+  { id:"coding-bootcamp", title:"Forgeline — Coding Bootcamp", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","curriculum","outcomes","tuition","apply"], animations:["gsap","code-type","timeline"],
+    original_url:"", theme_mode:"dark", accent_color:"#6ee7a8", file_count:1, built_at:"2026-06-03",
+    path:"coding-bootcamp-template", is_premium_html:true },
+  { id:"car-rental", title:"Driftly — Car Rental", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","vehicles","locations","deals","about"], animations:["gsap","tilt-3d","parallax"],
+    original_url:"", theme_mode:"light", accent_color:"#1fb6a6", file_count:1, built_at:"2026-06-03",
+    path:"car-rental-template", is_premium_html:true },
+  { id:"bakery", title:"Maison Plume — Bakery", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","bakes","the-baker","custom-cakes","visit"], animations:["gsap","clip-reveal","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#9c2e54", file_count:1, built_at:"2026-06-03",
+    path:"bakery-template", is_premium_html:true },
+  { id:"golf-club", title:"Wexford Vale — Golf Club", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","membership","the-course","events","dining"], animations:["gsap","clip-reveal","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c4a35a", file_count:1, built_at:"2026-06-03",
+    path:"golf-club-template", is_premium_html:true },
+  { id:"veterinary", title:"Brightpaw — Veterinary", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","services","our-vets","wellness-plans","about"], animations:["gsap","parallax","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#16a89b", file_count:1, built_at:"2026-06-03",
+    path:"veterinary-template", is_premium_html:true },
+  { id:"hr-saas", title:"Hearthwork — HR Platform", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","modules","customers"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#11b886", file_count:1, built_at:"2026-06-03",
+    path:"hr-saas-template", is_premium_html:true },
+  { id:"ski-resort", title:"Alpenfrost — Ski Resort", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","the-mountain","lodging","activities","passes"], animations:["gsap","ken-burns","snow"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff7a3c", file_count:1, built_at:"2026-06-03",
+    path:"ski-resort-template", is_premium_html:true },
+  { id:"watch-brand", title:"Aetherwerk — Watches", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","collection","movement","materials","bespoke"], animations:["gsap","live-watch","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#c8a55c", file_count:1, built_at:"2026-06-03",
+    path:"watch-brand-template", is_premium_html:true },
+  { id:"theater-arts", title:"Larkspur Stage — Theater", type:"Event", tier:"pro", source:"premium",
+    pages:["season","featured","about","membership","visit"], animations:["gsap","curtain","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a14a", file_count:1, built_at:"2026-06-03",
+    path:"theater-arts-template", is_premium_html:true },
+  { id:"cocktail-bar", title:"Velluto — Cocktail Lounge", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","cocktails","the-room","private-hire","reservations"], animations:["gsap","parallax","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a35b", file_count:1, built_at:"2026-06-03",
+    path:"cocktail-bar-template", is_premium_html:true },
+  { id:"sushi-restaurant", title:"Kuroza — Omakase Sushi", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","omakase","chef","the-room","reserve"], animations:["gsap","clip-reveal","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#c8643c", file_count:1, built_at:"2026-06-03",
+    path:"sushi-restaurant-template", is_premium_html:true },
+  { id:"juice-bar", title:"Pulpa — Juice Bar", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["bottles","cleanses","subscribe","ingredients","locations"], animations:["gsap","spring","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#ff5e3a", file_count:1, built_at:"2026-06-03",
+    path:"juice-bar-template", is_premium_html:true },
+  { id:"chocolate-brand", title:"Cacaoluna — Chocolate", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["bars","story","origins","tasting","gifting"], animations:["gsap","tilt-3d","shimmer"],
+    original_url:"", theme_mode:"dark", accent_color:"#c89b4a", file_count:1, built_at:"2026-06-03",
+    path:"chocolate-brand-template", is_premium_html:true },
+  { id:"food-truck", title:"Lucha Libre Taco Co. — Food Truck", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","menu","catering","schedule","gallery"], animations:["gsap","spring","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#ff3b14", file_count:1, built_at:"2026-06-03",
+    path:"food-truck-template", is_premium_html:true },
+  { id:"tea-brand", title:"Verdant & Vale — Tea", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","collections","our-story","subscribe","journal"], animations:["gsap","parallax","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#648f53", file_count:1, built_at:"2026-06-03",
+    path:"tea-brand-template", is_premium_html:true },
+  { id:"pm-saas", title:"Tempora — Project Management", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","pricing","integrations","security"], animations:["gsap","board-drift","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#6d5cf0", file_count:1, built_at:"2026-06-03",
+    path:"project-management-saas-template", is_premium_html:true },
+  { id:"design-tool", title:"Plinth — Design Tool", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","templates","pricing","contact"], animations:["gsap","multiplayer-cursors","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#7b2ff7", file_count:1, built_at:"2026-06-03",
+    path:"design-tool-saas-template", is_premium_html:true },
+  { id:"cybersecurity", title:"Aegisthorn — Cybersecurity", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["platform","modules","compliance","pricing","demo"], animations:["gsap","radar","scan-line"],
+    original_url:"", theme_mode:"dark", accent_color:"#3df5c8", file_count:1, built_at:"2026-06-03",
+    path:"cybersecurity-saas-template", is_premium_html:true },
+  { id:"recipe-app", title:"Saffron & Spoon — Recipe App", type:"Landing", tier:"pro", source:"premium",
+    pages:["features","recipes","planner","pricing","faq"], animations:["gsap","tilt-3d","marquee"],
+    original_url:"", theme_mode:"light", accent_color:"#e2552e", file_count:1, built_at:"2026-06-03",
+    path:"recipe-app-template", is_premium_html:true },
+  { id:"dating-app", title:"Amorae — Dating App", type:"Landing", tier:"pro", source:"premium",
+    pages:["how","features","safety","pricing","about"], animations:["gsap","swipe-cards","hearts"],
+    original_url:"", theme_mode:"light", accent_color:"#ff4d6d", file_count:1, built_at:"2026-06-03",
+    path:"dating-app-template", is_premium_html:true },
+  { id:"notes-app", title:"Loomwell — Notes App", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["home","features","graph","pricing","templates"], animations:["gsap","typewriter","graph"],
+    original_url:"", theme_mode:"light", accent_color:"#c2663f", file_count:1, built_at:"2026-06-03",
+    path:"notes-app-template", is_premium_html:true },
+  { id:"eyewear-brand", title:"Véro — Eyewear", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","collections","try-on","about"], animations:["gsap","clip-reveal","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#c8633f", file_count:1, built_at:"2026-06-03",
+    path:"eyewear-brand-template", is_premium_html:true },
+  { id:"candle-brand", title:"Emberhaus — Candles", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","scents","the-craft","subscribe","gifting"], animations:["gsap","flame","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#d98e4a", file_count:1, built_at:"2026-06-03",
+    path:"candle-brand-template", is_premium_html:true },
+  { id:"mattress-brand", title:"Lullaby — Sleep", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","the-mattress","whats-inside","trial","reviews"], animations:["gsap","exploded-layers","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#7c6cf0", file_count:1, built_at:"2026-06-03",
+    path:"mattress-brand-template", is_premium_html:true },
+  { id:"vinyl-records", title:"Crate & Coda — Records", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","arrivals","genres","label","events"], animations:["gsap","spin-vinyl","flip-cards"],
+    original_url:"", theme_mode:"light", accent_color:"#c75b2b", file_count:1, built_at:"2026-06-03",
+    path:"vinyl-records-template", is_premium_html:true },
+  { id:"plant-shop", title:"Verdanté — Plant Shop", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","categories","care-guides","leaf-mail","about"], animations:["gsap","leaves","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#2f5d3a", file_count:1, built_at:"2026-06-03",
+    path:"plant-shop-template", is_premium_html:true },
+  { id:"stationery-brand", title:"Marigold & Press — Stationery", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","shop","collections","studio","customize"], animations:["gsap","page-turn","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#c96b4e", file_count:1, built_at:"2026-06-03",
+    path:"stationery-brand-template", is_premium_html:true },
+  { id:"roofing", title:"Ironcrest — Roofing", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","projects","about","quote"], animations:["gsap","before-after","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#f97316", file_count:1, built_at:"2026-06-03",
+    path:"roofing-template", is_premium_html:true },
+  { id:"auto-detailing", title:"Obsidian — Auto Detailing", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","ceramic","gallery","book"], animations:["gsap","gloss-sweep","before-after"],
+    original_url:"", theme_mode:"dark", accent_color:"#27e0d6", file_count:1, built_at:"2026-06-03",
+    path:"auto-detailing-template", is_premium_html:true },
+  { id:"pest-control", title:"VerdantGuard — Pest Control", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","plans","service-areas","about","contact"], animations:["gsap","shield","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#2f9858", file_count:1, built_at:"2026-06-03",
+    path:"pest-control-template", is_premium_html:true },
+  { id:"nail-salon", title:"Lustré — Nail & Lash", type:"Landing", tier:"pro", source:"premium",
+    pages:["services","gallery","team","memberships","booking"], animations:["gsap","shimmer","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#c99b5e", file_count:1, built_at:"2026-06-03",
+    path:"nail-salon-template", is_premium_html:true },
+  { id:"self-storage", title:"StoreVault — Self Storage", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","units","locations","pricing","about"], animations:["gsap","size-finder","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#ea580c", file_count:1, built_at:"2026-06-03",
+    path:"self-storage-template", is_premium_html:true },
+  { id:"pool-service", title:"AquaCrest — Pool Care", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","services","plans","areas","about"], animations:["gsap","water-ripple","count-up"],
+    original_url:"", theme_mode:"light", accent_color:"#19b4d8", file_count:1, built_at:"2026-06-03",
+    path:"pool-service-template", is_premium_html:true },
+  { id:"art-gallery", title:"Solenne — Art Gallery", type:"Portfolio", tier:"pro", source:"premium",
+    pages:["now","exhibitions","artists","visit","events"], animations:["gsap","horizontal-scroll","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#c8492f", file_count:1, built_at:"2026-06-03",
+    path:"art-gallery-template", is_premium_html:true },
+  { id:"nightclub", title:"Nocturna — Nightclub", type:"Event", tier:"pro", source:"premium",
+    pages:["events","residents","venue","vip","faq"], animations:["gsap","neon-glow","visualizer"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff1f8e", file_count:1, built_at:"2026-06-03",
+    path:"nightclub-template", is_premium_html:true },
+  { id:"film-studio", title:"Northlight — Film Studio", type:"Agency/Studio", tier:"pro", source:"premium",
+    pages:["work","services","studio","process","contact"], animations:["gsap","horizontal-scroll","cursor"],
+    original_url:"", theme_mode:"dark", accent_color:"#e8543f", file_count:1, built_at:"2026-06-03",
+    path:"film-studio-template", is_premium_html:true },
+  { id:"comedy-club", title:"The Velvet Heckle — Comedy Club", type:"Event", tier:"pro", source:"premium",
+    pages:["home","lineup","open-mic","private-events","about"], animations:["gsap","marquee-lights","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#ffd166", file_count:1, built_at:"2026-06-03",
+    path:"comedy-club-template", is_premium_html:true },
+  { id:"sports-team", title:"Ironvale Titans — Sports Club", type:"Landing", tier:"pro", source:"premium",
+    pages:["home","fixtures","squad","standings","membership"], animations:["gsap","countdown","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff4d1c", file_count:1, built_at:"2026-06-03",
+    path:"sports-team-template", is_premium_html:true },
+  { id:"board-game", title:"Mosswick Hollow — Board Game", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","how-to-play","the-hollow","critters","buy"], animations:["gsap","dice-roll","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#e23f80", file_count:1, built_at:"2026-06-03",
+    path:"board-game-template", is_premium_html:true },
+  { id:"vacation-rental", title:"Wanderoost — Stays", type:"SaaS/Product", tier:"pro", source:"premium",
+    pages:["stays","destinations","become-a-host","how-it-works","about"], animations:["gsap","parallax","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#e2683a", file_count:1, built_at:"2026-06-03",
+    path:"vacation-rental-template", is_premium_html:true },
+  { id:"whiskey-brand", title:"Cask & Ember — Whiskey", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","expressions","distillery","cask-program","visit"], animations:["gsap","liquid-pour","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#c5772e", file_count:1, built_at:"2026-06-03",
+    path:"whiskey-brand-template", is_premium_html:true },
+  { id:"surf-brand", title:"Saltwave — Surf Co.", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["boards","apparel","our-story","surf-report","community"], animations:["gsap","waves","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#ff6b5e", file_count:1, built_at:"2026-06-03",
+    path:"surf-brand-template", is_premium_html:true },
+  { id:"cycling-brand", title:"Velocron — Cycling", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","models","technology","configurator","ride"], animations:["gsap","speed-lines","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#c6f53a", file_count:1, built_at:"2026-06-03",
+    path:"cycling-brand-template", is_premium_html:true },
+  { id:"baby-brand", title:"Little Meadow — Baby", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["home","bestsellers","collections","gifting","grow-club"], animations:["gsap","float","cursor"],
+    original_url:"", theme_mode:"light", accent_color:"#e9a45c", file_count:1, built_at:"2026-06-03",
+    path:"baby-brand-template", is_premium_html:true },
+  { id:"logistics", title:"Cargolane — Logistics", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","services","network","technology","industries"], animations:["gsap","route-draw","count-up"],
+    original_url:"", theme_mode:"dark", accent_color:"#ff7a18", file_count:1, built_at:"2026-06-03",
+    path:"logistics-template", is_premium_html:true },
+  { id:"pottery-ceramics", title:"Kiln & Stone — Ceramics", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["shop","collections","studio","workshops","commissions"], animations:["gsap","pottery-wheel","tilt-3d"],
+    original_url:"", theme_mode:"light", accent_color:"#b9633f", file_count:1, built_at:"2026-06-03",
+    path:"pottery-ceramics-template", is_premium_html:true },
+  { id:"martial-arts", title:"Steelyard — Martial Arts", type:"Landing", tier:"pro", source:"premium",
+    pages:["disciplines","coaches","schedule","pricing","faq"], animations:["gsap","kinetic","marquee"],
+    original_url:"", theme_mode:"dark", accent_color:"#e1121d", file_count:1, built_at:"2026-06-03",
+    path:"martial-arts-template", is_premium_html:true },
+  { id:"accounting-firm", title:"Northbeam & Co. — Accounting", type:"Corporate", tier:"pro", source:"premium",
+    pages:["home","services","pricing","about","contact"], animations:["gsap","charts","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#2dd4bf", file_count:1, built_at:"2026-06-03",
+    path:"accounting-firm-template", is_premium_html:true },
+  { id:"perfume-brand", title:"Maison Nöir — Perfume", type:"E-commerce", tier:"pro", source:"premium",
+    pages:["collection","notes","story","discovery","gifting"], animations:["gsap","mist","tilt-3d"],
+    original_url:"", theme_mode:"dark", accent_color:"#c9a86a", file_count:1, built_at:"2026-06-03",
+    path:"perfume-brand-template", is_premium_html:true },
+];
+
+const templates = premiumTemplates;
+
+// ─── State ───
+let activeFilters = { type: 'all' };
+let searchQuery = '';
+let filteredTemplates = templates;
+let visibleStart = 0;
+const PAGE_SIZE = 60;
+let isRendering = false;
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Template strings go into innerHTML — escape them.
+const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Pages are slugs; tolerate a {route,name,file} object too.
+const pageName = (p) => (p && typeof p === 'object' ? (p.name || p.route || '') : p);
+const safeColor = (c) => (/^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '');
+
+// ─── Filter type matching ───
+const typeMap = {
+  saas: 'SaaS/Product', agency: 'Agency/Studio', portfolio: 'Portfolio',
+  ecommerce: 'E-commerce', corporate: 'Corporate', landing: 'Landing',
+  blog: 'Blog/Media', event: 'Event'
+};
+
+function matchType(templateType, filterValue) {
+  if (filterValue === 'all') return true;
+  const mapped = typeMap[filterValue];
+  if (!mapped) return templateType.toLowerCase().includes(filterValue);
+  return templateType === mapped || templateType.toLowerCase().includes(filterValue);
+}
+
+// ─── Filter ───
+function matching() {
+  const q = searchQuery.toLowerCase();
+  return templates.filter(t => {
+    if (!matchType(t.type, activeFilters.type)) return false;
+    if (q) {
+      const s = `${t.title} ${t.id} ${t.type} ${(t.pages||[]).map(pageName).join(' ')}`.toLowerCase();
+      if (!s.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function applyFilters() {
+  filteredTemplates = matching();
+  visibleStart = 0;
+  updateCounts();
+  renderGrid();
+  announceResults();
+}
+
+// Screen-reader feedback for filter/search changes (debounced so typing is not read out per key).
+let announceTimer;
+let announcedOnce = false;
+function announceResults() {
+  clearTimeout(announceTimer);
+  if (!announcedOnce) { announcedOnce = true; return; } // initial render: nothing changed yet
+  announceTimer = setTimeout(() => {
+    const n = filteredTemplates.length;
+    document.getElementById('results-status').textContent = n ? `${n.toLocaleString()} ${n === 1 ? 'template' : 'templates'}` : 'No templates found';
+  }, searchQuery ? 600 : 150);
+}
+
+// ─── Update counts ───
+function updateCounts() {
+  animateCount('total-count', filteredTemplates.length);
+}
+
+// Counter tween: 600ms ease-out (quad) on rAF. A newer call for the same counter cancels the old one.
+const countFrames = {};
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  cancelAnimationFrame(countFrames[id]);
+  const current = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  if (current === target) return;
+  if (reduceMotion) { el.textContent = target.toLocaleString(); return; }
+  const start = performance.now();
+  const step = (now) => {
+    const p = Math.min(1, (now - start) / 600);
+    const eased = 1 - (1 - p) * (1 - p);
+    el.textContent = Math.round(current + (target - current) * eased).toLocaleString();
+    if (p < 1) countFrames[id] = requestAnimationFrame(step);
+  };
+  countFrames[id] = requestAnimationFrame(step);
+}
+
+// ─── Render grid (virtual scroll — show PAGE_SIZE at a time, load more on scroll) ───
+function renderGrid() {
+  const grid = document.getElementById('template-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (filteredTemplates.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const toShow = filteredTemplates.slice(0, PAGE_SIZE);
+  grid.innerHTML = toShow.map(renderCard).join('');
+  visibleStart = toShow.length;
+
+  // Animate cards in
+  requestAnimationFrame(() => {
+    grid.querySelectorAll('.card').forEach((card, i) => {
+      setTimeout(() => card.classList.add('visible'), Math.min(i, 12) * 45);
+    });
+  });
+}
+
+function loadMore() {
+  if (isRendering || visibleStart >= filteredTemplates.length) return;
+  isRendering = true;
+
+  const grid = document.getElementById('template-grid');
+  const end = Math.min(visibleStart + PAGE_SIZE, filteredTemplates.length);
+  const batch = filteredTemplates.slice(visibleStart, end);
+
+  const fragment = document.createDocumentFragment();
+  const temp = document.createElement('div');
+  temp.innerHTML = batch.map(renderCard).join('');
+  while (temp.firstChild) {
+    fragment.appendChild(temp.firstChild);
+  }
+  grid.appendChild(fragment);
+
+  // Animate new cards
+  const newCards = grid.querySelectorAll('.card:not(.visible)');
+  newCards.forEach((card, i) => {
+    setTimeout(() => card.classList.add('visible'), Math.min(i, 12) * 30);
+  });
+
+  visibleStart = end;
+  isRendering = false;
+}
+
+// ─── Render single card ───
+const OPEN_ARROW = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+
+function renderCard(t) {
+  const animBadges = (t.animations || []).map(a => a.replace('@gsap/','').replace('animejs','anime.js')).join(' + ');
+  const themeIcon = `<span aria-hidden="true">${t.theme_mode === 'dark' ? '&#9790;' : '&#9788;'}</span>`;
+  const accent = safeColor(t.accent_color);
+  const accentDot = accent ? `<span class="dot" style="background:${accent}" aria-hidden="true"></span>` : '';
+  // Page list is informational; the card (and its one Open button) opens the template.
+  const pagesHtml = (t.pages && t.pages.length) ?
+    `<ul class="card-pages" aria-label="Pages">${t.pages.map(p => `<li>${esc(pageName(p))}</li>`).join('')}</ul>` : '';
+
+  // A 640w WebP (./premium/thumbs, a few KB); the full-size PNG capture is the fallback if it's missing.
+  const imgPath = `/templates/premium/thumbs/${t.path}.webp`;
+  const pngFallback = ` data-fallback="${esc(`/templates/premium/${t.path}.png`)}"`;
+  const fallback = `var f=this.dataset.fallback;if(f){delete this.dataset.fallback;this.src=f}else{this.style.display='none';this.nextElementSibling.style.display='flex'}`;
+  const previewInner = `<img src="${esc(imgPath)}"${pngFallback} alt="" width="640" height="360" loading="lazy" decoding="async" onerror="${fallback}"><span class="placeholder" style="display:none" aria-hidden="true">${esc((t.title || t.id).substring(0, 2).toUpperCase())}</span>`;
+  const title = esc(t.title || t.id);
+  // A real link (new tab, no opener) so middle-click / cmd-click / copy link work.
+  const href = templateHref(t);
+  const openCtl = href
+    ? `<a class="btn-open" href="${esc(href)}" target="_blank" rel="noopener noreferrer" aria-label="Open ${title} (opens in a new tab)">Open ${OPEN_ARROW}</a>`
+    : `<a class="btn-open" role="link" aria-disabled="true" aria-label="Open ${title} (unavailable)">Open ${OPEN_ARROW}</a>`;
+
+  return `
+  <article class="card" data-id="${esc(t.id)}" data-path="${esc(t.path)}">
+    <div class="card-preview"${accent ? ` style="--tint:${accent}"` : ''}>
+      ${previewInner}
+    </div>
+    <div class="card-body">
+      <h2 class="card-title" title="${title}">${title}</h2>
+      <div class="card-meta">${accentDot}${themeIcon} ${esc(t.theme_mode || '')} &middot; ${esc(t.file_count || '?')} ${Number(t.file_count) === 1 ? 'file' : 'files'} &middot; ${esc(animBadges || 'no animations')}</div>
+      <div class="card-tags">
+        <span class="tag tag-pro">PRO</span>
+        <span class="tag tag-type">${esc(t.type)}</span>
+      </div>
+      ${pagesHtml}
+    </div>
+    <div class="card-actions">
+      ${openCtl}
+    </div>
+  </article>`;
+}
+
+// ─── Card clicks: the Open link handles itself; anywhere else on the card follows that link ───
+document.getElementById('template-grid').addEventListener('click', (e) => {
+  if (e.target.closest('a[href]')) return; // native link behaviour (incl. modifier clicks)
+  const card = e.target.closest('.card');
+  const link = card && card.querySelector('a.btn-open[href]');
+  if (link) openSafely(link.href);
+});
+
+document.getElementById('scroll-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+});
+
+// ─── Scroll listener for infinite load ───
+let scrollTimeout;
+window.addEventListener('scroll', () => {
+  clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const docHeight = document.documentElement.scrollHeight;
+    if (scrollBottom > docHeight - 1500) {
+      loadMore();
+    }
+    // Scroll-to-top button
+    document.getElementById('scroll-top').classList.toggle('show', window.scrollY > 800);
+  }, 50);
+});
+
+// ─── Filter buttons ───
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const filter = btn.dataset.filter;
+    const value = btn.dataset.value;
+    activeFilters[filter] = value;
+    document.querySelectorAll(`.filter-btn[data-filter="${filter}"]`).forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    applyFilters();
+  });
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  searchQuery = e.target.value;
+  applyFilters();
+});
+
+// Empty state: one action back to every template. The button goes away with the empty
+// state, so focus moves to the search field instead of being dropped.
+document.getElementById('reset-filters').addEventListener('click', () => {
+  const input = document.getElementById('search-input');
+  input.value = '';
+  searchQuery = '';
+  activeFilters = { type: 'all' };
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const on = b.dataset.value === 'all';
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  applyFilters();
+  input.focus({ preventScroll: true });
+});
+
+// ─── Actions ───
+// Where a template's Open link goes: every PRO template is self-hosted on this site.
+function templateHref(t) {
+  const path = String(t.path || '');
+  return path.endsWith('-template') ? `/templates/premium/${path}.html` : null;
+}
+
+// A new tab never gets a handle on this window (reverse tabnabbing).
+function openSafely(href) {
+  const w = window.open(href, '_blank', 'noopener,noreferrer');
+  if (w) w.opener = null;
+}
+
+// ─── Phone filter rows: fade the edge that still has chips beyond it ───
+document.querySelectorAll('.filter-row').forEach(row => {
+  const sync = () => {
+    const rest = row.scrollWidth - row.clientWidth - row.scrollLeft;
+    row.style.setProperty('--fade-l', row.scrollLeft > 1 ? '32px' : '10px');
+    row.style.setProperty('--fade-r', rest > 1 ? '56px' : '0px');
+  };
+  row.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
+});
+
+// ─── Init ───
+applyFilters();
+</script>
+</body>
+</html>
+

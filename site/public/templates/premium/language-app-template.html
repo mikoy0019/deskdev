@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lingaboo — Learn a Language the Fun Way</title>
+<meta name="description" content="Lingaboo turns language learning into a daily game. Build streaks, earn XP, and speak with confidence in 30+ languages. Start free today." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Baloo 2"', 'system-ui', 'sans-serif'],
+          body: ['"Nunito"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: '#1b1340',
+          grape: '#5b2ff2',
+          berry: '#ff3d8b',
+          mango: '#ff9f1c',
+          lime: '#27d978',
+          sky: '#1fb6ff',
+          cream: '#fff7ef',
+          lilac: '#f1ecff',
+        },
+        borderRadius: {
+          blob: '2.25rem',
+        },
+        boxShadow: {
+          chunk: '0 8px 0 0 rgba(27,19,64,0.14)',
+          chunkSm: '0 5px 0 0 rgba(27,19,64,0.16)',
+          pop: '0 22px 60px -18px rgba(91,47,242,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts: rounded friendly display + clean body -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background:
+      radial-gradient(1100px 600px at 12% -8%, #fde9ff 0%, transparent 55%),
+      radial-gradient(900px 520px at 105% 4%, #def6ff 0%, transparent 50%),
+      #fff7ef;
+    color: #1b1340;
+  }
+  .font-display { font-family: 'Baloo 2', system-ui, sans-serif; }
+
+  /* Chunky outlined buttons */
+  .btn-chunk {
+    position: relative;
+    border: 3px solid #1b1340;
+    transition: transform .14s ease, box-shadow .14s ease;
+    will-change: transform;
+  }
+  .btn-chunk:hover { transform: translateY(-3px); }
+  .btn-chunk:active { transform: translateY(2px); box-shadow: 0 2px 0 0 rgba(27,19,64,.16); }
+
+  .card-chunk {
+    border: 3px solid #1b1340;
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+    will-change: transform;
+  }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollx 26s linear infinite; }
+  @keyframes scrollx { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Floating shapes */
+  .floaty { animation: floaty 6s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-16px) rotate(6deg); } }
+  .floaty-slow { animation: floaty 9s ease-in-out infinite; }
+
+  /* Phone tilt wrapper */
+  .tilt-wrap { transform-style: preserve-3d; perspective: 1000px; }
+  .tilt-inner { transition: transform .25s ease; transform-style: preserve-3d; }
+
+  /* Streak progress dots fill */
+  .dot-fill { transition: all .4s cubic-bezier(.34,1.56,.64,1); }
+
+  /* FAQ accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .3s ease; }
+
+  /* Reveal default state (GSAP toggles) */
+  .reveal { opacity: 0; }
+
+  /* Squiggle underline */
+  .squiggle { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14' viewBox='0 0 120 14'%3E%3Cpath d='M2 8 Q 15 1 30 8 T 60 8 T 90 8 T 118 8' fill='none' stroke='%23ff9f1c' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: bottom; background-size: 100% 12px; padding-bottom: 10px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee, .floaty, .floaty-slow { animation: none !important; }
+    .reveal { opacity: 1 !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <nav class="mx-auto max-w-7xl px-4 sm:px-6 mt-3">
+    <div class="flex items-center justify-between rounded-blob border-[3px] border-ink bg-white/85 backdrop-blur px-4 sm:px-6 py-3 shadow-chunkSm">
+      <a href="#top" class="flex items-center gap-2">
+        <span class="grid place-items-center w-10 h-10 rounded-2xl bg-grape text-white text-xl font-display font-extrabold rotate-[-6deg] border-[3px] border-ink">L</span>
+        <span class="font-display text-2xl font-extrabold tracking-tight">Lingaboo</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-7 font-bold text-ink/80">
+        <a href="#languages" class="hover:text-grape transition">Languages</a>
+        <a href="#how" class="hover:text-grape transition">How it works</a>
+        <a href="#features" class="hover:text-grape transition">Features</a>
+        <a href="#pricing" class="hover:text-grape transition">Pricing</a>
+        <a href="#faq" class="hover:text-grape transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline-flex font-bold text-ink/80 hover:text-grape transition">Log in</a>
+        <a href="#cta" id="magnetic-nav" class="btn-chunk magnetic inline-flex items-center gap-2 rounded-2xl bg-mango text-ink font-display font-extrabold px-5 py-2.5 shadow-chunkSm">
+          Start free
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-32 lg:pt-40 pb-20 overflow-hidden">
+  <!-- floating shapes -->
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="floaty absolute top-28 left-[6%] w-14 h-14 rounded-2xl bg-berry/80 border-[3px] border-ink rotate-12"></div>
+    <div class="floaty-slow absolute top-44 right-[10%] w-16 h-16 rounded-full bg-lime/80 border-[3px] border-ink"></div>
+    <div class="floaty absolute bottom-16 left-[18%] w-10 h-10 rounded-xl bg-sky/80 border-[3px] border-ink -rotate-12"></div>
+    <div class="floaty-slow absolute top-[55%] right-[6%] w-12 h-12 rounded-2xl bg-mango/80 border-[3px] border-ink rotate-6"></div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center">
+    <!-- Copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full border-[3px] border-ink bg-white px-4 py-1.5 font-bold text-sm shadow-chunkSm">
+        <span class="w-2.5 h-2.5 rounded-full bg-lime animate-pulse"></span>
+        Loved by 4.9M everyday learners
+      </span>
+      <h1 class="reveal font-display font-extrabold leading-[1.02] text-5xl sm:text-6xl lg:text-7xl mt-5">
+        Learn a language<br />
+        the <span class="text-grape squiggle">fun</span> way.
+      </h1>
+      <p class="reveal mt-6 text-lg sm:text-xl text-ink/70 font-semibold max-w-xl">
+        Tiny daily lessons that feel like a game. Build streaks, earn XP, and actually
+        <span class="text-berry font-extrabold">speak</span> — in just 5 minutes a day.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#cta" id="magnetic-hero" class="magnetic btn-chunk inline-flex items-center gap-2 rounded-2xl bg-grape text-white font-display font-extrabold text-lg px-7 py-4 shadow-chunk">
+          Start learning free
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#how" class="btn-chunk inline-flex items-center gap-2 rounded-2xl bg-white text-ink font-display font-extrabold text-lg px-6 py-4 shadow-chunkSm">
+          See how it works
+        </a>
+      </div>
+
+      <div class="reveal mt-7 flex items-center gap-3 text-ink/60 font-bold text-sm">
+        <div class="flex -space-x-2">
+          <span class="w-9 h-9 rounded-full border-[3px] border-ink bg-berry"></span>
+          <span class="w-9 h-9 rounded-full border-[3px] border-ink bg-sky"></span>
+          <span class="w-9 h-9 rounded-full border-[3px] border-ink bg-mango"></span>
+          <span class="w-9 h-9 rounded-full border-[3px] border-ink bg-lime"></span>
+        </div>
+        No credit card. Cancel the guilt, keep the streak.
+      </div>
+    </div>
+
+    <!-- Phone mockup (tilt 3D) -->
+    <div class="relative tilt-wrap flex justify-center">
+      <!-- glow blob behind -->
+      <div class="absolute inset-0 -z-10 grid place-items-center">
+        <div class="w-[22rem] h-[22rem] rounded-full bg-gradient-to-br from-berry/30 via-grape/20 to-sky/30 blur-2xl"></div>
+      </div>
+
+      <div id="phone" class="tilt-inner relative w-[18rem] sm:w-[20rem] rounded-[2.75rem] border-[5px] border-ink bg-white shadow-pop p-3">
+        <!-- notch -->
+        <div class="mx-auto mb-3 h-5 w-24 rounded-full bg-ink/90"></div>
+
+        <!-- screen -->
+        <div class="rounded-[1.9rem] bg-gradient-to-b from-lilac to-white border-[3px] border-ink p-4">
+          <!-- top bar: streak + xp -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 font-display font-extrabold text-mango">
+              <span class="text-xl">🔥</span><span id="streak-count">37</span>
+            </div>
+            <div class="flex items-center gap-1.5 rounded-full bg-grape text-white font-extrabold text-sm px-3 py-1 border-[3px] border-ink">
+              <span>💎</span><span id="xp-count">0</span> XP
+            </div>
+          </div>
+
+          <!-- daily goal progress -->
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-xs font-bold text-ink/60 mb-1.5">
+              <span>Daily goal</span><span id="goal-pct">0%</span>
+            </div>
+            <div class="h-4 rounded-full bg-ink/10 border-[3px] border-ink overflow-hidden">
+              <div id="goal-bar" class="h-full w-0 rounded-full bg-gradient-to-r from-lime to-sky"></div>
+            </div>
+          </div>
+
+          <!-- lesson card -->
+          <div class="mt-4 rounded-2xl bg-white border-[3px] border-ink p-4 shadow-chunkSm">
+            <p class="text-xs font-extrabold text-berry uppercase tracking-wide">Lesson 4 · Café talk</p>
+            <p class="mt-2 font-display font-extrabold text-lg">“Un café, por favor.”</p>
+            <p class="text-sm text-ink/60 font-bold">A coffee, please.</p>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button class="rounded-xl bg-lilac border-[3px] border-ink font-bold text-sm py-2">☕ café</button>
+              <button class="rounded-xl bg-lime/30 border-[3px] border-ink font-bold text-sm py-2">✅ por favor</button>
+            </div>
+          </div>
+
+          <!-- streak dots -->
+          <div class="mt-4 flex items-center justify-between">
+            <div class="flex gap-1.5" id="streak-dots">
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-mango grid place-items-center text-[10px]">M</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-mango grid place-items-center text-[10px]">T</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-mango grid place-items-center text-[10px]">W</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-mango grid place-items-center text-[10px]">T</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-ink/10 grid place-items-center text-[10px]">F</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-ink/10 grid place-items-center text-[10px]">S</span>
+              <span class="dot-fill w-6 h-6 rounded-lg border-[3px] border-ink bg-ink/10 grid place-items-center text-[10px]">S</span>
+            </div>
+          </div>
+
+          <button class="mt-4 w-full rounded-2xl bg-grape text-white font-display font-extrabold py-3 border-[3px] border-ink shadow-chunkSm">
+            Continue →
+          </button>
+        </div>
+      </div>
+
+      <!-- floating mascot badge -->
+      <div class="floaty absolute -bottom-4 -left-4 sm:-left-8 rotate-[-8deg] rounded-2xl bg-berry text-white border-[3px] border-ink px-4 py-2 font-display font-extrabold shadow-chunkSm">
+        +50 XP! 🎉
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="rounded-blob border-[3px] border-ink bg-grape text-white shadow-chunk grid grid-cols-2 lg:grid-cols-4 divide-y divide-x divide-white/20 overflow-hidden">
+      <div class="p-7 text-center">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl"><span class="count" data-to="4900000" data-suffix="">0</span></div>
+        <p class="mt-1 font-bold text-white/80">Active learners</p>
+      </div>
+      <div class="p-7 text-center">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl"><span class="count" data-to="32" data-suffix="+">0</span></div>
+        <p class="mt-1 font-bold text-white/80">Languages</p>
+      </div>
+      <div class="p-7 text-center">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl"><span class="count" data-to="18000" data-suffix="+">0</span></div>
+        <p class="mt-1 font-bold text-white/80">Bite-size lessons</p>
+      </div>
+      <div class="p-7 text-center">
+        <div class="font-display font-extrabold text-4xl sm:text-5xl"><span class="count" data-to="4.9" data-decimals="1">0</span>★</div>
+        <p class="mt-1 font-bold text-white/80">App store rating</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LANGUAGE MARQUEE ============ -->
+<section class="py-10 mt-12">
+  <p class="text-center font-display font-extrabold text-ink/40 text-sm uppercase tracking-[0.25em] mb-5">Pick your next adventure</p>
+  <div class="marquee-wrap relative overflow-hidden">
+    <div class="marquee gap-4 px-2">
+      <!-- duplicated set for seamless loop -->
+      <div class="flex gap-4 shrink-0" id="marquee-set">
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇪🇸 Spanish</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇫🇷 French</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇯🇵 Japanese</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇩🇪 German</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇮🇹 Italian</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇰🇷 Korean</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇧🇷 Portuguese</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇨🇳 Mandarin</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇳🇱 Dutch</span>
+        <span class="shrink-0 rounded-full border-[3px] border-ink bg-white px-5 py-2.5 font-display font-extrabold shadow-chunkSm">🇸🇪 Swedish</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LANGUAGES GRID ============ -->
+<section id="languages" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="max-w-2xl">
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl">32 languages.<br />One delightful app.</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">From your morning coffee order in Paris to closing a deal in Tokyo — start where it matters to you.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-5" id="lang-grid">
+      <!-- card -->
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-berry/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇪🇸</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">Spanish</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">580M speakers · 42 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-berry">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-sky/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇫🇷</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">French</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">310M speakers · 40 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-sky">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-mango/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇯🇵</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">Japanese</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">125M speakers · 38 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-mango">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-lime/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇩🇪</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">German</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">135M speakers · 39 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-lime">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-grape/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇰🇷</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">Korean</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">82M speakers · 36 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-grape">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-berry/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇮🇹</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">Italian</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">68M speakers · 37 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-berry">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-sky/10 p-6 shadow-chunkSm">
+        <div class="text-5xl">🇧🇷</div>
+        <h3 class="mt-4 font-display font-extrabold text-2xl">Portuguese</h3>
+        <p class="text-ink/60 font-bold text-sm mt-1">260M speakers · 35 units</p>
+        <span class="mt-4 inline-flex items-center gap-1 font-display font-extrabold text-sky">Start <span class="group-hover:translate-x-1 transition">→</span></span>
+      </a>
+      <a href="#" class="lang-card card-chunk reveal group rounded-blob bg-mango/10 p-6 shadow-chunkSm grid place-items-center text-center">
+        <div>
+          <div class="text-3xl font-display font-extrabold text-mango">+25</div>
+          <p class="font-display font-extrabold text-xl mt-1">more languages</p>
+          <span class="mt-2 inline-flex items-center gap-1 font-bold text-ink/60">Explore all →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS (gamified steps) ============ -->
+<section id="how" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl">Learning, leveled up</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">Four tiny habits that snowball into fluency. No flashcards from 2008.</p>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="step card-chunk reveal rounded-blob bg-white p-7 shadow-chunk">
+        <div class="w-14 h-14 grid place-items-center rounded-2xl bg-mango border-[3px] border-ink font-display font-extrabold text-2xl rotate-[-6deg]">1</div>
+        <h3 class="mt-5 font-display font-extrabold text-2xl">Set your goal</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Pick 5, 10, or 15 minutes a day. We shape lessons around your real life.</p>
+      </div>
+      <div class="step card-chunk reveal rounded-blob bg-white p-7 shadow-chunk">
+        <div class="w-14 h-14 grid place-items-center rounded-2xl bg-berry text-white border-[3px] border-ink font-display font-extrabold text-2xl rotate-6">2</div>
+        <h3 class="mt-5 font-display font-extrabold text-2xl">Play a lesson</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Speak, match, and tap your way through quick, dopamine-friendly challenges.</p>
+      </div>
+      <div class="step card-chunk reveal rounded-blob bg-white p-7 shadow-chunk">
+        <div class="w-14 h-14 grid place-items-center rounded-2xl bg-lime border-[3px] border-ink font-display font-extrabold text-2xl rotate-[-6deg]">3</div>
+        <h3 class="mt-5 font-display font-extrabold text-2xl">Earn XP & streaks</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Every win feeds your streak. Miss a day? Streak Freeze has your back.</p>
+      </div>
+      <div class="step card-chunk reveal rounded-blob bg-white p-7 shadow-chunk">
+        <div class="w-14 h-14 grid place-items-center rounded-2xl bg-sky text-white border-[3px] border-ink font-display font-extrabold text-2xl rotate-6">4</div>
+        <h3 class="mt-5 font-display font-extrabold text-2xl">Speak for real</h3>
+        <p class="mt-2 text-ink/65 font-semibold">AI roleplay drops you into cafés, airports, and meetings until it clicks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- big feature -->
+      <div class="reveal card-chunk lg:row-span-2 rounded-blob bg-grape text-white p-8 shadow-chunk flex flex-col">
+        <span class="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-bold text-sm">🤖 Powered by AI</span>
+        <h3 class="mt-5 font-display font-extrabold text-3xl">Talk to a tutor that never sleeps</h3>
+        <p class="mt-3 text-white/80 font-semibold">Practice real conversations with an AI tutor that corrects your accent gently, remembers your weak spots, and chats at 2am if that's your vibe.</p>
+        <div class="mt-auto pt-6">
+          <div class="rounded-2xl bg-white text-ink border-[3px] border-ink p-4">
+            <p class="text-xs font-extrabold text-grape uppercase">You said</p>
+            <p class="font-bold">"Je voudrais un croissant."</p>
+            <p class="mt-2 text-xs font-extrabold text-lime uppercase">Perfect! 🎉</p>
+            <p class="text-ink/60 font-semibold text-sm">Native-level pronunciation. +20 XP</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-4xl">🧠</div>
+        <h3 class="mt-3 font-display font-extrabold text-2xl">Smart review</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Spaced repetition resurfaces words right before you forget them.</p>
+      </div>
+      <div class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-4xl">🏆</div>
+        <h3 class="mt-3 font-display font-extrabold text-2xl">Weekly leagues</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Climb the leaderboard against learners in your league. Friendly chaos.</p>
+      </div>
+      <div class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-4xl">🎧</div>
+        <h3 class="mt-3 font-display font-extrabold text-2xl">Story podcasts</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Learn on commutes with bite-size audio stories at your exact level.</p>
+      </div>
+      <div class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-4xl">📴</div>
+        <h3 class="mt-3 font-display font-extrabold text-2xl">Offline mode</h3>
+        <p class="mt-2 text-ink/65 font-semibold">Download lessons before a flight and keep your streak at 35,000 ft.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="relative reveal">
+      <div class="rounded-blob border-[3px] border-ink overflow-hidden shadow-chunk bg-gradient-to-br from-berry via-grape to-sky aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1600&q=80"
+             alt="People talking and laughing together"
+             class="w-full h-full object-cover mix-blend-luminosity opacity-90"
+             onerror="this.style.display='none'" />
+      </div>
+      <div class="floaty absolute -top-5 -right-4 rounded-2xl bg-white border-[3px] border-ink px-4 py-3 shadow-chunkSm rotate-6">
+        <p class="font-display font-extrabold text-grape text-2xl">5 min</p>
+        <p class="text-xs font-bold text-ink/60">a day is enough</p>
+      </div>
+    </div>
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full border-[3px] border-ink bg-lime/20 px-4 py-1.5 font-bold text-sm">Our story</span>
+      <h2 class="reveal mt-4 font-display font-extrabold text-4xl sm:text-5xl">We made language learning feel like recess</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">Lingaboo started when our founders gave up on dusty textbooks and built a game they couldn't stop playing. Five years later, millions of adults learn on the bus, in line for coffee, and on the couch — because it's genuinely fun.</p>
+      <div class="reveal mt-6 grid grid-cols-2 gap-4">
+        <div class="rounded-2xl border-[3px] border-ink bg-white p-4 shadow-chunkSm">
+          <p class="font-display font-extrabold text-3xl text-berry">93%</p>
+          <p class="text-sm font-bold text-ink/60">finish their first unit</p>
+        </div>
+        <div class="rounded-2xl border-[3px] border-ink bg-white p-4 shadow-chunkSm">
+          <p class="font-display font-extrabold text-3xl text-sky">2x</p>
+          <p class="text-sm font-bold text-ink/60">faster than a class</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl">People are obsessed 🥹</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">Don't take our word for it. Take theirs.</p>
+    </div>
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <figure class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-semibold text-ink/80 text-lg">“I ordered dinner in Lisbon entirely in Portuguese and the waiter had NO idea I started 4 months ago.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-berry border-[3px] border-ink"></span>
+          <div><p class="font-display font-extrabold">Priya M.</p><p class="text-sm font-bold text-ink/50">412-day streak 🔥</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal card-chunk rounded-blob bg-grape text-white p-7 shadow-chunk">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-semibold text-lg">“The leagues turned me into a competitive monster. I learn Japanese every single morning now just to stay in Diamond.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-lime border-[3px] border-ink"></span>
+          <div><p class="font-display font-extrabold">Marcus T.</p><p class="text-sm font-bold text-white/70">Diamond League</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal card-chunk rounded-blob bg-white p-7 shadow-chunkSm">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-3 font-semibold text-ink/80 text-lg">“The AI tutor is wildly patient. I practiced my job interview in German 20 times and aced it. Worth every cent.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-sky border-[3px] border-ink"></span>
+          <div><p class="font-display font-extrabold">Lena K.</p><p class="text-sm font-bold text-ink/50">198-day streak 🔥</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="text-center max-w-2xl mx-auto">
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl">Pick your plan</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">Start free forever. Upgrade when you're hooked (you will be).</p>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-3 gap-6 items-start">
+      <!-- Free -->
+      <div class="reveal card-chunk rounded-blob bg-white p-8 shadow-chunkSm">
+        <p class="font-display font-extrabold text-2xl">Sprout</p>
+        <p class="text-ink/60 font-bold">For curious beginners</p>
+        <p class="mt-5 font-display font-extrabold text-5xl">Free</p>
+        <p class="text-ink/50 font-bold">forever, seriously</p>
+        <ul class="mt-6 space-y-3 font-semibold text-ink/75">
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> All 32 languages</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Daily streak & XP</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Weekly leagues</li>
+          <li class="flex gap-2 text-ink/35"><span>✕</span> AI tutor & offline</li>
+        </ul>
+        <a href="#cta" class="btn-chunk mt-7 block text-center rounded-2xl bg-white text-ink font-display font-extrabold py-3 shadow-chunkSm">Start free</a>
+      </div>
+
+      <!-- Pro (highlight) -->
+      <div class="reveal card-chunk relative rounded-blob bg-grape text-white p-8 shadow-pop lg:-mt-4 lg:scale-[1.03]">
+        <span class="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-mango text-ink border-[3px] border-ink px-4 py-1 font-display font-extrabold text-sm whitespace-nowrap">Most popular 🔥</span>
+        <p class="font-display font-extrabold text-2xl">Bloom Pro</p>
+        <p class="text-white/70 font-bold">For daily learners</p>
+        <p class="mt-5 font-display font-extrabold text-5xl">$9<span class="text-2xl text-white/70">/mo</span></p>
+        <p class="text-white/60 font-bold">billed yearly · cancel anytime</p>
+        <ul class="mt-6 space-y-3 font-semibold">
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Everything in Sprout</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Unlimited AI tutor chats</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Offline + no ads</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Streak Freeze x unlimited</li>
+        </ul>
+        <a href="#cta" class="btn-chunk mt-7 block text-center rounded-2xl bg-mango text-ink font-display font-extrabold py-3 shadow-chunkSm">Get Bloom Pro</a>
+      </div>
+
+      <!-- Family -->
+      <div class="reveal card-chunk rounded-blob bg-white p-8 shadow-chunkSm">
+        <p class="font-display font-extrabold text-2xl">Forest</p>
+        <p class="text-ink/60 font-bold">For up to 6 people</p>
+        <p class="mt-5 font-display font-extrabold text-5xl">$19<span class="text-2xl text-ink/50">/mo</span></p>
+        <p class="text-ink/50 font-bold">billed yearly · best value</p>
+        <ul class="mt-6 space-y-3 font-semibold text-ink/75">
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> 6 Bloom Pro seats</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Family leaderboard</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Shared progress wall</li>
+          <li class="flex gap-2"><span class="text-lime font-extrabold">✓</span> Kid-safe mode</li>
+        </ul>
+        <a href="#cta" class="btn-chunk mt-7 block text-center rounded-2xl bg-white text-ink font-display font-extrabold py-3 shadow-chunkSm">Choose Forest</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6">
+    <div class="text-center">
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl">Questions, answered</h2>
+      <p class="reveal mt-4 text-lg text-ink/70 font-semibold">Everything you wanted to ask before tapping "Start free".</p>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faq-list">
+      <div class="faq-item card-chunk reveal rounded-blob bg-white shadow-chunkSm overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 text-left p-6">
+          <span class="font-display font-extrabold text-xl">Is Lingaboo really free?</span>
+          <span class="faq-icon text-2xl font-extrabold text-grape shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-6 text-ink/70 font-semibold">Yes! The Sprout plan is free forever with full access to every language, streaks, XP, and leagues. Pro features like the AI tutor and offline mode are optional upgrades.</p></div>
+      </div>
+      <div class="faq-item card-chunk reveal rounded-blob bg-white shadow-chunkSm overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 text-left p-6">
+          <span class="font-display font-extrabold text-xl">How much time do I actually need?</span>
+          <span class="faq-icon text-2xl font-extrabold text-grape shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-6 text-ink/70 font-semibold">Just 5 minutes a day moves the needle. The app adapts to your goal — pick a casual 5, a steady 10, or an intense 15 minutes per day.</p></div>
+      </div>
+      <div class="faq-item card-chunk reveal rounded-blob bg-white shadow-chunkSm overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 text-left p-6">
+          <span class="font-display font-extrabold text-xl">What happens if I break my streak?</span>
+          <span class="faq-icon text-2xl font-extrabold text-grape shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-6 text-ink/70 font-semibold">Life happens. Streak Freeze automatically protects your streak on a missed day. Pro members get unlimited freezes, so you never lose your momentum.</p></div>
+      </div>
+      <div class="faq-item card-chunk reveal rounded-blob bg-white shadow-chunkSm overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 text-left p-6">
+          <span class="font-display font-extrabold text-xl">Can I learn more than one language?</span>
+          <span class="faq-icon text-2xl font-extrabold text-grape shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-6 text-ink/70 font-semibold">Absolutely. Switch between languages anytime — many learners juggle two or three at once. Each one keeps its own progress, streak, and XP.</p></div>
+      </div>
+      <div class="faq-item card-chunk reveal rounded-blob bg-white shadow-chunkSm overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 text-left p-6">
+          <span class="font-display font-extrabold text-xl">Does it work on my phone and laptop?</span>
+          <span class="faq-icon text-2xl font-extrabold text-grape shrink-0">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-6 text-ink/70 font-semibold">Yes — Lingaboo syncs instantly across iOS, Android, and the web. Start a lesson on the train, finish it on your couch.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="py-20">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="relative overflow-hidden rounded-blob border-[3px] border-ink bg-gradient-to-br from-berry via-grape to-sky text-white p-10 sm:p-16 text-center shadow-pop">
+      <div class="pointer-events-none absolute inset-0 -z-0">
+        <div class="floaty absolute top-6 left-8 w-12 h-12 rounded-2xl bg-mango border-[3px] border-ink rotate-12"></div>
+        <div class="floaty-slow absolute bottom-8 right-10 w-14 h-14 rounded-full bg-lime border-[3px] border-ink"></div>
+      </div>
+      <div class="relative">
+        <h2 class="reveal font-display font-extrabold text-4xl sm:text-6xl">Your first word is one tap away.</h2>
+        <p class="reveal mt-4 text-lg sm:text-xl text-white/85 font-semibold max-w-2xl mx-auto">Join 4.9 million people building a daily habit they actually love. Start free — no credit card, no catch.</p>
+        <div class="reveal mt-8 flex flex-wrap justify-center gap-4">
+          <a href="#" id="magnetic-cta" class="magnetic btn-chunk inline-flex items-center gap-2 rounded-2xl bg-mango text-ink font-display font-extrabold text-lg px-8 py-4 shadow-chunk">
+            Start learning free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#" class="btn-chunk inline-flex items-center gap-2 rounded-2xl bg-white text-ink font-display font-extrabold text-lg px-7 py-4 shadow-chunkSm">
+            📱 Get the app
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t-[3px] border-ink bg-cream">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 py-14">
+    <div class="grid md:grid-cols-5 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2">
+          <span class="grid place-items-center w-10 h-10 rounded-2xl bg-grape text-white text-xl font-display font-extrabold rotate-[-6deg] border-[3px] border-ink">L</span>
+          <span class="font-display text-2xl font-extrabold">Lingaboo</span>
+        </a>
+        <p class="mt-4 text-ink/65 font-semibold max-w-sm">Tiny daily lessons that turn "someday" into "¿hablas español?". Learn a language the fun way.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="w-11 h-11 grid place-items-center rounded-2xl border-[3px] border-ink bg-white font-extrabold hover:bg-mango transition">𝕏</a>
+          <a href="#" class="w-11 h-11 grid place-items-center rounded-2xl border-[3px] border-ink bg-white font-extrabold hover:bg-berry hover:text-white transition">◎</a>
+          <a href="#" class="w-11 h-11 grid place-items-center rounded-2xl border-[3px] border-ink bg-white font-extrabold hover:bg-sky hover:text-white transition">▶</a>
+        </div>
+      </div>
+      <div>
+        <p class="font-display font-extrabold mb-3">Learn</p>
+        <ul class="space-y-2 font-semibold text-ink/65">
+          <li><a href="#languages" class="hover:text-grape transition">Languages</a></li>
+          <li><a href="#how" class="hover:text-grape transition">How it works</a></li>
+          <li><a href="#features" class="hover:text-grape transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-grape transition">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-extrabold mb-3">Company</p>
+        <ul class="space-y-2 font-semibold text-ink/65">
+          <li><a href="#about" class="hover:text-grape transition">About</a></li>
+          <li><a href="#" class="hover:text-grape transition">Careers</a></li>
+          <li><a href="#" class="hover:text-grape transition">Blog</a></li>
+          <li><a href="#" class="hover:text-grape transition">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-extrabold mb-3">Support</p>
+        <ul class="space-y-2 font-semibold text-ink/65">
+          <li><a href="#faq" class="hover:text-grape transition">Help center</a></li>
+          <li><a href="#" class="hover:text-grape transition">Contact</a></li>
+          <li><a href="#" class="hover:text-grape transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-grape transition">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t-[3px] border-ink/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-ink/55 font-bold text-sm">
+      <p>© 2026 Lingaboo Labs. Made with 🧡 for curious humans.</p>
+      <p>Keep your streak alive 🔥</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduce) {
+    // Snap final states without animation
+    document.querySelectorAll('.count').forEach(el => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.decimals || '0', 10);
+      el.textContent = fmt(to, dec, el.dataset.suffix || '');
+    });
+    setPhoneFinal();
+    bindFAQ();
+    bindMarquee();
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Reveal animations (springy back.out) ----
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 40, scale: 0.96 },
+      {
+        opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(1.6)',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+  });
+
+  // Stagger groups for grids
+  ['#lang-grid', '#features', '#faq-list'].forEach(sel => {
+    const parent = document.querySelector(sel);
+    if (!parent) return;
+    const kids = parent.querySelectorAll('.reveal');
+    ScrollTrigger.batch(kids, {
+      start: 'top 90%',
+      onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, scale: 1, stagger: 0.08, duration: 0.7, ease: 'back.out(1.5)' })
+    });
+  });
+
+  // ---- Count-ups ----
+  function fmtNum(n) { return Math.round(n).toLocaleString('en-US'); }
+  function runCount(el) {
+    const to = parseFloat(el.dataset.to);
+    const dec = parseInt(el.dataset.decimals || '0', 10);
+    const suffix = el.dataset.suffix || '';
+    const obj = { v: 0 };
+    gsap.to(obj, {
+      v: to, duration: 2, ease: 'power2.out',
+      onUpdate: () => { el.textContent = fmt(obj.v, dec, suffix); }
+    });
+  }
+  document.querySelectorAll('.count').forEach(el => {
+    ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: () => runCount(el) });
+  });
+
+  // ---- Hero headline subtle entrance ----
+  gsap.from('h1.reveal', { rotate: -1, transformOrigin: 'left center', duration: 1, ease: 'elastic.out(1,0.6)', delay: 0.1 });
+
+  // ---- Phone: animate streak / XP / goal when in view ----
+  const phone = document.getElementById('phone');
+  if (phone) {
+    ScrollTrigger.create({
+      trigger: phone, start: 'top 80%', once: true,
+      onEnter: () => animatePhone()
+    });
+  }
+
+  // ---- 3D tilt on phone (pointer) ----
+  const tiltWrap = document.querySelector('.tilt-wrap');
+  const tiltInner = document.getElementById('phone');
+  if (tiltWrap && tiltInner) {
+    tiltWrap.addEventListener('pointermove', (e) => {
+      const r = tiltWrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(tiltInner, { rotateY: px * 16, rotateX: -py * 16, duration: 0.4, ease: 'power2.out', transformPerspective: 900 });
+    });
+    tiltWrap.addEventListener('pointerleave', () => {
+      gsap.to(tiltInner, { rotateY: 0, rotateX: 0, duration: 0.7, ease: 'elastic.out(1,0.5)' });
+    });
+  }
+
+  // ---- Magnetic CTAs ----
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    btn.addEventListener('pointermove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: 'power2.out' });
+    });
+    btn.addEventListener('pointerleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1,0.4)' });
+    });
+  });
+
+  // ---- Bouncy hover on language + step cards ----
+  document.querySelectorAll('.lang-card, .step').forEach(card => {
+    card.addEventListener('pointerenter', () => gsap.to(card, { y: -8, rotate: gsap.utils.random(-2, 2), duration: 0.35, ease: 'back.out(2)' }));
+    card.addEventListener('pointerleave', () => gsap.to(card, { y: 0, rotate: 0, duration: 0.45, ease: 'elastic.out(1,0.5)' }));
+  });
+
+  bindFAQ();
+  bindMarquee();
+
+  // ---- helpers ----
+  function animatePhone() {
+    const streak = { v: 0 }, xp = { v: 0 }, goal = { v: 0 };
+    gsap.to(streak, { v: 37, duration: 1.4, ease: 'power2.out', onUpdate: () => { document.getElementById('streak-count').textContent = Math.round(streak.v); } });
+    gsap.to(xp, { v: 1240, duration: 1.6, ease: 'power2.out', onUpdate: () => { document.getElementById('xp-count').textContent = Math.round(xp.v).toLocaleString('en-US'); } });
+    gsap.to(goal, {
+      v: 80, duration: 1.6, ease: 'power3.out',
+      onUpdate: () => {
+        const p = Math.round(goal.v);
+        document.getElementById('goal-pct').textContent = p + '%';
+        document.getElementById('goal-bar').style.width = p + '%';
+      }
+    });
+    // pop streak dots in sequence
+    gsap.fromTo('#streak-dots .dot-fill',
+      { scale: 0.4, opacity: 0.3 },
+      { scale: 1, opacity: 1, stagger: 0.08, duration: 0.5, ease: 'back.out(3)', delay: 0.2 });
+  }
+
+  function setPhoneFinal() {
+    document.getElementById('streak-count').textContent = '37';
+    document.getElementById('xp-count').textContent = '1,240';
+    document.getElementById('goal-pct').textContent = '80%';
+    document.getElementById('goal-bar').style.width = '80%';
+  }
+
+  function bindFAQ() {
+    document.querySelectorAll('.faq-item .faq-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(o => o.classList.remove('open'));
+        if (!wasOpen) item.classList.add('open');
+      });
+    });
+  }
+
+  function bindMarquee() {
+    // duplicate the marquee set for a seamless loop
+    const set = document.getElementById('marquee-set');
+    const wrap = document.querySelector('.marquee');
+    if (set && wrap) wrap.appendChild(set.cloneNode(true));
+  }
+})();
+
+// shared format helper (outside IIFE scope concerns)
+function fmt(v, dec, suffix) {
+  if (dec > 0) return v.toFixed(dec) + suffix;
+  return Math.round(v).toLocaleString('en-US') + suffix;
+}
+</script>
+</body>
+</html>

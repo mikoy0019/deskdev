@@ -1,0 +1,876 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cortexa â€” AI Studio for Words & Images</title>
+<meta name="description" content="Cortexa is the generative studio that turns a single prompt into publish-ready copy and images. Type, generate, ship." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        colors: {
+          ink: '#06060c',
+          panel: '#0c0c17',
+          haze: '#13131f',
+          violet: '#8b5cf6',
+          flare: '#c084fc',
+          cyan: '#22d3ee',
+          lime: '#a3e635',
+          mist: '#9ca0b8',
+        },
+        boxShadow: {
+          glow: '0 0 60px -10px rgba(139,92,246,0.55)',
+          glowcy: '0 0 50px -12px rgba(34,211,238,0.5)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { color-scheme: dark; }
+  html, body { background: #06060c; }
+  body { overflow-x: hidden; }
+  ::selection { background: rgba(192,132,252,0.35); color: #fff; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #06060c; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(#8b5cf6,#22d3ee); border-radius: 99px; }
+
+  /* Aurora / glow backdrop */
+  .aurora {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  }
+  .aurora::before, .aurora::after {
+    content: ""; position: absolute; border-radius: 50%;
+    filter: blur(110px); opacity: 0.55;
+  }
+  .aurora::before {
+    width: 620px; height: 620px; top: -180px; left: -120px;
+    background: radial-gradient(circle, #8b5cf6, transparent 65%);
+    animation: drift1 18s ease-in-out infinite;
+  }
+  .aurora::after {
+    width: 560px; height: 560px; bottom: -200px; right: -120px;
+    background: radial-gradient(circle, #22d3ee, transparent 65%);
+    animation: drift2 22s ease-in-out infinite;
+  }
+  @keyframes drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,40px) scale(1.12)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-50px,-30px) scale(1.08)} }
+
+  .grid-fade {
+    background-image:
+      linear-gradient(rgba(139,92,246,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,92,246,0.07) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  .text-grad {
+    background: linear-gradient(100deg,#fff 0%,#c084fc 45%,#22d3ee 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .text-grad-cy {
+    background: linear-gradient(100deg,#22d3ee,#a3e635);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .glass {
+    background: rgba(18,18,30,0.55);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .card-edge {
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .card-edge:hover { border-color: rgba(139,92,246,0.45); }
+
+  /* Animated conic border for demo card */
+  .conic-frame { position: relative; }
+  .conic-frame::before {
+    content: ""; position: absolute; inset: -1px; border-radius: 24px; padding: 1px;
+    background: conic-gradient(from var(--a,0deg), #8b5cf6, #22d3ee, #a3e635, #8b5cf6);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    animation: spin 6s linear infinite; opacity: 0.9;
+  }
+  @keyframes spin { to { --a: 360deg; } }
+  @property --a { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+  /* Typed prompt caret */
+  .caret { display:inline-block; width:2px; height:1.05em; background:#c084fc; margin-left:2px;
+    vertical-align:-2px; animation: blink 0.9s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* skeleton shimmer for generating state */
+  .shimmer {
+    background: linear-gradient(100deg, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.04) 70%);
+    background-size: 200% 100%; animation: shimmer 1.4s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+
+  .gen-img {
+    background:
+      radial-gradient(circle at 30% 30%, #8b5cf6, transparent 55%),
+      radial-gradient(circle at 70% 60%, #22d3ee, transparent 55%),
+      radial-gradient(circle at 50% 90%, #a3e635, transparent 60%),
+      #0c0c17;
+  }
+
+  .magnetic { transition: transform 0.18s ease-out; will-change: transform; }
+  .pointer-glow { position: fixed; width: 420px; height: 420px; border-radius: 50%; pointer-events:none;
+    background: radial-gradient(circle, rgba(139,92,246,0.16), transparent 65%);
+    transform: translate(-50%,-50%); z-index: 1; left:-999px; top:-999px; transition: opacity .3s; }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+
+  .tilt { transform-style: preserve-3d; transition: transform 0.2s ease-out; }
+
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+
+  .pill { background: rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .aurora::before, .aurora::after, .conic-frame::before, .shimmer, .caret { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="font-body text-white antialiased relative">
+
+<div class="pointer-glow" id="pglow"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 mt-4">
+    <div class="glass rounded-2xl px-4 sm:px-6 py-3 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-violet to-cyan grid place-items-center shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l2.5 2.5M16.5 16.5L19 19M19 5l-2.5 2.5M7.5 16.5L5 19" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="3.2"/>
+          </svg>
+        </span>
+        <span class="font-display font-extrabold text-lg tracking-tight">Cortexa</span>
+      </a>
+
+      <div class="hidden md:flex items-center gap-7 text-sm text-mist">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#how" class="hover:text-white transition">How it works</a>
+        <a href="#usecases" class="hover:text-white transition">Use cases</a>
+        <a href="#pricing" class="hover:text-white transition">Pricing</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline text-sm text-mist hover:text-white transition">Sign in</a>
+        <a href="#cta" class="magnetic relative text-sm font-semibold px-4 py-2 rounded-xl bg-white text-ink hover:shadow-glow transition">
+          Start free
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative pt-36 sm:pt-44 pb-24 overflow-hidden">
+  <div class="aurora"></div>
+  <div class="absolute inset-0 grid-fade z-0"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- left copy -->
+    <div>
+      <span class="pill inline-flex items-center gap-2 text-xs font-medium text-flare px-3 py-1.5 rounded-full mb-6 reveal">
+        <span class="w-1.5 h-1.5 rounded-full bg-lime animate-pulse"></span>
+        New Â· Cortexa 3 multi-model engine
+      </span>
+
+      <h1 class="font-display font-extrabold leading-[1.04] tracking-tight text-[2.6rem] sm:text-6xl mb-6">
+        <span class="block reveal">From a single</span>
+        <span class="block reveal text-grad" id="kinetic">prompt to publish.</span>
+      </h1>
+
+      <p class="text-mist text-lg max-w-md mb-8 reveal">
+        Cortexa turns one line of intent into finished copy and original images â€” drafted, designed, and ready to ship. No prompt-engineering PhD required.
+      </p>
+
+      <div class="flex flex-wrap items-center gap-4 reveal">
+        <a href="#cta" class="magnetic px-6 py-3.5 rounded-xl font-semibold bg-gradient-to-r from-violet to-cyan shadow-glow hover:scale-[1.03] transition">
+          Generate your first asset
+        </a>
+        <a href="#how" class="px-6 py-3.5 rounded-xl font-semibold glass hover:border-violet/50 transition flex items-center gap-2">
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Watch the demo
+        </a>
+      </div>
+
+      <!-- count-ups -->
+      <div class="grid grid-cols-3 gap-6 mt-12 max-w-md reveal">
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-grad-cy" data-count="48" data-suffix="M+">0</div>
+          <div class="text-xs text-mist mt-1">Generations</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-grad-cy" data-count="120" data-suffix="K">0</div>
+          <div class="text-xs text-mist mt-1">Creators</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-2xl sm:text-3xl text-grad-cy" data-count="99" data-suffix="%">0</div>
+          <div class="text-xs text-mist mt-1">Ship rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right: animated prompt -> result demo -->
+    <div class="reveal">
+      <div class="conic-frame tilt rounded-3xl" id="demoCard">
+        <div class="rounded-[23px] bg-panel/90 backdrop-blur p-5 sm:p-6 shadow-glow">
+          <!-- window chrome -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-rose-400/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-300/80"></span>
+              <span class="w-3 h-3 rounded-full bg-lime/80"></span>
+            </div>
+            <div class="flex gap-1 text-[11px] font-mono text-mist">
+              <button class="tab px-2.5 py-1 rounded-md bg-violet/20 text-flare" data-mode="image">Image</button>
+              <button class="tab px-2.5 py-1 rounded-md hover:bg-white/5" data-mode="copy">Copy</button>
+            </div>
+          </div>
+
+          <!-- prompt bar -->
+          <div class="rounded-xl bg-ink/70 border border-white/8 p-3.5 flex items-start gap-3 mb-4">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-flare shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 4.6L19 9l-4.1 1.7L12 15l-1.9-4.3L6 9l4.1-1.4z" stroke-linejoin="round"/></svg>
+            <p class="font-mono text-sm text-white/90 leading-relaxed min-h-[2.6rem]">
+              <span id="typed"></span><span class="caret"></span>
+            </p>
+          </div>
+
+          <!-- result canvas -->
+          <div id="resultArea" class="rounded-xl overflow-hidden border border-white/8 relative">
+            <!-- IMAGE result -->
+            <div id="imgResult" class="aspect-[16/10] gen-img relative grid place-items-center">
+              <div id="imgSkeleton" class="absolute inset-0 shimmer hidden"></div>
+              <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1600&q=80"
+                   onerror="this.style.display='none'"
+                   class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" alt="" />
+              <div class="relative text-center px-6">
+                <div class="font-display font-bold text-lg text-white drop-shadow">Aurora over neon city</div>
+                <div class="text-xs text-mist mt-1 font-mono">1024Ã—640 Â· seed 8841 Â· 1.2s</div>
+              </div>
+              <span class="absolute bottom-3 right-3 text-[10px] font-mono px-2 py-1 rounded bg-black/40 text-cyan">lumoraÂ·v3</span>
+            </div>
+            <!-- COPY result -->
+            <div id="copyResult" class="p-5 bg-haze/70 hidden">
+              <div class="text-[11px] font-mono text-cyan mb-2">// product launch headline</div>
+              <p class="font-display font-bold text-xl leading-snug mb-2">Ship the future. Skip the blank page.</p>
+              <p class="text-sm text-mist leading-relaxed">Cortexa drafts launch-ready copy in your voice â€” three angles, instantly editable, tuned to convert.</p>
+              <div class="flex gap-2 mt-3 text-[11px]">
+                <span class="px-2 py-0.5 rounded pill text-flare">tone: bold</span>
+                <span class="px-2 py-0.5 rounded pill text-flare">98 words</span>
+                <span class="px-2 py-0.5 rounded pill text-flare">grade A</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- action row -->
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex gap-2 text-mist">
+              <span class="text-[11px] font-mono flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-lime"></span> ready to export</span>
+            </div>
+            <button class="magnetic text-xs font-semibold px-3 py-1.5 rounded-lg bg-white text-ink" id="regen">Regenerate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRUST / LOGOS ===================== -->
+<section class="relative py-12 border-y border-white/5">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <p class="text-center text-xs uppercase tracking-[0.25em] text-mist mb-8 reveal">Trusted by fast-moving teams</p>
+    <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-70">
+      <span class="font-display font-bold text-lg reveal">Northwind</span>
+      <span class="font-display font-bold text-lg reveal">Velocity</span>
+      <span class="font-display font-bold text-lg reveal">Pixelforge</span>
+      <span class="font-display font-bold text-lg reveal">Hummingbird</span>
+      <span class="font-display font-bold text-lg reveal">Quanta Labs</span>
+      <span class="font-display font-bold text-lg reveal">Orbital</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURES (BENTO) ===================== -->
+<section id="features" class="relative py-24 sm:py-28">
+  <div class="aurora opacity-40"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <span class="text-cyan font-mono text-sm reveal">// capabilities</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 mb-4 reveal">One studio. Every creative lift.</h2>
+      <p class="text-mist text-lg reveal">A unified canvas where words and pixels are generated, refined, and exported side by side.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <!-- big tile -->
+      <div class="card-edge rounded-3xl p-7 md:col-span-2 md:row-span-2 relative overflow-hidden reveal transition-colors">
+        <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-violet/20 blur-3xl"></div>
+        <div class="relative">
+          <div class="w-12 h-12 rounded-xl bg-violet/20 grid place-items-center mb-5">
+            <svg viewBox="0 0 24 24" class="w-6 h-6 text-flare" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4z" stroke-linejoin="round"/><path d="M8 20h8M12 16v4" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="font-display font-bold text-2xl mb-2">Dual-model canvas</h3>
+          <p class="text-mist mb-6 max-w-md">Generate copy and imagery in the same breath. Cortexa routes each prompt to the best model and stitches results into a single, editable composition.</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-xl bg-ink/60 border border-white/8 p-4">
+              <div class="text-xs font-mono text-cyan mb-1">text Â· lumora-write</div>
+              <div class="h-2 rounded shimmer mb-2"></div>
+              <div class="h-2 w-2/3 rounded shimmer"></div>
+            </div>
+            <div class="rounded-xl gen-img border border-white/8 aspect-auto p-4 grid place-items-center">
+              <span class="text-[11px] font-mono text-white/80">img Â· lumora-vision</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- tile -->
+      <div class="card-edge rounded-3xl p-7 reveal transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-cyan/15 grid place-items-center mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-cyan" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-1.5">Sub-second drafts</h3>
+        <p class="text-mist text-sm">Streaming output starts before you finish reading the prompt. Iterate at the speed of thought.</p>
+      </div>
+
+      <!-- tile -->
+      <div class="card-edge rounded-3xl p-7 reveal transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-lime/15 grid place-items-center mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-lime" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-1.5">Brand-locked output</h3>
+        <p class="text-mist text-sm">Teach Cortexa your voice, palette and rules once â€” every generation stays on-brand.</p>
+      </div>
+
+      <!-- wide tile -->
+      <div class="card-edge rounded-3xl p-7 md:col-span-2 reveal transition-colors relative overflow-hidden">
+        <div class="absolute -bottom-16 -left-10 w-56 h-56 rounded-full bg-cyan/15 blur-3xl"></div>
+        <div class="relative flex flex-col sm:flex-row sm:items-center gap-5 justify-between">
+          <div>
+            <div class="w-11 h-11 rounded-xl bg-violet/15 grid place-items-center mb-4">
+              <svg viewBox="0 0 24 24" class="w-5 h-5 text-flare" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="font-display font-bold text-lg mb-1.5">Conversational refine</h3>
+            <p class="text-mist text-sm max-w-sm">"Make it warmer." "Add a sunset." Nudge any result in plain language and watch it morph live.</p>
+          </div>
+          <div class="font-mono text-xs space-y-2 shrink-0">
+            <div class="px-3 py-2 rounded-lg bg-ink/60 border border-white/8 text-mist">â€º make it 30% shorter</div>
+            <div class="px-3 py-2 rounded-lg bg-violet/15 border border-violet/30 text-flare">âœ“ trimmed to 64 words</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section id="how" class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="text-cyan font-mono text-sm reveal">// workflow</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 mb-4 reveal">Three steps to shipped</h2>
+      <p class="text-mist text-lg reveal">No setup. No templates to wrangle. Just intent in, assets out.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 relative">
+      <div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gradient-to-r from-violet/40 via-cyan/40 to-lime/40"></div>
+
+      <div class="reveal text-center relative">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-panel border border-violet/30 grid place-items-center font-display font-bold text-xl text-flare shadow-glow mb-5">01</div>
+        <h3 class="font-display font-bold text-xl mb-2">Type your intent</h3>
+        <p class="text-mist text-sm max-w-xs mx-auto">Describe what you want in a sentence. Cortexa interprets tone, format and audience automatically.</p>
+      </div>
+      <div class="reveal text-center relative">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-panel border border-cyan/30 grid place-items-center font-display font-bold text-xl text-cyan shadow-glowcy mb-5">02</div>
+        <h3 class="font-display font-bold text-xl mb-2">Generate & refine</h3>
+        <p class="text-mist text-sm max-w-xs mx-auto">Get instant variations. Steer them with one-line edits until it's exactly right.</p>
+      </div>
+      <div class="reveal text-center relative">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-panel border border-lime/30 grid place-items-center font-display font-bold text-xl text-lime mb-5">03</div>
+        <h3 class="font-display font-bold text-xl mb-2">Export anywhere</h3>
+        <p class="text-mist text-sm max-w-xs mx-auto">Push finished copy and images to your CMS, socials or design tools in one click.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== USE CASES ===================== -->
+<section id="usecases" class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="aurora opacity-30"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <span class="text-cyan font-mono text-sm reveal">// who it's for</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 mb-4 reveal">Built for makers who move fast</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="card-edge rounded-2xl p-6 reveal transition-colors">
+        <div class="text-2xl mb-3">ðŸš€</div>
+        <h3 class="font-display font-semibold text-lg mb-1.5">Founders</h3>
+        <p class="text-mist text-sm">Launch pages, decks and ad creative without a design or copy hire.</p>
+      </div>
+      <div class="card-edge rounded-2xl p-6 reveal transition-colors">
+        <div class="text-2xl mb-3">ðŸ“£</div>
+        <h3 class="font-display font-semibold text-lg mb-1.5">Marketers</h3>
+        <p class="text-mist text-sm">Spin up campaign copy and matching visuals for every channel in minutes.</p>
+      </div>
+      <div class="card-edge rounded-2xl p-6 reveal transition-colors">
+        <div class="text-2xl mb-3">ðŸŽ¨</div>
+        <h3 class="font-display font-semibold text-lg mb-1.5">Designers</h3>
+        <p class="text-mist text-sm">Generate moodboards and on-brand concept art to jumpstart any project.</p>
+      </div>
+      <div class="card-edge rounded-2xl p-6 reveal transition-colors">
+        <div class="text-2xl mb-3">âœï¸</div>
+        <h3 class="font-display font-semibold text-lg mb-1.5">Writers</h3>
+        <p class="text-mist text-sm">Beat the blank page with structured drafts you can shape and own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section id="about" class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal">
+      <span class="text-cyan font-mono text-sm">// our mission</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 mb-5">Creativity, decompressed.</h2>
+      <p class="text-mist text-lg mb-5">We started Cortexa because the gap between a great idea and a finished asset was still measured in days. It shouldn't be.</p>
+      <p class="text-mist mb-8">Our generative engine collapses research, drafting, and design into a single conversational surface â€” so the only bottleneck left is your imagination.</p>
+      <div class="grid grid-cols-3 gap-4">
+        <div><div class="font-display font-extrabold text-2xl text-grad-cy" data-count="2021" data-raw="1">0</div><div class="text-xs text-mist mt-1">Founded</div></div>
+        <div><div class="font-display font-extrabold text-2xl text-grad-cy" data-count="64" data-suffix="">0</div><div class="text-xs text-mist mt-1">Team</div></div>
+        <div><div class="font-display font-extrabold text-2xl text-grad-cy" data-count="38" data-suffix="" >0</div><div class="text-xs text-mist mt-1">Countries</div></div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="conic-frame rounded-3xl">
+        <div class="rounded-[23px] bg-panel/80 p-8 relative overflow-hidden">
+          <div class="absolute inset-0 grid-fade opacity-40"></div>
+          <div class="relative space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-2 h-2 rounded-full bg-lime animate-pulse"></span>
+              <span class="font-mono text-xs text-mist">engine status Â· all systems nominal</span>
+            </div>
+            <div class="rounded-xl bg-ink/60 border border-white/8 p-4 font-mono text-xs space-y-2">
+              <div class="text-cyan">$ lumora generate --mode dual</div>
+              <div class="text-mist">â€º routing prompt â€¦ <span class="text-lime">ok</span></div>
+              <div class="text-mist">â€º drafting copy â€¦ <span class="text-lime">ok</span></div>
+              <div class="text-mist">â€º rendering image â€¦ <span class="text-lime">ok</span></div>
+              <div class="text-flare">âœ¦ asset ready in 1.18s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="text-cyan font-mono text-sm reveal">// loved by creators</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 reveal">Don't take our word for it</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="card-edge rounded-2xl p-7 reveal transition-colors">
+        <div class="flex gap-1 text-lime mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <p class="text-white/90 mb-5">"We cut our content production time by 70%. Cortexa drafts the copy and the hero image while I'm still pouring coffee."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-violet to-cyan"></span>
+          <div><div class="font-semibold text-sm">Mara Velasco</div><div class="text-xs text-mist">Head of Growth, Velocity</div></div>
+        </div>
+      </div>
+      <div class="card-edge rounded-2xl p-7 reveal transition-colors">
+        <div class="flex gap-1 text-lime mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <p class="text-white/90 mb-5">"The conversational refine is wild. I just say 'more editorial' and the whole layout shifts. Feels like pairing with a senior designer."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan to-lime"></span>
+          <div><div class="font-semibold text-sm">Devon Park</div><div class="text-xs text-mist">Founder, Pixelforge</div></div>
+        </div>
+      </div>
+      <div class="card-edge rounded-2xl p-7 reveal transition-colors">
+        <div class="flex gap-1 text-lime mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <p class="text-white/90 mb-5">"Brand-locked output is the killer feature. Everything stays on-voice without me babysitting a single prompt."</p>
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-flare to-violet"></span>
+          <div><div class="font-semibold text-sm">Aisha Rahman</div><div class="text-xs text-mist">CMO, Orbital</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRICING ===================== -->
+<section id="pricing" class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="aurora opacity-40"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="text-cyan font-mono text-sm reveal">// pricing</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 mb-4 reveal">Plans that scale with you</h2>
+      <p class="text-mist text-lg reveal">Start free. Upgrade when the ideas outpace the limits.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
+      <!-- Starter -->
+      <div class="card-edge rounded-3xl p-7 reveal transition-colors">
+        <h3 class="font-display font-bold text-xl mb-1">Spark</h3>
+        <p class="text-mist text-sm mb-5">For solo experiments.</p>
+        <div class="mb-6"><span class="font-display font-extrabold text-4xl">$0</span><span class="text-mist text-sm">/mo</span></div>
+        <a href="#cta" class="block text-center py-3 rounded-xl glass font-semibold hover:border-violet/50 transition mb-6">Start free</a>
+        <ul class="space-y-3 text-sm text-mist">
+          <li class="flex gap-2">âœ¦ 50 generations / mo</li>
+          <li class="flex gap-2">âœ¦ Copy + image modes</li>
+          <li class="flex gap-2">âœ¦ Standard models</li>
+          <li class="flex gap-2">âœ¦ Community support</li>
+        </ul>
+      </div>
+
+      <!-- Pro (highlight) -->
+      <div class="relative rounded-3xl p-7 reveal conic-frame">
+        <div class="rounded-[23px] bg-panel p-7 relative -m-7 sm:m-0">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-violet to-cyan shadow-glow">Most popular</span>
+          <h3 class="font-display font-bold text-xl mb-1 mt-2">Studio</h3>
+          <p class="text-mist text-sm mb-5">For creators who ship daily.</p>
+          <div class="mb-6"><span class="font-display font-extrabold text-4xl text-grad">$29</span><span class="text-mist text-sm">/mo</span></div>
+          <a href="#cta" class="block text-center py-3 rounded-xl bg-gradient-to-r from-violet to-cyan font-semibold shadow-glow hover:scale-[1.02] transition mb-6">Go Studio</a>
+          <ul class="space-y-3 text-sm text-mist">
+            <li class="flex gap-2 text-white">âœ¦ Unlimited generations</li>
+            <li class="flex gap-2 text-white">âœ¦ Cortexa 3 premium models</li>
+            <li class="flex gap-2">âœ¦ Brand voice & palette lock</li>
+            <li class="flex gap-2">âœ¦ One-click exports</li>
+            <li class="flex gap-2">âœ¦ Priority queue</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Team -->
+      <div class="card-edge rounded-3xl p-7 reveal transition-colors">
+        <h3 class="font-display font-bold text-xl mb-1">Atlas</h3>
+        <p class="text-mist text-sm mb-5">For growing teams.</p>
+        <div class="mb-6"><span class="font-display font-extrabold text-4xl">$89</span><span class="text-mist text-sm">/mo</span></div>
+        <a href="#cta" class="block text-center py-3 rounded-xl glass font-semibold hover:border-violet/50 transition mb-6">Talk to sales</a>
+        <ul class="space-y-3 text-sm text-mist">
+          <li class="flex gap-2">âœ¦ Everything in Studio</li>
+          <li class="flex gap-2">âœ¦ 10 team seats</li>
+          <li class="flex gap-2">âœ¦ Shared asset library</li>
+          <li class="flex gap-2">âœ¦ API access & webhooks</li>
+          <li class="flex gap-2">âœ¦ SSO + audit logs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="relative py-24 sm:py-28 border-t border-white/5">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="text-cyan font-mono text-sm reveal">// questions</span>
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl mt-3 reveal">Frequently asked</h2>
+    </div>
+
+    <div class="space-y-3" id="faqWrap">
+      <div class="card-edge rounded-2xl reveal overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between p-5 text-left">
+          <span class="font-display font-semibold">Who owns the content I generate?</span>
+          <svg class="acc-ico w-5 h-5 text-flare shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="acc-body"><p class="px-5 pb-5 text-mist text-sm">You do â€” fully. Every word and image you create on a paid plan is yours to use commercially, royalty-free.</p></div>
+      </div>
+      <div class="card-edge rounded-2xl reveal overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between p-5 text-left">
+          <span class="font-display font-semibold">Do I need prompt-engineering skills?</span>
+          <svg class="acc-ico w-5 h-5 text-flare shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="acc-body"><p class="px-5 pb-5 text-mist text-sm">No. Write like you'd brief a teammate. Cortexa interprets intent and asks smart follow-ups when it needs more.</p></div>
+      </div>
+      <div class="card-edge rounded-2xl reveal overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between p-5 text-left">
+          <span class="font-display font-semibold">Can it match my brand voice?</span>
+          <svg class="acc-ico w-5 h-5 text-flare shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="acc-body"><p class="px-5 pb-5 text-mist text-sm">Yes. Upload samples or set rules once, and brand-lock keeps every generation on-voice and on-palette.</p></div>
+      </div>
+      <div class="card-edge rounded-2xl reveal overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between p-5 text-left">
+          <span class="font-display font-semibold">Is there a free plan?</span>
+          <svg class="acc-ico w-5 h-5 text-flare shrink-0 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="acc-body"><p class="px-5 pb-5 text-mist text-sm">Absolutely â€” the Spark plan is free forever with 50 generations a month. No card required to start.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="cta" class="relative py-28 overflow-hidden">
+  <div class="aurora"></div>
+  <div class="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <div class="conic-frame rounded-3xl reveal">
+      <div class="rounded-[23px] bg-panel/90 backdrop-blur px-6 sm:px-12 py-16 shadow-glow">
+        <h2 class="font-display font-extrabold text-3xl sm:text-5xl mb-5 text-grad">Your next idea, already shipped.</h2>
+        <p class="text-mist text-lg max-w-xl mx-auto mb-9">Join 120,000 creators turning prompts into polished work. Start free â€” generate something brilliant in the next 60 seconds.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+          <input type="email" placeholder="you@studio.com" class="flex-1 px-5 py-3.5 rounded-xl bg-ink/70 border border-white/10 text-sm focus:border-violet outline-none transition" />
+          <a href="#" class="magnetic px-6 py-3.5 rounded-xl font-semibold bg-gradient-to-r from-violet to-cyan shadow-glow hover:scale-[1.03] transition whitespace-nowrap">Start free</a>
+        </div>
+        <p class="text-xs text-mist mt-4">No credit card Â· 50 free generations Â· cancel anytime</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="relative border-t border-white/5 py-14">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5 mb-4">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet to-cyan grid place-items-center shadow-glow">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke-linecap="round"/></svg>
+          </span>
+          <span class="font-display font-extrabold text-lg">Cortexa</span>
+        </a>
+        <p class="text-mist text-sm max-w-xs">The generative studio for words and images. From a single prompt to publish.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold mb-4 text-sm">Product</h4>
+        <ul class="space-y-2.5 text-sm text-mist">
+          <li><a href="#features" class="hover:text-white transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
+          <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+          <li><a href="#" class="hover:text-white transition">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold mb-4 text-sm">Company</h4>
+        <ul class="space-y-2.5 text-sm text-mist">
+          <li><a href="#about" class="hover:text-white transition">About</a></li>
+          <li><a href="#" class="hover:text-white transition">Careers</a></li>
+          <li><a href="#" class="hover:text-white transition">Blog</a></li>
+          <li><a href="#" class="hover:text-white transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-semibold mb-4 text-sm">Legal</h4>
+        <ul class="space-y-2.5 text-sm text-mist">
+          <li><a href="#" class="hover:text-white transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-white transition">Terms</a></li>
+          <li><a href="#" class="hover:text-white transition">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-white/5 text-sm text-mist">
+      <p>Â© 2026 Cortexa Labs. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-white transition">Twitter</a>
+        <a href="#" class="hover:text-white transition">Discord</a>
+        <a href="#" class="hover:text-white transition">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== GSAP ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.querySelector('.glass').classList.toggle('shadow-glow', window.scrollY > 40);
+  });
+
+  /* ---------- Pointer glow ---------- */
+  const pg = document.getElementById('pglow');
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    window.addEventListener('pointermove', e => {
+      pg.style.left = e.clientX + 'px';
+      pg.style.top = e.clientY + 'px';
+    });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('pointermove', e => {
+        const r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width/2) * 0.3;
+        const y = (e.clientY - r.top - r.height/2) * 0.4;
+        el.style.transform = `translate(${x}px,${y}px)`;
+      });
+      el.addEventListener('pointerleave', () => el.style.transform = 'translate(0,0)');
+    });
+  }
+
+  /* ---------- Tilt on demo card ---------- */
+  const demo = document.getElementById('demoCard');
+  if (demo && !reduce && window.matchMedia('(pointer:fine)').matches) {
+    demo.addEventListener('pointermove', e => {
+      const r = demo.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      demo.style.transform = `perspective(1000px) rotateY(${px*7}deg) rotateX(${-py*7}deg)`;
+    });
+    demo.addEventListener('pointerleave', () => demo.style.transform = 'perspective(1000px) rotateY(0) rotateX(0)');
+  }
+
+  /* ---------- Typed prompt + result reveal ---------- */
+  const typedEl = document.getElementById('typed');
+  const imgRes = document.getElementById('imgResult');
+  const copyRes = document.getElementById('copyResult');
+  const skel = document.getElementById('imgSkeleton');
+  let mode = 'image';
+
+  const prompts = {
+    image: 'aurora over a neon cyberpunk city, cinematic, ultra-detailed',
+    copy: 'write a bold product launch headline for an AI design studio'
+  };
+
+  function showResult() {
+    if (mode === 'image') { imgRes.classList.remove('hidden'); copyRes.classList.add('hidden'); }
+    else { copyRes.classList.remove('hidden'); imgRes.classList.add('hidden'); }
+  }
+
+  function typePrompt() {
+    const text = prompts[mode];
+    typedEl.textContent = '';
+    if (mode === 'image') { skel.classList.remove('hidden'); }
+    if (reduce) { typedEl.textContent = text; skel.classList.add('hidden'); showResult(); return; }
+    let i = 0;
+    imgRes.classList.add('opacity-40');
+    const t = setInterval(() => {
+      typedEl.textContent += text[i++];
+      if (i >= text.length) {
+        clearInterval(t);
+        setTimeout(() => {
+          skel.classList.add('hidden');
+          imgRes.classList.remove('opacity-40');
+          showResult();
+        }, 650);
+      }
+    }, 38);
+  }
+  showResult();
+  typePrompt();
+
+  document.getElementById('regen').addEventListener('click', typePrompt);
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('bg-violet/20','text-flare'));
+      tab.classList.add('bg-violet/20','text-flare');
+      mode = tab.dataset.mode;
+      typePrompt();
+    });
+  });
+
+  /* ---------- Accordion ---------- */
+  document.querySelectorAll('.acc-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const ico = btn.querySelector('.acc-ico');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.acc-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.acc-ico').forEach(i => i.style.transform = 'rotate(0deg)');
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; ico.style.transform = 'rotate(180deg)'; }
+    });
+  });
+
+  /* ---------- GSAP reveals + count-ups ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach((el, i) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // kinetic headline letters
+      const k = document.getElementById('kinetic');
+      if (k) {
+        const txt = k.textContent; k.textContent = '';
+        txt.split('').forEach(ch => {
+          const s = document.createElement('span');
+          s.textContent = ch; s.style.display = 'inline-block';
+          if (ch === ' ') s.style.width = '0.3em';
+          k.appendChild(s);
+        });
+        gsap.from(k.children, { y: 40, opacity: 0, stagger: 0.03, duration: 0.7, delay: 0.2, ease: 'back.out(1.7)' });
+      }
+
+      // container parallax on aurora blobs
+      gsap.utils.toArray('.aurora').forEach(a => {
+        gsap.to(a, { yPercent: 18, ease: 'none', scrollTrigger: { trigger: a, start: 'top bottom', end: 'bottom top', scrub: true } });
+      });
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    }
+
+    // count-ups
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const end = parseFloat(el.dataset.count);
+      const suffix = el.dataset.suffix || '';
+      const raw = el.dataset.raw;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: end, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => {
+              const val = Math.round(obj.v);
+              el.textContent = raw ? val : val.toLocaleString() + suffix;
+            }
+          });
+        }
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('[data-count]').forEach(el => {
+      el.textContent = (el.dataset.raw ? el.dataset.count : Number(el.dataset.count).toLocaleString() + (el.dataset.suffix||''));
+    });
+  }
+})();
+</script>
+</body>
+</html>
+

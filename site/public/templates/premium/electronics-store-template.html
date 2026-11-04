@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voltra — Premium Audio &amp; Smart Gadgets</title>
+<meta name="description" content="Voltra — engineered sound, smart wearables, and precision gadgets. Free 2-day shipping, 3-year warranty." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0c0f17',
+          slate: '#1a1f2e',
+          mist: '#f5f7fb',
+          cloud: '#eef1f7',
+          volt: '#3b5bff',
+          voltdk: '#2742d6',
+          lime: '#c6ff4f',
+          glow: '#6f8bff',
+        },
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          body: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          card: '0 18px 50px -22px rgba(12,15,23,0.35)',
+          soft: '0 10px 40px -18px rgba(12,15,23,0.25)',
+          volt: '0 18px 50px -16px rgba(59,91,255,0.5)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #f5f7fb; color: #0c0f17; font-family: 'Inter', sans-serif; }
+
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* Animated headline gradient */
+  .grad-text {
+    background: linear-gradient(100deg, #3b5bff 0%, #6f8bff 45%, #0c0f17 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 6s linear infinite;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scroll-x 28s linear infinite; }
+  @keyframes scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Reveal default state (JS overrides when GSAP runs) */
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .reveal-ready .reveal { opacity: 1; transform: none; }
+
+  /* Tilt 3D */
+  .tilt-stage { perspective: 1000px; }
+  .tilt-card { transform-style: preserve-3d; transition: transform 0.15s ease-out; will-change: transform; }
+  .tilt-shine {
+    background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.55), transparent 55%);
+    mix-blend-mode: soft-light;
+  }
+
+  /* Product card */
+  .pcard { transition: transform 0.4s cubic-bezier(.2,.7,.2,1), box-shadow 0.4s; }
+  .pcard:hover { transform: translateY(-8px); box-shadow: 0 28px 60px -26px rgba(12,15,23,0.4); }
+  .pcard .quick-add {
+    transform: translateY(14px); opacity: 0;
+    transition: transform 0.35s cubic-bezier(.2,.7,.2,1), opacity 0.35s;
+  }
+  .pcard:hover .quick-add { transform: translateY(0); opacity: 1; }
+  .pcard .pimg { transition: transform 0.6s cubic-bezier(.2,.7,.2,1); }
+  .pcard:hover .pimg { transform: scale(1.06) rotate(-1deg); }
+
+  /* Category rail */
+  .rail { scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(.2,.7,.2,1); }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-ico { transform: rotate(45deg); }
+  .faq-ico { transition: transform 0.35s; }
+
+  /* Magnetic button */
+  .mag { transition: transform 0.2s cubic-bezier(.2,.7,.2,1); }
+
+  /* Cart drawer */
+  .cart-drawer { transition: transform 0.45s cubic-bezier(.2,.7,.2,1); }
+
+  .dot-grid {
+    background-image: radial-gradient(rgba(12,15,23,0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .grid-img-fallback {
+    background: linear-gradient(135deg, #3b5bff 0%, #6f8bff 50%, #0c0f17 100%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee, .grad-text { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased text-ink reveal-ready">
+
+<!-- ===== NAV ===== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div id="navbar" class="mt-3 flex items-center justify-between rounded-2xl border border-white/40 bg-white/70 backdrop-blur-xl px-5 py-3 shadow-soft">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-ink text-lime font-display font-extrabold text-lg">V</span>
+        <span class="font-display text-xl font-extrabold tracking-tight">Voltra</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate/80">
+        <a href="#bestsellers" class="hover:text-volt transition">Shop</a>
+        <a href="#spotlight" class="hover:text-volt transition">Featured</a>
+        <a href="#deals" class="hover:text-volt transition">Deals</a>
+        <a href="#about" class="hover:text-volt transition">About</a>
+        <a href="#faq" class="hover:text-volt transition">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <a href="#bestsellers" class="hidden sm:inline-flex text-sm font-semibold text-slate/80 hover:text-volt transition">Sign in</a>
+        <button id="cartBtn" class="relative inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-volt transition">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6 5 3H2"/></svg>
+          <span class="hidden sm:inline">Cart</span>
+          <span id="cartCount" class="grid h-5 min-w-5 place-items-center rounded-full bg-lime px-1 text-[11px] font-bold text-ink">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<span id="top"></span>
+
+<!-- ===== HERO ===== -->
+<section class="relative pt-32 pb-20 sm:pt-40 sm:pb-28 dot-grid overflow-hidden">
+  <div class="absolute -top-32 -right-24 h-96 w-96 rounded-full bg-volt/20 blur-3xl"></div>
+  <div class="absolute top-40 -left-24 h-80 w-80 rounded-full bg-lime/30 blur-3xl"></div>
+
+  <div class="relative mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+    <div>
+      <div class="reveal inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white/70 px-4 py-1.5 text-xs font-semibold text-slate/80 mb-6">
+        <span class="h-2 w-2 rounded-full bg-lime"></span>
+        New drop — Voltra Pulse Pro is here
+      </div>
+      <h1 class="reveal font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.02] tracking-tight">
+        Sound that <span class="grad-text">moves</span><br/> with you.
+      </h1>
+      <p class="reveal mt-6 max-w-md text-lg text-slate/70">
+        Engineered audio, smart wearables, and precision gadgets — designed in studio, built to last, shipped to your door in two days.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#bestsellers" class="mag inline-flex items-center gap-2 rounded-xl bg-volt px-7 py-4 font-semibold text-white shadow-volt hover:bg-voltdk transition">
+          Shop the collection
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#spotlight" class="inline-flex items-center gap-2 rounded-xl border border-ink/15 bg-white/70 px-6 py-4 font-semibold text-ink hover:border-volt hover:text-volt transition">
+          Explore Pulse Pro
+        </a>
+      </div>
+      <div class="reveal mt-10 flex items-center gap-8">
+        <div><div class="counter font-display text-3xl font-extrabold" data-target="240">0</div><p class="text-xs text-slate/60 mt-1">Products shipped (k)</p></div>
+        <div class="h-10 w-px bg-ink/10"></div>
+        <div><div class="counter font-display text-3xl font-extrabold" data-target="4.9" data-decimal="1">0</div><p class="text-xs text-slate/60 mt-1">Avg. rating</p></div>
+        <div class="h-10 w-px bg-ink/10"></div>
+        <div><div class="counter font-display text-3xl font-extrabold" data-target="3" data-suffix="yr">0</div><p class="text-xs text-slate/60 mt-1">Warranty</p></div>
+      </div>
+    </div>
+
+    <!-- Hero product card (parallax container) -->
+    <div class="reveal relative" data-parallax="0.12">
+      <div class="absolute inset-6 rounded-[2.5rem] bg-gradient-to-br from-volt to-glow blur-2xl opacity-40"></div>
+      <div class="relative rounded-[2rem] border border-white/50 bg-white shadow-card overflow-hidden">
+        <div class="grid-img-fallback aspect-[4/5] w-full overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80"
+               alt="Voltra Pulse Pro headphones"
+               class="h-full w-full object-cover" onerror="this.style.display='none'" />
+        </div>
+        <div class="absolute top-5 left-5 rounded-full bg-ink/85 backdrop-blur px-3 py-1.5 text-xs font-semibold text-lime">Bestseller</div>
+        <div class="absolute bottom-5 left-5 right-5 flex items-center justify-between rounded-2xl bg-white/85 backdrop-blur px-5 py-4 shadow-soft">
+          <div>
+            <p class="font-display font-bold">Pulse Pro ANC</p>
+            <p class="text-xs text-slate/60">Adaptive noise cancellation</p>
+          </div>
+          <p class="font-display text-xl font-extrabold text-volt">$249</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MARQUEE / FEATURES ===== -->
+<div class="marquee-wrap border-y border-ink/10 bg-ink py-4 overflow-hidden">
+  <div class="marquee text-white/80">
+    <div class="flex items-center gap-10 pr-10 text-sm font-medium font-display tracking-wide">
+      <span>FREE 2-DAY SHIPPING</span><span class="text-lime">◆</span>
+      <span>3-YEAR WARRANTY</span><span class="text-lime">◆</span>
+      <span>30-DAY RETURNS</span><span class="text-lime">◆</span>
+      <span>CARBON-NEUTRAL DELIVERY</span><span class="text-lime">◆</span>
+      <span>STUDIO-TUNED AUDIO</span><span class="text-lime">◆</span>
+      <span>24/7 SUPPORT</span><span class="text-lime">◆</span>
+    </div>
+    <div class="flex items-center gap-10 pr-10 text-sm font-medium font-display tracking-wide" aria-hidden="true">
+      <span>FREE 2-DAY SHIPPING</span><span class="text-lime">◆</span>
+      <span>3-YEAR WARRANTY</span><span class="text-lime">◆</span>
+      <span>30-DAY RETURNS</span><span class="text-lime">◆</span>
+      <span>CARBON-NEUTRAL DELIVERY</span><span class="text-lime">◆</span>
+      <span>STUDIO-TUNED AUDIO</span><span class="text-lime">◆</span>
+      <span>24/7 SUPPORT</span><span class="text-lime">◆</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CATEGORY RAIL ===== -->
+<section class="py-16 sm:py-20">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal flex items-end justify-between mb-8">
+      <div>
+        <p class="text-sm font-semibold text-volt mb-2">Browse by category</p>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Find your gadget</h2>
+      </div>
+      <a href="#bestsellers" class="hidden sm:inline-flex text-sm font-semibold text-slate/70 hover:text-volt transition">View all →</a>
+    </div>
+    <div class="rail flex gap-4 overflow-x-auto pb-2 snap-x">
+      <!-- card -->
+      <a href="#bestsellers" class="reveal snap-start shrink-0 w-44 sm:w-52 rounded-2xl border border-ink/10 bg-white p-5 hover:border-volt hover:shadow-soft transition group">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-12 group-hover:bg-volt group-hover:text-white transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2" y="14" width="4" height="6" rx="1.5"/><rect x="18" y="14" width="4" height="6" rx="1.5"/></svg>
+        </div>
+        <p class="font-display font-bold">Headphones</p>
+        <p class="text-xs text-slate/60 mt-1">18 products</p>
+      </a>
+      <a href="#bestsellers" class="reveal snap-start shrink-0 w-44 sm:w-52 rounded-2xl border border-ink/10 bg-white p-5 hover:border-volt hover:shadow-soft transition group">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-12 group-hover:bg-volt group-hover:text-white transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 18h.01"/></svg>
+        </div>
+        <p class="font-display font-bold">Wearables</p>
+        <p class="text-xs text-slate/60 mt-1">12 products</p>
+      </a>
+      <a href="#bestsellers" class="reveal snap-start shrink-0 w-44 sm:w-52 rounded-2xl border border-ink/10 bg-white p-5 hover:border-volt hover:shadow-soft transition group">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-12 group-hover:bg-volt group-hover:text-white transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </div>
+        <p class="font-display font-bold">Earbuds</p>
+        <p class="text-xs text-slate/60 mt-1">9 products</p>
+      </a>
+      <a href="#bestsellers" class="reveal snap-start shrink-0 w-44 sm:w-52 rounded-2xl border border-ink/10 bg-white p-5 hover:border-volt hover:shadow-soft transition group">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-12 group-hover:bg-volt group-hover:text-white transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"/><path d="M8 18v2M16 18v2"/></svg>
+        </div>
+        <p class="font-display font-bold">Speakers</p>
+        <p class="text-xs text-slate/60 mt-1">7 products</p>
+      </a>
+      <a href="#bestsellers" class="reveal snap-start shrink-0 w-44 sm:w-52 rounded-2xl border border-ink/10 bg-white p-5 hover:border-volt hover:shadow-soft transition group">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-12 group-hover:bg-volt group-hover:text-white transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4z"/><path d="M2 20h20M9 16v4M15 16v4"/></svg>
+        </div>
+        <p class="font-display font-bold">Accessories</p>
+        <p class="text-xs text-slate/60 mt-1">24 products</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== BESTSELLERS GRID ===== -->
+<section id="bestsellers" class="py-16 sm:py-20 bg-cloud/60">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal flex flex-wrap items-end justify-between gap-4 mb-10">
+      <div>
+        <p class="text-sm font-semibold text-volt mb-2">Most loved this month</p>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Bestsellers</h2>
+      </div>
+      <div class="flex gap-2 text-sm">
+        <button class="rounded-full bg-ink px-4 py-2 font-semibold text-white">All</button>
+        <button class="rounded-full border border-ink/15 bg-white px-4 py-2 font-medium text-slate/70 hover:border-volt transition">Audio</button>
+        <button class="rounded-full border border-ink/15 bg-white px-4 py-2 font-medium text-slate/70 hover:border-volt transition">Wear</button>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" id="productGrid">
+      <!-- Product 1 -->
+      <article class="pcard reveal rounded-2xl border border-ink/10 bg-white overflow-hidden shadow-soft relative"
+               data-name="Pulse Pro ANC" data-price="249">
+        <div class="relative grid-img-fallback aspect-square overflow-hidden">
+          <img class="pimg h-full w-full object-cover" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80" alt="Pulse Pro headphones" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-lime px-2.5 py-1 text-[11px] font-bold text-ink">−20%</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-1 text-xs text-volt mb-2">★★★★★ <span class="text-slate/50 ml-1">(312)</span></div>
+          <h3 class="font-display font-bold">Pulse Pro ANC</h3>
+          <p class="text-xs text-slate/60 mt-0.5">Over-ear · 40h battery</p>
+          <div class="mt-3 flex items-center justify-between">
+            <p class="font-display text-lg font-extrabold">$249 <span class="text-sm text-slate/40 line-through font-medium">$310</span></p>
+          </div>
+          <button class="quick-add add-btn mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white hover:bg-volt transition">Quick add</button>
+        </div>
+      </article>
+
+      <!-- Product 2 -->
+      <article class="pcard reveal rounded-2xl border border-ink/10 bg-white overflow-hidden shadow-soft relative"
+               data-name="Volt Watch S2" data-price="189">
+        <div class="relative grid-img-fallback aspect-square overflow-hidden">
+          <img class="pimg h-full w-full object-cover" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=1600&q=80" alt="Volt smart watch" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-volt px-2.5 py-1 text-[11px] font-bold text-white">New</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-1 text-xs text-volt mb-2">★★★★★ <span class="text-slate/50 ml-1">(204)</span></div>
+          <h3 class="font-display font-bold">Volt Watch S2</h3>
+          <p class="text-xs text-slate/60 mt-0.5">AMOLED · GPS · 7-day</p>
+          <div class="mt-3 flex items-center justify-between">
+            <p class="font-display text-lg font-extrabold">$189</p>
+          </div>
+          <button class="quick-add add-btn mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white hover:bg-volt transition">Quick add</button>
+        </div>
+      </article>
+
+      <!-- Product 3 -->
+      <article class="pcard reveal rounded-2xl border border-ink/10 bg-white overflow-hidden shadow-soft relative"
+               data-name="Drift Buds Mini" data-price="129">
+        <div class="relative grid-img-fallback aspect-square overflow-hidden">
+          <img class="pimg h-full w-full object-cover" src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=1600&q=80" alt="Drift earbuds" onerror="this.style.display='none'" />
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-1 text-xs text-volt mb-2">★★★★☆ <span class="text-slate/50 ml-1">(167)</span></div>
+          <h3 class="font-display font-bold">Drift Buds Mini</h3>
+          <p class="text-xs text-slate/60 mt-0.5">In-ear · IPX5 · 28h case</p>
+          <div class="mt-3 flex items-center justify-between">
+            <p class="font-display text-lg font-extrabold">$129</p>
+          </div>
+          <button class="quick-add add-btn mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white hover:bg-volt transition">Quick add</button>
+        </div>
+      </article>
+
+      <!-- Product 4 -->
+      <article class="pcard reveal rounded-2xl border border-ink/10 bg-white overflow-hidden shadow-soft relative"
+               data-name="Boom 360 Speaker" data-price="159">
+        <div class="relative grid-img-fallback aspect-square overflow-hidden">
+          <img class="pimg h-full w-full object-cover" src="https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?auto=format&fit=crop&w=1600&q=80" alt="Boom speaker" onerror="this.style.display='none'" />
+          <span class="absolute top-3 left-3 rounded-full bg-lime px-2.5 py-1 text-[11px] font-bold text-ink">−15%</span>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-1 text-xs text-volt mb-2">★★★★★ <span class="text-slate/50 ml-1">(98)</span></div>
+          <h3 class="font-display font-bold">Boom 360 Speaker</h3>
+          <p class="text-xs text-slate/60 mt-0.5">Portable · 24h · 360° sound</p>
+          <div class="mt-3 flex items-center justify-between">
+            <p class="font-display text-lg font-extrabold">$159 <span class="text-sm text-slate/40 line-through font-medium">$189</span></p>
+          </div>
+          <button class="quick-add add-btn mt-4 w-full rounded-xl bg-ink py-2.5 text-sm font-semibold text-white hover:bg-volt transition">Quick add</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURED SPOTLIGHT (tilt 3D + specs) ===== -->
+<section id="spotlight" class="py-20 sm:py-28 bg-ink text-white overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- tilt card -->
+    <div class="tilt-stage order-2 lg:order-1">
+      <div id="tiltCard" class="tilt-card relative rounded-[2rem] border border-white/10 bg-slate overflow-hidden shadow-2xl">
+        <div class="grid-img-fallback aspect-[4/3] w-full overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80" alt="Pulse Pro featured" class="h-full w-full object-cover" onerror="this.style.display='none'" />
+        </div>
+        <div class="tilt-shine pointer-events-none absolute inset-0"></div>
+        <div class="absolute bottom-5 left-5 rounded-2xl bg-black/40 backdrop-blur px-5 py-3 border border-white/10">
+          <p class="font-display font-bold">Pulse Pro ANC</p>
+          <p class="text-xs text-white/60">Flagship audio · 2026 edition</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- specs -->
+    <div class="order-1 lg:order-2">
+      <p class="reveal text-sm font-semibold text-lime mb-3">Featured product</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+        Hear every detail.<br/>Feel nothing else.
+      </h2>
+      <p class="reveal mt-5 max-w-md text-white/60 text-lg">
+        Adaptive noise cancellation reads your environment 50,000 times a second. Studio-grade drivers deliver clarity that engineers obsess over.
+      </p>
+      <div class="reveal mt-8 grid grid-cols-2 gap-4 max-w-md">
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="font-display text-2xl font-extrabold text-lime">40h</p>
+          <p class="text-xs text-white/50 mt-1">Battery (ANC on)</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="font-display text-2xl font-extrabold text-lime">−42dB</p>
+          <p class="text-xs text-white/50 mt-1">Noise reduction</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="font-display text-2xl font-extrabold text-lime">40mm</p>
+          <p class="text-xs text-white/50 mt-1">Titanium drivers</p>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <p class="font-display text-2xl font-extrabold text-lime">5min</p>
+          <p class="text-xs text-white/50 mt-1">= 6h fast charge</p>
+        </div>
+      </div>
+      <button class="reveal add-btn mag mt-8 inline-flex items-center gap-2 rounded-xl bg-volt px-7 py-4 font-semibold text-white shadow-volt hover:bg-voltdk transition"
+              data-name="Pulse Pro ANC" data-price="249">
+        Add to cart — $249
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section class="py-20 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal text-center max-w-2xl mx-auto mb-14">
+      <p class="text-sm font-semibold text-volt mb-2">Why Voltra</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Premium, without the friction</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal rounded-2xl border border-ink/10 bg-white p-7 hover:shadow-soft transition">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-5">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h13v8H3zM16 10h4l1 3v2h-5"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg">Free 2-day shipping</h3>
+        <p class="text-sm text-slate/60 mt-2">On every order over $50. Tracked, insured, carbon-neutral.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-ink/10 bg-white p-7 hover:shadow-soft transition">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-5">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 5v6c0 5 3.5 8 8 11 4.5-3 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg">3-year warranty</h3>
+        <p class="text-sm text-slate/60 mt-2">Every device, covered. No fine print, no runaround.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-ink/10 bg-white p-7 hover:shadow-soft transition">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-5">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v4h4"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg">30-day returns</h3>
+        <p class="text-sm text-slate/60 mt-2">Not in love? Send it back. Full refund, zero questions.</p>
+      </div>
+      <div class="reveal rounded-2xl border border-ink/10 bg-white p-7 hover:shadow-soft transition">
+        <div class="grid h-12 w-12 place-items-center rounded-xl bg-volt/10 text-volt mb-5">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg">Human support</h3>
+        <p class="text-sm text-slate/60 mt-2">Real people, 24/7. Average reply under 4 minutes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DEALS / BUNDLES ===== -->
+<section id="deals" class="py-16 sm:py-20 bg-cloud/60">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal mb-10">
+      <p class="text-sm font-semibold text-volt mb-2">Save more, bundled</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Curated deals &amp; bundles</h2>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- big deal -->
+      <div class="reveal lg:col-span-2 relative overflow-hidden rounded-3xl bg-ink text-white p-8 sm:p-10 flex flex-col justify-between min-h-[300px]">
+        <div class="absolute -right-16 -bottom-16 h-72 w-72 rounded-full bg-volt/30 blur-3xl"></div>
+        <div class="relative">
+          <span class="inline-flex rounded-full bg-lime px-3 py-1 text-xs font-bold text-ink">SAVE $98</span>
+          <h3 class="font-display text-3xl sm:text-4xl font-extrabold mt-5 max-w-md">The Creator Bundle</h3>
+          <p class="mt-3 text-white/60 max-w-md">Pulse Pro ANC + Boom 360 Speaker + braided cable kit. Everything you need to create, mix, and move.</p>
+        </div>
+        <div class="relative mt-8 flex items-center gap-4">
+          <p class="font-display text-3xl font-extrabold text-lime">$359 <span class="text-lg text-white/40 line-through font-medium">$457</span></p>
+          <button class="add-btn mag rounded-xl bg-white px-6 py-3 font-semibold text-ink hover:bg-lime transition" data-name="Creator Bundle" data-price="359">Add bundle</button>
+        </div>
+      </div>
+      <!-- small deal -->
+      <div class="reveal relative overflow-hidden rounded-3xl border border-ink/10 bg-white p-8 flex flex-col justify-between">
+        <div>
+          <span class="inline-flex rounded-full bg-volt/10 px-3 py-1 text-xs font-bold text-volt">FLASH · 48H</span>
+          <h3 class="font-display text-2xl font-extrabold mt-5">Drift Buds Mini</h3>
+          <p class="mt-2 text-sm text-slate/60">Limited flash price. Studio sound, pocket size.</p>
+        </div>
+        <div class="mt-8">
+          <p class="font-display text-2xl font-extrabold">$99 <span class="text-base text-slate/40 line-through font-medium">$129</span></p>
+          <button class="add-btn mt-4 w-full rounded-xl bg-ink py-3 font-semibold text-white hover:bg-volt transition" data-name="Drift Buds Mini" data-price="99">Grab the deal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section id="about" class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative" data-parallax="0.1">
+      <div class="grid-img-fallback rounded-3xl overflow-hidden aspect-[4/3] shadow-card">
+        <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=1600&q=80" alt="Voltra studio" class="h-full w-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -bottom-6 -right-6 rounded-2xl bg-white shadow-card border border-ink/10 px-6 py-4">
+        <p class="font-display text-2xl font-extrabold text-volt">Est. 2021</p>
+        <p class="text-xs text-slate/60">Built in the studio</p>
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-sm font-semibold text-volt mb-3">Our story</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+        We make gadgets we'd actually want to keep.
+      </h2>
+      <p class="reveal mt-5 text-slate/70 text-lg">
+        Voltra started with three engineers frustrated by overpriced, over-marketed tech. We obsess over the parts you never see — the drivers, the firmware, the haptics — so the experience feels effortless.
+      </p>
+      <p class="reveal mt-4 text-slate/70">
+        No gimmicks. No planned obsolescence. Just well-built devices, fair prices, and support that treats you like a person.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap gap-3">
+        <span class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-medium">Studio-tuned</span>
+        <span class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-medium">Repairable</span>
+        <span class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-medium">Carbon-neutral</span>
+        <span class="rounded-full border border-ink/10 bg-white px-4 py-2 text-sm font-medium">Recycled aluminum</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="py-16 sm:py-20 bg-ink text-white">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal mb-12">
+      <p class="text-sm font-semibold text-lime mb-2">Loved by 240k+ customers</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">What people are saying</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl border border-white/10 bg-white/5 p-7">
+        <div class="text-lime text-sm mb-4">★★★★★</div>
+        <blockquote class="text-white/80">"The Pulse Pro is the first set of headphones I've owned where I forgot I had them on. The ANC is unreal."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center rounded-full bg-volt font-display font-bold">M</span>
+          <div><p class="font-semibold text-sm">Maya Ortiz</p><p class="text-xs text-white/50">Verified buyer</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-white/10 bg-white/5 p-7">
+        <div class="text-lime text-sm mb-4">★★★★★</div>
+        <blockquote class="text-white/80">"Ordered Tuesday, wearing them Thursday. The watch battery genuinely lasts a week. Voltra gets it."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center rounded-full bg-lime text-ink font-display font-bold">J</span>
+          <div><p class="font-semibold text-sm">Jordan Lee</p><p class="text-xs text-white/50">Verified buyer</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-white/10 bg-white/5 p-7">
+        <div class="text-lime text-sm mb-4">★★★★★</div>
+        <blockquote class="text-white/80">"Had one issue, support replied in 3 minutes and shipped a replacement same day. That's how you build loyalty."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center rounded-full bg-glow font-display font-bold">P</span>
+          <div><p class="font-semibold text-sm">Priya Raman</p><p class="text-xs text-white/50">Verified buyer</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section class="py-20 sm:py-24">
+  <div class="mx-auto max-w-4xl px-5 sm:px-8">
+    <div class="reveal relative overflow-hidden rounded-3xl bg-gradient-to-br from-volt to-glow text-white p-10 sm:p-14 text-center">
+      <div class="absolute -top-16 -left-16 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
+      <div class="relative">
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Get $20 off your first order</h2>
+        <p class="mt-3 text-white/85 max-w-md mx-auto">Join the Voltra list for early drops, member-only deals, and gadget guides. No spam, ever.</p>
+        <form class="mt-8 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="event.preventDefault(); this.querySelector('input').value=''; this.querySelector('button').textContent='Subscribed ✓';">
+          <input type="email" required placeholder="you@email.com" class="flex-1 rounded-xl bg-white/95 px-5 py-3.5 text-ink placeholder-slate/40 outline-none focus:ring-2 focus:ring-lime" />
+          <button class="rounded-xl bg-ink px-6 py-3.5 font-semibold text-white hover:bg-slate transition whitespace-nowrap">Get my code</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="py-16 sm:py-20 bg-cloud/60">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="reveal text-center mb-12">
+      <p class="text-sm font-semibold text-volt mb-2">Questions, answered</p>
+      <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">Frequently asked</h2>
+    </div>
+    <div class="space-y-3" id="faqList">
+      <div class="faq-item rounded-2xl border border-ink/10 bg-white overflow-hidden">
+        <button class="faq-q flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold">How fast is shipping?</span>
+          <svg class="faq-ico h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-slate/60">Orders over $50 ship free with 2-day delivery across the continental US. Most orders dispatch within 12 hours, and you'll get live tracking the moment it leaves our warehouse.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink/10 bg-white overflow-hidden">
+        <button class="faq-q flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold">What does the 3-year warranty cover?</span>
+          <svg class="faq-ico h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-slate/60">Every Voltra device is covered against manufacturing defects, battery degradation below 80%, and firmware faults for three full years. We repair or replace — your choice — with no restocking fees.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink/10 bg-white overflow-hidden">
+        <button class="faq-q flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold">Can I return a product I don't love?</span>
+          <svg class="faq-ico h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-slate/60">Absolutely. You have 30 days from delivery to return any item for a full refund — even if you've used it. We email you a prepaid label and refund within 48 hours of receiving it.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-ink/10 bg-white overflow-hidden">
+        <button class="faq-q flex w-full items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-semibold">Are the devices compatible with my phone?</span>
+          <svg class="faq-ico h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-slate/60">Yes — all Voltra audio and wearables pair via Bluetooth 5.3 and work seamlessly with iOS and Android. The companion app is free on both the App Store and Google Play.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="py-20 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal relative overflow-hidden rounded-[2.5rem] bg-ink text-white px-8 py-16 sm:px-16 sm:py-20 text-center dot-grid">
+      <div class="absolute -top-24 left-1/2 -translate-x-1/2 h-72 w-72 rounded-full bg-volt/30 blur-3xl"></div>
+      <div class="relative">
+        <h2 class="font-display text-4xl sm:text-5xl font-extrabold tracking-tight">Ready to upgrade your everyday?</h2>
+        <p class="mt-4 text-white/65 max-w-xl mx-auto text-lg">Free shipping, 3-year warranty, and 30 days to fall in love. Join 240,000 people who chose Voltra.</p>
+        <a href="#bestsellers" class="mag mt-8 inline-flex items-center gap-2 rounded-xl bg-lime px-8 py-4 font-semibold text-ink hover:bg-white transition">
+          Shop now
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-ink/10 bg-white pt-14 pb-8">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid md:grid-cols-5 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-ink text-lime font-display font-extrabold text-lg">V</span>
+          <span class="font-display text-xl font-extrabold">Voltra</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm text-slate/60">Engineered sound, smart wearables, and precision gadgets — built to last and shipped to your door.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" aria-label="Twitter" class="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 hover:border-volt hover:text-volt transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.8c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.7.8-2.6 1a4 4 0 0 0-6.9 3.7A11.4 11.4 0 0 1 3.8 4.6a4 4 0 0 0 1.2 5.4c-.6 0-1.2-.2-1.8-.5v.1a4 4 0 0 0 3.2 4 4 4 0 0 1-1.8.1 4 4 0 0 0 3.7 2.8A8 8 0 0 1 2 18.6a11.3 11.3 0 0 0 6.1 1.8c7.4 0 11.4-6.1 11.4-11.4v-.5c.8-.6 1.5-1.3 2-2.2z"/></svg></a>
+          <a href="#" aria-label="Instagram" class="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 hover:border-volt hover:text-volt transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+          <a href="#" aria-label="YouTube" class="grid h-9 w-9 place-items-center rounded-lg border border-ink/10 hover:border-volt hover:text-volt transition"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7.5a3 3 0 0 0-2.1-2.1C19 5 12 5 12 5s-7 0-8.9.4A3 3 0 0 0 1 7.5 31 31 0 0 0 .6 12 31 31 0 0 0 1 16.5a3 3 0 0 0 2.1 2.1C5 19 12 19 12 19s7 0 8.9-.4a3 3 0 0 0 2.1-2.1A31 31 0 0 0 23.4 12 31 31 0 0 0 23 7.5zM9.8 15.3V8.7l5.7 3.3z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <p class="font-display font-bold text-sm mb-4">Shop</p>
+        <ul class="space-y-2.5 text-sm text-slate/60">
+          <li><a href="#bestsellers" class="hover:text-volt transition">Headphones</a></li>
+          <li><a href="#bestsellers" class="hover:text-volt transition">Wearables</a></li>
+          <li><a href="#bestsellers" class="hover:text-volt transition">Earbuds</a></li>
+          <li><a href="#deals" class="hover:text-volt transition">Deals</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-bold text-sm mb-4">Company</p>
+        <ul class="space-y-2.5 text-sm text-slate/60">
+          <li><a href="#about" class="hover:text-volt transition">About</a></li>
+          <li><a href="#" class="hover:text-volt transition">Careers</a></li>
+          <li><a href="#" class="hover:text-volt transition">Sustainability</a></li>
+          <li><a href="#" class="hover:text-volt transition">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-display font-bold text-sm mb-4">Support</p>
+        <ul class="space-y-2.5 text-sm text-slate/60">
+          <li><a href="#faq" class="hover:text-volt transition">FAQ</a></li>
+          <li><a href="#" class="hover:text-volt transition">Shipping</a></li>
+          <li><a href="#" class="hover:text-volt transition">Warranty</a></li>
+          <li><a href="#" class="hover:text-volt transition">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-ink/10 pt-6 text-sm text-slate/50">
+      <p>© 2026 Voltra Inc. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-volt transition">Privacy</a>
+        <a href="#" class="hover:text-volt transition">Terms</a>
+        <a href="#" class="hover:text-volt transition">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== CART DRAWER ===== -->
+<div id="cartOverlay" class="fixed inset-0 z-[60] bg-ink/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"></div>
+<aside id="cartDrawer" class="cart-drawer fixed top-0 right-0 z-[70] h-full w-full max-w-sm translate-x-full bg-white shadow-2xl flex flex-col">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-ink/10">
+    <h3 class="font-display font-bold text-lg">Your cart</h3>
+    <button id="cartClose" class="grid h-9 w-9 place-items-center rounded-lg hover:bg-cloud transition"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div id="cartItems" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    <p id="cartEmpty" class="text-center text-slate/50 mt-20">Your cart is empty.</p>
+  </div>
+  <div class="border-t border-ink/10 px-6 py-5">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-slate/60">Subtotal</span>
+      <span id="cartTotal" class="font-display text-xl font-extrabold">$0</span>
+    </div>
+    <button class="w-full rounded-xl bg-volt py-3.5 font-semibold text-white hover:bg-voltdk transition">Checkout</button>
+    <p class="mt-3 text-center text-xs text-slate/50">Free shipping over $50 · 30-day returns</p>
+  </div>
+</aside>
+
+<script>
+(function () {
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- CART ---------- */
+  var cart = [];
+  var cartCount = document.getElementById('cartCount');
+  var cartTotal = document.getElementById('cartTotal');
+  var cartItems = document.getElementById('cartItems');
+  var cartEmpty = document.getElementById('cartEmpty');
+  var drawer = document.getElementById('cartDrawer');
+  var overlay = document.getElementById('cartOverlay');
+
+  function fmt(n){ return '$' + n.toLocaleString(); }
+
+  function renderCart(){
+    var count = cart.reduce(function(s,i){return s+i.qty;},0);
+    var total = cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+    cartCount.textContent = count;
+    cartTotal.textContent = fmt(total);
+    if(cart.length === 0){
+      cartItems.innerHTML = '<p id="cartEmpty" class="text-center text-slate/50 mt-20">Your cart is empty.</p>';
+      return;
+    }
+    cartItems.innerHTML = cart.map(function(i,idx){
+      return '<div class="flex items-center gap-3 rounded-xl border border-ink/10 p-3">'+
+        '<div class="grid h-12 w-12 place-items-center rounded-lg bg-volt/10 text-volt font-display font-bold">'+i.name.charAt(0)+'</div>'+
+        '<div class="flex-1 min-w-0"><p class="font-semibold text-sm truncate">'+i.name+'</p><p class="text-xs text-slate/50">'+fmt(i.price)+' × '+i.qty+'</p></div>'+
+        '<button data-idx="'+idx+'" class="cart-rm grid h-7 w-7 place-items-center rounded-md hover:bg-cloud text-slate/50">✕</button>'+
+      '</div>';
+    }).join('');
+    cartItems.querySelectorAll('.cart-rm').forEach(function(b){
+      b.addEventListener('click', function(){ cart.splice(+b.dataset.idx,1); renderCart(); });
+    });
+  }
+
+  function addToCart(name, price){
+    var found = cart.find(function(i){return i.name===name;});
+    if(found){ found.qty++; } else { cart.push({name:name, price:price, qty:1}); }
+    renderCart();
+    bump();
+  }
+
+  function bump(){
+    if(reduce) return;
+    if(window.gsap) gsap.fromTo(cartCount, {scale:1.6}, {scale:1, duration:0.4, ease:'back.out(3)'});
+  }
+
+  function openCart(){ overlay.classList.remove('opacity-0','pointer-events-none'); drawer.classList.remove('translate-x-full'); }
+  function closeCart(){ overlay.classList.add('opacity-0','pointer-events-none'); drawer.classList.add('translate-x-full'); }
+
+  document.getElementById('cartBtn').addEventListener('click', openCart);
+  document.getElementById('cartClose').addEventListener('click', closeCart);
+  overlay.addEventListener('click', closeCart);
+
+  document.querySelectorAll('.add-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var card = btn.closest('[data-name]') || btn;
+      var name = card.getAttribute('data-name');
+      var price = parseFloat(card.getAttribute('data-price'));
+      if(name && !isNaN(price)){
+        addToCart(name, price);
+        var orig = btn.textContent;
+        if(btn.classList.contains('quick-add')){
+          btn.textContent = 'Added ✓';
+          setTimeout(function(){ btn.textContent = orig; }, 1200);
+        } else {
+          openCart();
+        }
+      }
+    });
+  });
+
+  /* ---------- FAQ ACCORDION ---------- */
+  document.querySelectorAll('.faq-q').forEach(function(q){
+    q.addEventListener('click', function(){
+      var item = q.closest('.faq-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function(i){ i.classList.remove('open'); });
+      if(!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- NAV SHRINK ---------- */
+  var navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 30){ navbar.classList.add('shadow-card'); navbar.classList.add('py-2.5'); navbar.classList.remove('py-3'); }
+    else { navbar.classList.remove('shadow-card'); navbar.classList.add('py-3'); navbar.classList.remove('py-2.5'); }
+  });
+
+  if(reduce) return;
+
+  /* ---------- GSAP MOTION ---------- */
+  if(window.gsap && window.ScrollTrigger){
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.body.classList.remove('reveal-ready');
+
+    gsap.utils.toArray('.reveal').forEach(function(el){
+      gsap.fromTo(el, {y:28, opacity:0}, {
+        y:0, opacity:1, duration:0.8, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%' }
+      });
+    });
+
+    /* container parallax */
+    gsap.utils.toArray('[data-parallax]').forEach(function(el){
+      var depth = parseFloat(el.getAttribute('data-parallax')) || 0.1;
+      gsap.to(el, {
+        yPercent: -depth*100,
+        ease:'none',
+        scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }
+      });
+    });
+
+    /* count-ups */
+    gsap.utils.toArray('.counter').forEach(function(el){
+      var target = parseFloat(el.getAttribute('data-target'));
+      var decimal = parseInt(el.getAttribute('data-decimal')||'0');
+      var suffix = el.getAttribute('data-suffix')||'';
+      var obj = {v:0};
+      ScrollTrigger.create({
+        trigger:el, start:'top 90%', once:true,
+        onEnter:function(){
+          gsap.to(obj,{v:target, duration:1.6, ease:'power2.out',
+            onUpdate:function(){ el.textContent = (decimal? obj.v.toFixed(decimal) : Math.round(obj.v)) + suffix; }});
+        }
+      });
+    });
+  }
+
+  /* ---------- TILT 3D ---------- */
+  var tilt = document.getElementById('tiltCard');
+  if(tilt){
+    var shine = tilt.querySelector('.tilt-shine');
+    var stage = tilt.parentElement;
+    stage.addEventListener('mousemove', function(e){
+      var r = tilt.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width;
+      var py = (e.clientY - r.top) / r.height;
+      var rx = (py - 0.5) * -12;
+      var ry = (px - 0.5) * 14;
+      tilt.style.transform = 'rotateX('+rx+'deg) rotateY('+ry+'deg) scale(1.02)';
+      if(shine){ shine.style.setProperty('--mx', (px*100)+'%'); shine.style.setProperty('--my', (py*100)+'%'); }
+    });
+    stage.addEventListener('mouseleave', function(){
+      tilt.style.transform = 'rotateX(0) rotateY(0) scale(1)';
+    });
+  }
+
+  /* ---------- MAGNETIC BUTTONS ---------- */
+  document.querySelectorAll('.mag').forEach(function(btn){
+    btn.addEventListener('mousemove', function(e){
+      var r = btn.getBoundingClientRect();
+      var x = (e.clientX - r.left - r.width/2) * 0.3;
+      var y = (e.clientY - r.top - r.height/2) * 0.4;
+      btn.style.transform = 'translate('+x+'px,'+y+'px)';
+    });
+    btn.addEventListener('mouseleave', function(){ btn.style.transform = 'translate(0,0)'; });
+  });
+
+})();
+</script>
+</body>
+</html>

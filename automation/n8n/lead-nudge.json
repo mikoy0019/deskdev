@@ -1,0 +1,241 @@
+{
+  "name": "[deskdev] lead-nudge",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "trigger",
+      "name": "Daily 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "notes": "RETIRED: replaced by the in-app daily digest lead_followups_due() (migration 035). Keep this workflow inactive; automation_jobs marks it paused.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/workspace_settings?select=*&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "settings",
+      "name": "Settings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/leads?select=*&stage=in.(new,contacted,proposal)&order=last_touch_at.asc.nullsfirst&limit=1000",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "fetch",
+      "name": "Fetch open leads",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// RETIRED: lead_followups_due() (migration 035) now sends each owner one\n// in-app daily digest, with push. This workflow stays in git, inactive, so it\n// can come back as an email channel without a rebuild; automation_jobs marks\n// it paused. If it is ever switched on it mails each owner only their own\n// leads, and unowned leads (or an owner who left) to the admins.\n//\n// Three buckets that kill conversion:\n//   1. never replied to      → speed-to-lead failure\n//   2. follow-up date passed → a promise you broke\n//   3. untouched N+ days     → going cold\nconst MNL = 'Asia/Manila';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst rowsOf = (name) => $(name).all().map(i => i.json).flat().filter(r => r && typeof r === 'object');\n// workspace_settings is a singleton keyed by id = true (migration 033); the\n// stale threshold is the one admins set in Settings → Growth.\nconst settings = rowsOf('Settings').find(r => r.id === true) || {};\nconst STALE_DAYS = Number.isInteger(settings.growth_stale_days) && settings.growth_stale_days > 0 ? settings.growth_stale_days : 14;\nconst people = rowsOf('Recipients')\n  .filter(p => p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\nconst admins = people.filter(p => p.role === 'admin');\n\nconst rows = rowsOf('Fetch open leads').filter(r => r.id && r.spam !== true);\nconst now = Date.now();\nconst today = new Intl.DateTimeFormat('en-CA', { timeZone: MNL, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());\nconst days = (iso) => Math.floor((now - new Date(iso).getTime()) / 86400000);\n\n// recipient address list → { noReply, overdue, cold }\nconst byTo = new Map();\nconst bucketFor = (lead) => {\n  const owner = people.find(p => p.id === lead.owner_id);\n  const list = owner ? [owner] : admins;\n  const to = [...new Set(list.map(p => String(p.email).trim().toLowerCase()))].join(',');\n  if (!to) return null;\n  if (!byTo.has(to)) byTo.set(to, { noReply: [], overdue: [], cold: [] });\n  return byTo.get(to);\n};\nfor (const r of rows) {\n  let bucket = null;\n  let item = null;\n  if (!r.first_responded_at) { bucket = 'noReply'; item = { ...r, age: days(r.created_at) }; }\n  else if (r.follow_up && r.follow_up <= today) { bucket = 'overdue'; item = { ...r, age: days(r.last_touch_at || r.created_at) }; }\n  else if (days(r.last_touch_at || r.created_at) >= STALE_DAYS) { bucket = 'cold'; item = { ...r, age: days(r.last_touch_at || r.created_at) }; }\n  if (!bucket) continue;\n  const b = bucketFor(r);\n  if (b) b[bucket].push(item);\n}\n\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst money = (n) => n ? ('$' + Number(n).toLocaleString('en-US')) : '';\nconst rowsHtml = (list, tone) => list.map(r => `<tr>\n  <td style=\"padding:6px 12px;border-bottom:1px solid #eee\">${esc(r.name)}${r.hot ? ' 🔥' : ''}</td>\n  <td style=\"padding:6px 12px;border-bottom:1px solid #eee;color:#666\">${esc(r.stage)}</td>\n  <td style=\"padding:6px 12px;border-bottom:1px solid #eee;color:${tone};font-weight:600\">${r.age}d</td>\n  <td style=\"padding:6px 12px;border-bottom:1px solid #eee;color:#666\">${money(r.value)}</td>\n</tr>`).join('');\nconst block = (title, list, tone, why) => list.length ? `\n  <h3 style=\"margin:20px 0 4px;font-size:14px\">${title} (${list.length})</h3>\n  <p style=\"margin:0 0 8px;color:#888;font-size:12px\">${why}</p>\n  <table style=\"border-collapse:collapse;font-size:14px;width:100%\">${rowsHtml(list, tone)}</table>` : '';\n\nconst out = [];\nfor (const [to, b] of byTo) {\n  const total = b.noReply.length + b.overdue.length + b.cold.length;\n  if (!total) continue;\n  const html = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 4px\">${total} lead${total === 1 ? '' : 's'} need you today</h2>\n  <p style=\"margin:0 0 16px;color:#666\">Most deals die from silence, not rejection.</p>\n  ${block('Never replied to', b.noReply, '#dc2626', 'Speed is the single cheapest conversion lever — these have had no first response.')}\n  ${block('Follow-up overdue', b.overdue, '#d97706', 'You set a follow-up date and it has passed.')}\n  ${block('Going cold', b.cold, '#d97706', `No touch in ${STALE_DAYS}+ days.`)}\n  <p style=\"margin-top:20px\"><a href=\"https://workspace.nixgensolutions.com/growth/leads\" style=\"background:#2563eb;color:#fff;text-decoration:none;padding:9px 14px;border-radius:8px;font-size:14px\">Open CRM Leads</a></p>\n  <p style=\"margin-top:20px;color:#999;font-size:12px\">Sent by n8n</p></div>`;\n  out.push({ json: { to, html, count: total } });\n}\n// Nothing to nag about: stay silent.\nreturn out;\n"
+      },
+      "id": "build",
+      "name": "Build nudge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "=DeskDev — {{ $json.count }} leads need you today",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email nudge",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "deskdev-lead-nudge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'lead-nudge', workflow: $workflow.name, status: 'ok', execution_id: String($execution.id), detail: { open_leads: $('Fetch open leads').all().filter(i => Object.keys(i.json || {}).length > 0).length } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        880,
+        220
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 08:00": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch open leads": {
+      "main": [
+        [
+          {
+            "node": "Build nudge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build nudge": {
+      "main": [
+        [
+          {
+            "node": "Email nudge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch open leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

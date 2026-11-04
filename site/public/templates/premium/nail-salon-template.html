@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lustré — Nail & Lash Atelier | Premium Beauty Studio</title>
+<meta name="description" content="Lustré is an upscale nail & lash atelier crafting glossy, instagrammable beauty. Book bespoke manicures, lash artistry, and chrome finishes." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          blush:   '#F6DEE3',
+          petal:   '#F3C9D3',
+          rose:    '#E9A6B6',
+          mauve:   '#B47A8C',
+          plum:    '#5A3848',
+          ink:     '#2B1B22',
+          cream:   '#FBF6F4',
+          champagne:'#E7C9A0',
+          gold:    '#C99B5E',
+          chrome:  '#D9C9CF',
+        },
+        fontFamily: {
+          display: ['"Playfair Display"', 'serif'],
+          body:    ['"Jost"', 'sans-serif'],
+          script:  ['"Italianno"', 'cursive'],
+        },
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Jost:wght@300;400;500;600&family=Italianno&display=swap" rel="stylesheet">
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FBF6F4;
+    color: #2B1B22;
+    cursor: none;
+  }
+  @media (hover: none), (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none !important; }
+  }
+
+  ::selection { background: #E9A6B6; color: #FBF6F4; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; border-radius: 9999px;
+    pointer-events: none; z-index: 9999; mix-blend-mode: normal;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #B47A8C; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1.5px solid rgba(180,122,140,.55);
+    transition: width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .cursor-ring.is-active {
+    width: 64px; height: 64px; background: rgba(233,166,182,.16); border-color: rgba(201,155,94,.7);
+  }
+
+  /* Gloss / shimmer accent */
+  .shimmer-text {
+    background: linear-gradient(100deg, #C99B5E 0%, #F3C9D3 25%, #E7C9A0 45%, #FBF6F4 55%, #C99B5E 75%, #B47A8C 100%);
+    background-size: 250% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: -250% center; } }
+
+  .gloss-sweep { position: relative; overflow: hidden; }
+  .gloss-sweep::after {
+    content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,.55), transparent);
+    transform: skewX(-20deg); transition: left .75s ease;
+  }
+  .gloss-sweep:hover::after { left: 130%; }
+
+  .blush-grad { background: linear-gradient(135deg, #F6DEE3 0%, #F3C9D3 50%, #E9A6B6 100%); }
+  .glass {
+    background: rgba(251,246,244,.72);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(201,155,94,.18);
+  }
+
+  .magnetic { will-change: transform; }
+
+  .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+
+  .tilt-card { transform-style: preserve-3d; will-change: transform; transition: transform .2s ease; }
+
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .hairline { background: linear-gradient(90deg, transparent, rgba(201,155,94,.55), transparent); height: 1px; }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content:''; position:absolute; left:0; bottom:-4px; width:0; height:1.5px;
+    background:#C99B5E; transition:width .35s ease;
+  }
+  .nav-link:hover::after { width:100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shimmer-text, .marquee-track { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="font-body antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring"></div>
+<div class="cursor-dot"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-20 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2">
+      <span class="font-display text-2xl tracking-tight text-plum">Lustré</span>
+      <span class="font-script text-3xl text-rose -ml-1 leading-none">.</span>
+    </a>
+    <ul class="hidden lg:flex items-center gap-9 text-[13px] uppercase tracking-[.18em] text-plum/80">
+      <li><a class="nav-link" href="#services">Services</a></li>
+      <li><a class="nav-link" href="#gallery">Gallery</a></li>
+      <li><a class="nav-link" href="#team">Artists</a></li>
+      <li><a class="nav-link" href="#memberships">Memberships</a></li>
+      <li><a class="nav-link" href="#about">About</a></li>
+    </ul>
+    <a href="#booking" id="navBook"
+       class="magnetic gloss-sweep relative inline-flex items-center gap-2 rounded-full bg-plum text-cream px-6 py-3 text-[12px] uppercase tracking-[.2em] font-medium shadow-lg shadow-rose/30 hover:bg-mauve transition-colors">
+      Book Now
+    </a>
+  </nav>
+  <div class="hairline opacity-0 transition-opacity duration-500" id="navLine"></div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+  <!-- ambient blobs -->
+  <div class="pointer-events-none absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full blur-3xl opacity-60 blush-grad"></div>
+  <div class="pointer-events-none absolute bottom-0 right-0 w-[22rem] h-[22rem] rounded-full blur-3xl opacity-40" style="background:radial-gradient(circle,#E7C9A0,transparent 70%)"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center w-full">
+    <!-- copy -->
+    <div class="relative z-10">
+      <p class="reveal flex items-center gap-3 text-[12px] uppercase tracking-[.28em] text-mauve mb-6">
+        <span class="w-8 h-px bg-gold"></span> Nail &amp; Lash Atelier · Est. 2019
+      </p>
+      <h1 class="font-display text-5xl sm:text-6xl xl:text-7xl leading-[1.04] text-plum">
+        <span class="reveal block">Beauty,</span>
+        <span class="reveal block italic">polished to a</span>
+        <span class="reveal block shimmer-text font-semibold">flawless gloss.</span>
+      </h1>
+      <p class="reveal mt-7 max-w-md text-plum/70 text-lg leading-relaxed">
+        A boutique studio for bespoke manicures, feather-soft lash artistry, and chrome finishes that catch every light. Slow beauty, made luminous.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#booking" class="magnetic gloss-sweep inline-flex items-center gap-2 rounded-full bg-plum text-cream px-8 py-4 text-sm uppercase tracking-[.18em] shadow-xl shadow-rose/30 hover:bg-mauve transition-colors">
+          Book Your Visit
+        </a>
+        <a href="#services" class="inline-flex items-center gap-2 text-plum text-sm uppercase tracking-[.18em] group">
+          View Menu
+          <span class="transition-transform group-hover:translate-x-1">→</span>
+        </a>
+      </div>
+      <!-- count ups -->
+      <div class="reveal mt-12 grid grid-cols-3 gap-6 max-w-md">
+        <div>
+          <p class="font-display text-3xl text-plum"><span class="count" data-to="14">0</span>k+</p>
+          <p class="text-[11px] uppercase tracking-[.16em] text-mauve mt-1">Sets Crafted</p>
+        </div>
+        <div>
+          <p class="font-display text-3xl text-plum"><span class="count" data-to="9">0</span></p>
+          <p class="text-[11px] uppercase tracking-[.16em] text-mauve mt-1">Master Artists</p>
+        </div>
+        <div>
+          <p class="font-display text-3xl text-plum"><span class="count" data-to="100">0</span>%</p>
+          <p class="text-[11px] uppercase tracking-[.16em] text-mauve mt-1">Vegan Polish</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- image -->
+    <div class="relative" id="heroImgWrap">
+      <div class="relative rounded-[2rem] overflow-hidden blush-grad shadow-2xl shadow-rose/40 aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Glossy manicured nails" class="w-full h-full object-cover" id="heroImg" />
+        <div class="absolute inset-0 bg-gradient-to-t from-plum/30 via-transparent to-transparent"></div>
+      </div>
+      <!-- floating chip -->
+      <div class="absolute -left-4 sm:-left-8 bottom-10 glass rounded-2xl px-5 py-4 shadow-xl">
+        <p class="font-script text-3xl text-rose leading-none">Signature</p>
+        <p class="text-[11px] uppercase tracking-[.18em] text-plum/70 mt-1">Chrome Gel Set</p>
+      </div>
+      <div class="absolute -right-3 sm:-right-6 top-8 glass rounded-full px-5 py-3 shadow-xl flex items-center gap-2">
+        <span class="text-gold text-lg">★★★★★</span>
+        <span class="text-[11px] uppercase tracking-[.15em] text-plum/70">2,400+ reviews</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="marquee-wrap relative py-5 bg-plum text-cream overflow-hidden select-none">
+  <div class="marquee-track">
+    <div class="flex items-center gap-10 pr-10 text-2xl font-display italic">
+      <span>Gel Manicure</span><span class="text-gold">✦</span>
+      <span>Volume Lashes</span><span class="text-gold">✦</span>
+      <span>Chrome Finish</span><span class="text-gold">✦</span>
+      <span>Lash Lift</span><span class="text-gold">✦</span>
+      <span>Nail Art</span><span class="text-gold">✦</span>
+      <span>Brow Lamination</span><span class="text-gold">✦</span>
+    </div>
+    <div class="flex items-center gap-10 pr-10 text-2xl font-display italic" aria-hidden="true">
+      <span>Gel Manicure</span><span class="text-gold">✦</span>
+      <span>Volume Lashes</span><span class="text-gold">✦</span>
+      <span>Chrome Finish</span><span class="text-gold">✦</span>
+      <span>Lash Lift</span><span class="text-gold">✦</span>
+      <span>Nail Art</span><span class="text-gold">✦</span>
+      <span>Brow Lamination</span><span class="text-gold">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES & PRICING ============ -->
+<section id="services" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">The Menu</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">Services &amp; Pricing</h2>
+      <p class="reveal mt-5 text-plum/65">Curated treatments performed with vegan, cruelty-free formulas and meticulous craft.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card template -->
+      <article class="svc-card group reveal relative rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm hover:shadow-xl hover:shadow-rose/20 transition-shadow">
+        <div class="w-12 h-12 rounded-2xl blush-grad flex items-center justify-center text-plum text-xl mb-5">✦</div>
+        <h3 class="font-display text-2xl text-plum">Signature Gel Manicure</h3>
+        <p class="text-sm text-plum/60 mt-2 leading-relaxed">Shaped, buffed and finished with high-shine gel that lasts three glossy weeks.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-rose/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-mauve">from</span>
+          <span class="font-display text-2xl text-plum">$48</span>
+        </div>
+      </article>
+
+      <article class="svc-card group reveal relative rounded-3xl bg-plum text-cream p-7 shadow-xl shadow-rose/25">
+        <div class="w-12 h-12 rounded-2xl bg-cream/15 flex items-center justify-center text-champagne text-xl mb-5">✧</div>
+        <p class="absolute top-6 right-6 text-[10px] uppercase tracking-[.18em] bg-gold text-plum rounded-full px-3 py-1">Most Loved</p>
+        <h3 class="font-display text-2xl">Chrome &amp; Aura Set</h3>
+        <p class="text-sm text-cream/70 mt-2 leading-relaxed">Mirror-chrome, velvet, or aura airbrush over a sculpted gel foundation.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-cream/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-champagne">from</span>
+          <span class="font-display text-2xl">$82</span>
+        </div>
+      </article>
+
+      <article class="svc-card group reveal relative rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm hover:shadow-xl hover:shadow-rose/20 transition-shadow">
+        <div class="w-12 h-12 rounded-2xl blush-grad flex items-center justify-center text-plum text-xl mb-5">❀</div>
+        <h3 class="font-display text-2xl text-plum">Volume Lash Artistry</h3>
+        <p class="text-sm text-plum/60 mt-2 leading-relaxed">Hand-fanned Russian volume mapped to your eye shape for weightless drama.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-rose/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-mauve">from</span>
+          <span class="font-display text-2xl text-plum">$120</span>
+        </div>
+      </article>
+
+      <article class="svc-card group reveal relative rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm hover:shadow-xl hover:shadow-rose/20 transition-shadow">
+        <div class="w-12 h-12 rounded-2xl blush-grad flex items-center justify-center text-plum text-xl mb-5">✺</div>
+        <h3 class="font-display text-2xl text-plum">Lash Lift &amp; Tint</h3>
+        <p class="text-sm text-plum/60 mt-2 leading-relaxed">A natural curl and rich tint that opens the eye — six weeks of effortless flutter.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-rose/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-mauve">from</span>
+          <span class="font-display text-2xl text-plum">$75</span>
+        </div>
+      </article>
+
+      <article class="svc-card group reveal relative rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm hover:shadow-xl hover:shadow-rose/20 transition-shadow">
+        <div class="w-12 h-12 rounded-2xl blush-grad flex items-center justify-center text-plum text-xl mb-5">◈</div>
+        <h3 class="font-display text-2xl text-plum">Bespoke Nail Art</h3>
+        <p class="text-sm text-plum/60 mt-2 leading-relaxed">Hand-painted florals, French chrome tips, gems and minimalist line work.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-rose/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-mauve">add-on</span>
+          <span class="font-display text-2xl text-plum">$18+</span>
+        </div>
+      </article>
+
+      <article class="svc-card group reveal relative rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm hover:shadow-xl hover:shadow-rose/20 transition-shadow">
+        <div class="w-12 h-12 rounded-2xl blush-grad flex items-center justify-center text-plum text-xl mb-5">⟡</div>
+        <h3 class="font-display text-2xl text-plum">Brow Lamination</h3>
+        <p class="text-sm text-plum/60 mt-2 leading-relaxed">Fluffy, brushed-up brows sculpted and set to frame your features.</p>
+        <div class="flex items-baseline justify-between mt-6 pt-5 border-t border-rose/15">
+          <span class="text-[11px] uppercase tracking-[.16em] text-mauve">from</span>
+          <span class="font-display text-2xl text-plum">$55</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section id="gallery" class="relative py-24 sm:py-32 bg-gradient-to-b from-cream to-blush/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">Look Book</p>
+        <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">The Gallery</h2>
+      </div>
+      <p class="reveal max-w-sm text-plum/65">A glimpse of recent sets, lash maps and chrome work straight from our studio chairs.</p>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="gal group relative rounded-2xl overflow-hidden blush-grad aspect-[3/4] reveal shadow-md">
+        <img src="https://images.unsplash.com/photo-1610992015732-2449b76344bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Nail set" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-plum/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
+          <span class="font-display italic text-cream text-xl">Aura Chrome</span>
+        </div>
+      </div>
+      <div class="gal group relative rounded-2xl overflow-hidden blush-grad aspect-[3/4] reveal shadow-md lg:mt-8">
+        <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lash close up" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-plum/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
+          <span class="font-display italic text-cream text-xl">Volume Lashes</span>
+        </div>
+      </div>
+      <div class="gal group relative rounded-2xl overflow-hidden blush-grad aspect-[3/4] reveal shadow-md">
+        <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Salon detail" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-plum/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
+          <span class="font-display italic text-cream text-xl">French Tip</span>
+        </div>
+      </div>
+      <div class="gal group relative rounded-2xl overflow-hidden blush-grad aspect-[3/4] reveal shadow-md lg:mt-8">
+        <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Glossy nails" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div class="absolute inset-0 bg-plum/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
+          <span class="font-display italic text-cream text-xl">High Gloss Gel</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">The Lustré Difference</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight mb-8">Why guests stay for years</h2>
+      <div class="space-y-7">
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-11 h-11 rounded-full blush-grad flex items-center justify-center text-plum">✧</div>
+          <div>
+            <h3 class="font-display text-xl text-plum">Clean &amp; conscious</h3>
+            <p class="text-plum/60 text-sm mt-1 leading-relaxed">Hospital-grade sterilisation, single-use kits, and 10-free vegan polishes only.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-11 h-11 rounded-full blush-grad flex items-center justify-center text-plum">❀</div>
+          <div>
+            <h3 class="font-display text-xl text-plum">Artists, not technicians</h3>
+            <p class="text-plum/60 text-sm mt-1 leading-relaxed">Every set is custom-designed to your hands, lifestyle and palette — never a template.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-5">
+          <div class="shrink-0 w-11 h-11 rounded-full blush-grad flex items-center justify-center text-plum">✦</div>
+          <div>
+            <h3 class="font-display text-xl text-plum">Slow, sensorial ritual</h3>
+            <p class="text-plum/60 text-sm mt-1 leading-relaxed">Warm towels, calming tea, and unhurried care in a softly-lit studio.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal relative">
+      <div class="rounded-[2rem] overflow-hidden blush-grad aspect-[4/5] shadow-2xl shadow-rose/30">
+        <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Studio interior" class="w-full h-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 left-6 glass rounded-2xl px-6 py-4 shadow-xl">
+        <p class="font-display text-3xl text-plum"><span class="count" data-to="2400">0</span>+</p>
+        <p class="text-[11px] uppercase tracking-[.16em] text-mauve mt-1">Five-star reviews</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEAM ============ -->
+<section id="team" class="relative py-24 sm:py-32 bg-blush/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">The Hands</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">Meet the Artists</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal text-center group">
+        <div class="rounded-3xl overflow-hidden blush-grad aspect-[4/5] mb-5 shadow-md">
+          <img src="https://images.unsplash.com/photo-1610992015732-2449b76344bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Artist" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-display text-xl text-plum">Seraphine Vale</h3>
+        <p class="text-[12px] uppercase tracking-[.16em] text-mauve mt-1">Founder · Master Nail Artist</p>
+      </div>
+      <div class="reveal text-center group">
+        <div class="rounded-3xl overflow-hidden blush-grad aspect-[4/5] mb-5 shadow-md">
+          <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Artist" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-display text-xl text-plum">Noor Adeyemi</h3>
+        <p class="text-[12px] uppercase tracking-[.16em] text-mauve mt-1">Lead Lash Artist</p>
+      </div>
+      <div class="reveal text-center group">
+        <div class="rounded-3xl overflow-hidden blush-grad aspect-[4/5] mb-5 shadow-md">
+          <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Artist" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-display text-xl text-plum">Camille Rourke</h3>
+        <p class="text-[12px] uppercase tracking-[.16em] text-mauve mt-1">Chrome &amp; Art Specialist</p>
+      </div>
+      <div class="reveal text-center group">
+        <div class="rounded-3xl overflow-hidden blush-grad aspect-[4/5] mb-5 shadow-md">
+          <img src="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Artist" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+        </div>
+        <h3 class="font-display text-xl text-plum">Talia Brooks</h3>
+        <p class="text-[12px] uppercase tracking-[.16em] text-mauve mt-1">Brow &amp; Lash Lift Expert</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEMBERSHIPS ============ -->
+<section id="memberships" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">Belong to Lustré</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">Memberships</h2>
+      <p class="reveal mt-5 text-plum/65">Regular rituals, gentler pricing, and perks reserved for our inner circle.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div class="reveal rounded-3xl bg-cream border border-rose/15 p-8 shadow-sm">
+        <p class="text-[12px] uppercase tracking-[.2em] text-mauve">Petal</p>
+        <p class="font-display text-4xl text-plum mt-3">$69<span class="text-base text-plum/50">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-plum/65">
+          <li class="flex gap-3"><span class="text-gold">✦</span> One signature gel manicure</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> 10% off all add-ons</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Priority weekday booking</li>
+        </ul>
+        <a href="#booking" class="magnetic mt-8 block text-center rounded-full border border-plum text-plum py-3 text-[12px] uppercase tracking-[.18em] hover:bg-plum hover:text-cream transition-colors">Choose Petal</a>
+      </div>
+      <div class="reveal rounded-3xl bg-plum text-cream p-8 shadow-2xl shadow-rose/30 md:-translate-y-4 relative">
+        <p class="absolute top-6 right-6 text-[10px] uppercase tracking-[.18em] bg-gold text-plum rounded-full px-3 py-1">Favourite</p>
+        <p class="text-[12px] uppercase tracking-[.2em] text-champagne">Bloom</p>
+        <p class="font-display text-4xl mt-3">$129<span class="text-base text-cream/50">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-cream/75">
+          <li class="flex gap-3"><span class="text-champagne">✧</span> Two premium sets monthly</li>
+          <li class="flex gap-3"><span class="text-champagne">✧</span> One lash fill included</li>
+          <li class="flex gap-3"><span class="text-champagne">✧</span> 15% off retail &amp; art</li>
+          <li class="flex gap-3"><span class="text-champagne">✧</span> Complimentary birthday set</li>
+        </ul>
+        <a href="#booking" class="magnetic gloss-sweep mt-8 block text-center rounded-full bg-cream text-plum py-3 text-[12px] uppercase tracking-[.18em] hover:bg-blush transition-colors">Choose Bloom</a>
+      </div>
+      <div class="reveal rounded-3xl bg-cream border border-rose/15 p-8 shadow-sm">
+        <p class="text-[12px] uppercase tracking-[.2em] text-mauve">Lustré</p>
+        <p class="font-display text-4xl text-plum mt-3">$219<span class="text-base text-plum/50">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-plum/65">
+          <li class="flex gap-3"><span class="text-gold">✦</span> Unlimited nail services</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Monthly lash full set</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> 20% off everything</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Private suite access</li>
+        </ul>
+        <a href="#booking" class="magnetic mt-8 block text-center rounded-full border border-plum text-plum py-3 text-[12px] uppercase tracking-[.18em] hover:bg-plum hover:text-cream transition-colors">Choose Lustré</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 sm:py-32 bg-gradient-to-b from-blush/40 to-cream">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-5">Our Story</p>
+    <h2 class="reveal font-display text-3xl sm:text-5xl text-plum leading-[1.2]">
+      We opened <span class="font-script text-rose text-5xl sm:text-6xl">Lustré</span> to make beauty feel slow, intentional and quietly luxurious — a softly-lit refuge where craft meets calm.
+    </h2>
+    <p class="reveal mt-8 max-w-2xl mx-auto text-plum/65 leading-relaxed">
+      What began as a single chair in a sunlit corner is now a nine-artist atelier devoted to clean formulas, custom design and the kind of detail you can feel. Every visit is a small ceremony — and every guest leaves a little more luminous.
+    </p>
+    <div class="reveal mt-10 inline-flex items-center gap-3 text-mauve">
+      <span class="font-script text-4xl text-rose">Seraphine</span>
+      <span class="text-[11px] uppercase tracking-[.2em]">— Founder</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">Kind Words</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">Loved by our guests</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm">
+        <div class="text-gold text-lg mb-4">★★★★★</div>
+        <blockquote class="text-plum/75 leading-relaxed font-display italic text-lg">"The chrome set lasted nearly a month and still looked wet. I've never had a manicure turn this many heads."</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[.16em] text-mauve">Priya M. · Bloom Member</figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-plum text-cream p-7 shadow-xl shadow-rose/20 md:-translate-y-3">
+        <div class="text-champagne text-lg mb-4">★★★★★</div>
+        <blockquote class="text-cream/85 leading-relaxed font-display italic text-lg">"Noor mapped my lashes perfectly to my eyes. Feather-light, never clumpy — pure artistry."</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[.16em] text-champagne">Helena R. · Lash Client</figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream border border-rose/15 p-7 shadow-sm">
+        <div class="text-gold text-lg mb-4">★★★★★</div>
+        <blockquote class="text-plum/75 leading-relaxed font-display italic text-lg">"The whole studio feels like a spa. Warm tea, soft music, zero rush. I leave glowing every time."</blockquote>
+        <figcaption class="mt-6 text-[12px] uppercase tracking-[.16em] text-mauve">Daniela K. · Regular</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOOKING ============ -->
+<section id="booking" class="relative py-24 sm:py-32 bg-plum text-cream overflow-hidden">
+  <div class="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-30" style="background:radial-gradient(circle,#E9A6B6,transparent 70%)"></div>
+  <div class="relative max-w-6xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-champagne mb-4">Reserve Your Chair</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl leading-tight">Book your<br/><span class="shimmer-text">glossy moment.</span></h2>
+      <p class="reveal mt-6 text-cream/70 max-w-md leading-relaxed">Tell us what you're dreaming of and we'll pair you with the perfect artist. Same-week appointments often available.</p>
+      <div class="reveal mt-8 space-y-3 text-cream/80 text-sm">
+        <p class="flex items-center gap-3"><span class="text-champagne">✦</span> 18 Lumière Lane, Suite 4 · Open Tue–Sun</p>
+        <p class="flex items-center gap-3"><span class="text-champagne">✦</span> hello@lustreatelier.com · (555) 028-4471</p>
+      </div>
+    </div>
+    <form class="reveal glass rounded-3xl p-7 sm:p-9 space-y-5" onsubmit="event.preventDefault(); this.reset(); document.getElementById('bookMsg').classList.remove('hidden');">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-[11px] uppercase tracking-[.16em] text-plum/70 mb-2">Name</label>
+          <input required type="text" class="w-full rounded-xl bg-cream/90 border border-rose/20 px-4 py-3 text-plum placeholder-plum/40 focus:outline-none focus:ring-2 focus:ring-rose" placeholder="Your name" />
+        </div>
+        <div>
+          <label class="block text-[11px] uppercase tracking-[.16em] text-plum/70 mb-2">Phone</label>
+          <input required type="tel" class="w-full rounded-xl bg-cream/90 border border-rose/20 px-4 py-3 text-plum placeholder-plum/40 focus:outline-none focus:ring-2 focus:ring-rose" placeholder="(555) 000-0000" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-[11px] uppercase tracking-[.16em] text-plum/70 mb-2">Service</label>
+        <select class="w-full rounded-xl bg-cream/90 border border-rose/20 px-4 py-3 text-plum focus:outline-none focus:ring-2 focus:ring-rose">
+          <option>Signature Gel Manicure</option>
+          <option>Chrome &amp; Aura Set</option>
+          <option>Volume Lash Artistry</option>
+          <option>Lash Lift &amp; Tint</option>
+          <option>Brow Lamination</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-[11px] uppercase tracking-[.16em] text-plum/70 mb-2">Preferred date</label>
+        <input type="date" class="w-full rounded-xl bg-cream/90 border border-rose/20 px-4 py-3 text-plum focus:outline-none focus:ring-2 focus:ring-rose" />
+      </div>
+      <button type="submit" class="magnetic gloss-sweep w-full rounded-full bg-plum text-cream py-4 text-[12px] uppercase tracking-[.2em] hover:bg-mauve transition-colors">Request Appointment</button>
+      <p id="bookMsg" class="hidden text-center text-sm text-plum font-medium">Thank you — we'll confirm your glossy moment shortly. ✦</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="reveal text-[12px] uppercase tracking-[.28em] text-mauve mb-4">Good to Know</p>
+      <h2 class="reveal font-display text-4xl sm:text-5xl text-plum leading-tight">Frequently Asked</h2>
+    </div>
+    <div class="space-y-4" id="faq">
+      <div class="faq-item reveal rounded-2xl bg-cream border border-rose/15 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-lg text-plum">How long does a gel set last?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-plum/65 text-sm leading-relaxed">Our high-shine gel typically wears beautifully for two to three weeks. We recommend a fill or fresh set every 2–3 weeks to keep growth and gloss in check.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-rose/15 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-lg text-plum">Are your products vegan and cruelty-free?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-plum/65 text-sm leading-relaxed">Always. We use exclusively 10-free, vegan, cruelty-free polishes and lash adhesives, with single-use kits and hospital-grade sterilisation.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-rose/15 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-lg text-plum">How should I prep for a lash appointment?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-plum/65 text-sm leading-relaxed">Arrive with clean, makeup-free eyes and skip caffeine if you can — it helps you relax. Plan for 90–120 minutes for a full volume set.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-cream border border-rose/15 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-lg text-plum">Can I cancel or reschedule?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-plum/65 text-sm leading-relaxed">Of course. We kindly ask for 24 hours' notice so we can offer your slot to another guest. Memberships include flexible rescheduling.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="absolute inset-0 blush-grad opacity-60"></div>
+  <div class="relative max-w-3xl mx-auto px-5 sm:px-8 text-center">
+    <p class="reveal font-script text-5xl text-rose mb-4">Ready to glow?</p>
+    <h2 class="reveal font-display text-4xl sm:text-6xl text-plum leading-[1.1]">Your most flawless set is one appointment away.</h2>
+    <a href="#booking" class="magnetic gloss-sweep reveal inline-flex items-center gap-2 mt-9 rounded-full bg-plum text-cream px-10 py-4 text-sm uppercase tracking-[.2em] shadow-xl shadow-rose/30 hover:bg-mauve transition-colors">
+      Book Your Visit
+    </a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-plum text-cream/80 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <p class="font-display text-2xl text-cream">Lustré<span class="font-script text-rose text-3xl">.</span></p>
+        <p class="mt-4 text-sm text-cream/60 max-w-xs leading-relaxed">A boutique nail &amp; lash atelier crafting glossy, conscious beauty in a softly-lit studio.</p>
+      </div>
+      <div>
+        <p class="text-[12px] uppercase tracking-[.18em] text-champagne mb-4">Explore</p>
+        <ul class="space-y-2 text-sm text-cream/70">
+          <li><a href="#services" class="hover:text-cream transition-colors">Services</a></li>
+          <li><a href="#gallery" class="hover:text-cream transition-colors">Gallery</a></li>
+          <li><a href="#team" class="hover:text-cream transition-colors">Artists</a></li>
+          <li><a href="#memberships" class="hover:text-cream transition-colors">Memberships</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[12px] uppercase tracking-[.18em] text-champagne mb-4">Visit</p>
+        <ul class="space-y-2 text-sm text-cream/70">
+          <li>18 Lumière Lane, Suite 4</li>
+          <li>Open Tue–Sun · 9–7</li>
+          <li>(555) 028-4471</li>
+          <li>hello@lustreatelier.com</li>
+        </ul>
+      </div>
+      <div>
+        <p class="text-[12px] uppercase tracking-[.18em] text-champagne mb-4">Follow</p>
+        <ul class="space-y-2 text-sm text-cream/70">
+          <li><a href="#" class="hover:text-cream transition-colors">Instagram</a></li>
+          <li><a href="#" class="hover:text-cream transition-colors">TikTok</a></li>
+          <li><a href="#" class="hover:text-cream transition-colors">Pinterest</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="hairline my-10 opacity-60"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-cream/50">
+      <p>© 2026 Lustré Atelier. All rights reserved.</p>
+      <p class="flex gap-5"><a href="#" class="hover:text-cream">Privacy</a><a href="#" class="hover:text-cream">Terms</a></p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  if (fine && !reduce) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx+'px'; dot.style.top = my+'px';
+    });
+    (function loop(){
+      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.left = rx+'px'; ring.style.top = ry+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('a, button, .svc-card, .gal, input, select').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('is-active'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('is-active'));
+    });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${x*0.3}px, ${y*0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---------- Service card tilt ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('.svc-card').forEach(card => {
+      card.classList.add('tilt-card');
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - 0.5;
+        const py = (e.clientY - r.top)/r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateY(${px*8}deg) rotateX(${-py*8}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(800px) rotateY(0) rotateX(0)'; });
+    });
+  }
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const navLine = document.getElementById('navLine');
+  addEventListener('scroll', () => {
+    if (scrollY > 30) { nav.classList.add('glass','shadow-sm'); navLine.style.opacity = 1; }
+    else { nav.classList.remove('glass','shadow-sm'); navLine.style.opacity = 0; }
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- GSAP reveals + parallax + count-ups ---------- */
+  if (typeof gsap !== 'undefined') {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reduce) {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    } else {
+      // Hero staggered intro
+      gsap.to('#top .reveal', { opacity:1, y:0, duration:0.9, stagger:0.12, ease:'power3.out', delay:0.15 });
+
+      // Section reveals
+      gsap.utils.toArray('.reveal').forEach(el => {
+        if (el.closest('#top')) return;
+        gsap.to(el, {
+          opacity:1, y:0, duration:0.9, ease:'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // Hero image container parallax
+      gsap.to('#heroImg', {
+        yPercent: 12, ease:'none',
+        scrollTrigger: { trigger:'#heroImgWrap', start:'top top', end:'bottom top', scrub:true }
+      });
+    }
+
+    // Count-ups
+    document.querySelectorAll('.count').forEach(el => {
+      const to = +el.dataset.to;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          if (reduce) { el.textContent = to.toLocaleString(); return; }
+          gsap.to(obj, { v: to, duration: 1.8, ease:'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); } });
+        }
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.to).toLocaleString());
+  }
+})();
+</script>
+</body>
+</html>

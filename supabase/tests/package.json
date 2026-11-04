@@ -1,0 +1,15 @@
+{
+  "name": "deskdev-supabase-tests",
+  "private": true,
+  "type": "module",
+  "description": "Migration and RLS tests on a throwaway PGlite database. See README.md.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
+}

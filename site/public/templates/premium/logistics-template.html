@@ -1,0 +1,720 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cargolane â€” Global Logistics & Supply Chain</title>
+<meta name="description" content="Cargolane moves the world's cargo by air, ocean and road. Real-time tracking, customs-cleared, 140+ countries." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy:   { 950:'#070d1c', 900:'#0b1226', 800:'#111c3a', 700:'#1a2a52' },
+          steel:  { 400:'#7e93b8', 300:'#9fb0d0', 200:'#c5d0e6' },
+          amber:  { DEFAULT:'#ff7a18', 600:'#f06400', 400:'#ff9445' },
+        },
+        fontFamily: {
+          display: ['Sora','system-ui','sans-serif'],
+          body:    ['Inter','system-ui','sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html,body{ overflow-x:hidden; }
+  body{ background:#070d1c; color:#e7ecf6; font-family:'Inter',sans-serif; }
+  .font-display{ font-family:'Sora',sans-serif; }
+
+  ::selection{ background:#ff7a18; color:#070d1c; }
+
+  .grad-text{
+    background:linear-gradient(100deg,#fff 10%,#9fb0d0 60%,#ff9445 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hairline{ border:1px solid rgba(159,176,208,.14); }
+  .glass{ background:rgba(17,28,58,.55); backdrop-filter:blur(14px); }
+  .amber-glow{ box-shadow:0 10px 40px -10px rgba(255,122,24,.55); }
+
+  /* animated grid backdrop */
+  .grid-bg{
+    background-image:
+      linear-gradient(rgba(159,176,208,.06) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(159,176,208,.06) 1px,transparent 1px);
+    background-size:54px 54px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 40%,transparent 100%);
+  }
+
+  .route-line{ stroke-dasharray:1; stroke-dashoffset:1; }
+  .marquee{ animation:scroll 30s linear infinite; }
+  @keyframes scroll{ to{ transform:translateX(-50%); } }
+  .marquee-wrap:hover .marquee{ animation-play-state:paused; }
+
+  .tilt{ transform-style:preserve-3d; transition:transform .25s ease; will-change:transform; }
+  .service-card .icon-bob{ transition:transform .4s cubic-bezier(.2,.8,.2,1); }
+  .service-card:hover .icon-bob{ transform:translateY(-6px) scale(1.08); }
+
+  .faq-body{ max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .faq-item.open .faq-body{ max-height:240px; }
+  .faq-item.open .faq-plus{ transform:rotate(45deg); }
+
+  .pulse-dot{ animation:pulse 2s ease-out infinite; }
+  @keyframes pulse{ 0%{ box-shadow:0 0 0 0 rgba(255,122,24,.5);} 70%{ box-shadow:0 0 0 14px rgba(255,122,24,0);} 100%{box-shadow:0 0 0 0 rgba(255,122,24,0);} }
+
+  .reveal{ opacity:0; transform:translateY(28px); }
+
+  @media (prefers-reduced-motion: reduce){
+    .marquee{ animation:none; }
+    .reveal{ opacity:1 !important; transform:none !important; }
+    *{ scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-[72px] flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="relative grid place-items-center w-9 h-9 rounded-lg bg-amber amber-glow">
+        <svg viewBox="0 0 24 24" class="w-5 h-5 text-navy-950" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M3 12h18M12 3l9 9-9 9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="font-display font-800 text-lg tracking-tight">Cargolane<span class="text-amber">Freight</span></span>
+    </a>
+
+    <ul class="hidden lg:flex items-center gap-8 text-sm text-steel-200">
+      <li><a href="#services" class="hover:text-white transition">Services</a></li>
+      <li><a href="#network" class="hover:text-white transition">Network</a></li>
+      <li><a href="#tech" class="hover:text-white transition">Technology</a></li>
+      <li><a href="#industries" class="hover:text-white transition">Industries</a></li>
+      <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <a href="#track" class="hidden sm:inline-flex items-center gap-2 text-sm text-steel-200 hover:text-white transition">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber pulse-dot"></span> Track
+      </a>
+      <a href="#cta" id="magnetic" class="relative inline-flex items-center gap-2 rounded-full bg-amber hover:bg-amber-600 text-navy-950 font-600 text-sm px-5 py-2.5 transition amber-glow">
+        Get a Quote
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- cargo bg -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-br from-navy-700/40 via-navy-950 to-navy-950"></div>
+    <img src="https://images.unsplash.com/photo-1494412574643-ff11b0a5eb95?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         class="w-full h-full object-cover opacity-25" alt="Container port at dusk" />
+    <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/70 to-navy-950/40"></div>
+  </div>
+  <div class="absolute inset-0 -z-10 grid-bg"></div>
+
+  <!-- animated route svg -->
+  <svg class="absolute inset-0 w-full h-full -z-10 pointer-events-none" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice" fill="none">
+    <path class="route-line" d="M-50 620 C 300 520, 520 700, 820 480 S 1300 260, 1520 360" stroke="#ff7a18" stroke-width="1.5" opacity=".55"/>
+    <path class="route-line" d="M-50 240 C 280 180, 600 360, 900 220 S 1280 120, 1520 200" stroke="#9fb0d0" stroke-width="1" opacity=".4"/>
+    <circle r="4" fill="#ff9445"><animateMotion dur="9s" repeatCount="indefinite" path="M-50 620 C 300 520, 520 700, 820 480 S 1300 260, 1520 360"/></circle>
+  </svg>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 w-full grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-7">
+      <span class="reveal inline-flex items-center gap-2 text-xs font-600 tracking-widest uppercase text-amber-400 mb-6">
+        <span class="h-px w-8 bg-amber-400"></span> Freight â€¢ Forwarding â€¢ Fulfilment
+      </span>
+      <h1 class="reveal font-display font-800 leading-[0.98] text-[clamp(2.6rem,7vw,5.2rem)] tracking-tight">
+        <span class="grad-text">Cargo that moves</span><br/>
+        <span class="text-white">the world forward.</span>
+      </h1>
+      <p class="reveal mt-6 max-w-xl text-steel-200 text-lg leading-relaxed">
+        Cargolane orchestrates air, ocean and road logistics across 140+ countries â€” customs-cleared,
+        carbon-tracked, and visible end-to-end on one intelligent platform.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap gap-3">
+        <a href="#cta" class="inline-flex items-center gap-2 rounded-full bg-amber hover:bg-amber-600 text-navy-950 font-600 px-6 py-3.5 transition amber-glow">
+          Request a Quote
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#services" class="inline-flex items-center gap-2 rounded-full hairline glass hover:border-steel-400 text-white font-500 px-6 py-3.5 transition">
+          Explore Services
+        </a>
+      </div>
+    </div>
+
+    <!-- tracking widget -->
+    <div id="track" class="reveal lg:col-span-5">
+      <div class="glass hairline rounded-2xl p-6 sm:p-7 amber-glow">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-display font-700 text-lg">Track a Shipment</h3>
+          <span class="text-xs text-steel-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live</span>
+        </div>
+        <div class="flex gap-2">
+          <input id="trk-input" type="text" placeholder="e.g. MF-4827-XQ" value="MF-4827-XQ"
+                 class="flex-1 bg-navy-950/70 hairline rounded-xl px-4 py-3 text-sm placeholder:text-steel-400 focus:border-amber outline-none transition" />
+          <button id="trk-btn" class="rounded-xl bg-amber hover:bg-amber-600 text-navy-950 font-600 px-4 transition">Track</button>
+        </div>
+
+        <div id="trk-result" class="mt-5 space-y-4">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-steel-300">Shanghai, CN</span>
+            <span class="text-amber-400 font-600" id="trk-status">In Transit</span>
+            <span class="text-steel-300">Rotterdam, NL</span>
+          </div>
+          <div class="relative h-1.5 rounded-full bg-navy-950/80 overflow-hidden">
+            <div id="trk-bar" class="absolute inset-y-0 left-0 w-0 rounded-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-1000"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 pt-1">
+            <div><p class="text-[11px] uppercase tracking-wider text-steel-400">Mode</p><p class="font-600 text-sm mt-0.5">Ocean FCL</p></div>
+            <div><p class="text-[11px] uppercase tracking-wider text-steel-400">ETA</p><p class="font-600 text-sm mt-0.5">Jun 14</p></div>
+            <div><p class="text-[11px] uppercase tracking-wider text-steel-400">Temp</p><p class="font-600 text-sm mt-0.5">04Â°C âœ“</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRUST / STATS ===================== -->
+<section class="relative border-y border-white/5 bg-navy-900/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-12 grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <div class="reveal text-center lg:text-left">
+      <p class="font-display font-800 text-4xl text-white"><span data-count="2400000" data-suffix="+">0</span></p>
+      <p class="text-steel-400 text-sm mt-1">Shipments / year</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <p class="font-display font-800 text-4xl text-white"><span data-count="142" data-suffix="">0</span></p>
+      <p class="text-steel-400 text-sm mt-1">Countries served</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <p class="font-display font-800 text-4xl text-white"><span data-count="318" data-suffix="">0</span></p>
+      <p class="text-steel-400 text-sm mt-1">Fleet & vessels</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <p class="font-display font-800 text-4xl text-white"><span data-count="99" data-suffix="%">0</span></p>
+      <p class="text-steel-400 text-sm mt-1">On-time delivery</p>
+    </div>
+  </div>
+
+  <!-- partner marquee -->
+  <div class="marquee-wrap overflow-hidden border-t border-white/5 py-5">
+    <div class="marquee flex items-center gap-14 w-max text-steel-400 text-sm font-display font-700 tracking-wide opacity-70">
+      <span>NORDPORT</span><span>VELOCARGO</span><span>AETHER AIR</span><span>STEELLINE</span><span>PACIFICA</span><span>OMNITRADE</span><span>HARBORX</span>
+      <span>NORDPORT</span><span>VELOCARGO</span><span>AETHER AIR</span><span>STEELLINE</span><span>PACIFICA</span><span>OMNITRADE</span><span>HARBORX</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SERVICES ===================== -->
+<section id="services" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">What we move</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">Three modes. <span class="grad-text">One control tower.</span></h2>
+      <p class="reveal text-steel-300 mt-4 text-lg">From overnight air freight to full-vessel ocean charters, every shipment flows through a single, transparent operating layer.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- AIR -->
+      <article class="reveal service-card tilt group relative rounded-2xl hairline glass p-7 hover:border-amber/50 transition overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-amber/10 blur-2xl opacity-0 group-hover:opacity-100 transition"></div>
+        <div class="icon-bob grid place-items-center w-12 h-12 rounded-xl bg-amber/15 text-amber-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Air Freight</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">Time-critical and express consolidation with priority uplift on 60+ carriers. Door-to-door in as little as 36 hours.</p>
+        <ul class="mt-5 space-y-2 text-sm text-steel-200">
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Charter & next-flight-out</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Temperature-controlled pharma</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Dangerous goods certified</li>
+        </ul>
+      </article>
+
+      <!-- OCEAN -->
+      <article class="reveal service-card tilt group relative rounded-2xl hairline glass p-7 hover:border-amber/50 transition overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-amber/10 blur-2xl opacity-0 group-hover:opacity-100 transition"></div>
+        <div class="icon-bob grid place-items-center w-12 h-12 rounded-xl bg-amber/15 text-amber-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18c1.5 1 3 1 4.5 0S10.5 17 12 18s3 1 4.5 0S19.5 17 21 18M5 14l7-2 7 2M12 3v9M8 7h8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Ocean Freight</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">FCL, LCL and breakbulk with guaranteed allocations on premier alliances. Real-time vessel and reefer monitoring.</p>
+        <ul class="mt-5 space-y-2 text-sm text-steel-200">
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Full & part container loads</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Reefer & out-of-gauge</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Port-to-port & door delivery</li>
+        </ul>
+      </article>
+
+      <!-- ROAD -->
+      <article class="reveal service-card tilt group relative rounded-2xl hairline glass p-7 hover:border-amber/50 transition overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-amber/10 blur-2xl opacity-0 group-hover:opacity-100 transition"></div>
+        <div class="icon-bob grid place-items-center w-12 h-12 rounded-xl bg-amber/15 text-amber-400 mb-5">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7M7 19a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM18 19a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display font-700 text-xl">Road & Last-Mile</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">Cross-border trucking and intelligent last-mile fulfilment with a 12,000-strong vetted carrier network.</p>
+        <ul class="mt-5 space-y-2 text-sm text-steel-200">
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> FTL & LTL distribution</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> Bonded customs transit</li>
+          <li class="flex gap-2"><span class="text-amber-400">â€º</span> White-glove final delivery</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GLOBAL NETWORK / MAP ===================== -->
+<section id="network" class="relative py-24 sm:py-32 bg-navy-900/40 border-y border-white/5 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <div class="grid lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5">
+        <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Global network</span>
+        <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">A grid that never <span class="grad-text">sleeps.</span></h2>
+        <p class="reveal text-steel-300 mt-4 text-lg">Owned gateways in every major trade lane, connected by a 24/7 control tower. Wherever your cargo is, we already have feet on the ground.</p>
+        <div class="reveal grid grid-cols-2 gap-6 mt-8">
+          <div><p class="font-display font-800 text-3xl text-amber-400">68</p><p class="text-steel-400 text-sm">Owned gateways</p></div>
+          <div><p class="font-display font-800 text-3xl text-amber-400">5</p><p class="text-steel-400 text-sm">Continents</p></div>
+          <div><p class="font-display font-800 text-3xl text-amber-400">24/7</p><p class="text-steel-400 text-sm">Control towers</p></div>
+          <div><p class="font-display font-800 text-3xl text-amber-400">11k+</p><p class="text-steel-400 text-sm">Logistics experts</p></div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 reveal">
+        <div class="relative rounded-2xl hairline glass p-6">
+          <svg id="map-svg" viewBox="0 0 720 380" class="w-full h-auto" fill="none">
+            <!-- abstract continents (dotted) -->
+            <g fill="#9fb0d0" opacity=".35">
+              <circle cx="150" cy="120" r="2"/><circle cx="170" cy="110" r="2"/><circle cx="190" cy="125" r="2"/><circle cx="160" cy="140" r="2"/><circle cx="180" cy="150" r="2"/><circle cx="200" cy="140" r="2"/><circle cx="140" cy="100" r="2"/>
+              <circle cx="330" cy="100" r="2"/><circle cx="350" cy="90" r="2"/><circle cx="370" cy="105" r="2"/><circle cx="360" cy="120" r="2"/><circle cx="340" cy="130" r="2"/><circle cx="390" cy="115" r="2"/><circle cx="320" cy="115" r="2"/>
+              <circle cx="380" cy="200" r="2"/><circle cx="400" cy="210" r="2"/><circle cx="390" cy="230" r="2"/><circle cx="410" cy="195" r="2"/><circle cx="420" cy="220" r="2"/>
+              <circle cx="520" cy="130" r="2"/><circle cx="540" cy="120" r="2"/><circle cx="560" cy="135" r="2"/><circle cx="550" cy="150" r="2"/><circle cx="530" cy="145" r="2"/><circle cx="575" cy="125" r="2"/>
+              <circle cx="580" cy="250" r="2"/><circle cx="600" cy="260" r="2"/><circle cx="590" cy="275" r="2"/>
+              <circle cx="230" cy="240" r="2"/><circle cx="250" cy="255" r="2"/><circle cx="240" cy="275" r="2"/><circle cx="260" cy="290" r="2"/>
+            </g>
+            <!-- routes -->
+            <path class="route-line" d="M170 125 C 280 60, 420 90, 540 130" stroke="#ff7a18" stroke-width="1.6"/>
+            <path class="route-line" d="M540 130 C 580 180, 600 220, 590 260" stroke="#ff9445" stroke-width="1.4"/>
+            <path class="route-line" d="M170 125 C 200 200, 240 230, 250 260" stroke="#9fb0d0" stroke-width="1.2"/>
+            <path class="route-line" d="M390 215 C 300 240, 220 200, 170 130" stroke="#9fb0d0" stroke-width="1.2"/>
+            <path class="route-line" d="M540 130 C 460 160, 420 190, 395 210" stroke="#ff7a18" stroke-width="1.4"/>
+            <!-- hub nodes -->
+            <g>
+              <circle cx="170" cy="125" r="5" fill="#ff7a18"/><circle cx="170" cy="125" r="5" fill="#ff7a18" class="pulse-dot"/>
+              <circle cx="540" cy="130" r="5" fill="#ff7a18"/>
+              <circle cx="390" cy="215" r="4" fill="#ff9445"/>
+              <circle cx="250" cy="260" r="4" fill="#ff9445"/>
+              <circle cx="590" cy="260" r="4" fill="#ff9445"/>
+            </g>
+            <!-- moving cargo -->
+            <circle r="3.5" fill="#fff"><animateMotion dur="6s" repeatCount="indefinite" path="M170 125 C 280 60, 420 90, 540 130"/></circle>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== WHY US ===================== -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Why Cargolane</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">Built for cargo that <span class="grad-text">can't wait.</span></h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">01</div>
+        <h3 class="font-display font-700 text-lg mt-3">Total visibility</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">Every milestone, sensor and document streams live to one dashboard. No blind spots, no spreadsheets.</p>
+      </div>
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">02</div>
+        <h3 class="font-display font-700 text-lg mt-3">Customs without friction</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">In-house brokerage in 70+ jurisdictions clears your goods before the vessel berths.</p>
+      </div>
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">03</div>
+        <h3 class="font-display font-700 text-lg mt-3">Carbon accounted</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">GLEC-certified emissions reporting on every leg, with SAF and offset options at checkout.</p>
+      </div>
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">04</div>
+        <h3 class="font-display font-700 text-lg mt-3">Guaranteed allocation</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">Locked-in space on premium alliances means your freight never gets rolled.</p>
+      </div>
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">05</div>
+        <h3 class="font-display font-700 text-lg mt-3">One invoice</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">Multi-modal moves, a single transparent bill. Reconciliation done before you ask.</p>
+      </div>
+      <div class="reveal hairline glass rounded-2xl p-7">
+        <div class="text-amber-400 text-2xl font-display font-800">06</div>
+        <h3 class="font-display font-700 text-lg mt-3">Always-on humans</h3>
+        <p class="text-steel-300 text-sm mt-2 leading-relaxed">A named coordinator plus 24/7 control towers across every timezone you ship in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INDUSTRIES ===================== -->
+<section id="industries" class="relative py-24 sm:py-32 bg-navy-900/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-14">
+      <div class="max-w-xl">
+        <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Industries</span>
+        <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">Sector-specialised <span class="grad-text">supply chains.</span></h2>
+      </div>
+      <p class="reveal text-steel-300 max-w-sm">Compliance, handling and lead-times tuned to the realities of your vertical.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal group relative rounded-2xl overflow-hidden hairline aspect-[4/5]">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-700 to-navy-950"></div>
+        <img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Warehouse"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display font-700 text-lg">Retail & E-commerce</h3><p class="text-steel-300 text-sm mt-1">Peak-ready fulfilment</p></div>
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden hairline aspect-[4/5]">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-700 to-navy-950"></div>
+        <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Cargo truck"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display font-700 text-lg">Automotive</h3><p class="text-steel-300 text-sm mt-1">Just-in-time parts</p></div>
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden hairline aspect-[4/5]">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-700 to-navy-950"></div>
+        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Logistics yard"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display font-700 text-lg">Pharma & Healthcare</h3><p class="text-steel-300 text-sm mt-1">Cold-chain certified</p></div>
+      </div>
+      <div class="reveal group relative rounded-2xl overflow-hidden hairline aspect-[4/5]">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-700 to-navy-950"></div>
+        <img src="https://images.unsplash.com/photo-1494412574643-ff11b0a5eb95?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Port"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/30 to-transparent"></div>
+        <div class="absolute bottom-0 p-5"><h3 class="font-display font-700 text-lg">Industrial & Energy</h3><p class="text-steel-300 text-sm mt-1">Heavy & project cargo</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TECHNOLOGY ===================== -->
+<section id="tech" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Technology</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">The platform under <span class="grad-text">every move.</span></h2>
+      <p class="reveal text-steel-300 mt-4 text-lg">CargolaneOS connects bookings, documents, IoT sensors and predictive ETAs into one API-first system â€” so your team works from truth, not guesses.</p>
+      <div class="reveal mt-8 space-y-4">
+        <div class="flex gap-4"><span class="grid place-items-center shrink-0 w-10 h-10 rounded-lg bg-amber/15 text-amber-400 font-700">AI</span><div><h4 class="font-600">Predictive ETAs</h4><p class="text-steel-400 text-sm">ML models forecast delays 9 days out, with auto re-routing.</p></div></div>
+        <div class="flex gap-4"><span class="grid place-items-center shrink-0 w-10 h-10 rounded-lg bg-amber/15 text-amber-400 font-700">â€¹â€º</span><div><h4 class="font-600">Open API & EDI</h4><p class="text-steel-400 text-sm">Plug Cargolane into your ERP, WMS or storefront in hours.</p></div></div>
+        <div class="flex gap-4"><span class="grid place-items-center shrink-0 w-10 h-10 rounded-lg bg-amber/15 text-amber-400 font-700">â—Ž</span><div><h4 class="font-600">IoT sensor mesh</h4><p class="text-steel-400 text-sm">Live temperature, shock and geo-fence alerts on critical cargo.</p></div></div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="relative rounded-2xl hairline glass p-6 amber-glow">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="w-3 h-3 rounded-full bg-red-400/70"></span><span class="w-3 h-3 rounded-full bg-amber-400/70"></span><span class="w-3 h-3 rounded-full bg-emerald-400/70"></span>
+          <span class="ml-3 text-xs text-steel-400 font-mono">cargolane-os Â· live feed</span>
+        </div>
+        <div class="space-y-3 font-mono text-xs">
+          <div class="flex items-center justify-between bg-navy-950/60 rounded-lg px-4 py-3"><span class="text-steel-300">MF-4827-XQ Â· Ocean FCL</span><span class="text-emerald-400">â— on schedule</span></div>
+          <div class="flex items-center justify-between bg-navy-950/60 rounded-lg px-4 py-3"><span class="text-steel-300">MF-9013-AR Â· Air Express</span><span class="text-amber-400">â— customs hold</span></div>
+          <div class="flex items-center justify-between bg-navy-950/60 rounded-lg px-4 py-3"><span class="text-steel-300">MF-2256-RD Â· Road FTL</span><span class="text-emerald-400">â— delivered</span></div>
+          <div class="flex items-center justify-between bg-navy-950/60 rounded-lg px-4 py-3"><span class="text-steel-300">MF-7741-OC Â· Reefer LCL</span><span class="text-emerald-400">â— 04Â°C âœ“</span></div>
+        </div>
+        <div class="mt-5 grid grid-cols-3 gap-3 text-center">
+          <div class="bg-navy-950/60 rounded-lg py-3"><p class="font-display font-800 text-xl text-white">9d</p><p class="text-[11px] text-steel-400">Forecast window</p></div>
+          <div class="bg-navy-950/60 rounded-lg py-3"><p class="font-display font-800 text-xl text-white">128ms</p><p class="text-[11px] text-steel-400">API latency</p></div>
+          <div class="bg-navy-950/60 rounded-lg py-3"><p class="font-display font-800 text-xl text-white">99.98%</p><p class="text-[11px] text-steel-400">Uptime</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section id="about" class="relative py-24 sm:py-32 bg-navy-900/40 border-y border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-6 reveal">
+      <div class="relative rounded-2xl overflow-hidden hairline aspect-[4/3]">
+        <div class="absolute inset-0 bg-gradient-to-br from-navy-700 to-navy-950"></div>
+        <img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70" alt="Cargolane warehouse operations"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-navy-950/80 to-transparent"></div>
+      </div>
+    </div>
+    <div class="lg:col-span-6">
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">About us</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">Two decades moving <span class="grad-text">the impossible.</span></h2>
+      <p class="reveal text-steel-300 mt-4 text-lg leading-relaxed">Founded in 2004 in Rotterdam, Cargolane grew from a single coastal route into a global forwarder trusted by Fortune 500 manufacturers and fast-scaling brands alike. Our promise has never changed: clarity, speed and an obsessive duty of care for every consignment.</p>
+      <div class="reveal grid grid-cols-3 gap-6 mt-8">
+        <div><p class="font-display font-800 text-3xl text-amber-400">2004</p><p class="text-steel-400 text-sm">Founded</p></div>
+        <div><p class="font-display font-800 text-3xl text-amber-400">A+</p><p class="text-steel-400 text-sm">IATA / FIATA</p></div>
+        <div><p class="font-display font-800 text-3xl text-amber-400">ISO</p><p class="text-steel-400 text-sm">9001 Â· 14001</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Trusted globally</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">What shippers <span class="grad-text">say.</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal hairline glass rounded-2xl p-7">
+        <div class="flex gap-1 text-amber mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-steel-200 leading-relaxed">"Cargolane cut our Asiaâ€“Europe lead-time by nine days and gave us visibility we never had. They feel like an extension of our own ops team."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-amber/20 grid place-items-center font-700 text-amber-400">LR</span><div><p class="font-600 text-sm">Lena Roth</p><p class="text-steel-400 text-xs">VP Supply Chain, Nordwave</p></div></figcaption>
+      </figure>
+      <figure class="reveal hairline glass rounded-2xl p-7">
+        <div class="flex gap-1 text-amber mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-steel-200 leading-relaxed">"Their customs team cleared a stuck pharma shipment overnight. The cold-chain reporting alone justified the switch."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-amber/20 grid place-items-center font-700 text-amber-400">DM</span><div><p class="font-600 text-sm">David Mensah</p><p class="text-steel-400 text-xs">Director of Logistics, Helixa</p></div></figcaption>
+      </figure>
+      <figure class="reveal hairline glass rounded-2xl p-7">
+        <div class="flex gap-1 text-amber mb-4">â˜…â˜…â˜…â˜…â˜…</div>
+        <blockquote class="text-steel-200 leading-relaxed">"One invoice, one platform, one point of contact across three continents. Cargolane made our peak season boringly predictable."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-amber/20 grid place-items-center font-700 text-amber-400">SK</span><div><p class="font-600 text-sm">Sofia Kane</p><p class="text-steel-400 text-xs">COO, Atlas Goods Co.</p></div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="relative py-24 sm:py-32 bg-navy-900/40 border-y border-white/5">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal text-xs font-600 tracking-widest uppercase text-amber-400">Questions</span>
+      <h2 class="reveal font-display font-800 text-[clamp(2rem,4.5vw,3.2rem)] leading-tight mt-3">Freight, <span class="grad-text">answered.</span></h2>
+    </div>
+
+    <div class="space-y-3" id="faq-list">
+      <div class="faq-item reveal hairline glass rounded-xl px-6 open">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-600">How fast can I get a quote?</span>
+          <span class="faq-plus text-amber-400 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-steel-300 pb-5 leading-relaxed">Most quotes are returned within two business hours. Complex multi-modal or project cargo moves may take up to one business day while we confirm allocations.</p></div>
+      </div>
+      <div class="faq-item reveal hairline glass rounded-xl px-6">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-600">Do you handle customs clearance?</span>
+          <span class="faq-plus text-amber-400 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-steel-300 pb-5 leading-relaxed">Yes. We operate in-house licensed brokerage across 70+ jurisdictions, so your goods are pre-cleared and ready to move the moment they arrive.</p></div>
+      </div>
+      <div class="faq-item reveal hairline glass rounded-xl px-6">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-600">Can I track shipments in real time?</span>
+          <span class="faq-plus text-amber-400 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-steel-300 pb-5 leading-relaxed">Every booking is live on CargolaneOS with milestone, GPS and sensor data. You can also receive webhook and EDI updates straight into your own systems.</p></div>
+      </div>
+      <div class="faq-item reveal hairline glass rounded-xl px-6">
+        <button class="faq-q w-full flex items-center justify-between gap-4 py-5 text-left">
+          <span class="font-600">What about emissions reporting?</span>
+          <span class="faq-plus text-amber-400 text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-steel-300 pb-5 leading-relaxed">We provide GLEC-accredited COâ‚‚e reporting per shipment leg, with options for sustainable aviation fuel and verified carbon offsets at booking.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="cta" class="relative py-28 overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <img src="https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-20" alt="Highway freight"/>
+    <div class="absolute inset-0 bg-gradient-to-br from-navy-800 via-navy-950 to-navy-950"></div>
+  </div>
+  <div class="absolute inset-0 -z-10 grid-bg"></div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="reveal font-display font-800 text-[clamp(2.2rem,5.5vw,4rem)] leading-[1.02]">Ready to move <span class="grad-text">smarter?</span></h2>
+    <p class="reveal text-steel-200 text-lg mt-5 max-w-xl mx-auto">Tell us your lane. We'll send back a transparent, all-in quote â€” and a control tower for every box you ship.</p>
+    <div class="reveal mt-9 flex flex-wrap gap-3 justify-center">
+      <a href="#track" class="inline-flex items-center gap-2 rounded-full bg-amber hover:bg-amber-600 text-navy-950 font-600 px-7 py-4 transition amber-glow">Request a Quote
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#services" class="inline-flex items-center gap-2 rounded-full hairline glass hover:border-steel-400 text-white font-500 px-7 py-4 transition">Talk to an expert</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="relative bg-navy-950 border-t border-white/5">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16 grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+    <div class="lg:col-span-2">
+      <a href="#top" class="flex items-center gap-2.5 mb-4">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-amber"><svg viewBox="0 0 24 24" class="w-5 h-5 text-navy-950" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12h18M12 3l9 9-9 9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="font-display font-800 text-lg">Cargolane<span class="text-amber">Freight</span></span>
+      </a>
+      <p class="text-steel-400 text-sm max-w-xs leading-relaxed">Global freight forwarding by air, ocean and road â€” visible, customs-cleared and carbon-accounted, end to end.</p>
+    </div>
+    <div>
+      <h4 class="font-600 text-sm mb-4">Services</h4>
+      <ul class="space-y-2.5 text-sm text-steel-400">
+        <li><a href="#services" class="hover:text-white transition">Air Freight</a></li>
+        <li><a href="#services" class="hover:text-white transition">Ocean Freight</a></li>
+        <li><a href="#services" class="hover:text-white transition">Road & Last-Mile</a></li>
+        <li><a href="#services" class="hover:text-white transition">Customs Brokerage</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-600 text-sm mb-4">Company</h4>
+      <ul class="space-y-2.5 text-sm text-steel-400">
+        <li><a href="#about" class="hover:text-white transition">About</a></li>
+        <li><a href="#network" class="hover:text-white transition">Network</a></li>
+        <li><a href="#tech" class="hover:text-white transition">Technology</a></li>
+        <li><a href="#industries" class="hover:text-white transition">Industries</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-600 text-sm mb-4">Get in touch</h4>
+      <ul class="space-y-2.5 text-sm text-steel-400">
+        <li>Waalhaven 12, Rotterdam</li>
+        <li><a href="#" class="hover:text-white transition">hello@cargolanefreight.co</a></li>
+        <li><a href="#" class="hover:text-white transition">+31 10 555 0140</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-steel-400">
+      <p>Â© 2026 Cargolane B.V. All rights reserved.</p>
+      <div class="flex gap-6"><a href="#" class="hover:text-white transition">Privacy</a><a href="#" class="hover:text-white transition">Terms</a><a href="#" class="hover:text-white transition">Compliance</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- Nav scroll state ---
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.classList.add('glass','shadow-lg','border-b','border-white/5');
+    else nav.classList.remove('glass','shadow-lg','border-b','border-white/5');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  // --- Tracking widget micro-interaction ---
+  const bar = document.getElementById('trk-bar');
+  const status = document.getElementById('trk-status');
+  function runTrack(){
+    if(!bar) return;
+    bar.style.width = '0%'; status.textContent='Locatingâ€¦';
+    requestAnimationFrame(()=>{ setTimeout(()=>{ bar.style.width='64%'; status.textContent='In Transit'; }, 120); });
+  }
+  document.getElementById('trk-btn')?.addEventListener('click', runTrack);
+  setTimeout(runTrack, 600);
+
+  // --- FAQ accordion ---
+  document.querySelectorAll('.faq-q').forEach(q=>{
+    q.addEventListener('click', ()=>{
+      const item = q.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+      if(!isOpen) item.classList.add('open');
+    });
+  });
+
+  // --- Magnetic CTA + tilt cards ---
+  if(!reduce && window.matchMedia('(pointer:fine)').matches){
+    const mag = document.getElementById('magnetic');
+    if(mag){
+      mag.addEventListener('mousemove', e=>{
+        const r = mag.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        mag.style.transform = `translate(${x*0.3}px, ${y*0.4}px)`;
+      });
+      mag.addEventListener('mouseleave', ()=> mag.style.transform='translate(0,0)');
+    }
+    document.querySelectorAll('.tilt').forEach(card=>{
+      card.addEventListener('mousemove', e=>{
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - .5;
+        const py = (e.clientY - r.top)/r.height - .5;
+        card.style.transform = `perspective(800px) rotateY(${px*6}deg) rotateX(${-py*6}deg) translateY(-4px)`;
+      });
+      card.addEventListener('mouseleave', ()=> card.style.transform='');
+    });
+  }
+
+  if(reduce){
+    // ensure route lines visible, skip animations
+    document.querySelectorAll('.route-line').forEach(p=>{ p.style.strokeDasharray='none'; p.style.strokeDashoffset='0'; });
+    return;
+  }
+
+  // --- GSAP ---
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Hero intro
+  gsap.to('#top .reveal', { opacity:1, y:0, duration:.9, ease:'power3.out', stagger:.12, delay:.15 });
+
+  // Generic reveals
+  gsap.utils.toArray('.reveal').forEach(el=>{
+    if(el.closest('#top')) return;
+    gsap.to(el, {
+      opacity:1, y:0, duration:.8, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 86%' }
+    });
+  });
+
+  // Count-ups
+  gsap.utils.toArray('[data-count]').forEach(el=>{
+    const end = +el.dataset.count, suf = el.dataset.suffix || '';
+    const obj = { v:0 };
+    ScrollTrigger.create({
+      trigger:el, start:'top 90%', once:true,
+      onEnter:()=> gsap.to(obj, { v:end, duration:2, ease:'power2.out',
+        onUpdate:()=>{
+          const n = obj.v;
+          el.textContent = (n>=1000000? (n/1000000).toFixed(1)+'M' : Math.round(n).toLocaleString()) + suf;
+        }})
+    });
+  });
+
+  // Route line draw (hero + map)
+  document.querySelectorAll('.route-line').forEach(path=>{
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = len; path.style.strokeDashoffset = len;
+    gsap.to(path, {
+      strokeDashoffset:0, duration:2.4, ease:'power2.inOut',
+      scrollTrigger:{ trigger:path.closest('section'), start:'top 75%' }
+    });
+  });
+
+  // Container / image parallax
+  gsap.utils.toArray('[alt="Container port at dusk"], #cta img').forEach(img=>{
+    gsap.to(img, { yPercent:12, ease:'none',
+      scrollTrigger:{ trigger:img.closest('section'), start:'top bottom', end:'bottom top', scrub:true }});
+  });
+})();
+</script>
+</body>
+</html>
+

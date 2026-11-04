@@ -1,0 +1,115 @@
+{
+  "chapters": [
+    { "id": "intro", "title": "Intro" },
+    { "id": "leaks", "title": "The four leaks" },
+    { "id": "build", "title": "What we build" },
+    { "id": "proof", "title": "Proof" },
+    { "id": "how", "title": "How it works" },
+    { "id": "next", "title": "Next step" }
+  ],
+  "beats": [
+    {
+      "id": "hook",
+      "chapter": "intro",
+      "gap": 0.5,
+      "text": "It's nine at night. Someone fills out the form on your website, and nobody answers until morning. By then, they've booked someone else. If you run a service business, that's not bad luck. It's a systems problem."
+    },
+    {
+      "id": "who",
+      "chapter": "intro",
+      "gap": 0.45,
+      "text": "We're NixGen. Since 2023, we've delivered more than 200 websites, plus the apps and automations behind them, for contractors, salons, HVAC companies, tour operators and more. And we keep finding the same four leaks."
+    },
+    {
+      "id": "leak1",
+      "chapter": "leaks",
+      "gap": 0.3,
+      "text": "One: your website looks like everyone else's, so customers can't tell you apart, and they shop on price."
+    },
+    {
+      "id": "leak2",
+      "chapter": "leaks",
+      "gap": 0.3,
+      "text": "Two: slow follow-up. Inquiries sit in an inbox, and whoever answers first wins the job."
+    },
+    {
+      "id": "leak3",
+      "chapter": "leaks",
+      "gap": 0.3,
+      "text": "Three: busywork. Quotes, reminders, scheduling, and invoices you chase by hand at the kitchen table."
+    },
+    {
+      "id": "leak4",
+      "chapter": "leaks",
+      "gap": 0.45,
+      "text": "Four: no visibility. You know what you spend on marketing, but not what actually brings in paying customers."
+    },
+    {
+      "id": "reframe",
+      "chapter": "leaks",
+      "gap": 0.35,
+      "text": "Most owners try to fix that with five different vendors. What you need is one team that builds the whole system."
+    },
+    {
+      "id": "offers",
+      "chapter": "build",
+      "gap": 0.25,
+      "text": "That's what we do, in four parts."
+    },
+    {
+      "id": "websites",
+      "chapter": "build",
+      "gap": 0.35,
+      "text": "First, websites that win the job. Custom, fast, and designed to turn visitors into booked calls, with the branding and SEO to get you found."
+    },
+    {
+      "id": "automation",
+      "chapter": "build",
+      "gap": 0.35,
+      "text": "Second, automation and AI. Every inquiry gets an instant reply and lands in your CRM. Follow-ups and reminders run themselves, and an AI voice agent can answer calls and book appointments for you."
+    },
+    {
+      "id": "apps",
+      "chapter": "build",
+      "gap": 0.35,
+      "text": "Third, custom apps and dashboards. Online booking, customer portals, invoicing that chases late payments for you, and a live dashboard that shows exactly where your revenue comes from."
+    },
+    {
+      "id": "devs",
+      "chapter": "build",
+      "gap": 0.45,
+      "text": "And fourth, dedicated developers. When you need ongoing help, you get your own NixGen developer, full-time, part-time or on call, reporting to you every day."
+    },
+    {
+      "id": "proof",
+      "chapter": "proof",
+      "gap": 0.45,
+      "text": "And it works. Austin Hayes, a service business owner, tripled his leads within 60 days. At Codetic, the dashboard alone saved the team more than 20 hours a week of manual reporting."
+    },
+    {
+      "id": "process",
+      "chapter": "how",
+      "gap": 0.35,
+      "text": "Working with us is simple. We start with a strategy call about your business and your numbers. You watch progress on a live preview link, and a new website can go live in 14 days."
+    },
+    {
+      "id": "risk",
+      "chapter": "how",
+      "gap": 0.45,
+      "text": "You own everything we build: the domain, the code and the content, on your own accounts, with no lock-in. And if you don't love the first design concepts, we revise until you do, at no extra charge."
+    },
+    {
+      "id": "whofor",
+      "chapter": "next",
+      "gap": 0.4,
+      "text": "This is for service business owners who are great at the work and done doing everything else by hand. We take on a small number of clients each quarter, so a senior team stays on every project."
+    },
+    {
+      "id": "cta",
+      "chapter": "next",
+      "gap": 3.2,
+      "text": "If that's you, go to nixgensolutions.com and tell us about your business. We'll reply within 12 hours to set up a 30-minute discovery call. No pressure, no pitch deck. Just a clear look at where you're losing time and money, and what we'd build to fix it.",
+      "say": [["nixgensolutions.com", "NixGen Solutions dot com"]]
+    }
+  ]
+}

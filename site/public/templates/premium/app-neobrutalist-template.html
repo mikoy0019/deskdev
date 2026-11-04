@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Boop — the friendly habit app that makes tiny wins feel huge. Track streaks, tap to win, and actually stick with it." />
+<title>Boop — Build Habits That Actually Stick</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#15110E',
+          paper:  '#FFF6E9',
+          lemon:  '#FFE14D',
+          punch:  '#FF5A5F',
+          mint:   '#3DDC97',
+          sky:    '#5B8DEF',
+          grape:  '#A06CD5',
+          peach:  '#FF9A62',
+        },
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+          body:    ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          'hard':    '6px 6px 0 0 #15110E',
+          'hard-lg': '10px 10px 0 0 #15110E',
+          'hard-xl': '14px 14px 0 0 #15110E',
+          'hard-sm': '4px 4px 0 0 #15110E',
+        },
+        borderRadius: {
+          'blob': '42% 58% 63% 37% / 41% 44% 56% 59%',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background-color: #FFF6E9;
+    color: #15110E;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    /* subtle dotted texture */
+    background-image: radial-gradient(#15110E14 1.4px, transparent 1.4px);
+    background-size: 26px 26px;
+  }
+  h1,h2,h3,.font-display { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+
+  .border-ink { border-color: #15110E; }
+  .b3 { border: 3px solid #15110E; }
+  .b4 { border: 4px solid #15110E; }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation: scrollX 26s linear infinite; }
+  .marquee:hover { animation-play-state: paused; }
+  @keyframes scrollX { to { transform: translateX(-50%); } }
+
+  /* Wobble on hover */
+  .wobble:hover { animation: wobble 0.6s ease; }
+  @keyframes wobble {
+    0%,100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3.5deg) scale(1.03); }
+    50% { transform: rotate(2.5deg) scale(1.03); }
+    75% { transform: rotate(-1.5deg) scale(1.02); }
+  }
+
+  /* Button press squash */
+  .btn-pop { transition: transform .12s ease, box-shadow .12s ease; }
+  .btn-pop:hover { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 0 #15110E; }
+  .btn-pop:active { transform: translate(3px,3px) scale(.98); box-shadow: 1px 1px 0 0 #15110E; }
+
+  .card-pop { transition: transform .18s ease, box-shadow .18s ease; }
+  .card-pop:hover { transform: translate(-3px,-3px) rotate(-1deg); box-shadow: 12px 12px 0 0 #15110E; }
+
+  /* sticker float */
+  .float-a { animation: floatA 5s ease-in-out infinite; }
+  .float-b { animation: floatB 6.5s ease-in-out infinite; }
+  @keyframes floatA { 0%,100%{transform:translateY(0) rotate(-8deg);} 50%{transform:translateY(-16px) rotate(-2deg);} }
+  @keyframes floatB { 0%,100%{transform:translateY(0) rotate(10deg);} 50%{transform:translateY(14px) rotate(4deg);} }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .3s ease; }
+
+  /* phone screen pulse dot */
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.25);opacity:.6;} }
+
+  .reveal { opacity: 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee, .wobble, .float-a, .float-b, .pulse { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+  ::selection { background: #FFE14D; color:#15110E; }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ===== NAV ===== -->
+<header class="sticky top-0 z-50">
+  <div class="bg-paper b4 border-x-0 border-t-0">
+    <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-3 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="w-10 h-10 grid place-items-center bg-punch b3 rounded-2xl shadow-hard-sm text-paper font-display font-extrabold text-xl wobble">B</span>
+        <span class="font-display font-extrabold text-2xl tracking-tight">Boop</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-7 font-semibold text-sm">
+        <li><a href="#features" class="hover:text-punch transition">Features</a></li>
+        <li><a href="#how" class="hover:text-punch transition">How it works</a></li>
+        <li><a href="#pricing" class="hover:text-punch transition">Pricing</a></li>
+        <li><a href="#faq" class="hover:text-punch transition">FAQ</a></li>
+      </ul>
+      <a href="#download" class="btn-pop bg-mint text-ink b3 rounded-xl shadow-hard-sm px-4 sm:px-5 py-2.5 font-display font-extrabold text-sm">
+        Get the app
+      </a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ===== HERO ===== -->
+<section class="relative max-w-7xl mx-auto px-5 sm:px-8 pt-14 pb-8 lg:pt-20 grid lg:grid-cols-2 gap-12 items-center">
+  <!-- floating stickers -->
+  <span class="hidden lg:block absolute -top-2 left-1/2 w-16 h-16 bg-lemon b3 rounded-full shadow-hard-sm float-a z-0"></span>
+  <span class="hidden lg:block absolute top-1/2 -left-6 w-12 h-12 bg-sky b3 rounded-blob shadow-hard-sm float-b z-0"></span>
+
+  <div class="relative z-10">
+    <span class="hero-el inline-flex items-center gap-2 bg-grape text-paper b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-6">
+      <span class="w-2 h-2 rounded-full bg-lemon pulse"></span> 1,000,000+ tiny wins this week
+    </span>
+    <h1 class="hero-el font-display font-extrabold leading-[0.95] text-5xl sm:text-6xl lg:text-7xl tracking-tight">
+      Build habits<br />
+      that actually
+      <span class="relative inline-block">
+        <span class="relative z-10">stick.</span>
+        <span class="absolute -bottom-1 left-0 right-0 h-4 bg-lemon -z-0 rotate-[-1.5deg]"></span>
+      </span>
+    </h1>
+    <p class="hero-el mt-6 text-lg sm:text-xl text-ink/80 max-w-md font-medium">
+      Boop turns boring routines into a tap-happy game. Tiny streaks, big dopamine, zero guilt. The friendliest habit app you'll ever ignore your phone for.
+    </p>
+    <div class="hero-el mt-8 flex flex-wrap items-center gap-4">
+      <a href="#download" class="btn-pop bg-punch text-paper b3 rounded-2xl shadow-hard px-7 py-4 font-display font-extrabold text-lg">
+        Start for free →
+      </a>
+      <a href="#how" class="btn-pop bg-paper text-ink b3 rounded-2xl shadow-hard-sm px-6 py-4 font-display font-extrabold text-lg">
+        See how it works
+      </a>
+    </div>
+    <div class="hero-el mt-7 flex items-center gap-3">
+      <div class="flex -space-x-3">
+        <span class="w-9 h-9 rounded-full b3 bg-mint"></span>
+        <span class="w-9 h-9 rounded-full b3 bg-peach"></span>
+        <span class="w-9 h-9 rounded-full b3 bg-sky"></span>
+        <span class="w-9 h-9 rounded-full b3 bg-lemon"></span>
+      </div>
+      <p class="text-sm font-semibold">★★★★★ <span class="text-ink/70">Loved by 240k+ habit nerds</span></p>
+    </div>
+  </div>
+
+  <!-- Phone mockup (div-built) -->
+  <div class="relative z-10 flex justify-center">
+    <span class="absolute -z-10 w-72 h-72 sm:w-96 sm:h-96 bg-mint rounded-blob b4 shadow-hard-lg"></span>
+    <div id="phone" class="relative w-[270px] sm:w-[300px] bg-ink rounded-[2.6rem] b4 shadow-hard-xl p-3">
+      <div class="bg-paper rounded-[2rem] overflow-hidden">
+        <!-- status bar -->
+        <div class="flex justify-between items-center px-5 pt-3 text-[10px] font-bold">
+          <span>9:41</span>
+          <span class="w-16 h-4 bg-ink rounded-full"></span>
+          <span>100%</span>
+        </div>
+        <!-- app header -->
+        <div class="px-5 pt-4 pb-2">
+          <p class="text-xs font-semibold text-ink/60">Good morning, Mia 👋</p>
+          <h3 class="font-display font-extrabold text-2xl">Today's boops</h3>
+        </div>
+        <!-- streak banner -->
+        <div class="mx-4 mb-3 bg-lemon b3 rounded-2xl shadow-hard-sm px-4 py-3 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-ink/70">Current streak</p>
+            <p class="font-display font-extrabold text-2xl leading-none">🔥 42 days</p>
+          </div>
+          <span class="text-3xl">🏆</span>
+        </div>
+        <!-- habit list -->
+        <div class="px-4 pb-5 space-y-2.5">
+          <div class="ph-row flex items-center gap-3 bg-mint/30 b3 rounded-2xl px-3 py-2.5">
+            <span class="w-8 h-8 grid place-items-center bg-mint b3 rounded-lg text-sm">💧</span>
+            <span class="flex-1 font-semibold text-sm">Drink water</span>
+            <span class="w-6 h-6 bg-mint b3 rounded-md grid place-items-center text-xs font-extrabold">✓</span>
+          </div>
+          <div class="ph-row flex items-center gap-3 bg-sky/25 b3 rounded-2xl px-3 py-2.5">
+            <span class="w-8 h-8 grid place-items-center bg-sky b3 rounded-lg text-sm">📚</span>
+            <span class="flex-1 font-semibold text-sm">Read 10 pages</span>
+            <span class="w-6 h-6 bg-sky b3 rounded-md grid place-items-center text-xs font-extrabold text-paper">✓</span>
+          </div>
+          <div class="ph-row flex items-center gap-3 bg-peach/30 b3 rounded-2xl px-3 py-2.5">
+            <span class="w-8 h-8 grid place-items-center bg-peach b3 rounded-lg text-sm">🏃</span>
+            <span class="flex-1 font-semibold text-sm">Move 20 min</span>
+            <span class="w-6 h-6 bg-paper b3 rounded-md"></span>
+          </div>
+          <div class="ph-row flex items-center gap-3 bg-grape/20 b3 rounded-2xl px-3 py-2.5">
+            <span class="w-8 h-8 grid place-items-center bg-grape b3 rounded-lg text-sm">🧘</span>
+            <span class="flex-1 font-semibold text-sm">Breathe</span>
+            <span class="w-6 h-6 bg-paper b3 rounded-md"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- floating badge sticker -->
+    <span class="absolute -top-4 -right-2 sm:-right-6 bg-punch text-paper b3 rounded-2xl shadow-hard-sm px-3 py-2 font-display font-extrabold text-sm rotate-12 float-a">+50 XP</span>
+  </div>
+</section>
+
+<!-- ===== SOCIAL PROOF MARQUEE ===== -->
+<section aria-label="Trusted by" class="py-5 bg-ink text-paper b4 border-x-0 overflow-hidden">
+  <div class="marquee">
+    <div class="flex items-center gap-10 pr-10 text-lg font-display font-extrabold whitespace-nowrap">
+      <span>★ Featured: App of the Day</span><span class="text-lemon">●</span>
+      <span>240k+ daily streakers</span><span class="text-mint">●</span>
+      <span>4.9 on the App Store</span><span class="text-punch">●</span>
+      <span>97% stick past week one</span><span class="text-sky">●</span>
+      <span>★ Featured: App of the Day</span><span class="text-lemon">●</span>
+      <span>240k+ daily streakers</span><span class="text-mint">●</span>
+      <span>4.9 on the App Store</span><span class="text-punch">●</span>
+      <span>97% stick past week one</span><span class="text-sky">●</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES GRID ===== -->
+<section id="features" class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+  <div class="text-center mb-14">
+    <span class="reveal inline-block bg-sky text-paper b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">WHY BOOP</span>
+    <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Habits, but make it<br class="hidden sm:block" /> ridiculously fun.</h2>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- card -->
+    <div class="feat reveal card-pop bg-lemon b4 rounded-3xl shadow-hard p-7">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">🔥</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">Streaks that hook</h3>
+      <p class="font-medium text-ink/80">Watch your streak grow and feel physically unable to break it. Science calls it commitment. We call it Boop.</p>
+    </div>
+    <div class="feat reveal card-pop bg-mint b4 rounded-3xl shadow-hard p-7">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">👆</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">One-tap wins</h3>
+      <p class="font-medium text-ink/80">No forms, no friction. Tap the bubble, hear the satisfying pop, get your dopamine. Repeat tomorrow.</p>
+    </div>
+    <div class="feat reveal card-pop bg-peach b4 rounded-3xl shadow-hard p-7">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">🎯</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">Tiny goals, big you</h3>
+      <p class="font-medium text-ink/80">Start absurdly small. "Read one page." Boop nudges you up gently so momentum does the heavy lifting.</p>
+    </div>
+    <div class="feat reveal card-pop bg-sky b4 rounded-3xl shadow-hard p-7 text-paper">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">🏆</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">Levels & loot</h3>
+      <p class="font-medium text-paper/90">Earn XP, unlock badges, collect ridiculous stickers. Your discipline finally has a trophy shelf.</p>
+    </div>
+    <div class="feat reveal card-pop bg-grape b4 rounded-3xl shadow-hard p-7 text-paper">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">👯</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">Squad mode</h3>
+      <p class="font-medium text-paper/90">Buddy up with friends, cheer each other on, and gently shame anyone who breaks a streak. Lovingly.</p>
+    </div>
+    <div class="feat reveal card-pop bg-punch b4 rounded-3xl shadow-hard p-7 text-paper">
+      <span class="inline-grid place-items-center w-14 h-14 bg-paper b3 rounded-2xl shadow-hard-sm text-3xl mb-5">🌙</span>
+      <h3 class="font-display font-extrabold text-2xl mb-2">Zero-guilt rests</h3>
+      <p class="font-medium text-paper/90">Missed a day? Use a Freeze Token. Boop believes in comebacks, not punishment. Be kind to future-you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how" class="bg-grape b4 border-x-0">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+    <div class="text-center mb-14 text-paper">
+      <span class="reveal inline-block bg-lemon text-ink b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">3 STEPS</span>
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Up and booping in 60 seconds</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-7">
+      <div class="step reveal bg-paper b4 rounded-3xl shadow-hard p-7 relative">
+        <span class="absolute -top-5 -left-3 w-14 h-14 grid place-items-center bg-lemon b3 rounded-full shadow-hard-sm font-display font-extrabold text-2xl">1</span>
+        <h3 class="font-display font-extrabold text-2xl mb-2 mt-3">Pick your habits</h3>
+        <p class="font-medium text-ink/80">Choose from 100+ ready-made habits or invent your own weird one. We don't judge. (Okay, we judge lovingly.)</p>
+      </div>
+      <div class="step reveal bg-paper b4 rounded-3xl shadow-hard p-7 relative">
+        <span class="absolute -top-5 -left-3 w-14 h-14 grid place-items-center bg-mint b3 rounded-full shadow-hard-sm font-display font-extrabold text-2xl">2</span>
+        <h3 class="font-display font-extrabold text-2xl mb-2 mt-3">Boop daily</h3>
+        <p class="font-medium text-ink/80">Open the app, tap your bubbles, hear the pops. Two seconds of joy that quietly rebuild your life.</p>
+      </div>
+      <div class="step reveal bg-paper b4 rounded-3xl shadow-hard p-7 relative">
+        <span class="absolute -top-5 -left-3 w-14 h-14 grid place-items-center bg-punch b3 rounded-full shadow-hard-sm font-display font-extrabold text-2xl text-paper">3</span>
+        <h3 class="font-display font-extrabold text-2xl mb-2 mt-3">Watch it stick</h3>
+        <p class="font-medium text-ink/80">Streaks climb, XP rolls in, future-you sends a thank-you note. Habits, finally, on autopilot.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section class="max-w-7xl mx-auto px-5 sm:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
+  <div class="relative flex justify-center order-2 lg:order-1">
+    <span class="absolute -z-10 w-72 h-72 bg-peach rounded-blob b4 shadow-hard-lg float-b"></span>
+    <div class="bg-paper b4 rounded-3xl shadow-hard-lg p-8 max-w-sm w-full -rotate-2">
+      <p class="font-display font-extrabold text-5xl">240k+</p>
+      <p class="font-semibold text-ink/70 mb-5">humans booping daily</p>
+      <div class="space-y-3">
+        <div class="flex items-center justify-between b3 rounded-xl px-3 py-2 bg-lemon"><span class="font-bold text-sm">Avg streak</span><span class="font-display font-extrabold">38 days</span></div>
+        <div class="flex items-center justify-between b3 rounded-xl px-3 py-2 bg-mint"><span class="font-bold text-sm">Habits kept</span><span class="font-display font-extrabold">11.2M</span></div>
+        <div class="flex items-center justify-between b3 rounded-xl px-3 py-2 bg-sky text-paper"><span class="font-bold text-sm">Freeze tokens used</span><span class="font-display font-extrabold">guilt-free</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="order-1 lg:order-2">
+    <span class="reveal inline-block bg-peach text-ink b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">OUR STORY</span>
+    <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight leading-tight">We were tired of habit apps that felt like homework.</h2>
+    <p class="reveal mt-5 text-lg font-medium text-ink/80">So we built the opposite. Boop started as a tiny weekend project between two friends who couldn't keep a single routine going. We made the simplest, silliest, most satisfying way to show up — and somehow it worked.</p>
+    <p class="reveal mt-4 text-lg font-medium text-ink/80">No streak anxiety. No productivity guilt. Just one happy tap at a time, until the habits build themselves.</p>
+    <a href="#download" class="reveal btn-pop inline-block mt-7 bg-ink text-paper b3 rounded-2xl shadow-hard px-7 py-4 font-display font-extrabold">Join the booping →</a>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="bg-sky b4 border-x-0">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+    <div class="text-center mb-14 text-paper">
+      <span class="reveal inline-block bg-paper text-ink b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">REAL HUMANS</span>
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight">People won't shut up about it</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="tcard reveal bg-paper b4 rounded-3xl shadow-hard p-6 rotate-1">
+        <p class="text-yellow-500 mb-3 text-lg">★★★★★</p>
+        <blockquote class="font-medium text-ink/85">"I've downloaded nine habit apps. Boop is the only one I still open. The little pop sound is dangerously addictive."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full b3 bg-mint grid place-items-center font-extrabold">JK</span>
+          <div><p class="font-display font-extrabold">Jamie K.</p><p class="text-xs text-ink/60">52-day streak</p></div>
+        </figcaption>
+      </figure>
+      <figure class="tcard reveal bg-paper b4 rounded-3xl shadow-hard p-6 -rotate-1">
+        <p class="text-yellow-500 mb-3 text-lg">★★★★★</p>
+        <blockquote class="font-medium text-ink/85">"Squad mode got my whole group chat exercising. We're insufferable now and I love it. Worth every penny of free."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full b3 bg-peach grid place-items-center font-extrabold">RO</span>
+          <div><p class="font-display font-extrabold">Rosa O.</p><p class="text-xs text-ink/60">Squad of 6</p></div>
+        </figcaption>
+      </figure>
+      <figure class="tcard reveal bg-paper b4 rounded-3xl shadow-hard p-6 rotate-1">
+        <p class="text-yellow-500 mb-3 text-lg">★★★★★</p>
+        <blockquote class="font-medium text-ink/85">"The freeze token saved my 100-day streak after a flu. No shame, no reset. This app actually likes me."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full b3 bg-grape text-paper grid place-items-center font-extrabold">DT</span>
+          <div><p class="font-display font-extrabold">Devon T.</p><p class="text-xs text-ink/60">112-day streak</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section id="pricing" class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+  <div class="text-center mb-14">
+    <span class="reveal inline-block bg-mint text-ink b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">PLANS</span>
+    <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Pick your boop level</h2>
+    <p class="reveal mt-3 font-medium text-ink/70">Start free forever. Upgrade only if you're having too much fun.</p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-7 items-start">
+    <!-- Free -->
+    <div class="plan reveal card-pop bg-paper b4 rounded-3xl shadow-hard p-7">
+      <h3 class="font-display font-extrabold text-2xl">Sprout</h3>
+      <p class="text-ink/70 font-medium text-sm mb-4">For the curious starter</p>
+      <p class="font-display font-extrabold text-5xl">$0<span class="text-lg text-ink/60 font-bold">/mo</span></p>
+      <ul class="mt-6 space-y-2.5 text-sm font-medium">
+        <li class="flex gap-2"><span>✅</span> Up to 5 habits</li>
+        <li class="flex gap-2"><span>✅</span> Daily streaks & XP</li>
+        <li class="flex gap-2"><span>✅</span> 1 freeze token / month</li>
+        <li class="flex gap-2 text-ink/40"><span>—</span> Squad mode</li>
+      </ul>
+      <a href="#download" class="btn-pop block text-center mt-7 bg-paper text-ink b3 rounded-xl shadow-hard-sm px-5 py-3 font-display font-extrabold">Get started</a>
+    </div>
+
+    <!-- Pro (featured) -->
+    <div class="plan reveal bg-lemon b4 rounded-3xl shadow-hard-lg p-7 relative md:-translate-y-3 card-pop">
+      <span class="absolute -top-4 left-1/2 -translate-x-1/2 bg-punch text-paper b3 rounded-full px-4 py-1 text-xs font-extrabold shadow-hard-sm whitespace-nowrap">MOST BOOPED</span>
+      <h3 class="font-display font-extrabold text-2xl">Bloom</h3>
+      <p class="text-ink/70 font-medium text-sm mb-4">For the committed booper</p>
+      <p class="font-display font-extrabold text-5xl">$5<span class="text-lg text-ink/60 font-bold">/mo</span></p>
+      <ul class="mt-6 space-y-2.5 text-sm font-medium">
+        <li class="flex gap-2"><span>✅</span> Unlimited habits</li>
+        <li class="flex gap-2"><span>✅</span> Squad mode + cheers</li>
+        <li class="flex gap-2"><span>✅</span> Unlimited freeze tokens</li>
+        <li class="flex gap-2"><span>✅</span> Premium stickers & themes</li>
+      </ul>
+      <a href="#download" class="btn-pop block text-center mt-7 bg-punch text-paper b3 rounded-xl shadow-hard px-5 py-3 font-display font-extrabold">Go Bloom →</a>
+    </div>
+
+    <!-- Family -->
+    <div class="plan reveal card-pop bg-paper b4 rounded-3xl shadow-hard p-7">
+      <h3 class="font-display font-extrabold text-2xl">Forest</h3>
+      <p class="text-ink/70 font-medium text-sm mb-4">For the whole crew</p>
+      <p class="font-display font-extrabold text-5xl">$12<span class="text-lg text-ink/60 font-bold">/mo</span></p>
+      <ul class="mt-6 space-y-2.5 text-sm font-medium">
+        <li class="flex gap-2"><span>✅</span> Everything in Bloom</li>
+        <li class="flex gap-2"><span>✅</span> Up to 6 accounts</li>
+        <li class="flex gap-2"><span>✅</span> Shared squad challenges</li>
+        <li class="flex gap-2"><span>✅</span> Priority kindness support</li>
+      </ul>
+      <a href="#download" class="btn-pop block text-center mt-7 bg-paper text-ink b3 rounded-xl shadow-hard-sm px-5 py-3 font-display font-extrabold">Get Forest</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section id="faq" class="bg-peach b4 border-x-0">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 py-20">
+    <div class="text-center mb-12">
+      <span class="reveal inline-block bg-ink text-paper b3 rounded-full px-4 py-1.5 text-xs font-bold shadow-hard-sm mb-4">QUESTIONS</span>
+      <h2 class="reveal font-display font-extrabold text-4xl sm:text-5xl tracking-tight">Boop, answered</h2>
+    </div>
+    <div class="space-y-4">
+      <div class="faq-item reveal bg-paper b3 rounded-2xl shadow-hard-sm overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-5 py-4 font-display font-extrabold text-lg">
+          Is Boop really free?
+          <span class="faq-plus w-8 h-8 grid place-items-center bg-lemon b3 rounded-lg shrink-0 text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-medium text-ink/80">Yep. The Sprout plan is free forever — up to 5 habits, streaks, XP, and a monthly freeze token. No credit card, no trial countdown, no nonsense.</p></div>
+      </div>
+      <div class="faq-item reveal bg-paper b3 rounded-2xl shadow-hard-sm overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-5 py-4 font-display font-extrabold text-lg">
+          What happens if I miss a day?
+          <span class="faq-plus w-8 h-8 grid place-items-center bg-mint b3 rounded-lg shrink-0 text-xl">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-medium text-ink/80">Life happens. Use a Freeze Token to protect your streak — no shame, no reset spiral. We're a comeback app, not a guilt app.</p></div>
+      </div>
+      <div class="faq-item reveal bg-paper b3 rounded-2xl shadow-hard-sm overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-5 py-4 font-display font-extrabold text-lg">
+          Does it work on Android and iOS?
+          <span class="faq-plus w-8 h-8 grid place-items-center bg-sky b3 rounded-lg shrink-0 text-xl text-paper">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-medium text-ink/80">Both, plus a slick web app that syncs instantly. Start a streak on your phone, check it on your laptop — your boops follow you everywhere.</p></div>
+      </div>
+      <div class="faq-item reveal bg-paper b3 rounded-2xl shadow-hard-sm overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-5 py-4 font-display font-extrabold text-lg">
+          Can I cancel anytime?
+          <span class="faq-plus w-8 h-8 grid place-items-center bg-grape b3 rounded-lg shrink-0 text-xl text-paper">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 font-medium text-ink/80">Of course. Cancel in two taps and keep your data on the free plan. No exit interviews, no "are you sure?" guilt trips. We'll miss you though.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section id="download" class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+  <div class="relative bg-ink text-paper b4 rounded-[2.5rem] shadow-hard-xl px-7 sm:px-14 py-16 text-center overflow-hidden">
+    <span class="absolute -top-8 -left-8 w-32 h-32 bg-punch rounded-blob b4 float-a opacity-90"></span>
+    <span class="absolute -bottom-10 -right-6 w-40 h-40 bg-mint rounded-full b4 float-b opacity-90"></span>
+    <div class="relative z-10">
+      <h2 class="font-display font-extrabold text-4xl sm:text-6xl tracking-tight leading-[0.95]">Your future self<br />is already booping.</h2>
+      <p class="mt-5 text-lg text-paper/80 font-medium max-w-md mx-auto">Download Boop free and start your first streak today. It takes 60 seconds and one happy tap.</p>
+      <div class="mt-9 flex flex-wrap justify-center gap-4">
+        <a href="#" class="btn-pop bg-lemon text-ink b3 rounded-2xl shadow-hard px-7 py-4 font-display font-extrabold text-lg flex items-center gap-2">
+          <span class="text-2xl"></span> App Store
+        </a>
+        <a href="#" class="btn-pop bg-mint text-ink b3 rounded-2xl shadow-hard px-7 py-4 font-display font-extrabold text-lg flex items-center gap-2">
+          <span class="text-2xl">▶</span> Google Play
+        </a>
+      </div>
+      <p class="mt-6 text-sm text-paper/60 font-medium">Free forever · No credit card · 240k+ happy boopers</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-lemon b4 border-x-0 border-b-0">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <a href="#top" class="flex items-center gap-2 mb-4">
+          <span class="w-10 h-10 grid place-items-center bg-punch b3 rounded-2xl shadow-hard-sm text-paper font-display font-extrabold text-xl">B</span>
+          <span class="font-display font-extrabold text-2xl">Boop</span>
+        </a>
+        <p class="font-medium text-ink/75 max-w-xs">Tiny taps, big change. The friendliest habit app on the planet.</p>
+      </div>
+      <div>
+        <h4 class="font-display font-extrabold mb-3">Product</h4>
+        <ul class="space-y-2 font-medium text-ink/80 text-sm">
+          <li><a href="#features" class="hover:text-punch">Features</a></li>
+          <li><a href="#pricing" class="hover:text-punch">Pricing</a></li>
+          <li><a href="#how" class="hover:text-punch">How it works</a></li>
+          <li><a href="#download" class="hover:text-punch">Download</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-extrabold mb-3">Company</h4>
+        <ul class="space-y-2 font-medium text-ink/80 text-sm">
+          <li><a href="#" class="hover:text-punch">About</a></li>
+          <li><a href="#" class="hover:text-punch">Careers</a></li>
+          <li><a href="#" class="hover:text-punch">Blog</a></li>
+          <li><a href="#" class="hover:text-punch">Press kit</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-extrabold mb-3">Stay in the loop</h4>
+        <p class="font-medium text-ink/75 text-sm mb-3">Tiny tips, zero spam.</p>
+        <form class="flex gap-2" onsubmit="return false;">
+          <input type="email" required placeholder="you@email.com" class="flex-1 min-w-0 b3 rounded-xl px-3 py-2.5 bg-paper font-medium text-sm focus:outline-none focus:shadow-hard-sm" />
+          <button class="btn-pop bg-punch text-paper b3 rounded-xl shadow-hard-sm px-4 py-2.5 font-display font-extrabold text-sm">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 b4 border-x-0 border-b-0 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="font-medium text-sm text-ink/70">© 2026 Boop Labs. Made with too much coffee.</p>
+      <div class="flex gap-3">
+        <a href="#" aria-label="Twitter" class="w-10 h-10 grid place-items-center bg-paper b3 rounded-xl shadow-hard-sm wobble font-extrabold">𝕏</a>
+        <a href="#" aria-label="Instagram" class="w-10 h-10 grid place-items-center bg-paper b3 rounded-xl shadow-hard-sm wobble">◎</a>
+        <a href="#" aria-label="TikTok" class="w-10 h-10 grid place-items-center bg-paper b3 rounded-xl shadow-hard-sm wobble">♪</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-trigger').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var item = btn.closest('.faq-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function (i) { i.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Motion (guarded)
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero entrance — springy stagger
+    gsap.from('.hero-el', {
+      y: 40, opacity: 0, duration: 0.9, ease: 'back.out(1.7)', stagger: 0.12, delay: 0.15
+    });
+    gsap.from('#phone', {
+      y: 60, opacity: 0, scale: 0.9, rotate: 6, duration: 1.1, ease: 'elastic.out(1, 0.6)', delay: 0.3
+    });
+    // phone rows pop in
+    gsap.from('.ph-row', {
+      x: 30, opacity: 0, duration: 0.6, ease: 'back.out(2)', stagger: 0.1, delay: 0.7
+    });
+
+    // Generic scroll reveal with bounce
+    function revealGroup(selector, opts) {
+      gsap.utils.toArray(selector).forEach(function (el) {
+        gsap.fromTo(el,
+          Object.assign({ opacity: 0, y: 36 }, opts.from || {}),
+          Object.assign({
+            opacity: 1, y: 0, duration: 0.7, ease: 'back.out(1.6)',
+            scrollTrigger: { trigger: el, start: 'top 88%' }
+          }, opts.to || {})
+        );
+      });
+    }
+    revealGroup('.reveal', {});
+
+    // Feature / step / plan cards extra pop with stagger by section
+    ['.feat', '.step', '.tcard', '.plan'].forEach(function (sel) {
+      gsap.fromTo(sel,
+        { scale: 0.92, rotate: -2 },
+        {
+          scale: 1, rotate: 0, duration: 0.6, ease: 'back.out(2)', stagger: 0.08,
+          scrollTrigger: { trigger: sel, start: 'top 90%' }
+        }
+      );
+    });
+  }
+</script>
+</body>
+</html>

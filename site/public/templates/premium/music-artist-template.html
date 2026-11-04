@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NOCTERRA — VELVET STATIC | New Album</title>
+<meta name="description" content="NOCTERRA returns with VELVET STATIC — a nocturnal record of analog haze and electric pulse. Listen now." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#070510',
+          obsidian: '#0c0a18',
+          plum: '#170f2e',
+          ember: '#ff3d6e',
+          neon: '#7afcff',
+          gold: '#f6c453',
+          haze: '#b9a9e6',
+          mist: '#8a7fb0'
+        },
+        fontFamily: {
+          display: ['"Anton"', 'sans-serif'],
+          grotesk: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Sora"', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { background:#070510; color:#efeaff; overflow-x:hidden; }
+  body { font-family:'Sora', sans-serif; }
+  ::selection { background:#ff3d6e; color:#070510; }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width:10px; }
+  ::-webkit-scrollbar-track { background:#0c0a18; }
+  ::-webkit-scrollbar-thumb { background:linear-gradient(#ff3d6e,#7afcff); border-radius:99px; }
+
+  .font-display { letter-spacing:.01em; }
+  .text-stroke {
+    -webkit-text-stroke:1.5px rgba(122,252,255,.45);
+    color:transparent;
+  }
+  .grain::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:80; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Glow */
+  .glow-ember { box-shadow:0 0 60px -10px rgba(255,61,110,.55); }
+  .glow-neon { box-shadow:0 0 60px -10px rgba(122,252,255,.4); }
+
+  /* Audio bars / waveform visualizer */
+  .viz { display:flex; align-items:flex-end; gap:4px; height:120px; }
+  .viz span {
+    flex:1; min-width:3px; border-radius:99px;
+    background:linear-gradient(180deg,#7afcff,#ff3d6e);
+    transform-origin:bottom;
+    animation:bar 1.1s ease-in-out infinite;
+  }
+  @keyframes bar {
+    0%,100% { transform:scaleY(.15); }
+    50% { transform:scaleY(1); }
+  }
+
+  /* Mini equalizer (track rows) */
+  .eq { display:inline-flex; align-items:flex-end; gap:2px; height:16px; }
+  .eq i {
+    width:3px; background:#7afcff; border-radius:2px; height:100%;
+    animation:eqb .9s ease-in-out infinite;
+  }
+  @keyframes eqb { 0%,100%{transform:scaleY(.3);} 50%{transform:scaleY(1);} }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollx 26s linear infinite; }
+  @keyframes scrollx { to { transform:translateX(-50%); } }
+  .marquee-track:hover .marquee { animation-play-state:paused; }
+
+  /* Spinning vinyl */
+  .vinyl { animation:spin 12s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Magnetic cursor */
+  .magnetic { will-change:transform; }
+
+  .gradient-text {
+    background:linear-gradient(120deg,#ff3d6e 0%,#f6c453 40%,#7afcff 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+
+  .track-row { transition:background .35s ease, padding .35s ease; }
+  .track-row:hover { background:rgba(122,252,255,.06); }
+
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .5s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .viz span, .eq i, .marquee, .vinyl { animation:none !important; }
+    .marquee { transform:none !important; }
+    html { scroll-behavior:auto; }
+    * { transition:none !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased selection:bg-ember relative">
+
+<!-- ====================== NAV ====================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
+    <a href="#hero" class="flex items-center gap-3 group">
+      <span class="w-9 h-9 rounded-full bg-gradient-to-br from-ember to-neon vinyl flex items-center justify-center text-ink font-display text-xs">N</span>
+      <span class="font-grotesk font-bold tracking-[.35em] text-sm">NOCTERRA</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-8 font-grotesk text-[13px] tracking-wide text-haze">
+      <li><a href="#album" class="hover:text-neon transition">Album</a></li>
+      <li><a href="#tour" class="hover:text-neon transition">Tour</a></li>
+      <li><a href="#about" class="hover:text-neon transition">About</a></li>
+      <li><a href="#visuals" class="hover:text-neon transition">Visuals</a></li>
+      <li><a href="#merch" class="hover:text-neon transition">Merch</a></li>
+    </ul>
+    <a href="#listen" class="magnetic group relative px-5 py-2.5 rounded-full bg-ember text-ink font-grotesk font-bold text-[13px] tracking-wide glow-ember hover:scale-105 transition-transform">
+      ▶ LISTEN NOW
+    </a>
+  </nav>
+</header>
+
+<!-- ====================== HERO ====================== -->
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16">
+  <!-- bg layers -->
+  <div class="absolute inset-0 bg-gradient-to-b from-plum via-ink to-ink"></div>
+  <div class="absolute -top-40 -left-40 w-[40rem] h-[40rem] rounded-full bg-ember/20 blur-[120px]"></div>
+  <div class="absolute top-1/3 -right-40 w-[34rem] h-[34rem] rounded-full bg-neon/15 blur-[120px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-12 items-center w-full">
+    <!-- text -->
+    <div class="lg:col-span-7">
+      <div data-reveal class="inline-flex items-center gap-3 mb-7 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur text-[12px] font-grotesk tracking-[.25em] text-haze">
+        <span class="w-2 h-2 rounded-full bg-ember animate-pulse"></span> NEW ALBUM · OUT NOW
+      </div>
+
+      <h1 class="font-display leading-[.86] uppercase">
+        <span data-hero-line class="block text-[clamp(3rem,11vw,9rem)] text-stroke">Velvet</span>
+        <span data-hero-line class="block text-[clamp(3rem,11vw,9rem)] gradient-text">Static</span>
+      </h1>
+
+      <p data-reveal class="mt-7 max-w-md text-mist font-light text-lg leading-relaxed">
+        Twelve tracks of analog haze and electric pulse. A nocturnal record built for headphones, neon highways, and the hours after midnight.
+      </p>
+
+      <div data-reveal class="mt-9 flex flex-wrap items-center gap-4">
+        <a href="#listen" class="magnetic px-7 py-4 rounded-full bg-gradient-to-r from-ember to-gold text-ink font-grotesk font-bold tracking-wide glow-ember hover:scale-105 transition-transform flex items-center gap-2">
+          ▶ Stream the Album
+        </a>
+        <a href="#tour" class="magnetic px-7 py-4 rounded-full border border-white/15 hover:border-neon hover:text-neon transition font-grotesk tracking-wide">
+          See Tour Dates
+        </a>
+      </div>
+
+      <!-- count-ups -->
+      <div data-reveal class="mt-12 grid grid-cols-3 gap-6 max-w-md">
+        <div>
+          <div class="font-display text-3xl md:text-4xl gradient-text"><span data-count="48">0</span>M+</div>
+          <div class="text-[11px] tracking-[.2em] text-mist font-grotesk mt-1">STREAMS</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl md:text-4xl gradient-text"><span data-count="64">0</span></div>
+          <div class="text-[11px] tracking-[.2em] text-mist font-grotesk mt-1">SHOWS</div>
+        </div>
+        <div>
+          <div class="font-display text-3xl md:text-4xl gradient-text"><span data-count="19">0</span></div>
+          <div class="text-[11px] tracking-[.2em] text-mist font-grotesk mt-1">COUNTRIES</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- album art + visualizer -->
+    <div class="lg:col-span-5 relative" data-parallax>
+      <div class="relative aspect-square rounded-3xl overflow-hidden border border-white/10 glow-neon bg-gradient-to-br from-plum to-ink">
+        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Velvet Static album cover" class="w-full h-full object-cover opacity-90 mix-blend-luminosity" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        <div class="absolute bottom-5 left-5 right-5">
+          <div class="text-[11px] tracking-[.3em] text-neon font-grotesk">NOCTERRA</div>
+          <div class="font-display text-2xl uppercase">Velvet Static</div>
+        </div>
+        <!-- spinning vinyl badge -->
+        <div class="absolute top-5 right-5 w-16 h-16 rounded-full bg-ink/70 backdrop-blur border border-white/10 vinyl flex items-center justify-center">
+          <div class="w-3 h-3 rounded-full bg-ember"></div>
+        </div>
+      </div>
+
+      <!-- visualizer -->
+      <div class="mt-6 p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur">
+        <div class="flex items-center justify-between mb-3 font-grotesk text-[11px] tracking-[.2em] text-mist">
+          <span>NOW PLAYING — NEON UNDERTOW</span><span class="text-neon">03:42</span>
+        </div>
+        <div class="viz" id="viz"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== MARQUEE ====================== -->
+<div class="marquee-track relative py-5 border-y border-white/10 bg-obsidian overflow-hidden">
+  <div class="marquee font-display uppercase text-2xl md:text-3xl text-haze/40 gap-10">
+    <span class="flex gap-10">VELVET STATIC&nbsp;✦&nbsp; OUT NOW&nbsp;✦&nbsp; WORLD TOUR 2026&nbsp;✦&nbsp; NOCTERRA&nbsp;✦&nbsp; LISTEN LOUD&nbsp;✦&nbsp;</span>
+    <span class="flex gap-10" aria-hidden="true">VELVET STATIC&nbsp;✦&nbsp; OUT NOW&nbsp;✦&nbsp; WORLD TOUR 2026&nbsp;✦&nbsp; NOCTERRA&nbsp;✦&nbsp; LISTEN LOUD&nbsp;✦&nbsp;</span>
+  </div>
+</div>
+
+<!-- ====================== ALBUM / TRACKLIST ====================== -->
+<section id="album" class="relative py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-12 gap-14">
+    <div class="lg:col-span-4">
+      <div data-reveal class="text-[12px] tracking-[.35em] text-ember font-grotesk mb-4">THE NEW ALBUM</div>
+      <h2 data-reveal class="font-display text-[clamp(2.5rem,6vw,4.5rem)] leading-[.9] uppercase mb-6">Twelve<br/><span class="text-stroke">Tracks</span></h2>
+      <p data-reveal class="text-mist font-light leading-relaxed mb-8">
+        Recorded over eleven sleepless nights in a converted warehouse, <em class="text-haze not-italic font-medium">Velvet Static</em> drifts between dream-pop shimmer and basement bass. Press play and disappear.
+      </p>
+      <div data-reveal class="aspect-[4/3] rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink" data-parallax>
+        <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Studio session" class="w-full h-full object-cover opacity-80" />
+      </div>
+    </div>
+
+    <!-- tracklist -->
+    <div class="lg:col-span-8">
+      <div class="divide-y divide-white/8 border-y border-white/10">
+        <!-- rows injected pattern -->
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">01</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Neon Undertow</div>
+            <div class="text-xs text-mist">opener · synth-wave</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i style="animation-delay:0s"></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">3:42</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">02</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Glass Cathedral</div>
+            <div class="text-xs text-mist">dream-pop</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.3s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.45s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">4:08</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">03</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Midnight Carwash</div>
+            <div class="text-xs text-mist">single · bass-heavy</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">3:17</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">04</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Paper Lanterns</div>
+            <div class="text-xs text-mist">ambient interlude</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.25s"></i><i style="animation-delay:.5s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">2:55</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">05</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Static Bloom <span class="ml-2 text-[10px] tracking-widest text-ink bg-gold px-2 py-.5 rounded-full align-middle">TITLE</span></div>
+            <div class="text-xs text-mist">title track</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">5:21</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">06</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Cobalt Hours</div>
+            <div class="text-xs text-mist">slow-burn</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.3s"></i><i style="animation-delay:.15s"></i><i style="animation-delay:.45s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">4:46</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">07</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Lowlight Disco</div>
+            <div class="text-xs text-mist">single · groove</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.2s"></i><i style="animation-delay:.4s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">3:59</span>
+        </div>
+
+        <div class="track-row group flex items-center gap-5 px-3 md:px-5 py-4 cursor-pointer" data-reveal>
+          <span class="font-grotesk text-mist w-7 text-sm">08</span>
+          <button class="magnetic w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neon group-hover:bg-ember group-hover:text-ink transition shrink-0">▶</button>
+          <div class="flex-1 min-w-0">
+            <div class="font-grotesk font-medium truncate">Ghost Frequency</div>
+            <div class="text-xs text-mist">downtempo</div>
+          </div>
+          <span class="eq opacity-0 group-hover:opacity-100 transition"><i></i><i style="animation-delay:.25s"></i><i style="animation-delay:.5s"></i><i style="animation-delay:.1s"></i></span>
+          <span class="font-grotesk text-mist text-sm tabular-nums">4:33</span>
+        </div>
+      </div>
+      <p class="mt-5 text-xs text-mist font-grotesk tracking-wide">+ 4 more tracks on the full release · total runtime 51:08</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== TOUR DATES ====================== -->
+<section id="tour" class="relative py-24 md:py-32 bg-obsidian border-y border-white/10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <div data-reveal class="text-[12px] tracking-[.35em] text-neon font-grotesk mb-4">2026 WORLD TOUR</div>
+        <h2 data-reveal class="font-display text-[clamp(2.5rem,7vw,5.5rem)] leading-[.85] uppercase">On The <span class="gradient-text">Road</span></h2>
+      </div>
+      <p data-reveal class="text-mist max-w-xs font-light">Forty cities. One static-soaked light show. Bring earplugs and a friend.</p>
+    </div>
+
+    <div class="space-y-3" id="tour-list">
+      <!-- tour rows -->
+      <div data-reveal class="group grid grid-cols-12 items-center gap-4 px-4 md:px-7 py-5 rounded-xl border border-white/10 hover:border-ember/60 hover:bg-ember/5 transition">
+        <div class="col-span-3 md:col-span-2 font-display text-2xl">SEP 12</div>
+        <div class="col-span-9 md:col-span-4 font-grotesk"><div class="font-medium">Velour Hall</div><div class="text-xs text-mist">Reykjavík, IS</div></div>
+        <div class="hidden md:block md:col-span-3 text-sm text-mist font-grotesk">Aurora Stage · 21:00</div>
+        <div class="col-span-12 md:col-span-3 md:text-right mt-2 md:mt-0">
+          <a href="#listen" class="magnetic inline-block px-5 py-2 rounded-full bg-white/5 border border-white/15 text-sm font-grotesk group-hover:bg-ember group-hover:text-ink transition">Tickets</a>
+        </div>
+      </div>
+
+      <div data-reveal class="group grid grid-cols-12 items-center gap-4 px-4 md:px-7 py-5 rounded-xl border border-white/10 hover:border-ember/60 hover:bg-ember/5 transition">
+        <div class="col-span-3 md:col-span-2 font-display text-2xl">SEP 19</div>
+        <div class="col-span-9 md:col-span-4 font-grotesk"><div class="font-medium">The Glasshouse</div><div class="text-xs text-mist">Berlin, DE</div></div>
+        <div class="hidden md:block md:col-span-3 text-sm text-mist font-grotesk">Main Floor · 20:30</div>
+        <div class="col-span-12 md:col-span-3 md:text-right mt-2 md:mt-0">
+          <a href="#listen" class="magnetic inline-block px-5 py-2 rounded-full bg-white/5 border border-white/15 text-sm font-grotesk group-hover:bg-ember group-hover:text-ink transition">Tickets</a>
+        </div>
+      </div>
+
+      <div data-reveal class="group grid grid-cols-12 items-center gap-4 px-4 md:px-7 py-5 rounded-xl border border-white/10 hover:border-ember/60 hover:bg-ember/5 transition">
+        <div class="col-span-3 md:col-span-2 font-display text-2xl">OCT 03</div>
+        <div class="col-span-9 md:col-span-4 font-grotesk"><div class="font-medium">Pulse Pavilion</div><div class="text-xs text-mist">London, UK</div></div>
+        <div class="hidden md:block md:col-span-3 text-sm text-mist font-grotesk">East Wing · 21:00</div>
+        <div class="col-span-12 md:col-span-3 md:text-right mt-2 md:mt-0">
+          <span class="inline-block px-5 py-2 rounded-full bg-gold/15 border border-gold/40 text-gold text-sm font-grotesk">Sold Out</span>
+        </div>
+      </div>
+
+      <div data-reveal class="group grid grid-cols-12 items-center gap-4 px-4 md:px-7 py-5 rounded-xl border border-white/10 hover:border-ember/60 hover:bg-ember/5 transition">
+        <div class="col-span-3 md:col-span-2 font-display text-2xl">OCT 17</div>
+        <div class="col-span-9 md:col-span-4 font-grotesk"><div class="font-medium">Marlowe Theatre</div><div class="text-xs text-mist">New York, US</div></div>
+        <div class="hidden md:block md:col-span-3 text-sm text-mist font-grotesk">Balcony Open · 20:00</div>
+        <div class="col-span-12 md:col-span-3 md:text-right mt-2 md:mt-0">
+          <a href="#listen" class="magnetic inline-block px-5 py-2 rounded-full bg-white/5 border border-white/15 text-sm font-grotesk group-hover:bg-ember group-hover:text-ink transition">Tickets</a>
+        </div>
+      </div>
+
+      <div data-reveal class="group grid grid-cols-12 items-center gap-4 px-4 md:px-7 py-5 rounded-xl border border-white/10 hover:border-ember/60 hover:bg-ember/5 transition">
+        <div class="col-span-3 md:col-span-2 font-display text-2xl">NOV 02</div>
+        <div class="col-span-9 md:col-span-4 font-grotesk"><div class="font-medium">Harbor Lights</div><div class="text-xs text-mist">Tokyo, JP</div></div>
+        <div class="hidden md:block md:col-span-3 text-sm text-mist font-grotesk">Night Set · 22:00</div>
+        <div class="col-span-12 md:col-span-3 md:text-right mt-2 md:mt-0">
+          <a href="#listen" class="magnetic inline-block px-5 py-2 rounded-full bg-white/5 border border-white/15 text-sm font-grotesk group-hover:bg-ember group-hover:text-ink transition">Tickets</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== ABOUT ====================== -->
+<section id="about" class="relative py-24 md:py-32 overflow-hidden">
+  <div class="absolute -left-40 top-1/4 w-[36rem] h-[36rem] rounded-full bg-plum/40 blur-[140px]"></div>
+  <div class="relative max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative" data-parallax>
+      <div class="aspect-[4/5] rounded-3xl overflow-hidden border border-white/10 glow-ember bg-gradient-to-br from-plum to-ink">
+        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="NOCTERRA portrait" class="w-full h-full object-cover opacity-85" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 md:-right-8 bg-ink/80 backdrop-blur border border-white/10 rounded-2xl px-6 py-5">
+        <div class="font-display text-3xl gradient-text">EST. 2019</div>
+        <div class="text-[11px] tracking-[.25em] text-mist font-grotesk">FROM THE NIGHT SHIFT</div>
+      </div>
+    </div>
+
+    <div>
+      <div data-reveal class="text-[12px] tracking-[.35em] text-gold font-grotesk mb-4">WHO IS NOCTERRA</div>
+      <h2 data-reveal class="font-display text-[clamp(2.2rem,5.5vw,4rem)] leading-[.92] uppercase mb-7">
+        A band built<br/>after <span class="text-stroke">dark</span>
+      </h2>
+      <div class="space-y-5 text-mist font-light leading-relaxed">
+        <p data-reveal>NOCTERRA is a four-piece collective that traded daylight for studio glow. What started as late-night jam sessions in a leaky warehouse became a sound — equal parts shimmer and grit, romance and rust.</p>
+        <p data-reveal>They write about cities that never sleep, the static between radio stations, and the strange warmth of being awake while everyone else dreams. <em class="text-haze not-italic font-medium">Velvet Static</em> is their boldest statement yet.</p>
+      </div>
+      <div data-reveal class="mt-9 flex flex-wrap gap-3">
+        <span class="px-4 py-2 rounded-full border border-white/10 text-sm font-grotesk text-haze">Synth-wave</span>
+        <span class="px-4 py-2 rounded-full border border-white/10 text-sm font-grotesk text-haze">Dream-pop</span>
+        <span class="px-4 py-2 rounded-full border border-white/10 text-sm font-grotesk text-haze">Analog bass</span>
+        <span class="px-4 py-2 rounded-full border border-white/10 text-sm font-grotesk text-haze">Live light show</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== VIDEO / VISUALS ====================== -->
+<section id="visuals" class="relative py-24 md:py-32 bg-obsidian border-y border-white/10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <div data-reveal class="text-[12px] tracking-[.35em] text-neon font-grotesk mb-4">VIDEO & VISUALS</div>
+      <h2 data-reveal class="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[.85] uppercase">See The <span class="gradient-text">Sound</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <!-- feature video -->
+      <div data-reveal class="md:col-span-2 group relative aspect-video rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink cursor-pointer">
+        <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Midnight Carwash video" class="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <button class="magnetic w-20 h-20 rounded-full bg-ember/90 text-ink flex items-center justify-center text-2xl glow-ember group-hover:scale-110 transition">▶</button>
+        </div>
+        <div class="absolute bottom-5 left-6">
+          <div class="text-[11px] tracking-[.25em] text-neon font-grotesk">OFFICIAL VIDEO</div>
+          <div class="font-display text-2xl uppercase">Midnight Carwash</div>
+        </div>
+      </div>
+
+      <!-- side stack -->
+      <div class="grid grid-rows-2 gap-5">
+        <div data-reveal class="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink cursor-pointer">
+          <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               alt="Lowlight Disco" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink to-transparent"></div>
+          <div class="absolute bottom-4 left-5"><div class="text-[10px] tracking-widest text-gold font-grotesk">LYRIC VIDEO</div><div class="font-display text-lg uppercase">Lowlight Disco</div></div>
+        </div>
+        <div data-reveal class="group relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink cursor-pointer">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               alt="Live at Velour Hall" class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink to-transparent"></div>
+          <div class="absolute bottom-4 left-5"><div class="text-[10px] tracking-widest text-neon font-grotesk">LIVE FILM</div><div class="font-display text-lg uppercase">Velour Hall</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== MERCH ====================== -->
+<section id="merch" class="relative py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <div data-reveal class="text-[12px] tracking-[.35em] text-ember font-grotesk mb-4">THE STORE</div>
+        <h2 data-reveal class="font-display text-[clamp(2.5rem,7vw,5rem)] leading-[.85] uppercase">Wear The <span class="gradient-text">Static</span></h2>
+      </div>
+      <a href="#" data-reveal class="magnetic px-6 py-3 rounded-full border border-white/15 hover:border-neon hover:text-neon transition font-grotesk text-sm">View Full Store →</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- merch card -->
+      <div data-reveal class="group">
+        <div class="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink relative">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Velvet Static vinyl" class="w-full h-full object-cover opacity-75 group-hover:scale-105 transition duration-500" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest bg-ember text-ink px-2 py-1 rounded-full font-grotesk">LIMITED</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div><div class="font-grotesk font-medium">Velvet Static — Vinyl</div><div class="text-xs text-mist">Translucent plum LP</div></div>
+          <div class="font-display text-lg text-gold">$38</div>
+        </div>
+      </div>
+
+      <div data-reveal class="group">
+        <div class="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink relative">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Tour tee" class="w-full h-full object-cover opacity-75 group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div><div class="font-grotesk font-medium">2026 Tour Tee</div><div class="text-xs text-mist">Heavyweight black</div></div>
+          <div class="font-display text-lg text-gold">$34</div>
+        </div>
+      </div>
+
+      <div data-reveal class="group">
+        <div class="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink relative">
+          <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Neon hoodie" class="w-full h-full object-cover opacity-75 group-hover:scale-105 transition duration-500" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest bg-neon text-ink px-2 py-1 rounded-full font-grotesk">NEW</span>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div><div class="font-grotesk font-medium">Undertow Hoodie</div><div class="text-xs text-mist">Embroidered logo</div></div>
+          <div class="font-display text-lg text-gold">$72</div>
+        </div>
+      </div>
+
+      <div data-reveal class="group">
+        <div class="aspect-square rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-plum to-ink relative">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Poster set" class="w-full h-full object-cover opacity-75 group-hover:scale-105 transition duration-500" />
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div><div class="font-grotesk font-medium">Static Poster Set</div><div class="text-xs text-mist">Risograph · 3-pack</div></div>
+          <div class="font-display text-lg text-gold">$26</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== NEWSLETTER ====================== -->
+<section class="relative py-24 md:py-28 bg-obsidian border-y border-white/10 overflow-hidden">
+  <div class="absolute inset-0 opacity-40 bg-gradient-to-r from-ember/10 via-transparent to-neon/10"></div>
+  <div class="relative max-w-3xl mx-auto px-5 md:px-8 text-center">
+    <div data-reveal class="text-[12px] tracking-[.35em] text-neon font-grotesk mb-4">JOIN THE STATIC LIST</div>
+    <h2 data-reveal class="font-display text-[clamp(2rem,6vw,4rem)] leading-[.9] uppercase mb-6">Get The <span class="gradient-text">First</span> Signal</h2>
+    <p data-reveal class="text-mist font-light mb-9 max-w-lg mx-auto">Early ticket access, unreleased demos, and the occasional 3am message from the band. No noise — just the good static.</p>
+    <form data-reveal onsubmit="return false" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+      <input type="email" required placeholder="your@email.com" class="flex-1 px-5 py-4 rounded-full bg-white/5 border border-white/15 focus:border-neon outline-none font-grotesk text-sm placeholder:text-mist" />
+      <button class="magnetic px-7 py-4 rounded-full bg-gradient-to-r from-ember to-gold text-ink font-grotesk font-bold tracking-wide glow-ember hover:scale-105 transition">Subscribe</button>
+    </form>
+    <p class="mt-4 text-xs text-mist font-grotesk">No spam. Unsubscribe whenever the signal fades.</p>
+  </div>
+</section>
+
+<!-- ====================== PRESS / TESTIMONIALS ====================== -->
+<section class="relative py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <div data-reveal class="text-[12px] tracking-[.35em] text-gold font-grotesk mb-4">THE PRESS</div>
+      <h2 data-reveal class="font-display text-[clamp(2.2rem,6vw,4.5rem)] leading-[.85] uppercase">Critics Are <span class="gradient-text">Tuned In</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <blockquote data-reveal class="p-7 rounded-2xl border border-white/10 bg-white/5 backdrop-blur">
+        <div class="text-ember text-3xl font-display mb-3">"</div>
+        <p class="text-haze font-light leading-relaxed">A record that sounds like a city exhaling at 3am. Velvet Static is gorgeous, restless, and utterly addictive.</p>
+        <footer class="mt-5 font-grotesk text-sm"><span class="text-neon">★★★★★</span><div class="text-mist mt-1">— Lumen Wave Magazine</div></footer>
+      </blockquote>
+
+      <blockquote data-reveal class="p-7 rounded-2xl border border-white/10 bg-white/5 backdrop-blur md:-translate-y-4">
+        <div class="text-neon text-3xl font-display mb-3">"</div>
+        <p class="text-haze font-light leading-relaxed">NOCTERRA have built a world you don't want to leave. Bass you feel in your ribs, melodies you hum for weeks.</p>
+        <footer class="mt-5 font-grotesk text-sm"><span class="text-neon">★★★★★</span><div class="text-mist mt-1">— The Nightcast Review</div></footer>
+      </blockquote>
+
+      <blockquote data-reveal class="p-7 rounded-2xl border border-white/10 bg-white/5 backdrop-blur">
+        <div class="text-gold text-3xl font-display mb-3">"</div>
+        <p class="text-haze font-light leading-relaxed">The live show is a controlled supernova. Lights, fog, and a band that plays like the sun is never coming back.</p>
+        <footer class="mt-5 font-grotesk text-sm"><span class="text-neon">★★★★☆</span><div class="text-mist mt-1">— Static & Strobe Weekly</div></footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FAQ ====================== -->
+<section class="relative py-24 md:py-32 bg-obsidian border-y border-white/10">
+  <div class="max-w-3xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <div data-reveal class="text-[12px] tracking-[.35em] text-ember font-grotesk mb-4">QUESTIONS</div>
+      <h2 data-reveal class="font-display text-[clamp(2.2rem,6vw,4rem)] leading-[.85] uppercase">Good To <span class="gradient-text">Know</span></h2>
+    </div>
+
+    <div class="space-y-3" id="faq">
+      <div data-reveal class="rounded-xl border border-white/10 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-grotesk font-medium hover:text-neon transition">
+          <span>When does Velvet Static release?</span><span class="acc-icon text-ember text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist font-light leading-relaxed">It's out now on all major streaming platforms, with the limited translucent vinyl shipping from the store within two weeks.</p></div>
+      </div>
+
+      <div data-reveal class="rounded-xl border border-white/10 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-grotesk font-medium hover:text-neon transition">
+          <span>How do I get presale tour tickets?</span><span class="acc-icon text-ember text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist font-light leading-relaxed">Join the Static List newsletter. Subscribers receive a 48-hour presale window and access codes before tickets open to the public.</p></div>
+      </div>
+
+      <div data-reveal class="rounded-xl border border-white/10 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-grotesk font-medium hover:text-neon transition">
+          <span>Is there a vinyl / physical edition?</span><span class="acc-icon text-ember text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist font-light leading-relaxed">Yes — a limited translucent plum LP with a fold-out lyric insert and a bonus instrumental of the title track, available only in the store.</p></div>
+      </div>
+
+      <div data-reveal class="rounded-xl border border-white/10 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-grotesk font-medium hover:text-neon transition">
+          <span>Can I license a track for my project?</span><span class="acc-icon text-ember text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist font-light leading-relaxed">Absolutely. Reach the management team through the contact link in the footer and we'll send over sync licensing details and rates.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FINAL CTA ====================== -->
+<section id="listen" class="relative py-28 md:py-40 overflow-hidden text-center">
+  <div class="absolute inset-0 bg-gradient-to-b from-ink via-plum to-ink"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[44rem] h-[44rem] rounded-full bg-ember/15 blur-[140px]"></div>
+  <div class="relative max-w-4xl mx-auto px-5 md:px-8">
+    <div class="viz max-w-md mx-auto mb-10 opacity-60" id="viz2"></div>
+    <h2 data-reveal class="font-display uppercase leading-[.85] text-[clamp(3rem,11vw,8rem)]">
+      <span class="block">Press</span>
+      <span class="block gradient-text">Play</span>
+    </h2>
+    <p data-reveal class="mt-7 text-mist font-light text-lg max-w-md mx-auto">Twelve tracks. One long beautiful night. Velvet Static is waiting for you.</p>
+    <div data-reveal class="mt-10 flex flex-wrap justify-center gap-4">
+      <a href="#" class="magnetic px-9 py-4 rounded-full bg-gradient-to-r from-ember to-gold text-ink font-grotesk font-bold tracking-wide glow-ember hover:scale-105 transition flex items-center gap-2">▶ Stream Now</a>
+      <a href="#tour" class="magnetic px-9 py-4 rounded-full border border-white/15 hover:border-neon hover:text-neon transition font-grotesk tracking-wide">Find a Show</a>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== FOOTER ====================== -->
+<footer class="relative bg-ink border-t border-white/10 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-9 h-9 rounded-full bg-gradient-to-br from-ember to-neon flex items-center justify-center text-ink font-display text-xs">N</span>
+          <span class="font-grotesk font-bold tracking-[.35em]">NOCTERRA</span>
+        </div>
+        <p class="text-mist font-light max-w-sm leading-relaxed">A band built after dark. New album <span class="text-haze">Velvet Static</span> out now everywhere you stream.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="#" class="magnetic w-10 h-10 rounded-full border border-white/15 flex items-center justify-center text-mist hover:border-neon hover:text-neon transition">✦</a>
+          <a href="#" class="magnetic w-10 h-10 rounded-full border border-white/15 flex items-center justify-center text-mist hover:border-neon hover:text-neon transition">◉</a>
+          <a href="#" class="magnetic w-10 h-10 rounded-full border border-white/15 flex items-center justify-center text-mist hover:border-neon hover:text-neon transition">▶</a>
+          <a href="#" class="magnetic w-10 h-10 rounded-full border border-white/15 flex items-center justify-center text-mist hover:border-neon hover:text-neon transition">♪</a>
+        </div>
+      </div>
+      <div>
+        <div class="font-grotesk text-sm tracking-[.2em] text-haze mb-4">EXPLORE</div>
+        <ul class="space-y-2.5 text-mist font-light text-sm">
+          <li><a href="#album" class="hover:text-neon transition">The Album</a></li>
+          <li><a href="#tour" class="hover:text-neon transition">Tour Dates</a></li>
+          <li><a href="#merch" class="hover:text-neon transition">Merch Store</a></li>
+          <li><a href="#visuals" class="hover:text-neon transition">Videos</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-grotesk text-sm tracking-[.2em] text-haze mb-4">CONTACT</div>
+        <ul class="space-y-2.5 text-mist font-light text-sm">
+          <li><a href="#" class="hover:text-neon transition">Booking</a></li>
+          <li><a href="#" class="hover:text-neon transition">Press Kit</a></li>
+          <li><a href="#" class="hover:text-neon transition">Sync Licensing</a></li>
+          <li><a href="#" class="hover:text-neon transition">Management</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-mist font-grotesk">
+      <p>© 2026 NOCTERRA. All sounds original. A fictional artist.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-neon transition">Privacy</a>
+        <a href="#" class="hover:text-neon transition">Terms</a>
+        <a href="#hero" class="hover:text-neon transition">Back to top ↑</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Build visualizer bars ---------- */
+  function buildViz(el, count){
+    if(!el) return;
+    for(let i=0;i<count;i++){
+      const s = document.createElement('span');
+      s.style.animationDelay = (Math.random()*1.1).toFixed(2)+'s';
+      s.style.animationDuration = (0.7 + Math.random()*0.9).toFixed(2)+'s';
+      if(reduce){ s.style.height = (15 + Math.random()*70)+'%'; s.style.animation='none'; }
+      el.appendChild(s);
+    }
+  }
+  buildViz(document.getElementById('viz'), 48);
+  buildViz(document.getElementById('viz2'), 56);
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  function navState(){
+    if(window.scrollY > 30){ nav.classList.add('bg-ink/80','backdrop-blur-xl','border-b','border-white/10','shadow-lg'); }
+    else { nav.classList.remove('bg-ink/80','backdrop-blur-xl','border-b','border-white/10','shadow-lg'); }
+  }
+  navState(); window.addEventListener('scroll', navState, {passive:true});
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.acc-trigger').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.acc-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.acc-body').forEach(b=>{ b.style.maxHeight='0px'; });
+      document.querySelectorAll('.acc-icon').forEach(i=>{ i.style.transform='rotate(0deg)'; i.textContent='+'; });
+      if(!open){ body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(45deg)'; icon.textContent='+'; }
+    });
+  });
+
+  /* ---------- GSAP animations ---------- */
+  if(!reduce && window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* hero kinetic headline */
+    gsap.from('[data-hero-line]', {
+      yPercent:120, opacity:0, duration:1.1, ease:'power4.out', stagger:0.12, delay:0.15
+    });
+
+    /* generic reveals */
+    gsap.utils.toArray('[data-reveal]').forEach(el=>{
+      gsap.from(el, {
+        y:40, opacity:0, duration:0.9, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%' }
+      });
+    });
+
+    /* container parallax on album imagery */
+    gsap.utils.toArray('[data-parallax]').forEach(el=>{
+      gsap.to(el, {
+        yPercent:-12, ease:'none',
+        scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }
+      });
+    });
+
+    /* count-ups */
+    gsap.utils.toArray('[data-count]').forEach(el=>{
+      const target = +el.getAttribute('data-count');
+      const obj = {v:0};
+      ScrollTrigger.create({
+        trigger:el, start:'top 90%', once:true,
+        onEnter:()=> gsap.to(obj, {v:target, duration:1.8, ease:'power2.out',
+          onUpdate:()=>{ el.textContent = Math.round(obj.v); }})
+      });
+    });
+  } else {
+    /* reduced-motion: ensure counts show final value */
+    document.querySelectorAll('[data-count]').forEach(el=>{ el.textContent = el.getAttribute('data-count'); });
+  }
+
+  /* ---------- Magnetic pointer ---------- */
+  if(!reduce && window.matchMedia('(pointer:fine)').matches){
+    document.querySelectorAll('.magnetic').forEach(el=>{
+      el.addEventListener('mousemove', e=>{
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - (r.left + r.width/2);
+        const my = e.clientY - (r.top + r.height/2);
+        el.style.transform = `translate(${mx*0.25}px, ${my*0.35}px)`;
+      });
+      el.addEventListener('mouseleave', ()=>{ el.style.transform = 'translate(0,0)'; });
+    });
+  }
+})();
+</script>
+</body>
+</html>

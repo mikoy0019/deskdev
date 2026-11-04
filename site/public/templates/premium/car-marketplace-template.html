@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Drivora — the search-first marketplace for buying your next car online with transparent pricing, instant financing, and doorstep delivery." />
+<title>Drivora — Buy Your Next Car, Online & Effortless</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          ink: '#0d1220',
+          slate2: '#5a6479',
+          mist: '#f4f6fb',
+          line: '#e6e9f2',
+          accent: {
+            DEFAULT: '#1f6feb',
+            soft: '#e8f0ff',
+            deep: '#1450b8',
+          },
+          lime: '#19c37d',
+        },
+        boxShadow: {
+          card: '0 10px 40px -12px rgba(13,18,32,0.18)',
+          float: '0 24px 70px -24px rgba(31,111,235,0.45)',
+          soft: '0 4px 20px -8px rgba(13,18,32,0.12)',
+        },
+        borderRadius: {
+          xl2: '1.5rem',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { font-family: 'Inter', sans-serif; color: #0d1220; background: #ffffff; }
+  h1,h2,h3,h4 { font-family: 'Sora', sans-serif; }
+
+  ::selection { background: #1f6feb; color: #fff; }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  .grad-mesh {
+    background:
+      radial-gradient(1100px 500px at 78% -10%, rgba(31,111,235,0.14), transparent 60%),
+      radial-gradient(800px 480px at 4% 8%, rgba(25,195,125,0.10), transparent 55%);
+  }
+  .img-fallback {
+    background: linear-gradient(135deg, #1f6feb 0%, #1450b8 55%, #0d1220 100%);
+  }
+
+  .chip {
+    transition: transform .25s ease, background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .chip[data-active="true"] {
+    background: #1f6feb; color: #fff; border-color: #1f6feb;
+  }
+
+  .vcard { transition: transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s ease; }
+  .vcard:hover { transform: translateY(-10px); box-shadow: 0 28px 70px -22px rgba(13,18,32,0.34); }
+  .vcard .vimg { transition: transform .7s cubic-bezier(.2,.7,.2,1), opacity .5s ease; }
+  .vcard:hover .vimg.front { opacity: 0; transform: scale(1.06); }
+  .vcard:hover .vimg.back { opacity: 1; transform: scale(1.06); }
+
+  .tilt { transition: transform .2s ease; transform-style: preserve-3d; will-change: transform; }
+
+  .brand-rail { -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .rail-track { display: flex; width: max-content; animation: scrollx 32s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.2,.7,.2,1); }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .faq-icon { transition: transform .35s ease; }
+
+  .magnetic { transition: transform .2s cubic-bezier(.2,.7,.2,1); }
+  .word { display: inline-block; }
+
+  .nav-scrolled { background: rgba(255,255,255,0.86); backdrop-filter: blur(14px); border-color: #e6e9f2; box-shadow: 0 6px 24px -16px rgba(13,18,32,0.4); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .rail-track { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- NAV -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 border-b border-transparent transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-[72px] flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-9 h-9 rounded-xl bg-accent text-white font-display font-extrabold shadow-soft group-hover:rotate-[8deg] transition-transform">D</span>
+      <span class="font-display font-extrabold text-lg tracking-tight">Drivora</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate2">
+      <a href="#inventory" class="hover:text-ink transition-colors">Browse</a>
+      <a href="#how" class="hover:text-ink transition-colors">How it works</a>
+      <a href="#why" class="hover:text-ink transition-colors">Why Drivora</a>
+      <a href="#finance" class="hover:text-ink transition-colors">Financing</a>
+      <a href="#faq" class="hover:text-ink transition-colors">FAQ</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="#" class="hidden sm:inline text-sm font-semibold text-ink hover:text-accent transition-colors">Sign in</a>
+      <a href="#inventory" data-magnetic class="magnetic inline-flex items-center gap-2 rounded-full bg-ink text-white text-sm font-semibold px-5 py-2.5 hover:bg-accent transition-colors">
+        Find a car
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative grad-mesh pt-32 pb-20 sm:pt-36 sm:pb-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-6">
+      <span class="reveal inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-xs font-semibold text-slate2 shadow-soft">
+        <span class="w-2 h-2 rounded-full bg-lime animate-pulse"></span>
+        14-day money-back drive, no questions asked
+      </span>
+      <h1 id="headline" class="mt-6 font-display font-extrabold text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.05] tracking-tight">
+        Buy your next car the way it should be.
+      </h1>
+      <p class="reveal mt-5 text-lg text-slate2 max-w-xl">
+        Skip the lot. Search thousands of inspected vehicles, lock real financing in minutes, and have it delivered to your door.
+      </p>
+
+      <!-- Search bar -->
+      <div class="reveal mt-8 rounded-2xl bg-white border border-line shadow-card p-2.5 max-w-xl">
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <div class="flex-1 flex items-center gap-2 px-3.5 py-3 rounded-xl bg-mist">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5a6479" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="text" placeholder="Make, model, or keyword…" class="bg-transparent w-full text-sm outline-none placeholder:text-slate2/70" />
+          </div>
+          <button data-magnetic class="magnetic inline-flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-deep text-white font-semibold px-6 py-3 transition-colors shadow-float">
+            Search
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div id="chips" class="flex flex-wrap gap-2 px-1 pt-3">
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2" data-active="true">All</button>
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2">SUV</button>
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2">Electric</button>
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2">Under $25k</button>
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2">Hybrid</button>
+          <button class="chip rounded-full border border-line bg-white px-3.5 py-1.5 text-xs font-semibold text-slate2">Low mileage</button>
+        </div>
+      </div>
+
+      <div class="reveal mt-7 flex items-center gap-6 text-sm text-slate2">
+        <div class="flex -space-x-2">
+          <span class="w-8 h-8 rounded-full bg-accent-soft border-2 border-white grid place-items-center text-[11px] font-bold text-accent">JM</span>
+          <span class="w-8 h-8 rounded-full bg-lime/15 border-2 border-white grid place-items-center text-[11px] font-bold text-lime">AR</span>
+          <span class="w-8 h-8 rounded-full bg-ink border-2 border-white grid place-items-center text-[11px] font-bold text-white">TK</span>
+        </div>
+        <p><span class="font-bold text-ink">4.9/5</span> from 12,400+ drivers</p>
+      </div>
+    </div>
+
+    <!-- Featured car (tilt) -->
+    <div class="lg:col-span-6">
+      <div id="featured" class="tilt relative rounded-xl2 overflow-hidden shadow-card img-fallback">
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Featured vehicle" class="w-full h-[340px] sm:h-[420px] object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent"></div>
+        <div class="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-ink shadow-soft">
+          <span class="w-1.5 h-1.5 rounded-full bg-lime"></span> Featured today
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-5 sm:p-6 text-white">
+          <p class="text-xs font-semibold uppercase tracking-wider text-white/70">2023 · 8,200 mi</p>
+          <h3 class="font-display font-bold text-2xl mt-1">Aurora GT Coupé</h3>
+          <div class="mt-3 flex items-end justify-between">
+            <div class="flex gap-4 text-xs text-white/85">
+              <span>340 hp</span><span>•</span><span>RWD</span><span>•</span><span>Hybrid</span>
+            </div>
+            <span class="font-display font-extrabold text-xl">$38,900</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST / STATS STRIP -->
+<section class="border-y border-line bg-mist/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl sm:text-4xl text-ink"><span class="count" data-to="48200">0</span>+</p>
+      <p class="mt-1 text-sm text-slate2">Cars listed</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl sm:text-4xl text-ink"><span class="count" data-to="1300">0</span>+</p>
+      <p class="mt-1 text-sm text-slate2">Verified dealers</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl sm:text-4xl text-ink"><span class="count" data-to="89000">0</span></p>
+      <p class="mt-1 text-sm text-slate2">Cars sold &amp; delivered</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-3xl sm:text-4xl text-ink"><span class="count" data-to="98">0</span>%</p>
+      <p class="mt-1 text-sm text-slate2">Pass our 150-pt inspection</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED VEHICLES GRID -->
+<section id="inventory" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+    <div>
+      <p class="reveal text-sm font-semibold text-accent uppercase tracking-wider">Hand-picked inventory</p>
+      <h2 class="reveal mt-2 font-display font-extrabold text-3xl sm:text-4xl tracking-tight">This week's standout drives</h2>
+    </div>
+    <a href="#" class="reveal inline-flex items-center gap-2 text-sm font-semibold text-ink hover:text-accent transition-colors">
+      Browse all 48,200 cars
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-7" id="grid"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="bg-ink text-white py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-semibold text-accent uppercase tracking-wider">How it works</p>
+      <h2 class="reveal mt-2 font-display font-extrabold text-3xl sm:text-4xl tracking-tight">From search to driveway in three steps.</h2>
+    </div>
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <div class="reveal rounded-xl2 border border-white/10 bg-white/[0.03] p-7 hover:bg-white/[0.06] transition-colors">
+        <span class="grid place-items-center w-12 h-12 rounded-xl bg-accent/20 text-accent font-display font-extrabold text-lg">01</span>
+        <h3 class="mt-5 font-display font-bold text-xl">Search</h3>
+        <p class="mt-2 text-sm text-white/65">Filter 48k inspected cars by budget, range, body type, and the features that matter to you.</p>
+      </div>
+      <div class="reveal rounded-xl2 border border-white/10 bg-white/[0.03] p-7 hover:bg-white/[0.06] transition-colors">
+        <span class="grid place-items-center w-12 h-12 rounded-xl bg-accent/20 text-accent font-display font-extrabold text-lg">02</span>
+        <h3 class="mt-5 font-display font-bold text-xl">Finance</h3>
+        <p class="mt-2 text-sm text-white/65">Get a real, personalized rate in 2 minutes — no impact to your credit score to check.</p>
+      </div>
+      <div class="reveal rounded-xl2 border border-white/10 bg-white/[0.03] p-7 hover:bg-white/[0.06] transition-colors">
+        <span class="grid place-items-center w-12 h-12 rounded-xl bg-accent/20 text-accent font-display font-extrabold text-lg">03</span>
+        <h3 class="mt-5 font-display font-bold text-xl">Drive</h3>
+        <p class="mt-2 text-sm text-white/65">We deliver to your door or you pick up locally. Love it for 14 days, or send it back.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 grid lg:grid-cols-2 gap-14 items-center">
+  <div class="relative rounded-xl2 overflow-hidden shadow-card img-fallback reveal">
+    <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Inspected vehicle" class="w-full h-[420px] object-cover" />
+    <div class="absolute bottom-5 left-5 right-5 rounded-2xl bg-white/95 backdrop-blur p-5 shadow-float flex items-center gap-4">
+      <span class="grid place-items-center w-11 h-11 rounded-xl bg-lime/15 text-lime">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg>
+      </span>
+      <div>
+        <p class="font-display font-bold text-ink">150-point inspection</p>
+        <p class="text-xs text-slate2">Every car, every time — by certified technicians.</p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <p class="reveal text-sm font-semibold text-accent uppercase tracking-wider">Why Drivora</p>
+    <h2 class="reveal mt-2 font-display font-extrabold text-3xl sm:text-4xl tracking-tight">No haggling. No surprises. Just the car.</h2>
+    <div class="mt-8 space-y-6">
+      <div class="reveal flex gap-4">
+        <span class="grid place-items-center w-10 h-10 shrink-0 rounded-xl bg-accent-soft text-accent">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </span>
+        <div><h3 class="font-display font-bold text-lg">Transparent pricing</h3><p class="mt-1 text-sm text-slate2">The price you see is the price you pay — taxes and fees shown upfront, always.</p></div>
+      </div>
+      <div class="reveal flex gap-4">
+        <span class="grid place-items-center w-10 h-10 shrink-0 rounded-xl bg-accent-soft text-accent">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h13v8H3zM16 10h3l2 3v2h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        </span>
+        <div><h3 class="font-display font-bold text-lg">Doorstep delivery</h3><p class="mt-1 text-sm text-slate2">Contactless delivery to 4,000+ cities, or pick up at a partner hub near you.</p></div>
+      </div>
+      <div class="reveal flex gap-4">
+        <span class="grid place-items-center w-10 h-10 shrink-0 rounded-xl bg-accent-soft text-accent">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/></svg>
+        </span>
+        <div><h3 class="font-display font-bold text-lg">14-day return promise</h3><p class="mt-1 text-sm text-slate2">Drive it home. If it's not right, return it within two weeks for a full refund.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS RAIL -->
+<section class="py-12 border-y border-line bg-mist/50">
+  <p class="text-center text-xs font-semibold uppercase tracking-widest text-slate2 mb-7">Trusted inventory from 1,300+ dealers</p>
+  <div class="brand-rail overflow-hidden">
+    <div class="rail-track items-center gap-14 px-7">
+      <!-- duplicate set for seamless loop -->
+      <span class="font-display font-bold text-2xl text-slate2/70">Velocita</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">NordAuto</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Meridian</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Kestrel</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Solace EV</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Brixton</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Velocita</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">NordAuto</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Meridian</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Kestrel</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Solace EV</span>
+      <span class="font-display font-bold text-2xl text-slate2/70">Brixton</span>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28 grid lg:grid-cols-12 gap-12 items-center">
+  <div class="lg:col-span-5">
+    <p class="reveal text-sm font-semibold text-accent uppercase tracking-wider">Our story</p>
+    <h2 class="reveal mt-2 font-display font-extrabold text-3xl sm:text-4xl tracking-tight">We rebuilt car-buying from the ground up.</h2>
+  </div>
+  <div class="lg:col-span-7">
+    <p class="reveal text-lg text-slate2 leading-relaxed">
+      Drivora started in 2019 with a stubborn belief: buying a car shouldn't feel like a negotiation you're destined to lose. So we built a marketplace where every listing is inspected, every price is honest, and every step happens on your schedule — from the couch.
+    </p>
+    <p class="reveal mt-5 text-slate2 leading-relaxed">
+      Today, our certified technicians inspect tens of thousands of vehicles a year, our financing partners compete for your business, and our delivery network reaches 4,000+ cities. The result is a buying experience drivers actually enjoy.
+    </p>
+    <div class="reveal mt-8 grid grid-cols-3 gap-6 border-t border-line pt-7">
+      <div><p class="font-display font-extrabold text-2xl text-ink">2019</p><p class="text-xs text-slate2 mt-0.5">Founded</p></div>
+      <div><p class="font-display font-extrabold text-2xl text-ink">4,000+</p><p class="text-xs text-slate2 mt-0.5">Cities served</p></div>
+      <div><p class="font-display font-extrabold text-2xl text-ink">$0</p><p class="text-xs text-slate2 mt-0.5">Hidden fees</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="bg-mist/60 border-y border-line py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight text-center mb-12">Drivers who switched, and stayed.</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-xl2 bg-white border border-line p-7 shadow-soft">
+        <div class="flex gap-0.5 text-accent">★★★★★</div>
+        <blockquote class="mt-4 text-slate2 leading-relaxed">"I compared three SUVs, got financed, and had it in my driveway within four days. The inspection report was wildly detailed."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-accent-soft grid place-items-center text-sm font-bold text-accent">JM</span>
+          <div><p class="font-semibold text-ink text-sm">Jordan M.</p><p class="text-xs text-slate2">Austin, TX</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-xl2 bg-white border border-line p-7 shadow-soft">
+        <div class="flex gap-0.5 text-accent">★★★★★</div>
+        <blockquote class="mt-4 text-slate2 leading-relaxed">"No pressure, no back-office games. The price on screen was exactly what I paid. First time buying a car felt fair."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-lime/15 grid place-items-center text-sm font-bold text-lime">AR</span>
+          <div><p class="font-semibold text-ink text-sm">Amara R.</p><p class="text-xs text-slate2">Seattle, WA</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-xl2 bg-white border border-line p-7 shadow-soft">
+        <div class="flex gap-0.5 text-accent">★★★★★</div>
+        <blockquote class="mt-4 text-slate2 leading-relaxed">"The 14-day return made me confident enough to buy sight-unseen. Loved it, kept it. Already recommending Drivora to friends."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-ink grid place-items-center text-sm font-bold text-white">TK</span>
+          <div><p class="font-semibold text-ink text-sm">Theo K.</p><p class="text-xs text-slate2">Denver, CO</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- FINANCING / CTA -->
+<section id="finance" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+  <div class="reveal relative overflow-hidden rounded-xl2 bg-ink text-white p-9 sm:p-14 grad-mesh">
+    <div class="relative grid lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <p class="text-sm font-semibold text-accent uppercase tracking-wider">Financing, simplified</p>
+        <h2 class="mt-2 font-display font-extrabold text-3xl sm:text-4xl tracking-tight">Get your real rate in two minutes.</h2>
+        <p class="mt-4 text-white/70 max-w-md">Pre-qualify with no impact to your credit score. Compare offers from competing lenders, then lock the one that fits your budget.</p>
+        <ul class="mt-6 space-y-3 text-sm text-white/85">
+          <li class="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19c37d" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> No credit-score impact to check</li>
+          <li class="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19c37d" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Rates from competing lenders</li>
+          <li class="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#19c37d" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Trade-in value applied instantly</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl bg-white text-ink p-6 sm:p-7 shadow-float">
+        <p class="text-sm font-semibold text-slate2">Estimated monthly payment</p>
+        <p class="mt-1 font-display font-extrabold text-4xl">$486<span class="text-lg text-slate2 font-semibold">/mo</span></p>
+        <div class="mt-5 space-y-3 text-sm">
+          <div class="flex justify-between"><span class="text-slate2">Vehicle price</span><span class="font-semibold">$28,500</span></div>
+          <div class="flex justify-between"><span class="text-slate2">Down payment</span><span class="font-semibold">$3,000</span></div>
+          <div class="flex justify-between"><span class="text-slate2">Term · APR</span><span class="font-semibold">60 mo · 6.4%</span></div>
+        </div>
+        <a href="#" data-magnetic class="magnetic mt-6 w-full inline-flex items-center justify-center gap-2 rounded-xl bg-accent hover:bg-accent-deep text-white font-semibold px-6 py-3.5 transition-colors">
+          Pre-qualify now
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <p class="mt-3 text-[11px] text-slate2 text-center">Estimates only. Final terms set at checkout.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="max-w-3xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+  <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight text-center mb-12">Questions, answered.</h2>
+  <div class="space-y-3" id="faq-list">
+    <div class="faq-item reveal rounded-2xl border border-line bg-white overflow-hidden">
+      <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+        <span class="font-display font-semibold text-ink">Are the cars actually inspected?</span>
+        <span class="faq-icon text-accent text-2xl leading-none">+</span>
+      </button>
+      <div class="faq-body"><p class="px-6 pb-5 text-sm text-slate2 leading-relaxed">Yes. Every vehicle passes a 150-point inspection by a certified technician before it's listed. You'll get the full report with any reconditioning details before you buy.</p></div>
+    </div>
+    <div class="faq-item reveal rounded-2xl border border-line bg-white overflow-hidden">
+      <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+        <span class="font-display font-semibold text-ink">How does the 14-day return work?</span>
+        <span class="faq-icon text-accent text-2xl leading-none">+</span>
+      </button>
+      <div class="faq-body"><p class="px-6 pb-5 text-sm text-slate2 leading-relaxed">Drive the car for up to 14 days or 500 miles. If it's not the one, schedule a pickup and we'll issue a full refund — no restocking fees, no questions asked.</p></div>
+    </div>
+    <div class="faq-item reveal rounded-2xl border border-line bg-white overflow-hidden">
+      <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+        <span class="font-display font-semibold text-ink">Will checking my rate hurt my credit?</span>
+        <span class="faq-icon text-accent text-2xl leading-none">+</span>
+      </button>
+      <div class="faq-body"><p class="px-6 pb-5 text-sm text-slate2 leading-relaxed">No. Pre-qualification uses a soft credit pull that has zero impact on your score. A hard inquiry only happens if you choose to finalize financing.</p></div>
+    </div>
+    <div class="faq-item reveal rounded-2xl border border-line bg-white overflow-hidden">
+      <button class="faq-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+        <span class="font-display font-semibold text-ink">Can I trade in my current car?</span>
+        <span class="faq-icon text-accent text-2xl leading-none">+</span>
+      </button>
+      <div class="faq-body"><p class="px-6 pb-5 text-sm text-slate2 leading-relaxed">Absolutely. Get an instant trade-in offer in minutes and apply the value directly to your new purchase or financing down payment.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="max-w-7xl mx-auto px-5 sm:px-8 pb-24">
+  <div class="reveal relative overflow-hidden rounded-xl2 img-fallback text-white text-center px-6 py-16 sm:py-24">
+    <img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Open road" class="absolute inset-0 w-full h-full object-cover opacity-30" />
+    <div class="relative max-w-2xl mx-auto">
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl tracking-tight">Your next car is one search away.</h2>
+      <p class="mt-4 text-white/80 text-lg">Browse 48,200 inspected vehicles, finance in minutes, and we'll bring it to you.</p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="#inventory" data-magnetic class="magnetic inline-flex items-center justify-center gap-2 rounded-full bg-white text-ink font-semibold px-7 py-3.5 hover:bg-accent hover:text-white transition-colors">
+          Start searching
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#finance" class="inline-flex items-center justify-center rounded-full border border-white/40 text-white font-semibold px-7 py-3.5 hover:bg-white/10 transition-colors">Check my rate</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-line bg-mist/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14 grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+    <div class="lg:col-span-2">
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-accent text-white font-display font-extrabold">D</span>
+        <span class="font-display font-extrabold text-lg">Drivora</span>
+      </a>
+      <p class="mt-4 text-sm text-slate2 max-w-xs">The search-first marketplace for buying your next car online — inspected, transparent, delivered.</p>
+    </div>
+    <div>
+      <p class="font-display font-semibold text-ink text-sm">Marketplace</p>
+      <ul class="mt-4 space-y-2.5 text-sm text-slate2">
+        <li><a href="#inventory" class="hover:text-accent transition-colors">Browse cars</a></li>
+        <li><a href="#finance" class="hover:text-accent transition-colors">Financing</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">Sell / trade in</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">Delivery areas</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-display font-semibold text-ink text-sm">Company</p>
+      <ul class="mt-4 space-y-2.5 text-sm text-slate2">
+        <li><a href="#about" class="hover:text-accent transition-colors">About</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">Careers</a></li>
+        <li><a href="#" class="hover:text-accent transition-colors">Press</a></li>
+        <li><a href="#faq" class="hover:text-accent transition-colors">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-display font-semibold text-ink text-sm">Stay in the know</p>
+      <p class="mt-4 text-sm text-slate2">New arrivals and price drops, weekly.</p>
+      <form class="mt-3 flex gap-2" onsubmit="return false">
+        <input type="email" placeholder="you@email.com" class="flex-1 min-w-0 rounded-lg border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-accent" />
+        <button class="rounded-lg bg-ink text-white px-4 py-2.5 text-sm font-semibold hover:bg-accent transition-colors">Join</button>
+      </form>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate2">
+      <p>© 2026 Drivora, Inc. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-ink transition-colors">Privacy</a>
+        <a href="#" class="hover:text-ink transition-colors">Terms</a>
+        <a href="#" class="hover:text-ink transition-colors">Licenses</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  /* ---------- Vehicle data + card build ---------- */
+  const FRONT = 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1600&q=80';
+  const BACK  = 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1600&q=80';
+
+  const cars = [
+    { name: 'Meridian X5 Touring', tag: 'SUV', year: '2022', miles: '21,400', price: '$31,200', specs: ['AWD','255 hp','Hybrid'] },
+    { name: 'Solace EV Lumen', tag: 'Electric', year: '2023', miles: '9,100', price: '$42,750', specs: ['FWD','290 mi range','EV'] },
+    { name: 'Kestrel Sprint RS', tag: 'Coupé', year: '2021', miles: '33,800', price: '$27,900', specs: ['RWD','310 hp','Petrol'] },
+    { name: 'NordAuto Vela Estate', tag: 'Wagon', year: '2022', miles: '18,600', price: '$24,300', specs: ['AWD','201 hp','Diesel'] },
+    { name: 'Brixton Halo Crossover', tag: 'SUV', year: '2023', miles: '7,400', price: '$36,480', specs: ['AWD','268 hp','Hybrid'] },
+    { name: 'Velocita Nimbus GT', tag: 'Sedan', year: '2022', miles: '15,200', price: '$22,950', specs: ['FWD','188 hp','Petrol'] },
+  ];
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = cars.map(c => `
+    <article class="vcard reveal rounded-xl2 bg-white border border-line shadow-soft overflow-hidden">
+      <div class="relative h-52 img-fallback overflow-hidden">
+        <img src="${FRONT}" onerror="this.style.display='none'" alt="${c.name}" class="vimg front absolute inset-0 w-full h-full object-cover" />
+        <img src="${BACK}"  onerror="this.style.display='none'" alt="${c.name} alternate" class="vimg back absolute inset-0 w-full h-full object-cover opacity-0" />
+        <span class="absolute top-3 left-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold text-ink shadow-soft">${c.tag}</span>
+        <button class="absolute top-3 right-3 grid place-items-center w-8 h-8 rounded-full bg-white/95 text-slate2 hover:text-accent shadow-soft transition-colors" aria-label="Save">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        </button>
+      </div>
+      <div class="p-5">
+        <div class="flex items-center justify-between gap-3">
+          <h3 class="font-display font-bold text-lg leading-tight">${c.name}</h3>
+          <span class="font-display font-extrabold text-ink whitespace-nowrap">${c.price}</span>
+        </div>
+        <p class="mt-1 text-xs text-slate2">${c.year} · ${c.miles} mi</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+          ${c.specs.map(s => `<span class="rounded-md bg-mist px-2.5 py-1 text-[11px] font-semibold text-slate2">${s}</span>`).join('')}
+        </div>
+        <a href="#" class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:gap-2.5 transition-all">
+          View details
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </article>`).join('');
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Filter chips ---------- */
+  document.querySelectorAll('#chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#chips .chip').forEach(c => c.dataset.active = 'false');
+      chip.dataset.active = 'true';
+    });
+  });
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('nav-scrolled', window.scrollY > 24);
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Motion (guarded) ---------- */
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!reduced && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Section reveals */
+    gsap.utils.toArray('.reveal').forEach(el => {
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%', once: true,
+        onEnter: () => el.classList.add('in'),
+      });
+    });
+
+    /* Animated headline (word stagger) */
+    const h = document.getElementById('headline');
+    h.innerHTML = h.textContent.trim().split(' ')
+      .map(w => `<span class="word">${w}</span>`).join(' ');
+    gsap.from('#headline .word', { y: 40, opacity: 0, duration: .7, ease: 'power3.out', stagger: 0.06, delay: 0.1 });
+
+    /* Count-ups */
+    document.querySelectorAll('.count').forEach(el => {
+      const to = +el.dataset.to;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          const obj = { v: 0 };
+          gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out',
+            onUpdate: () => el.textContent = Math.floor(obj.v).toLocaleString() });
+        }
+      });
+    });
+
+    /* Hero container parallax */
+    gsap.to('#featured', {
+      yPercent: -8, ease: 'none',
+      scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    /* Featured car tilt */
+    const tilt = document.getElementById('featured');
+    tilt.addEventListener('mousemove', e => {
+      const r = tilt.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(tilt, { rotateY: px * 9, rotateX: -py * 9, transformPerspective: 900, duration: .4, ease: 'power2.out' });
+    });
+    tilt.addEventListener('mouseleave', () => gsap.to(tilt, { rotateY: 0, rotateX: 0, duration: .6, ease: 'power3.out' }));
+
+    /* Magnetic CTAs */
+    document.querySelectorAll('[data-magnetic]').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        gsap.to(btn, { x: (e.clientX - r.left - r.width/2) * 0.35, y: (e.clientY - r.top - r.height/2) * 0.45, duration: .3, ease: 'power2.out' });
+      });
+      btn.addEventListener('mouseleave', () => gsap.to(btn, { x: 0, y: 0, duration: .5, ease: 'elastic.out(1,0.4)' }));
+    });
+  } else {
+    /* Reduced motion: show everything, set final counts */
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.to).toLocaleString());
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maison Aurelle — Luxury Wedding & Events Atelier</title>
+<meta name="description" content="Maison Aurelle is a high-end wedding and events atelier designing romantic, unrepeatable celebrations with quiet luxury and impeccable detail." />
+
+<!-- Fonts: elegant serif + script accent + clean sans -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Parisienne&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ivory:  '#FBF7F2',
+          cream:  '#F4EBE2',
+          blush:  '#EBD3CC',
+          rose:   '#C99A93',
+          terra:  '#A56E63',
+          mocha:  '#6E544C',
+          ink:    '#3A2E2A',
+          gold:   '#B8956A',
+        },
+        fontFamily: {
+          serif:  ['"Cormorant Garamond"', 'serif'],
+          script: ['"Parisienne"', 'cursive'],
+          sans:   ['"Jost"', 'sans-serif'],
+        },
+        letterSpacing: {
+          luxe: '0.32em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FBF7F2;
+    color: #3A2E2A;
+    font-family: 'Jost', sans-serif;
+    cursor: none;
+  }
+  ::selection { background: #EBD3CC; color: #3A2E2A; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    pointer-events: none; border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: multiply;
+  }
+  .cursor-dot  { width: 7px; height: 7px; background: #A56E63; }
+  .cursor-ring { width: 38px; height: 38px; border: 1px solid #C99A93; transition: width .3s, height .3s, background .3s, border-color .3s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(201,154,147,.12); border-color: transparent; }
+
+  /* Reveal helpers */
+  .clip-reveal { clip-path: inset(0 0 100% 0); }
+  .img-zoom    { transition: transform 1.2s cubic-bezier(.16,1,.3,1); }
+  .img-frame:hover .img-zoom { transform: scale(1.06); }
+
+  .word-mask { display: inline-block; overflow: hidden; vertical-align: top; }
+  .word-mask > span { display: inline-block; transform: translateY(110%); }
+
+  .hairline { height: 1px; background: linear-gradient(to right, transparent, #C99A93, transparent); }
+
+  .magnetic { will-change: transform; }
+
+  .acc-item .acc-body { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.16,1,.3,1); }
+  .acc-item.open .acc-body { max-height: 280px; }
+  .acc-item.open .acc-icon { transform: rotate(45deg); }
+  .acc-icon { transition: transform .4s ease; }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: -3px; height: 1px; width: 0;
+    background: #A56E63; transition: width .4s cubic-bezier(.16,1,.3,1);
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .marquee-track { display: inline-flex; white-space: nowrap; animation: marquee 36s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  .grain { position: fixed; inset: 0; pointer-events: none; opacity: .035; z-index: 60;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .clip-reveal { clip-path: none !important; }
+    .word-mask > span { transform: none !important; }
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+    .marquee-track { animation: none; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between py-6">
+    <a href="#top" class="leading-none">
+      <span class="block font-serif text-2xl tracking-[0.22em] text-ink">MAISON</span>
+      <span class="block font-script text-rose text-xl -mt-1 ml-10">aurelle</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-10 text-[13px] tracking-[0.2em] uppercase text-mocha font-light">
+      <a href="#philosophy" class="nav-link">Atelier</a>
+      <a href="#services" class="nav-link">Services</a>
+      <a href="#weddings" class="nav-link">Weddings</a>
+      <a href="#process" class="nav-link">Process</a>
+      <a href="#packages" class="nav-link">Packages</a>
+    </div>
+    <a href="#enquire" class="magnetic hidden md:inline-block text-[12px] tracking-[0.2em] uppercase border border-rose/60 text-mocha px-6 py-3 rounded-full hover:bg-rose hover:text-ivory transition-colors duration-500">Enquire</a>
+    <button id="menuBtn" class="lg:hidden text-ink text-sm tracking-[0.2em] uppercase">Menu</button>
+  </nav>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-40 bg-ivory/98 backdrop-blur translate-x-full transition-transform duration-500 flex flex-col items-center justify-center gap-8 text-center">
+  <a href="#philosophy" class="m-link font-serif text-3xl text-ink">Atelier</a>
+  <a href="#services" class="m-link font-serif text-3xl text-ink">Services</a>
+  <a href="#weddings" class="m-link font-serif text-3xl text-ink">Weddings</a>
+  <a href="#process" class="m-link font-serif text-3xl text-ink">Process</a>
+  <a href="#packages" class="m-link font-serif text-3xl text-ink">Packages</a>
+  <a href="#enquire" class="m-link font-script text-rose text-4xl">enquire</a>
+</div>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative min-h-screen flex items-end overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-blush via-cream to-ivory">
+    <div class="img-frame absolute inset-0" data-parallax="0.18">
+      <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1600&q=80"
+           alt="Romantic wedding ceremony under soft light"
+           class="img-zoom w-full h-[118%] object-cover -translate-y-[6%]"
+           onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/30 to-transparent"></div>
+    </div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-20 lg:pb-28 w-full">
+    <p class="hero-kicker text-[12px] tracking-luxe uppercase text-terra mb-6">Luxury Wedding &amp; Events Atelier · Est. 2009</p>
+    <h1 class="font-serif font-light leading-[0.92] text-ink text-[15vw] sm:text-[12vw] lg:text-[9.5vw]">
+      <span class="word-mask"><span>Weddings</span></span><br/>
+      <span class="word-mask"><span>composed like</span></span>
+      <span class="font-script text-rose text-[12vw] sm:text-[9vw] lg:text-[7vw] align-baseline"> poetry</span>
+    </h1>
+    <div class="mt-10 flex flex-col sm:flex-row sm:items-center gap-6">
+      <a href="#enquire" class="magnetic inline-flex items-center gap-3 bg-ink text-ivory text-[12px] tracking-[0.2em] uppercase px-8 py-4 rounded-full hover:bg-terra transition-colors duration-500">
+        Begin your enquiry <span>&#8594;</span>
+      </a>
+      <p class="hero-sub max-w-xs text-sm text-mocha leading-relaxed font-light">A bespoke atelier crafting unrepeatable celebrations across coastlines, vineyards &amp; private estates.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="py-6 border-y border-blush/60 bg-cream/40 overflow-hidden">
+  <div class="marquee-track text-mocha/70 font-serif italic text-xl">
+    <span class="px-8">Destination Weddings</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Private Estate Celebrations</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Coastal Ceremonies</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Floral Architecture</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Destination Weddings</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Private Estate Celebrations</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Coastal Ceremonies</span><span class="px-8 text-rose">&#10022;</span>
+    <span class="px-8">Floral Architecture</span><span class="px-8 text-rose">&#10022;</span>
+  </div>
+</section>
+
+<!-- ===================== PHILOSOPHY ===================== -->
+<section id="philosophy" class="max-w-7xl mx-auto px-6 lg:px-10 py-28 lg:py-40">
+  <div class="grid lg:grid-cols-12 gap-14 items-center">
+    <div class="lg:col-span-7">
+      <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-8">Our Philosophy</p>
+      <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-[3.6rem] leading-[1.08] text-ink">
+        We believe a wedding is not an event to be staged, but a feeling to be
+        <span class="font-script text-rose"> remembered</span> — long after the candles dim.
+      </h2>
+      <p class="reveal-up mt-8 max-w-xl text-mocha leading-relaxed font-light">
+        Maison Aurelle is a small, deliberate atelier. We accept a handful of weddings each season so every couple receives the rare luxury of our full attention. From the first conversation to the final toast, we design celebrations that feel inevitable — effortless, intimate, and unmistakably yours.
+      </p>
+    </div>
+    <div class="lg:col-span-5">
+      <div class="img-frame relative rounded-[2rem] overflow-hidden clip-reveal aspect-[4/5] bg-gradient-to-br from-blush to-cream" data-clip>
+        <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1600&q=80"
+             alt="Elegant wedding table setting with florals"
+             class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+    </div>
+  </div>
+
+  <!-- count-ups -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-24 border-t border-blush/60 pt-14">
+    <div class="reveal-up">
+      <p class="font-serif text-5xl lg:text-6xl text-ink"><span class="count" data-to="420">0</span><span class="text-rose">+</span></p>
+      <p class="mt-2 text-[12px] tracking-[0.2em] uppercase text-mocha">Weddings Designed</p>
+    </div>
+    <div class="reveal-up">
+      <p class="font-serif text-5xl lg:text-6xl text-ink"><span class="count" data-to="16">0</span></p>
+      <p class="mt-2 text-[12px] tracking-[0.2em] uppercase text-mocha">Years As Atelier</p>
+    </div>
+    <div class="reveal-up">
+      <p class="font-serif text-5xl lg:text-6xl text-ink"><span class="count" data-to="27">0</span></p>
+      <p class="mt-2 text-[12px] tracking-[0.2em] uppercase text-mocha">Countries Travelled</p>
+    </div>
+    <div class="reveal-up">
+      <p class="font-serif text-5xl lg:text-6xl text-ink"><span class="count" data-to="98">0</span><span class="text-rose">%</span></p>
+      <p class="mt-2 text-[12px] tracking-[0.2em] uppercase text-mocha">Referred By Couples</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SERVICES / TIERS ===================== -->
+<section id="services" class="bg-cream/50 py-28 lg:py-36 border-y border-blush/50">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+      <div>
+        <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-5">What We Offer</p>
+        <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ink leading-tight">Three ways to <span class="font-script text-rose">be held</span></h2>
+      </div>
+      <p class="reveal-up max-w-sm text-mocha font-light text-sm leading-relaxed">Each tier is fully bespoke. Choose the level of guidance that suits your season of life — we adapt entirely around you.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- tier 1 -->
+      <article class="reveal-up group bg-ivory rounded-[1.75rem] p-9 border border-blush/50 hover:border-rose/70 transition-colors duration-500">
+        <span class="font-serif text-rose text-2xl">I.</span>
+        <h3 class="font-serif text-3xl text-ink mt-3 mb-3">Full Design &amp; Planning</h3>
+        <p class="text-mocha font-light text-sm leading-relaxed mb-6">From the very first idea, we conceive your entire celebration — concept, design, suppliers, logistics and on-the-day direction. The complete atelier experience.</p>
+        <ul class="space-y-2 text-sm text-mocha/90 font-light">
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Creative direction &amp; mood</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Full supplier curation</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Budget stewardship</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> On-the-day direction</li>
+        </ul>
+      </article>
+      <!-- tier 2 -->
+      <article class="reveal-up group bg-ink rounded-[1.75rem] p-9 text-ivory md:-translate-y-4">
+        <span class="font-script text-rose text-3xl">most loved</span>
+        <h3 class="font-serif text-3xl mt-3 mb-3">Partial Planning</h3>
+        <p class="text-ivory/75 font-light text-sm leading-relaxed mb-6">You have a vision and perhaps a venue — we step in to refine, source and orchestrate, weaving the loose threads into a seamless whole.</p>
+        <ul class="space-y-2 text-sm text-ivory/85 font-light">
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Design refinement</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Curated supplier shortlist</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Timeline architecture</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> On-the-day direction</li>
+        </ul>
+      </article>
+      <!-- tier 3 -->
+      <article class="reveal-up group bg-ivory rounded-[1.75rem] p-9 border border-blush/50 hover:border-rose/70 transition-colors duration-500">
+        <span class="font-serif text-rose text-2xl">III.</span>
+        <h3 class="font-serif text-3xl text-ink mt-3 mb-3">Wedding-Week Direction</h3>
+        <p class="text-mocha font-light text-sm leading-relaxed mb-6">For couples who have planned every detail themselves — we take the reins in the final weeks so you arrive at your day entirely present.</p>
+        <ul class="space-y-2 text-sm text-mocha/90 font-light">
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Final-detail audit</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Supplier confirmation</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Run-of-day creation</li>
+          <li class="flex gap-2"><span class="text-rose">&#10022;</span> Full event management</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== REAL WEDDINGS GALLERY ===================== -->
+<section id="weddings" class="py-28 lg:py-36 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="text-center mb-16">
+    <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-5">Real Weddings</p>
+    <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ink">Celebrations we have <span class="font-script text-rose">composed</span></h2>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+    <div class="img-frame relative overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-gradient-to-br from-blush to-cream clip-reveal" data-clip data-parallax="0.06">
+      <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1600&q=80" alt="Bride and groom portrait" class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      <span class="absolute bottom-4 left-4 font-script text-ivory text-2xl drop-shadow">Élodie &amp; Marc</span>
+    </div>
+    <div class="img-frame relative overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-gradient-to-br from-cream to-blush clip-reveal lg:translate-y-8" data-clip data-parallax="0.1">
+      <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1600&q=80" alt="Wedding reception detail" class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      <span class="absolute bottom-4 left-4 font-script text-ivory text-2xl drop-shadow">Sofia &amp; Theo</span>
+    </div>
+    <div class="img-frame relative overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-gradient-to-br from-blush to-cream clip-reveal" data-clip data-parallax="0.06">
+      <img src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1600&q=80" alt="Outdoor ceremony" class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      <span class="absolute bottom-4 left-4 font-script text-ivory text-2xl drop-shadow">Amara &amp; Jude</span>
+    </div>
+    <div class="img-frame relative overflow-hidden rounded-[1.5rem] aspect-[3/4] bg-gradient-to-br from-cream to-blush clip-reveal lg:translate-y-8" data-clip data-parallax="0.1">
+      <img src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1600&q=80" alt="Floral tablescape" class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      <span class="absolute bottom-4 left-4 font-script text-ivory text-2xl drop-shadow">Noor &amp; Felix</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT THE PLANNER ===================== -->
+<section class="bg-cream/50 py-28 lg:py-36 border-y border-blush/50">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-14 items-center">
+    <div class="lg:col-span-5">
+      <div class="img-frame relative rounded-[2rem] overflow-hidden clip-reveal aspect-[4/5] bg-gradient-to-br from-blush to-cream" data-clip data-parallax="0.12">
+        <img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=1600&q=80" alt="The lead wedding planner" class="img-zoom w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+    </div>
+    <div class="lg:col-span-7">
+      <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-6">The Atelier</p>
+      <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.1] text-ink">
+        I am <span class="font-script text-rose">Aurelle</span> — and I plan very few weddings, very well.
+      </h2>
+      <p class="reveal-up mt-8 max-w-xl text-mocha font-light leading-relaxed">
+        Sixteen years ago I planned a friend's wedding on a Tuscan hillside and never looked back. What began as one celebration grew into a discreet atelier trusted by couples across the world — yet the philosophy has never changed: take fewer clients, give them everything.
+      </p>
+      <p class="reveal-up mt-5 max-w-xl text-mocha font-light leading-relaxed">
+        I am present at every meeting, every site visit, and every wedding day. You will never be handed to a coordinator you have not met. That intimacy is the whole point.
+      </p>
+      <p class="reveal-up mt-8 font-script text-4xl text-rose">Aurelle Devereux</p>
+      <p class="text-[12px] tracking-[0.2em] uppercase text-mocha mt-1">Founder &amp; Lead Designer</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROCESS ===================== -->
+<section id="process" class="py-28 lg:py-36 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="mb-16">
+    <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-5">How We Work</p>
+    <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ink leading-tight">A gentle, certain <span class="font-script text-rose">journey</span></h2>
+  </div>
+
+  <div class="space-y-0">
+    <div class="proc-row group grid md:grid-cols-12 gap-6 py-10 border-t border-blush/60 items-baseline">
+      <span class="md:col-span-2 font-serif text-rose text-4xl">01</span>
+      <h3 class="md:col-span-4 font-serif text-2xl text-ink">The Conversation</h3>
+      <p class="md:col-span-6 text-mocha font-light text-sm leading-relaxed">We meet — over coffee or video — to understand who you are as a couple, the feeling you want your day to hold, and whether we are the right hands for it.</p>
+    </div>
+    <div class="proc-row group grid md:grid-cols-12 gap-6 py-10 border-t border-blush/60 items-baseline">
+      <span class="md:col-span-2 font-serif text-rose text-4xl">02</span>
+      <h3 class="md:col-span-4 font-serif text-2xl text-ink">The Concept</h3>
+      <p class="md:col-span-6 text-mocha font-light text-sm leading-relaxed">We translate your story into a complete design world — palette, texture, florals, light and movement — presented as a bespoke creative direction.</p>
+    </div>
+    <div class="proc-row group grid md:grid-cols-12 gap-6 py-10 border-t border-blush/60 items-baseline">
+      <span class="md:col-span-2 font-serif text-rose text-4xl">03</span>
+      <h3 class="md:col-span-4 font-serif text-2xl text-ink">The Orchestration</h3>
+      <p class="md:col-span-6 text-mocha font-light text-sm leading-relaxed">We curate and manage every supplier, steward the budget, and quietly handle the thousand details so you never feel their weight.</p>
+    </div>
+    <div class="proc-row group grid md:grid-cols-12 gap-6 py-10 border-t border-b border-blush/60 items-baseline">
+      <span class="md:col-span-2 font-serif text-rose text-4xl">04</span>
+      <h3 class="md:col-span-4 font-serif text-2xl text-ink">The Day</h3>
+      <p class="md:col-span-6 text-mocha font-light text-sm leading-relaxed">We direct everything from dawn to last dance — so you, and everyone you love, are entirely, beautifully present.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="bg-ink text-ivory py-28 lg:py-40">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal-up text-[12px] tracking-luxe uppercase text-rose mb-10">In Their Words</p>
+    <blockquote class="reveal-line font-serif font-light text-3xl sm:text-4xl lg:text-5xl leading-[1.25]">
+      &ldquo;Aurelle didn't plan our wedding — she <span class="font-script text-rose">understood</span> it. Every guest told us it was the most personal celebration they had ever attended.&rdquo;
+    </blockquote>
+    <p class="reveal-up mt-10 font-script text-rose text-3xl">Élodie &amp; Marc</p>
+    <p class="text-[12px] tracking-[0.2em] uppercase text-ivory/60 mt-1">Married in Provence · 2025</p>
+
+    <div class="hairline max-w-md mx-auto my-16"></div>
+
+    <div class="grid sm:grid-cols-3 gap-10 text-left">
+      <div class="reveal-up">
+        <p class="text-ivory/80 font-light text-sm leading-relaxed italic">&ldquo;Calm, exquisite taste, and not a single detail forgotten.&rdquo;</p>
+        <p class="mt-3 text-[12px] tracking-[0.15em] uppercase text-rose">Sofia &amp; Theo</p>
+      </div>
+      <div class="reveal-up">
+        <p class="text-ivory/80 font-light text-sm leading-relaxed italic">&ldquo;We were guests at our own wedding. That is the gift she gives.&rdquo;</p>
+        <p class="mt-3 text-[12px] tracking-[0.15em] uppercase text-rose">Amara &amp; Jude</p>
+      </div>
+      <div class="reveal-up">
+        <p class="text-ivory/80 font-light text-sm leading-relaxed italic">&ldquo;Worth every moment of the wait to work with her.&rdquo;</p>
+        <p class="mt-3 text-[12px] tracking-[0.15em] uppercase text-rose">Noor &amp; Felix</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PACKAGES / PRICING ===================== -->
+<section id="packages" class="py-28 lg:py-36 max-w-7xl mx-auto px-6 lg:px-10">
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+    <div>
+      <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-5">Investment</p>
+      <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ink leading-tight">A considered <span class="font-script text-rose">investment</span></h2>
+    </div>
+    <p class="reveal-up max-w-sm text-mocha font-light text-sm leading-relaxed">Every wedding is quoted bespoke. The figures below are starting points to guide your planning.</p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="reveal-up rounded-[1.75rem] border border-blush/60 p-9 bg-ivory">
+      <p class="font-serif text-2xl text-ink">Wedding-Week</p>
+      <p class="font-serif text-5xl text-rose mt-4">£4.5k<span class="text-mocha text-lg font-sans font-light"> from</span></p>
+      <div class="hairline my-7"></div>
+      <ul class="space-y-3 text-sm text-mocha font-light">
+        <li>Final 6-week management</li>
+        <li>Supplier confirmation</li>
+        <li>Run-of-day &amp; timeline</li>
+        <li>Full on-the-day team</li>
+      </ul>
+    </div>
+    <div class="reveal-up rounded-[1.75rem] p-9 bg-ink text-ivory md:-translate-y-4 relative">
+      <span class="absolute top-6 right-6 font-script text-rose text-2xl">favourite</span>
+      <p class="font-serif text-2xl">Partial Planning</p>
+      <p class="font-serif text-5xl text-rose mt-4">£9k<span class="text-ivory/60 text-lg font-sans font-light"> from</span></p>
+      <div class="h-px my-7 bg-ivory/20"></div>
+      <ul class="space-y-3 text-sm text-ivory/85 font-light">
+        <li>Design refinement</li>
+        <li>Curated supplier sourcing</li>
+        <li>Budget &amp; timeline stewardship</li>
+        <li>Everything in Wedding-Week</li>
+      </ul>
+    </div>
+    <div class="reveal-up rounded-[1.75rem] border border-blush/60 p-9 bg-ivory">
+      <p class="font-serif text-2xl text-ink">Full Atelier</p>
+      <p class="font-serif text-5xl text-rose mt-4">£18k<span class="text-mocha text-lg font-sans font-light"> from</span></p>
+      <div class="hairline my-7"></div>
+      <ul class="space-y-3 text-sm text-mocha font-light">
+        <li>End-to-end design &amp; planning</li>
+        <li>Unlimited creative direction</li>
+        <li>Full supplier curation</li>
+        <li>Aurelle present throughout</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section class="bg-cream/50 py-28 lg:py-36 border-y border-blush/50">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-5">Good To Know</p>
+      <h2 class="reveal-line font-serif font-light text-4xl sm:text-5xl lg:text-6xl text-ink">Questions, <span class="font-script text-rose">answered</span></h2>
+    </div>
+
+    <div class="space-y-4" id="faq">
+      <div class="acc-item open bg-ivory rounded-2xl border border-blush/50 px-7 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-xl text-ink">How many weddings do you take each year?</h3>
+          <span class="acc-icon text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="acc-body"><p class="text-mocha font-light text-sm leading-relaxed pt-4">A maximum of twelve. This deliberate ceiling lets us pour ourselves entirely into each couple — there is no overflow team, only us.</p></div>
+      </div>
+      <div class="acc-item bg-ivory rounded-2xl border border-blush/50 px-7 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-xl text-ink">Do you travel for destination weddings?</h3>
+          <span class="acc-icon text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="acc-body"><p class="text-mocha font-light text-sm leading-relaxed pt-4">Always — and joyfully. We have designed celebrations across twenty-seven countries, from Amalfi cliffs to Scottish glens. Travel and accommodation are quoted transparently within your proposal.</p></div>
+      </div>
+      <div class="acc-item bg-ivory rounded-2xl border border-blush/50 px-7 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-xl text-ink">When should we book the atelier?</h3>
+          <span class="acc-icon text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="acc-body"><p class="text-mocha font-light text-sm leading-relaxed pt-4">Most couples reach out twelve to eighteen months ahead. That said, we have worked beautiful magic in far shorter windows — do enquire regardless of your timeline.</p></div>
+      </div>
+      <div class="acc-item bg-ivory rounded-2xl border border-blush/50 px-7 py-5 cursor-pointer">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-xl text-ink">Can you work with our existing suppliers?</h3>
+          <span class="acc-icon text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="acc-body"><p class="text-mocha font-light text-sm leading-relaxed pt-4">Of course. Whether you arrive with a full list or a blank page, we adapt around what you already love and gently fill the gaps.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="enquire" class="relative py-32 lg:py-44 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-blush via-cream to-ivory">
+    <div class="img-frame absolute inset-0 opacity-60" data-parallax="0.12">
+      <img src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1600&q=80" alt="Couple at golden hour" class="img-zoom w-full h-[115%] object-cover -translate-y-[5%]" onerror="this.style.display='none'" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ivory via-ivory/40 to-ivory/20"></div>
+    </div>
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal-up text-[12px] tracking-luxe uppercase text-terra mb-6">Let Us Begin</p>
+    <h2 class="reveal-line font-serif font-light text-5xl sm:text-6xl lg:text-7xl text-ink leading-[1.02]">
+      Tell us about <span class="font-script text-rose">your day</span>
+    </h2>
+    <p class="reveal-up mt-7 max-w-xl mx-auto text-mocha font-light leading-relaxed">Share a few details and we will be in touch within two days to arrange a quiet conversation. We can hardly wait to hear your story.</p>
+    <a href="#top" class="magnetic mt-10 inline-flex items-center gap-3 bg-ink text-ivory text-[12px] tracking-[0.2em] uppercase px-10 py-5 rounded-full hover:bg-terra transition-colors duration-500">
+      Send your enquiry <span>&#8594;</span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-ink text-ivory/80 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-12 gap-12 pb-16 border-b border-ivory/15">
+      <div class="md:col-span-5">
+        <span class="block font-serif text-3xl tracking-[0.22em] text-ivory">MAISON</span>
+        <span class="block font-script text-rose text-2xl -mt-1 ml-12">aurelle</span>
+        <p class="mt-6 max-w-xs text-sm font-light text-ivory/60 leading-relaxed">A luxury wedding &amp; events atelier crafting unrepeatable celebrations, one couple at a time.</p>
+      </div>
+      <div class="md:col-span-3">
+        <p class="text-[12px] tracking-[0.2em] uppercase text-rose mb-5">Atelier</p>
+        <ul class="space-y-3 text-sm font-light">
+          <li><a href="#philosophy" class="nav-link">Philosophy</a></li>
+          <li><a href="#services" class="nav-link">Services</a></li>
+          <li><a href="#weddings" class="nav-link">Real Weddings</a></li>
+          <li><a href="#process" class="nav-link">Process</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-4">
+        <p class="text-[12px] tracking-[0.2em] uppercase text-rose mb-5">Contact</p>
+        <ul class="space-y-3 text-sm font-light">
+          <li>hello@maisonaurelle.studio</li>
+          <li>+44 (0)20 7946 0820</li>
+          <li>By appointment · London &amp; worldwide</li>
+        </ul>
+        <div class="flex gap-5 mt-6 text-[12px] tracking-[0.15em] uppercase">
+          <a href="#" class="nav-link">Instagram</a>
+          <a href="#" class="nav-link">Pinterest</a>
+          <a href="#" class="nav-link">Journal</a>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 text-[11px] tracking-[0.15em] uppercase text-ivory/40">
+      <p>&copy; 2009–2026 Maison Aurelle Atelier</p>
+      <p class="font-script text-rose text-base normal-case tracking-normal">crafted with devotion</p>
+      <p>Privacy · Terms</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Mobile menu ---------- */
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  let open = false;
+  menuBtn?.addEventListener('click', () => {
+    open = !open;
+    mobileMenu.style.transform = open ? 'translateX(0)' : 'translateX(100%)';
+    menuBtn.textContent = open ? 'Close' : 'Menu';
+  });
+  document.querySelectorAll('.m-link').forEach(l => l.addEventListener('click', () => {
+    open = false; mobileMenu.style.transform = 'translateX(100%)'; menuBtn.textContent = 'Menu';
+  }));
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-ivory/85','backdrop-blur-md','shadow-[0_1px_0_rgba(201,154,147,.25)]');
+    else nav.classList.remove('bg-ivory/85','backdrop-blur-md','shadow-[0_1px_0_rgba(201,154,147,.25)]');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('#faq .acc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('#faq .acc-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    const dot = document.querySelector('.cursor-dot');
+    const ring = document.querySelector('.cursor-ring');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; dot.style.left = mx+'px'; dot.style.top = my+'px'; });
+    (function loop(){ rx += (mx-rx)*0.18; ry += (my-ry)*0.18; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(loop); })();
+    document.querySelectorAll('a, button, .acc-item, .img-frame').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+    /* Magnetic CTAs */
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        btn.style.transform = `translate(${x*0.3}px, ${y*0.4}px)`;
+      });
+      btn.addEventListener('mouseleave', () => btn.style.transform = 'translate(0,0)');
+    });
+  }
+
+  /* ---------- GSAP motion ---------- */
+  if (!reduce && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero masked text */
+    gsap.to('.word-mask > span', { yPercent: -110, duration: 1.3, ease: 'power4.out', stagger: 0.12, delay: 0.2 });
+    gsap.from('.hero-kicker', { opacity: 0, y: 20, duration: 1, delay: 0.5 });
+    gsap.from(['.hero-sub','section:first-of-type .magnetic'], { opacity: 0, y: 24, duration: 1, delay: 0.9, stagger: 0.1 });
+
+    /* Clip-path image reveals */
+    document.querySelectorAll('[data-clip]').forEach(el => {
+      gsap.fromTo(el, { clipPath: 'inset(0 0 100% 0)' }, {
+        clipPath: 'inset(0 0 0% 0)', duration: 1.4, ease: 'power3.inOut',
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    /* Reveal-up */
+    gsap.utils.toArray('.reveal-up').forEach(el => {
+      gsap.from(el, { opacity: 0, y: 36, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' } });
+    });
+
+    /* Reveal lines (headings) */
+    gsap.utils.toArray('.reveal-line').forEach(el => {
+      gsap.from(el, { opacity: 0, y: 28, duration: 1.1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 86%' } });
+    });
+
+    /* Process rows */
+    gsap.utils.toArray('.proc-row').forEach(el => {
+      gsap.from(el, { opacity: 0, x: -30, duration: 0.9, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' } });
+    });
+
+    /* Container parallax on photography */
+    document.querySelectorAll('[data-parallax]').forEach(el => {
+      const amt = parseFloat(el.getAttribute('data-parallax')) || 0.1;
+      const img = el.querySelector('img');
+      if (!img) return;
+      gsap.to(img, { yPercent: amt * 60, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach(el => {
+      const to = +el.getAttribute('data-to');
+      const obj = { v: 0 };
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: () => {
+        gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => el.textContent = Math.round(obj.v) });
+      }});
+    });
+  }
+})();
+</script>
+</body>
+</html>

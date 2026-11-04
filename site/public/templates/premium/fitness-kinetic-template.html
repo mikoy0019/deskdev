@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VELOCITĒ — Performance Training Lab</title>
+<meta name="description" content="VELOCITĒ — a high-performance strength and conditioning lab. Train with intent. Move with purpose. Start your free week." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#08090c',
+          char:   '#101218',
+          steel:  '#1a1d27',
+          ash:    '#9aa3b2',
+          bone:   '#eef1f6',
+          volt:   '#d6ff2e',   // high-energy accent
+          voltdim:'#a9cc1f',
+          ember:  '#ff4d2e',
+        },
+        fontFamily: {
+          display: ['"Archivo"', 'system-ui', 'sans-serif'],
+          body:    ['"Inter"', 'system-ui', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts: heavy expanded display + clean body -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,600;0,800;0,900;1,900&family=Archivo+Expanded:wght@800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --volt:#d6ff2e; }
+  html, body { background:#08090c; }
+  body { font-family:'Inter',sans-serif; color:#eef1f6; overflow-x:hidden; }
+
+  .font-exp { font-family:'Archivo Expanded','Archivo',sans-serif; }
+
+  /* Kinetic oversized type */
+  .kinetic {
+    font-family:'Archivo Expanded','Archivo',sans-serif;
+    font-weight:900;
+    line-height:0.86;
+    letter-spacing:-0.02em;
+    text-transform:uppercase;
+  }
+  .outline-txt {
+    color:transparent;
+    -webkit-text-stroke:1.4px #2b3040;
+  }
+  .outline-volt {
+    color:transparent;
+    -webkit-text-stroke:1.6px var(--volt);
+  }
+
+  /* Marquee rows */
+  .marquee { display:flex; width:max-content; will-change:transform; }
+  .marquee span { padding:0 1.4rem; white-space:nowrap; }
+
+  /* Noise / grain overlay */
+  .grain::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .accordion-body{ max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .magnetic{ will-change:transform; }
+  .reveal-line{ overflow:hidden; }
+
+  ::selection{ background:var(--volt); color:#08090c; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{ width:10px; }
+  ::-webkit-scrollbar-track{ background:#08090c; }
+  ::-webkit-scrollbar-thumb{ background:#262a36; border-radius:99px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--volt); }
+
+  .card-glow{ transition:transform .4s cubic-bezier(.2,.8,.2,1), border-color .4s; }
+  .card-glow:hover{ border-color:var(--volt); }
+
+  @media (prefers-reduced-motion: reduce){
+    .marquee{ animation:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="grain bg-ink text-bone antialiased selection:bg-volt">
+
+<!-- ============== NAV ============== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2 group">
+      <span class="w-9 h-9 rounded-md bg-volt flex items-center justify-center -skew-x-12">
+        <span class="font-exp text-ink text-lg skew-x-12">V</span>
+      </span>
+      <span class="font-exp text-xl tracking-tight">VELOCIT<span class="text-volt">Ē</span></span>
+    </a>
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-ash">
+      <a href="#programs" class="hover:text-bone transition">Programs</a>
+      <a href="#trainers" class="hover:text-bone transition">Coaches</a>
+      <a href="#pricing" class="hover:text-bone transition">Memberships</a>
+      <a href="#schedule" class="hover:text-bone transition">Schedule</a>
+      <a href="#faq" class="hover:text-bone transition">FAQ</a>
+    </nav>
+    <a href="#cta" data-magnetic class="magnetic hidden sm:inline-flex items-center gap-2 bg-volt text-ink font-bold text-sm px-5 py-2.5 rounded-full hover:bg-voltdim transition">
+      Free Week
+      <span class="text-base leading-none">→</span>
+    </a>
+    <button id="burger" class="md:hidden text-bone text-2xl">≡</button>
+  </div>
+  <!-- mobile menu -->
+  <div id="mobileMenu" class="md:hidden hidden bg-char/95 backdrop-blur border-t border-steel">
+    <div class="px-6 py-5 flex flex-col gap-4 text-ash font-medium">
+      <a href="#programs" class="mobile-link">Programs</a>
+      <a href="#trainers" class="mobile-link">Coaches</a>
+      <a href="#pricing" class="mobile-link">Memberships</a>
+      <a href="#schedule" class="mobile-link">Schedule</a>
+      <a href="#faq" class="mobile-link">FAQ</a>
+      <a href="#cta" class="mobile-link bg-volt text-ink text-center font-bold py-2.5 rounded-full">Start Free Week</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============== HERO ============== -->
+<section id="top" class="relative min-h-screen flex items-end overflow-hidden pt-28 pb-10">
+  <!-- athlete image w/ parallax -->
+  <div class="absolute inset-0 z-0">
+    <div data-parallax="0.25" class="absolute inset-0 bg-gradient-to-br from-steel to-ink">
+      <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1600&q=80"
+           alt="Athlete training" loading="eager"
+           onerror="this.style.display='none'"
+           class="w-full h-[120%] object-cover opacity-50 mix-blend-luminosity" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/30"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-ink/40"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 md:px-8 w-full">
+    <div class="mb-6 flex items-center gap-3" data-hero="badge">
+      <span class="w-2.5 h-2.5 rounded-full bg-volt animate-pulse"></span>
+      <span class="text-xs tracking-[0.3em] uppercase text-ash">Performance Training Lab · Est. 2019</span>
+    </div>
+
+    <h1 class="kinetic text-[18vw] md:text-[15vw] lg:text-[13rem]">
+      <span class="block reveal-line"><span data-hero="line" class="block">Train</span></span>
+      <span class="block reveal-line"><span data-hero="line" class="block text-volt">Beyond</span></span>
+      <span class="block reveal-line"><span data-hero="line" class="block outline-txt">Limits</span></span>
+    </h1>
+
+    <div class="mt-8 flex flex-col md:flex-row md:items-end justify-between gap-8">
+      <p data-hero="copy" class="max-w-md text-ash text-base md:text-lg leading-relaxed">
+        Strength, conditioning, and recovery engineered for people who refuse to coast.
+        Coached programming. Real data. Relentless progress.
+      </p>
+      <div data-hero="copy" class="flex items-center gap-4">
+        <a href="#cta" data-magnetic class="magnetic inline-flex items-center gap-2 bg-volt text-ink font-bold px-7 py-4 rounded-full hover:bg-voltdim transition">
+          Start Free Week
+        </a>
+        <a href="#programs" class="inline-flex items-center gap-2 border border-steel text-bone px-7 py-4 rounded-full hover:border-volt transition">
+          See Programs
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-4 right-6 z-10 hidden md:flex items-center gap-2 text-ash text-xs tracking-widest uppercase rotate-90 origin-right">
+    Scroll <span class="w-8 h-px bg-ash"></span>
+  </div>
+</section>
+
+<!-- ============== MARQUEE STRIP ============== -->
+<section class="py-6 bg-volt text-ink border-y-4 border-ink overflow-hidden">
+  <div class="marquee" data-marquee="left">
+    <span class="font-exp text-2xl md:text-3xl uppercase">Strength ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Conditioning ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Mobility ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Recovery ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Power ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Strength ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Conditioning ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Mobility ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Recovery ·</span>
+    <span class="font-exp text-2xl md:text-3xl uppercase">Power ·</span>
+  </div>
+</section>
+
+<!-- ============== STATS STRIP (pinned + count-up) ============== -->
+<section id="stats" class="relative bg-char">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 py-24 md:py-32">
+    <div class="grid md:grid-cols-4 gap-px bg-steel rounded-2xl overflow-hidden border border-steel">
+      <div class="bg-char p-8 md:p-10">
+        <div class="kinetic text-5xl md:text-6xl text-volt"><span class="count" data-to="2400" data-suffix="+">0</span></div>
+        <p class="mt-3 text-ash text-sm uppercase tracking-widest">Active Members</p>
+      </div>
+      <div class="bg-char p-8 md:p-10">
+        <div class="kinetic text-5xl md:text-6xl"><span class="count" data-to="68" data-suffix="">0</span></div>
+        <p class="mt-3 text-ash text-sm uppercase tracking-widest">Classes / Week</p>
+      </div>
+      <div class="bg-char p-8 md:p-10">
+        <div class="kinetic text-5xl md:text-6xl"><span class="count" data-to="1.2" data-decimals="1" data-suffix="M">0</span></div>
+        <p class="mt-3 text-ash text-sm uppercase tracking-widest">Calories Torched / Day</p>
+      </div>
+      <div class="bg-char p-8 md:p-10">
+        <div class="kinetic text-5xl md:text-6xl text-volt"><span class="count" data-to="14" data-suffix="">0</span></div>
+        <p class="mt-3 text-ash text-sm uppercase tracking-widest">Elite Coaches</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== KINETIC SCRUB HEADLINE ============== -->
+<section class="bg-ink py-20 md:py-28 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <p data-scrub class="kinetic text-[12vw] leading-[0.9] outline-volt">No Excuses</p>
+    <p data-scrub-r class="kinetic text-[12vw] leading-[0.9] text-right">Only Reps</p>
+  </div>
+</section>
+
+<!-- ============== PROGRAMS / CLASSES GRID ============== -->
+<section id="programs" class="bg-char py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
+      <div>
+        <span class="text-volt text-xs tracking-[0.3em] uppercase">01 — The Programs</span>
+        <h2 class="kinetic text-5xl md:text-7xl mt-4">Pick Your<br><span class="text-volt">Battlefield</span></h2>
+      </div>
+      <p class="max-w-sm text-ash">Six signature systems built around measurable progression. Switch any time — your data follows you.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" data-stagger>
+      <!-- card -->
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">01</div>
+        <h3 class="font-exp text-2xl uppercase relative">Hypertrophy Lab</h3>
+        <p class="mt-3 text-ash text-sm relative">Volume-driven strength blocks engineered to build dense, durable muscle.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>5 days / week</span><span class="text-volt">Intermediate+</span>
+        </div>
+      </article>
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">02</div>
+        <h3 class="font-exp text-2xl uppercase relative">Metcon Engine</h3>
+        <p class="mt-3 text-ash text-sm relative">High-intensity conditioning circuits that build a relentless gas tank.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>4 days / week</span><span class="text-volt">All levels</span>
+        </div>
+      </article>
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">03</div>
+        <h3 class="font-exp text-2xl uppercase relative">Powerline</h3>
+        <p class="mt-3 text-ash text-sm relative">Squat, bench, deadlift. Periodized peaking for raw maximal strength.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>3 days / week</span><span class="text-volt">Advanced</span>
+        </div>
+      </article>
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">04</div>
+        <h3 class="font-exp text-2xl uppercase relative">Mobility Flow</h3>
+        <p class="mt-3 text-ash text-sm relative">Joint health, range, and active recovery sessions to keep you bulletproof.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>2 days / week</span><span class="text-volt">All levels</span>
+        </div>
+      </article>
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">05</div>
+        <h3 class="font-exp text-2xl uppercase relative">Sprint &amp; Plyo</h3>
+        <p class="mt-3 text-ash text-sm relative">Explosive speed, jump, and reactive power for athletic carryover.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>3 days / week</span><span class="text-volt">Intermediate+</span>
+        </div>
+      </article>
+      <article class="card-glow group bg-ink border border-steel rounded-2xl p-7 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 kinetic text-[8rem] text-steel/60 group-hover:text-volt/10 transition">06</div>
+        <h3 class="font-exp text-2xl uppercase relative">Hybrid Athlete</h3>
+        <p class="mt-3 text-ash text-sm relative">Run far, lift heavy. The endurance-strength fusion for the well-rounded.</p>
+        <div class="mt-6 flex items-center justify-between text-xs text-ash relative">
+          <span>6 days / week</span><span class="text-volt">Advanced</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TRAINERS ============== -->
+<section id="trainers" class="bg-ink py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="mb-14">
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">02 — The Coaches</span>
+      <h2 class="kinetic text-5xl md:text-7xl mt-4">Built By <span class="text-volt">Pros</span></h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5" data-stagger>
+      <div class="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-steel to-ink border border-steel">
+        <div data-parallax="0.12" class="aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=80"
+               alt="Coach Mara Quinn" loading="lazy" onerror="this.style.display='none'"
+               class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-700" />
+        </div>
+        <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-ink to-transparent">
+          <h3 class="font-exp text-2xl uppercase">Mara Quinn</h3>
+          <p class="text-volt text-sm">Head of Strength</p>
+        </div>
+      </div>
+      <div class="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-steel to-ink border border-steel">
+        <div data-parallax="0.12" class="aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1600&q=80"
+               alt="Coach Devon Ash" loading="lazy" onerror="this.style.display='none'"
+               class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-700" />
+        </div>
+        <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-ink to-transparent">
+          <h3 class="font-exp text-2xl uppercase">Devon Ash</h3>
+          <p class="text-volt text-sm">Conditioning Lead</p>
+        </div>
+      </div>
+      <div class="group relative rounded-2xl overflow-hidden bg-gradient-to-b from-steel to-ink border border-steel">
+        <div data-parallax="0.12" class="aspect-[4/5] overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=1600&q=80"
+               alt="Coach Iris Vega" loading="lazy" onerror="this.style.display='none'"
+               class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-700" />
+        </div>
+        <div class="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-ink to-transparent">
+          <h3 class="font-exp text-2xl uppercase">Iris Vega</h3>
+          <p class="text-volt text-sm">Mobility &amp; Recovery</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ABOUT / PHILOSOPHY ============== -->
+<section id="about" class="bg-char py-24 md:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">03 — The Philosophy</span>
+      <h2 class="kinetic text-4xl md:text-6xl mt-4 leading-[0.95]">
+        Effort Is The<br><span class="outline-volt">Only Currency</span>
+      </h2>
+      <p class="mt-6 text-ash leading-relaxed max-w-lg">
+        We don't sell shortcuts. We build systems. Every session is programmed, tracked, and adjusted
+        against your real numbers — so progress isn't a feeling, it's a measurement. Show up, do the work,
+        watch the data climb.
+      </p>
+      <div class="mt-8 grid grid-cols-3 gap-6">
+        <div><div class="kinetic text-4xl text-volt">100%</div><p class="text-ash text-xs uppercase tracking-widest mt-1">Coached</p></div>
+        <div><div class="kinetic text-4xl">0</div><p class="text-ash text-xs uppercase tracking-widest mt-1">Gimmicks</p></div>
+        <div><div class="kinetic text-4xl text-volt">∞</div><p class="text-ash text-xs uppercase tracking-widest mt-1">Progress</p></div>
+      </div>
+    </div>
+    <div class="relative rounded-2xl overflow-hidden border border-steel">
+      <div data-parallax="0.18" class="aspect-[4/3] bg-gradient-to-br from-steel to-ink">
+        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1600&q=80"
+             alt="Training floor" loading="lazy" onerror="this.style.display='none'"
+             class="w-full h-[115%] object-cover opacity-70" />
+      </div>
+      <div class="absolute bottom-5 left-5 bg-volt text-ink px-4 py-2 rounded-full text-sm font-bold -skew-x-6">
+        <span class="skew-x-6 inline-block">Train with intent.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TESTIMONIALS / TRANSFORMATIONS ============== -->
+<section id="results" class="bg-ink py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="mb-14">
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">04 — Transformations</span>
+      <h2 class="kinetic text-5xl md:text-7xl mt-4">Real People.<br><span class="text-volt">Real Reps.</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5" data-stagger>
+      <figure class="bg-char border border-steel rounded-2xl p-7">
+        <div class="kinetic text-volt text-3xl">+32kg</div>
+        <blockquote class="mt-4 text-bone leading-relaxed">"Added 32kg to my deadlift in five months. The programming actually made sense for the first time."</blockquote>
+        <figcaption class="mt-5 text-ash text-sm">— Tariq M., Powerline</figcaption>
+      </figure>
+      <figure class="bg-char border border-steel rounded-2xl p-7">
+        <div class="kinetic text-volt text-3xl">−11kg</div>
+        <blockquote class="mt-4 text-bone leading-relaxed">"Dropped 11kg and kept every bit of strength. The Metcon Engine is brutal in the best way."</blockquote>
+        <figcaption class="mt-5 text-ash text-sm">— Joelle R., Metcon</figcaption>
+      </figure>
+      <figure class="bg-char border border-steel rounded-2xl p-7">
+        <div class="kinetic text-volt text-3xl">−6s</div>
+        <blockquote class="mt-4 text-bone leading-relaxed">"Knocked six seconds off my 400m. Sprint &amp; Plyo turned my legs into pistons."</blockquote>
+        <figcaption class="mt-5 text-ash text-sm">— Bryce L., Sprint &amp; Plyo</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PRICING ============== -->
+<section id="pricing" class="bg-char py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">05 — Memberships</span>
+      <h2 class="kinetic text-5xl md:text-7xl mt-4">Lock In Your <span class="text-volt">Tier</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5 items-stretch" data-stagger>
+      <!-- tier -->
+      <div class="bg-ink border border-steel rounded-2xl p-8 flex flex-col">
+        <h3 class="font-exp text-2xl uppercase">Drop-In</h3>
+        <div class="mt-4 kinetic text-5xl">$29<span class="text-ash text-lg font-body normal-case">/visit</span></div>
+        <ul class="mt-6 space-y-3 text-ash text-sm flex-1">
+          <li class="flex gap-2"><span class="text-volt">›</span> Full floor access</li>
+          <li class="flex gap-2"><span class="text-volt">›</span> One group class</li>
+          <li class="flex gap-2"><span class="text-volt">›</span> No commitment</li>
+        </ul>
+        <a href="#cta" class="mt-8 text-center border border-steel rounded-full py-3 font-bold hover:border-volt transition">Choose Drop-In</a>
+      </div>
+      <!-- featured -->
+      <div class="bg-volt text-ink rounded-2xl p-8 flex flex-col relative scale-[1.03] shadow-2xl shadow-volt/10">
+        <span class="absolute top-5 right-5 text-xs font-bold uppercase tracking-widest bg-ink text-volt px-3 py-1 rounded-full">Popular</span>
+        <h3 class="font-exp text-2xl uppercase">Unlimited</h3>
+        <div class="mt-4 kinetic text-5xl">$129<span class="text-ink/60 text-lg font-body normal-case">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-ink/80 text-sm flex-1">
+          <li class="flex gap-2"><span class="font-bold">›</span> Unlimited classes</li>
+          <li class="flex gap-2"><span class="font-bold">›</span> All 6 programs</li>
+          <li class="flex gap-2"><span class="font-bold">›</span> Progress tracking app</li>
+          <li class="flex gap-2"><span class="font-bold">›</span> Recovery suite access</li>
+        </ul>
+        <a href="#cta" data-magnetic class="magnetic mt-8 text-center bg-ink text-volt rounded-full py-3 font-bold hover:bg-char transition">Go Unlimited</a>
+      </div>
+      <!-- tier -->
+      <div class="bg-ink border border-steel rounded-2xl p-8 flex flex-col">
+        <h3 class="font-exp text-2xl uppercase">Performance</h3>
+        <div class="mt-4 kinetic text-5xl">$249<span class="text-ash text-lg font-body normal-case">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-ash text-sm flex-1">
+          <li class="flex gap-2"><span class="text-volt">›</span> Everything in Unlimited</li>
+          <li class="flex gap-2"><span class="text-volt">›</span> 1:1 coaching weekly</li>
+          <li class="flex gap-2"><span class="text-volt">›</span> Custom programming</li>
+          <li class="flex gap-2"><span class="text-volt">›</span> Nutrition strategy</li>
+        </ul>
+        <a href="#cta" class="mt-8 text-center border border-steel rounded-full py-3 font-bold hover:border-volt transition">Go Performance</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SCHEDULE / HOW TO JOIN ============== -->
+<section id="schedule" class="bg-ink py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-14">
+    <div>
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">06 — How To Join</span>
+      <h2 class="kinetic text-5xl md:text-6xl mt-4">Three Steps<br>To <span class="text-volt">Day One</span></h2>
+      <div class="mt-10 space-y-8">
+        <div class="flex gap-5">
+          <div class="kinetic text-4xl text-volt shrink-0 w-14">01</div>
+          <div><h3 class="font-exp text-xl uppercase">Claim Your Free Week</h3><p class="text-ash text-sm mt-1">No card required. Walk in, scan the QR, you're training.</p></div>
+        </div>
+        <div class="flex gap-5">
+          <div class="kinetic text-4xl text-volt shrink-0 w-14">02</div>
+          <div><h3 class="font-exp text-xl uppercase">Movement Assessment</h3><p class="text-ash text-sm mt-1">A coach maps your baseline and picks your starting program.</p></div>
+        </div>
+        <div class="flex gap-5">
+          <div class="kinetic text-4xl text-volt shrink-0 w-14">03</div>
+          <div><h3 class="font-exp text-xl uppercase">Start Stacking Reps</h3><p class="text-ash text-sm mt-1">Show up, follow the plan, watch your numbers climb.</p></div>
+        </div>
+      </div>
+    </div>
+    <!-- mini schedule -->
+    <div class="bg-char border border-steel rounded-2xl p-7">
+      <h3 class="font-exp text-xl uppercase mb-5">This Week's Sessions</h3>
+      <div class="divide-y divide-steel">
+        <div class="flex items-center justify-between py-4"><div><p class="font-semibold">Hypertrophy Lab</p><p class="text-ash text-xs">Mon · 06:00</p></div><span class="text-volt text-sm">8 spots</span></div>
+        <div class="flex items-center justify-between py-4"><div><p class="font-semibold">Metcon Engine</p><p class="text-ash text-xs">Tue · 18:30</p></div><span class="text-volt text-sm">3 spots</span></div>
+        <div class="flex items-center justify-between py-4"><div><p class="font-semibold">Powerline</p><p class="text-ash text-xs">Wed · 07:00</p></div><span class="text-ember text-sm">Full</span></div>
+        <div class="flex items-center justify-between py-4"><div><p class="font-semibold">Sprint &amp; Plyo</p><p class="text-ash text-xs">Thu · 17:00</p></div><span class="text-volt text-sm">12 spots</span></div>
+        <div class="flex items-center justify-between py-4"><div><p class="font-semibold">Mobility Flow</p><p class="text-ash text-xs">Fri · 09:00</p></div><span class="text-volt text-sm">Open</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FAQ ============== -->
+<section id="faq" class="bg-char py-24 md:py-32">
+  <div class="max-w-4xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <span class="text-volt text-xs tracking-[0.3em] uppercase">07 — Questions</span>
+      <h2 class="kinetic text-5xl md:text-7xl mt-4">Quick <span class="text-volt">Answers</span></h2>
+    </div>
+    <div class="space-y-3" id="faqList">
+      <div class="border border-steel rounded-xl overflow-hidden bg-ink">
+        <button class="faq-trigger w-full flex items-center justify-between text-left p-5 font-semibold">
+          <span>Do I really get a full free week?</span><span class="faq-icon text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 text-ash text-sm">Yes — seven days, full floor and class access, no card and no catch. We want you to feel the difference before you commit.</p></div>
+      </div>
+      <div class="border border-steel rounded-xl overflow-hidden bg-ink">
+        <button class="faq-trigger w-full flex items-center justify-between text-left p-5 font-semibold">
+          <span>I'm a total beginner. Is this for me?</span><span class="faq-icon text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 text-ash text-sm">Absolutely. Every program scales. Your movement assessment sets a baseline and your coach picks the right starting point.</p></div>
+      </div>
+      <div class="border border-steel rounded-xl overflow-hidden bg-ink">
+        <button class="faq-trigger w-full flex items-center justify-between text-left p-5 font-semibold">
+          <span>Can I freeze or cancel my membership?</span><span class="faq-icon text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 text-ash text-sm">Freeze any month and cancel anytime — no long lock-ins, no exit fees. Manage it all in the member app.</p></div>
+      </div>
+      <div class="border border-steel rounded-xl overflow-hidden bg-ink">
+        <button class="faq-trigger w-full flex items-center justify-between text-left p-5 font-semibold">
+          <span>How do you track my progress?</span><span class="faq-icon text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 text-ash text-sm">Every lift, time, and session logs to your profile. Coaches review the data weekly and adjust your programming accordingly.</p></div>
+      </div>
+      <div class="border border-steel rounded-xl overflow-hidden bg-ink">
+        <button class="faq-trigger w-full flex items-center justify-between text-left p-5 font-semibold">
+          <span>What are your hours?</span><span class="faq-icon text-volt text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-5 pb-5 text-ash text-sm">Open 05:00–23:00 weekdays and 07:00–20:00 weekends. Members get 24/7 access to the open-gym floor.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL CTA ============== -->
+<section id="cta" class="relative bg-ink py-28 md:py-40 overflow-hidden">
+  <div class="absolute inset-0 opacity-25">
+    <div data-parallax="0.2" class="absolute inset-0 bg-gradient-to-br from-steel to-ink">
+      <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1600&q=80"
+           alt="" loading="lazy" onerror="this.style.display='none'"
+           class="w-full h-[120%] object-cover" />
+    </div>
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink"></div>
+  <div class="relative z-10 max-w-5xl mx-auto px-5 md:px-8 text-center">
+    <h2 class="kinetic text-[15vw] md:text-[10rem] leading-[0.85]">
+      Start Your<br><span class="text-volt">Free Week</span>
+    </h2>
+    <p class="mt-6 text-ash max-w-xl mx-auto">Seven days, zero excuses, no card required. Find out what training with intent actually feels like.</p>
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#top" data-magnetic class="magnetic inline-flex items-center justify-center gap-2 bg-volt text-ink font-bold px-9 py-4 rounded-full hover:bg-voltdim transition text-lg">
+        Claim My Free Week →
+      </a>
+      <a href="#programs" class="inline-flex items-center justify-center gap-2 border border-steel text-bone px-9 py-4 rounded-full hover:border-volt transition text-lg">
+        Browse Programs
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="bg-char border-t border-steel pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-9 h-9 rounded-md bg-volt flex items-center justify-center -skew-x-12"><span class="font-exp text-ink text-lg skew-x-12">V</span></span>
+          <span class="font-exp text-xl">VELOCIT<span class="text-volt">Ē</span></span>
+        </div>
+        <p class="text-ash max-w-sm text-sm leading-relaxed">A performance training lab for people who refuse to coast. Coached programming, measured progress, relentless standards.</p>
+      </div>
+      <div>
+        <h4 class="font-exp uppercase text-sm tracking-widest mb-4">Explore</h4>
+        <ul class="space-y-2 text-ash text-sm">
+          <li><a href="#programs" class="hover:text-volt transition">Programs</a></li>
+          <li><a href="#trainers" class="hover:text-volt transition">Coaches</a></li>
+          <li><a href="#pricing" class="hover:text-volt transition">Memberships</a></li>
+          <li><a href="#schedule" class="hover:text-volt transition">Schedule</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-exp uppercase text-sm tracking-widest mb-4">Visit</h4>
+        <ul class="space-y-2 text-ash text-sm">
+          <li>14 Forge Lane, Unit 3</li>
+          <li>Riverside District</li>
+          <li>hello@velocite.fit</li>
+          <li>+1 (555) 018-7742</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-steel pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-ash text-xs">
+      <p>© 2026 VELOCITĒ Performance Lab. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-volt transition">Instagram</a>
+        <a href="#" class="hover:text-volt transition">YouTube</a>
+        <a href="#" class="hover:text-volt transition">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============== SCRIPTS ============== -->
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Nav scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-ink/85','backdrop-blur','border-b','border-steel');
+    else nav.classList.remove('bg-ink/85','backdrop-blur','border-b','border-steel');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* ---- Mobile menu ---- */
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => menu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => menu.classList.add('hidden')));
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform='rotate(0deg)'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(45deg)'; }
+    });
+  });
+
+  /* ---- Marquee (pure JS rAF so reduced-motion halts cleanly) ---- */
+  function startMarquee(inner, dir){
+    if(reduce) return;
+    // duplicate content for a seamless loop
+    inner.innerHTML += inner.innerHTML;
+    let x = 0; const speed = 0.6 * dir;
+    const half = inner.scrollWidth / 2;
+    function tick(){
+      x += speed;
+      if (dir < 0 && x <= -half) x += half;
+      if (dir > 0 && x >= 0)     x -= half;
+      inner.style.transform = `translateX(${x}px)`;
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  document.querySelectorAll('[data-marquee]').forEach(inner => {
+    startMarquee(inner, inner.dataset.marquee === 'right' ? 1 : -1);
+  });
+
+  /* ---- GSAP ---- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero entrance */
+    gsap.set('[data-hero="line"]', {yPercent:115});
+    gsap.set('[data-hero="badge"], [data-hero="copy"]', {opacity:0, y:24});
+    const tl = gsap.timeline({delay:0.15});
+    tl.to('[data-hero="badge"]', {opacity:1, y:0, duration:0.6, ease:'power3.out'})
+      .to('[data-hero="line"]', {yPercent:0, duration:1, stagger:0.1, ease:'power4.out'}, '-=0.3')
+      .to('[data-hero="copy"]', {opacity:1, y:0, duration:0.7, stagger:0.12, ease:'power3.out'}, '-=0.5');
+
+    /* Parallax containers */
+    document.querySelectorAll('[data-parallax]').forEach(el => {
+      const amt = parseFloat(el.dataset.parallax) || 0.2;
+      gsap.fromTo(el, {yPercent:-amt*100*0.5}, {
+        yPercent:amt*100*0.5, ease:'none',
+        scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }
+      });
+    });
+
+    /* Scrub kinetic headlines */
+    gsap.fromTo('[data-scrub]', {xPercent:-12, opacity:0.3}, {
+      xPercent:6, opacity:1, ease:'none',
+      scrollTrigger:{ trigger:'[data-scrub]', start:'top 90%', end:'bottom top', scrub:true }
+    });
+    gsap.fromTo('[data-scrub-r]', {xPercent:12, opacity:0.3}, {
+      xPercent:-6, opacity:1, ease:'none',
+      scrollTrigger:{ trigger:'[data-scrub-r]', start:'top 90%', end:'bottom top', scrub:true }
+    });
+
+    /* Staggered card reveals */
+    document.querySelectorAll('[data-stagger]').forEach(grid => {
+      gsap.from(grid.children, {
+        y:48, opacity:0, duration:0.7, stagger:0.08, ease:'power3.out',
+        scrollTrigger:{ trigger:grid, start:'top 80%' }
+      });
+    });
+
+    /* Pinned stats section */
+    ScrollTrigger.create({
+      trigger:'#stats',
+      start:'top top',
+      end:'+=260',
+      pin:'#stats > div',
+      pinSpacing:true
+    });
+
+    /* Count-up */
+    document.querySelectorAll('.count').forEach(el => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.decimals || '0', 10);
+      const suffix = el.dataset.suffix || '';
+      const obj = {v:0};
+      ScrollTrigger.create({
+        trigger: el, start:'top 90%', once:true,
+        onEnter: () => gsap.to(obj, {
+          v:to, duration:1.8, ease:'power2.out',
+          onUpdate:()=>{ el.textContent = obj.v.toFixed(dec) + suffix; }
+        })
+      });
+    });
+  } else {
+    /* reduced motion: show final stat values immediately */
+    document.querySelectorAll('.count').forEach(el => {
+      const dec = parseInt(el.dataset.decimals || '0', 10);
+      el.textContent = parseFloat(el.dataset.to).toFixed(dec) + (el.dataset.suffix || '');
+    });
+  }
+
+  /* ---- Magnetic buttons (pointer) ---- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      const strength = 0.4;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width/2);
+        const y = e.clientY - (r.top + r.height/2);
+        el.style.transform = `translate(${x*strength}px, ${y*strength}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+})();
+</script>
+</body>
+</html>

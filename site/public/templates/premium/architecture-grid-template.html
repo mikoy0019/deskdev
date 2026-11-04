@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MERIDIAN ATELIER — Architecture & Interior Design Studio</title>
+<meta name="description" content="Meridian Atelier is an architecture and interior design studio composing quiet, enduring spaces where light, material, and proportion meet." />
+
+<!-- Fonts: fine grotesk + editorial serif -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          grotesk: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          serif: ['"Fraunces"', 'ui-serif', 'Georgia', 'serif'],
+        },
+        colors: {
+          ink: '#16140F',
+          paper: '#F4F1EA',
+          stone: '#9C968A',
+          clay: '#C9C2B2',
+          accent: '#A4592A', // terracotta
+          accentSoft: '#C97A4A',
+        },
+        letterSpacing: {
+          tightest: '-0.06em',
+          widest2: '0.42em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --accent:#A4592A; --ink:#16140F; --paper:#F4F1EA; }
+
+  html, body { background:#F4F1EA; color:#16140F; }
+  body { font-family:'Space Grotesk', sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+
+  ::selection { background:#A4592A; color:#F4F1EA; }
+
+  /* thin hairline rules */
+  .hair { border-color: rgba(22,20,15,0.14); }
+
+  /* masked line reveal */
+  .reveal-mask { overflow:hidden; display:block; }
+  .reveal-line { display:block; transform:translateY(110%); }
+
+  /* index number kicker */
+  .idx { font-variant-numeric: tabular-nums; }
+
+  /* image container fallback gradient */
+  .img-frame {
+    background: linear-gradient(135deg, #C9C2B2 0%, #9C968A 55%, #6f6a5e 100%);
+    overflow:hidden;
+    position:relative;
+  }
+  .img-frame img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    will-change: transform;
+  }
+
+  /* custom cursor label */
+  #cursor-label {
+    position:fixed; top:0; left:0; z-index:90;
+    pointer-events:none;
+    transform:translate(-50%,-50%) scale(0.4);
+    opacity:0;
+    background:#16140F; color:#F4F1EA;
+    border-radius:9999px;
+    padding:0.65rem 1.1rem;
+    font-size:0.66rem; letter-spacing:0.22em; text-transform:uppercase;
+    white-space:nowrap;
+    transition: opacity .3s ease, transform .3s cubic-bezier(.2,.8,.2,1);
+    mix-blend-mode:normal;
+  }
+  #cursor-label.is-active { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  @media (hover:none){ #cursor-label{ display:none; } }
+
+  /* horizontal track */
+  .h-track { display:flex; will-change: transform; }
+
+  /* accordion */
+  .acc-body { max-height:0; overflow:hidden; transition: max-height .5s cubic-bezier(.2,.8,.2,1); }
+  .acc-item.open .acc-body { max-height: 360px; }
+  .acc-item.open .acc-sign { transform: rotate(45deg); }
+  .acc-sign { transition: transform .4s ease; }
+
+  /* nav scroll state */
+  #nav { transition: background-color .4s ease, backdrop-filter .4s ease, border-color .4s ease; }
+  #nav.scrolled { background-color: rgba(244,241,234,0.82); backdrop-filter: blur(12px); border-color: rgba(22,20,15,0.10); }
+
+  .link-underline { position:relative; }
+  .link-underline::after {
+    content:''; position:absolute; left:0; bottom:-2px; height:1px; width:100%;
+    background:currentColor; transform:scaleX(0); transform-origin:right; transition: transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .link-underline:hover::after { transform:scaleX(1); transform-origin:left; }
+
+  .marquee-track { display:flex; width:max-content; animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform:translateX(0);} to { transform:translateX(-50%);} }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-line { transform:none !important; }
+    .marquee-track { animation:none; }
+    html { scroll-behavior:auto; }
+    * { transition:none !important; }
+  }
+</style>
+</head>
+
+<body class="font-grotesk antialiased">
+
+<!-- cursor label -->
+<div id="cursor-label">View project</div>
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 border-b border-transparent">
+  <nav class="max-w-[1500px] mx-auto px-6 md:px-10 h-[68px] flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="w-[26px] h-[26px] border border-ink/70 flex items-center justify-center">
+        <span class="w-[9px] h-[9px] bg-accent rotate-45"></span>
+      </span>
+      <span class="font-serif text-[17px] tracking-tightest leading-none">Meridian Atelier</span>
+    </a>
+
+    <ul class="hidden lg:flex items-center gap-9 text-[12px] uppercase tracking-[0.18em] text-ink/70">
+      <li><a href="#work" class="link-underline">Work</a></li>
+      <li><a href="#studio" class="link-underline">Studio</a></li>
+      <li><a href="#expertise" class="link-underline">Expertise</a></li>
+      <li><a href="#process" class="link-underline">Process</a></li>
+      <li><a href="#journal" class="link-underline">Journal</a></li>
+    </ul>
+
+    <a href="#contact" class="hidden sm:inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] border border-ink/30 px-5 py-2.5 hover:bg-ink hover:text-paper transition-colors">
+      Start a project
+    </a>
+    <button id="menuBtn" class="lg:hidden flex flex-col gap-[5px] w-7" aria-label="Menu">
+      <span class="block h-px w-full bg-ink"></span>
+      <span class="block h-px w-full bg-ink"></span>
+    </button>
+  </nav>
+</header>
+
+<!-- mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-[60] bg-paper translate-y-[-100%] transition-transform duration-500 lg:hidden flex flex-col">
+  <div class="px-6 h-[68px] flex items-center justify-between border-b hair">
+    <span class="font-serif text-[17px]">Meridian Atelier</span>
+    <button id="menuClose" class="text-2xl leading-none">&times;</button>
+  </div>
+  <ul class="flex-1 flex flex-col justify-center gap-2 px-8 font-serif text-4xl">
+    <li><a href="#work" class="mob-link block py-2">Work</a></li>
+    <li><a href="#studio" class="mob-link block py-2">Studio</a></li>
+    <li><a href="#expertise" class="mob-link block py-2">Expertise</a></li>
+    <li><a href="#process" class="mob-link block py-2">Process</a></li>
+    <li><a href="#journal" class="mob-link block py-2">Journal</a></li>
+    <li><a href="#contact" class="mob-link block py-2 text-accent">Start a project</a></li>
+  </ul>
+</div>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative min-h-screen pt-[68px] flex flex-col">
+  <div class="max-w-[1500px] mx-auto w-full px-6 md:px-10 flex-1 flex flex-col">
+
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between pt-12 lg:pt-16 gap-8">
+      <div class="max-w-3xl">
+        <p class="reveal-mask mb-6 text-[11px] uppercase tracking-widest2 text-stone">
+          <span class="reveal-line">Architecture · Interiors · Spatial Strategy</span>
+        </p>
+        <h1 class="font-serif font-light leading-[0.94] tracking-tightest text-[clamp(2.8rem,8vw,7.2rem)]">
+          <span class="reveal-mask"><span class="reveal-line">Spaces that</span></span>
+          <span class="reveal-mask"><span class="reveal-line italic text-accent">hold the light.</span></span>
+        </h1>
+      </div>
+      <div class="reveal-mask max-w-xs lg:text-right shrink-0">
+        <span class="reveal-line block text-[14px] leading-relaxed text-ink/70">
+          A studio composing quiet, enduring environments where material, proportion and atmosphere meet.
+        </span>
+      </div>
+    </div>
+
+    <!-- hero image -->
+    <div class="mt-10 lg:mt-14 flex-1 min-h-[42vh]">
+      <div class="img-frame w-full h-full min-h-[42vh] hero-parallax">
+        <img
+          src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1600&q=80"
+          alt="Concrete and glass architectural facade"
+          loading="eager"
+          onerror="this.style.display='none'" />
+      </div>
+    </div>
+
+    <!-- hero meta row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-y-6 border-t hair mt-8 py-6 text-[12px]">
+      <div><p class="text-stone uppercase tracking-[0.18em] mb-1">Founded</p><p class="font-serif text-lg">2009 · Lisbon</p></div>
+      <div><p class="text-stone uppercase tracking-[0.18em] mb-1">Discipline</p><p class="font-serif text-lg">Build &amp; Interior</p></div>
+      <div><p class="text-stone uppercase tracking-[0.18em] mb-1">Recognition</p><p class="font-serif text-lg">RIBA · Dezeen</p></div>
+      <div class="flex md:justify-end items-center"><a href="#work" class="text-[11px] uppercase tracking-[0.2em] link-underline">Scroll to view ↓</a></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== INTRO / PHILOSOPHY ===================== -->
+<section id="studio-intro" class="py-24 md:py-36 border-t hair">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 grid lg:grid-cols-12 gap-10">
+    <div class="lg:col-span-3">
+      <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent">(01) — Philosophy</p>
+    </div>
+    <div class="lg:col-span-9">
+      <p class="font-serif font-light leading-[1.18] tracking-tight text-[clamp(1.6rem,3.6vw,3rem)]">
+        <span class="line-fade">We design slowly. Each project begins with the </span><span class="line-fade italic text-accent">quality of a single room</span><span class="line-fade"> — the way morning falls across stone, the weight of a door, the silence a wall can hold — and grows outward into a building.</span>
+      </p>
+      <div class="grid sm:grid-cols-3 gap-8 mt-14 text-[14px] leading-relaxed text-ink/70">
+        <p><span class="block font-serif text-ink text-base mb-2">Material honesty</span>Concrete, oak, lime and brass left to age, never disguised.</p>
+        <p><span class="block font-serif text-ink text-base mb-2">Proportion first</span>Geometry resolved before ornament. Restraint as a discipline.</p>
+        <p><span class="block font-serif text-ink text-base mb-2">Light as material</span>Apertures designed around the path of the sun, season to season.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HORIZONTAL PROJECT GALLERY (pinned) ===================== -->
+<section id="work" class="relative border-t hair">
+  <!-- header -->
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 pt-20 pb-10 flex items-end justify-between">
+    <div>
+      <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-3">(02) — Selected Projects</p>
+      <h2 class="font-serif font-light tracking-tightest text-[clamp(2rem,5vw,4rem)] leading-none">The Index</h2>
+    </div>
+    <p class="hidden md:block max-w-xs text-[13px] text-ink/60 leading-relaxed text-right">
+      Scroll to traverse the gallery. A decade of dwellings, pavilions and public rooms.
+    </p>
+  </div>
+
+  <!-- pinned horizontal -->
+  <div id="hWrap" class="relative">
+    <div id="hPin" class="md:h-screen overflow-hidden">
+      <div id="hTrack" class="h-track flex-col md:flex-row gap-0">
+
+        <!-- panel 1 -->
+        <article class="proj-panel shrink-0 w-full md:w-[58vw] lg:w-[42vw] md:h-screen flex flex-col justify-center px-6 md:px-10 py-10">
+          <div class="img-frame aspect-[4/5] md:h-[62vh] hover-img" data-label="Casa Lumen">
+            <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1600&q=80" alt="Casa Lumen residence" loading="lazy" onerror="this.style.display='none'" />
+          </div>
+          <div class="flex items-baseline justify-between mt-5">
+            <div>
+              <p class="idx text-[12px] text-stone">01 / 04</p>
+              <h3 class="font-serif text-2xl md:text-3xl mt-1 tracking-tight">Casa Lumen</h3>
+            </div>
+            <p class="text-[12px] uppercase tracking-[0.16em] text-ink/60">Residence · 2023</p>
+          </div>
+        </article>
+
+        <!-- panel 2 -->
+        <article class="proj-panel shrink-0 w-full md:w-[58vw] lg:w-[42vw] md:h-screen flex flex-col justify-center px-6 md:px-10 py-10">
+          <div class="img-frame aspect-[4/5] md:h-[62vh] hover-img" data-label="Stone Pavilion">
+            <img src="https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1600&q=80" alt="Stone Pavilion" loading="lazy" onerror="this.style.display='none'" />
+          </div>
+          <div class="flex items-baseline justify-between mt-5">
+            <div>
+              <p class="idx text-[12px] text-stone">02 / 04</p>
+              <h3 class="font-serif text-2xl md:text-3xl mt-1 tracking-tight">Stone Pavilion</h3>
+            </div>
+            <p class="text-[12px] uppercase tracking-[0.16em] text-ink/60">Cultural · 2022</p>
+          </div>
+        </article>
+
+        <!-- panel 3 -->
+        <article class="proj-panel shrink-0 w-full md:w-[58vw] lg:w-[42vw] md:h-screen flex flex-col justify-center px-6 md:px-10 py-10">
+          <div class="img-frame aspect-[4/5] md:h-[62vh] hover-img" data-label="The Quiet House">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80" alt="The Quiet House interior" loading="lazy" onerror="this.style.display='none'" />
+          </div>
+          <div class="flex items-baseline justify-between mt-5">
+            <div>
+              <p class="idx text-[12px] text-stone">03 / 04</p>
+              <h3 class="font-serif text-2xl md:text-3xl mt-1 tracking-tight">The Quiet House</h3>
+            </div>
+            <p class="text-[12px] uppercase tracking-[0.16em] text-ink/60">Interior · 2021</p>
+          </div>
+        </article>
+
+        <!-- panel 4 -->
+        <article class="proj-panel shrink-0 w-full md:w-[58vw] lg:w-[42vw] md:h-screen flex flex-col justify-center px-6 md:px-10 py-10">
+          <div class="img-frame aspect-[4/5] md:h-[62vh] hover-img" data-label="Aperture Loft">
+            <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1600&q=80" alt="Aperture Loft" loading="lazy" onerror="this.style.display='none'" />
+          </div>
+          <div class="flex items-baseline justify-between mt-5">
+            <div>
+              <p class="idx text-[12px] text-stone">04 / 04</p>
+              <h3 class="font-serif text-2xl md:text-3xl mt-1 tracking-tight">Aperture Loft</h3>
+            </div>
+            <p class="text-[12px] uppercase tracking-[0.16em] text-ink/60">Adaptive · 2020</p>
+          </div>
+        </article>
+
+        <!-- closing panel -->
+        <article class="proj-panel shrink-0 w-full md:w-[40vw] lg:w-[30vw] md:h-screen flex flex-col justify-center px-6 md:px-10 py-16 bg-ink text-paper">
+          <p class="idx text-[12px] uppercase tracking-[0.2em] text-accentSoft mb-4">Index complete</p>
+          <h3 class="font-serif font-light text-[clamp(1.8rem,4vw,3rem)] leading-tight tracking-tight">Forty-one realised works across nine countries.</h3>
+          <a href="#contact" class="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] border-b border-paper/40 pb-1 w-max hover:text-accentSoft transition-colors">Commission a project →</a>
+        </article>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SELECTED WORKS GRID ===================== -->
+<section class="py-24 md:py-32 border-t hair">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="flex items-end justify-between mb-12">
+      <div>
+        <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-3">(03) — Catalogue</p>
+        <h2 class="font-serif font-light tracking-tightest text-[clamp(2rem,5vw,4rem)] leading-none">Selected Works</h2>
+      </div>
+      <a href="#contact" class="hidden sm:inline-block text-[12px] uppercase tracking-[0.2em] link-underline">Full archive →</a>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+      <!-- tall -->
+      <a href="#work" class="group hover-img" data-label="View">
+        <div class="img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1486718448742-163732cd1544?auto=format&fit=crop&w=1600&q=80" alt="Cliffside studio" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl tracking-tight">Cliffside Studio</h3>
+          <span class="text-[11px] uppercase tracking-[0.16em] text-stone">2024</span>
+        </div>
+        <p class="text-[13px] text-ink/55 mt-1">Coastal residence · Comporta</p>
+      </a>
+
+      <a href="#work" class="group hover-img md:mt-16" data-label="View">
+        <div class="img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80" alt="Reading room" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl tracking-tight">The Reading Room</h3>
+          <span class="text-[11px] uppercase tracking-[0.16em] text-stone">2023</span>
+        </div>
+        <p class="text-[13px] text-ink/55 mt-1">Private library · Porto</p>
+      </a>
+
+      <a href="#work" class="group hover-img" data-label="View">
+        <div class="img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=1600&q=80" alt="Garden pavilion" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <div class="flex items-baseline justify-between mt-4">
+          <h3 class="font-serif text-xl tracking-tight">Garden Pavilion</h3>
+          <span class="text-[11px] uppercase tracking-[0.16em] text-stone">2022</span>
+        </div>
+        <p class="text-[13px] text-ink/55 mt-1">Glasshouse · Sintra</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS / ABOUT ===================== -->
+<section id="studio" class="py-24 md:py-32 bg-ink text-paper">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 grid lg:grid-cols-12 gap-12">
+    <div class="lg:col-span-5">
+      <p class="idx text-[12px] uppercase tracking-[0.2em] text-accentSoft mb-6">(04) — The Studio</p>
+      <h2 class="font-serif font-light text-[clamp(1.9rem,4vw,3.4rem)] leading-[1.08] tracking-tight">
+        Seventeen people. One conviction: that good space changes how a life is lived.
+      </h2>
+      <p class="text-[15px] text-paper/65 leading-relaxed mt-8 max-w-md">
+        Founded in a former tile works in Lisbon, Meridian Atelier is an architecture and interior practice working between dwelling, culture and landscape. We keep our practice small so every drawing passes through a principal's hand.
+      </p>
+      <a href="#contact" class="inline-flex items-center gap-2 mt-8 text-[12px] uppercase tracking-[0.2em] border border-paper/30 px-6 py-3 hover:bg-paper hover:text-ink transition-colors">Meet the studio</a>
+    </div>
+
+    <div class="lg:col-span-7 grid grid-cols-2 gap-y-12 gap-x-8 self-center">
+      <div class="border-t border-paper/15 pt-5">
+        <p class="font-serif font-light text-[clamp(2.6rem,6vw,4.5rem)] leading-none"><span class="count" data-to="41">0</span></p>
+        <p class="text-[12px] uppercase tracking-[0.16em] text-paper/55 mt-2">Realised works</p>
+      </div>
+      <div class="border-t border-paper/15 pt-5">
+        <p class="font-serif font-light text-[clamp(2.6rem,6vw,4.5rem)] leading-none"><span class="count" data-to="9">0</span></p>
+        <p class="text-[12px] uppercase tracking-[0.16em] text-paper/55 mt-2">Countries</p>
+      </div>
+      <div class="border-t border-paper/15 pt-5">
+        <p class="font-serif font-light text-[clamp(2.6rem,6vw,4.5rem)] leading-none"><span class="count" data-to="14">0</span></p>
+        <p class="text-[12px] uppercase tracking-[0.16em] text-paper/55 mt-2">Years of practice</p>
+      </div>
+      <div class="border-t border-paper/15 pt-5">
+        <p class="font-serif font-light text-[clamp(2.6rem,6vw,4.5rem)] leading-none"><span class="count" data-to="23">0</span><span class="text-accentSoft">+</span></p>
+        <p class="text-[12px] uppercase tracking-[0.16em] text-paper/55 mt-2">Awards &amp; mentions</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPERTISE / SERVICES ===================== -->
+<section id="expertise" class="py-24 md:py-32 border-t hair">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid lg:grid-cols-12 gap-10 mb-12">
+      <div class="lg:col-span-4">
+        <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-3">(05) — Expertise</p>
+        <h2 class="font-serif font-light tracking-tightest text-[clamp(2rem,5vw,4rem)] leading-none">What we do</h2>
+      </div>
+      <p class="lg:col-span-8 self-end text-[15px] text-ink/65 leading-relaxed max-w-2xl">
+        From the first sketch to the final coat of lime, we hold the whole arc of a project — architecture, interiors and the quiet details that make a space feel inevitable.
+      </p>
+    </div>
+
+    <div class="border-t hair">
+      <!-- service rows -->
+      <div class="svc-row grid md:grid-cols-12 items-baseline gap-4 py-8 border-b hair">
+        <p class="idx md:col-span-1 text-[12px] text-stone">01</p>
+        <h3 class="md:col-span-4 font-serif text-2xl md:text-3xl tracking-tight">Architecture</h3>
+        <p class="md:col-span-7 text-[14px] text-ink/60 leading-relaxed">New-build residences, cultural pavilions and adaptive reuse — full design through to construction administration.</p>
+      </div>
+      <div class="svc-row grid md:grid-cols-12 items-baseline gap-4 py-8 border-b hair">
+        <p class="idx md:col-span-1 text-[12px] text-stone">02</p>
+        <h3 class="md:col-span-4 font-serif text-2xl md:text-3xl tracking-tight">Interior Design</h3>
+        <p class="md:col-span-7 text-[14px] text-ink/60 leading-relaxed">Spatial atmospheres, bespoke joinery, material palettes and lighting designed as one continuous gesture.</p>
+      </div>
+      <div class="svc-row grid md:grid-cols-12 items-baseline gap-4 py-8 border-b hair">
+        <p class="idx md:col-span-1 text-[12px] text-stone">03</p>
+        <h3 class="md:col-span-4 font-serif text-2xl md:text-3xl tracking-tight">Spatial Strategy</h3>
+        <p class="md:col-span-7 text-[14px] text-ink/60 leading-relaxed">Feasibility, masterplanning and brief-shaping for clients deciding what a place could become.</p>
+      </div>
+      <div class="svc-row grid md:grid-cols-12 items-baseline gap-4 py-8 border-b hair">
+        <p class="idx md:col-span-1 text-[12px] text-stone">04</p>
+        <h3 class="md:col-span-4 font-serif text-2xl md:text-3xl tracking-tight">Furniture &amp; Objects</h3>
+        <p class="md:col-span-7 text-[14px] text-ink/60 leading-relaxed">A small line of pieces designed in-house — produced with regional makers in oak, brass and travertine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== AWARDS / PRESS MARQUEE ===================== -->
+<section class="py-10 border-t border-b hair overflow-hidden">
+  <div class="marquee-track text-stone">
+    <div class="flex items-center gap-16 pr-16 font-serif text-2xl md:text-3xl italic whitespace-nowrap">
+      <span>RIBA Award</span><span class="text-accent">✦</span><span>Dezeen Awards</span><span class="text-accent">✦</span><span>Wallpaper* Design</span><span class="text-accent">✦</span><span>AD100 Mention</span><span class="text-accent">✦</span><span>Iconic Award</span><span class="text-accent">✦</span>
+    </div>
+    <div class="flex items-center gap-16 pr-16 font-serif text-2xl md:text-3xl italic whitespace-nowrap" aria-hidden="true">
+      <span>RIBA Award</span><span class="text-accent">✦</span><span>Dezeen Awards</span><span class="text-accent">✦</span><span>Wallpaper* Design</span><span class="text-accent">✦</span><span>AD100 Mention</span><span class="text-accent">✦</span><span>Iconic Award</span><span class="text-accent">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-24 md:py-32">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-12">(06) — In their words</p>
+    <div class="grid md:grid-cols-2 gap-x-16 gap-y-14">
+      <figure class="border-t hair pt-8">
+        <blockquote class="font-serif font-light text-[clamp(1.3rem,2.4vw,1.9rem)] leading-snug tracking-tight">
+          "They gave us a house that listens. Two years in, we still notice new ways the light moves through it."
+        </blockquote>
+        <figcaption class="mt-6 text-[13px] text-ink/60"><span class="text-ink">Helena &amp; Marc Duarte</span> — Casa Lumen, Comporta</figcaption>
+      </figure>
+      <figure class="border-t hair pt-8">
+        <blockquote class="font-serif font-light text-[clamp(1.3rem,2.4vw,1.9rem)] leading-snug tracking-tight">
+          "Restraint without coldness. Every material choice felt considered, and the budget held to the day."
+        </blockquote>
+        <figcaption class="mt-6 text-[13px] text-ink/60"><span class="text-ink">Fundação Norte</span> — Stone Pavilion</figcaption>
+      </figure>
+      <figure class="border-t hair pt-8">
+        <blockquote class="font-serif font-light text-[clamp(1.3rem,2.4vw,1.9rem)] leading-snug tracking-tight">
+          "An interior that feels like it was always there. The joinery alone is worth the visit."
+        </blockquote>
+        <figcaption class="mt-6 text-[13px] text-ink/60"><span class="text-ink">A. Vasquez</span> — The Quiet House</figcaption>
+      </figure>
+      <figure class="border-t hair pt-8">
+        <blockquote class="font-serif font-light text-[clamp(1.3rem,2.4vw,1.9rem)] leading-snug tracking-tight">
+          "They are rare — architects who can hold a vision and still hear yours. The result is unmistakably ours."
+        </blockquote>
+        <figcaption class="mt-6 text-[13px] text-ink/60"><span class="text-ink">The Aperture Trust</span> — Aperture Loft</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROCESS ===================== -->
+<section id="process" class="py-24 md:py-32 border-t hair">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid lg:grid-cols-12 gap-10 mb-14">
+      <div class="lg:col-span-4">
+        <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-3">(07) — Method</p>
+        <h2 class="font-serif font-light tracking-tightest text-[clamp(2rem,5vw,4rem)] leading-none">How we work</h2>
+      </div>
+      <p class="lg:col-span-8 self-end text-[15px] text-ink/65 leading-relaxed max-w-2xl">Four movements, repeated patiently on every commission — from a first conversation to the moment we hand over the keys.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-ink/10 border hair">
+      <div class="bg-paper p-8 md:p-9">
+        <p class="idx text-[12px] text-accent mb-6">01</p>
+        <h3 class="font-serif text-xl tracking-tight mb-3">Listen</h3>
+        <p class="text-[14px] text-ink/60 leading-relaxed">We spend time in the place and with the people who'll inhabit it. The brief is written together.</p>
+      </div>
+      <div class="bg-paper p-8 md:p-9">
+        <p class="idx text-[12px] text-accent mb-6">02</p>
+        <h3 class="font-serif text-xl tracking-tight mb-3">Draw</h3>
+        <p class="text-[14px] text-ink/60 leading-relaxed">Plans, sections and physical models in parallel — the idea tested in light, scale and material early.</p>
+      </div>
+      <div class="bg-paper p-8 md:p-9">
+        <p class="idx text-[12px] text-accent mb-6">03</p>
+        <h3 class="font-serif text-xl tracking-tight mb-3">Refine</h3>
+        <p class="text-[14px] text-ink/60 leading-relaxed">Detailing down to the join. We prototype hardware, finishes and joinery before a wall is built.</p>
+      </div>
+      <div class="bg-paper p-8 md:p-9">
+        <p class="idx text-[12px] text-accent mb-6">04</p>
+        <h3 class="font-serif text-xl tracking-tight mb-3">Build</h3>
+        <p class="text-[14px] text-ink/60 leading-relaxed">On site weekly. We see the project through construction so the drawing and the room agree.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ACCORDION ===================== -->
+<section class="py-24 md:py-32 border-t hair">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 grid lg:grid-cols-12 gap-10">
+    <div class="lg:col-span-4">
+      <p class="idx text-[12px] uppercase tracking-[0.2em] text-accent mb-3">(08) — Enquiries</p>
+      <h2 class="font-serif font-light tracking-tightest text-[clamp(2rem,5vw,4rem)] leading-none">Good to know</h2>
+    </div>
+    <div class="lg:col-span-8">
+      <div class="acc-item open border-b hair">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-7 text-left">
+          <span class="font-serif text-lg md:text-2xl tracking-tight">Do you take on projects outside Portugal?</span>
+          <span class="acc-sign text-2xl text-accent leading-none shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-[14px] md:text-[15px] text-ink/65 leading-relaxed max-w-2xl">Yes. Roughly a third of our work is international. We establish a local site team and travel for every key milestone, so distance never dilutes the detail.</p></div>
+      </div>
+      <div class="acc-item border-b hair">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-7 text-left">
+          <span class="font-serif text-lg md:text-2xl tracking-tight">What size of project do you accept?</span>
+          <span class="acc-sign text-2xl text-accent leading-none shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-[14px] md:text-[15px] text-ink/65 leading-relaxed max-w-2xl">From a single considered room to a 4,000m² cultural building. We care less about scale than about ambition and the chance to do something quietly excellent.</p></div>
+      </div>
+      <div class="acc-item border-b hair">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-7 text-left">
+          <span class="font-serif text-lg md:text-2xl tracking-tight">How long does a typical commission take?</span>
+          <span class="acc-sign text-2xl text-accent leading-none shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-[14px] md:text-[15px] text-ink/65 leading-relaxed max-w-2xl">Interiors run six to twelve months; a new-build residence eighteen to thirty. We share a clear phased timeline after our first studio visit.</p></div>
+      </div>
+      <div class="acc-item border-b hair">
+        <button class="acc-head w-full flex items-center justify-between gap-6 py-7 text-left">
+          <span class="font-serif text-lg md:text-2xl tracking-tight">Do you handle interiors and furniture too?</span>
+          <span class="acc-sign text-2xl text-accent leading-none shrink-0">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-[14px] md:text-[15px] text-ink/65 leading-relaxed max-w-2xl">We prefer to. Holding architecture, interiors and bespoke pieces under one roof is how a space achieves coherence — but we're glad to collaborate with a client's own makers.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="contact" class="relative">
+  <div class="img-frame min-h-[70vh] flex items-center cta-parallax">
+    <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?auto=format&fit=crop&w=1600&q=80" alt="Architectural light study" loading="lazy" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-ink/55"></div>
+    <div class="relative max-w-[1500px] mx-auto w-full px-6 md:px-10 text-paper py-24">
+      <p class="idx text-[12px] uppercase tracking-[0.2em] text-accentSoft mb-6">(09) — Start a project</p>
+      <h2 class="font-serif font-light text-[clamp(2.4rem,7vw,6rem)] leading-[0.96] tracking-tightest max-w-4xl">
+        Let's design something <span class="italic text-accentSoft">that lasts.</span>
+      </h2>
+      <p class="max-w-md text-[15px] text-paper/70 leading-relaxed mt-8">Tell us about the place and the life it will hold. We take on a limited number of commissions each year.</p>
+      <div class="flex flex-col sm:flex-row gap-4 mt-10">
+        <a href="mailto:studio@meridianatelier.com" class="inline-flex items-center justify-center gap-2 bg-paper text-ink px-8 py-4 text-[12px] uppercase tracking-[0.2em] hover:bg-accent hover:text-paper transition-colors">studio@meridianatelier.com</a>
+        <a href="#top" class="inline-flex items-center justify-center gap-2 border border-paper/40 px-8 py-4 text-[12px] uppercase tracking-[0.2em] hover:bg-paper/10 transition-colors">Book a studio visit</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-ink text-paper/70 pt-20 pb-10">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid md:grid-cols-12 gap-10 pb-16 border-b border-paper/15">
+      <div class="md:col-span-5">
+        <a href="#top" class="flex items-center gap-3">
+          <span class="w-[26px] h-[26px] border border-paper/60 flex items-center justify-center"><span class="w-[9px] h-[9px] bg-accent rotate-45"></span></span>
+          <span class="font-serif text-2xl text-paper tracking-tightest">Meridian Atelier</span>
+        </a>
+        <p class="mt-6 max-w-sm text-[14px] leading-relaxed">Architecture &amp; interior design. Composing quiet, enduring environments where material, proportion and light meet.</p>
+      </div>
+      <div class="md:col-span-3">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-paper/45 mb-5">Navigate</p>
+        <ul class="space-y-3 text-[14px]">
+          <li><a href="#work" class="link-underline">Work</a></li>
+          <li><a href="#studio" class="link-underline">Studio</a></li>
+          <li><a href="#expertise" class="link-underline">Expertise</a></li>
+          <li><a href="#process" class="link-underline">Process</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-paper/45 mb-5">Connect</p>
+        <ul class="space-y-3 text-[14px]">
+          <li><a href="#" class="link-underline">Instagram</a></li>
+          <li><a href="#" class="link-underline">Pinterest</a></li>
+          <li><a href="#" class="link-underline">LinkedIn</a></li>
+          <li><a href="#journal" class="link-underline">Journal</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[11px] uppercase tracking-[0.2em] text-paper/45 mb-5">Studio</p>
+        <p class="text-[14px] leading-relaxed">Rua das Telhas 14<br/>1200 Lisboa, PT<br/><a href="mailto:studio@meridianatelier.com" class="link-underline text-paper">studio@meridianatelier.com</a></p>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-between gap-4 pt-8 text-[12px] text-paper/45">
+      <p>© 2026 Meridian Atelier — All rights reserved.</p>
+      <p class="uppercase tracking-[0.18em]">Lisbon · Made with light</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Mobile menu ---------- */
+  var menu = document.getElementById('mobileMenu');
+  var openMenu = function(){ menu.style.transform='translateY(0)'; };
+  var closeMenu = function(){ menu.style.transform='translateY(-100%)'; };
+  document.getElementById('menuBtn').addEventListener('click', openMenu);
+  document.getElementById('menuClose').addEventListener('click', closeMenu);
+  document.querySelectorAll('.mob-link').forEach(function(l){ l.addEventListener('click', closeMenu); });
+
+  /* ---------- Nav scroll state ---------- */
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 40); };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* ---------- Accordion ---------- */
+  document.querySelectorAll('.acc-head').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var item = btn.closest('.acc-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.acc-item').forEach(function(i){ i.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Custom cursor label ---------- */
+  var label = document.getElementById('cursor-label');
+  var hasFinePointer = window.matchMedia('(hover:hover)').matches;
+  if (hasFinePointer && label) {
+    var lx = 0, ly = 0, cx = 0, cy = 0;
+    window.addEventListener('mousemove', function(e){ lx = e.clientX; ly = e.clientY; });
+    (function loop(){
+      cx += (lx - cx) * 0.18; cy += (ly - cy) * 0.18;
+      label.style.left = cx + 'px'; label.style.top = cy + 'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('.hover-img').forEach(function(el){
+      el.addEventListener('mouseenter', function(){
+        label.textContent = el.getAttribute('data-label') || 'View project';
+        label.classList.add('is-active');
+        var img = el.querySelector('img'); if (img) img.style.transform = 'scale(1.05)';
+      });
+      el.addEventListener('mouseleave', function(){
+        label.classList.remove('is-active');
+        var img = el.querySelector('img'); if (img && !el.classList.contains('hero-parallax')) img.style.transform = '';
+      });
+    });
+    document.querySelectorAll('.hover-img img').forEach(function(img){
+      img.style.transition = 'transform .8s cubic-bezier(.2,.8,.2,1)';
+    });
+  }
+
+  if (reduce || typeof gsap === 'undefined') { return; }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Masked line reveals (hero) ---------- */
+  gsap.set('.reveal-line', { yPercent: 110 });
+  gsap.to('.reveal-line', {
+    yPercent: 0, duration: 1.1, ease: 'power3.out', stagger: 0.08, delay: 0.15
+  });
+
+  /* ---------- Word/line fade on philosophy ---------- */
+  document.querySelectorAll('.line-fade').forEach(function(el){
+    gsap.from(el, {
+      opacity: 0.12, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top 88%', end: 'top 45%', scrub: true }
+    });
+  });
+
+  /* ---------- Service rows slide-in ---------- */
+  gsap.utils.toArray('.svc-row').forEach(function(row){
+    gsap.from(row, {
+      y: 36, opacity: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: row, start: 'top 90%' }
+    });
+  });
+
+  /* ---------- Parallax on architectural images ---------- */
+  function parallax(sel, amount){
+    document.querySelectorAll(sel).forEach(function(frame){
+      var img = frame.querySelector('img'); if (!img) return;
+      gsap.fromTo(img, { yPercent: -amount }, {
+        yPercent: amount, ease: 'none',
+        scrollTrigger: { trigger: frame, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+  }
+  // give parallaxed images room
+  document.querySelectorAll('.hero-parallax img, .cta-parallax img').forEach(function(i){ i.style.height='118%'; i.style.objectPosition='center'; });
+  parallax('.hero-parallax', 8);
+  parallax('.cta-parallax', 9);
+
+  /* ---------- Count-ups ---------- */
+  document.querySelectorAll('.count').forEach(function(el){
+    var to = parseInt(el.getAttribute('data-to'), 10) || 0;
+    var obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 85%', once: true,
+      onEnter: function(){
+        gsap.to(obj, { v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: function(){ el.textContent = Math.round(obj.v); } });
+      }
+    });
+  });
+
+  /* ---------- Pinned horizontal project gallery ---------- */
+  var mm = gsap.matchMedia();
+  mm.add('(min-width: 768px)', function(){
+    var track = document.getElementById('hTrack');
+    var pin = document.getElementById('hPin');
+    if (!track || !pin) return;
+    var getScroll = function(){ return track.scrollWidth - window.innerWidth; };
+    var tween = gsap.to(track, {
+      x: function(){ return -getScroll(); },
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#hWrap',
+        start: 'top top',
+        end: function(){ return '+=' + getScroll(); },
+        pin: pin,
+        scrub: 1,
+        invalidateOnRefresh: true,
+        anticipatePin: 1
+      }
+    });
+
+    // subtle inner image parallax within panels
+    gsap.utils.toArray('.proj-panel .img-frame img').forEach(function(img){
+      gsap.fromTo(img, { scale: 1.08 }, {
+        scale: 1, ease: 'none',
+        scrollTrigger: {
+          trigger: img.closest('.proj-panel'),
+          containerAnimation: tween,
+          start: 'left right', end: 'right left', scrub: true
+        }
+      });
+    });
+  });
+
+  /* graceful: ensure layout recalcs once images load */
+  window.addEventListener('load', function(){ ScrollTrigger.refresh(); });
+})();
+</script>
+</body>
+</html>

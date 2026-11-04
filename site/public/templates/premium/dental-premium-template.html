@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumio Dental — Friendly, Modern Cosmetic Dentistry</title>
+<meta name="description" content="Lumio Dental — bright, gentle, tech-forward cosmetic and family dentistry. Same-day whitening, clear aligners, implants and pain-free cleanings. Book your smile in 60 seconds.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={theme:{extend:{
+  colors:{
+    ink:'#0b2e33',          // deep teal headings
+    slate:'#4d6a70',        // muted body text
+    base:'#f3fbfa',         // airy mint-white page
+    snow:'#ffffff',         // cards
+    teal:'#16c1ad',         // primary aqua accent
+    'teal-deep':'#0e9d8c',  // hover accent
+    aqua:'#dff7f3',         // soft fill
+    mint:'#ecfbf7',         // softer fill
+    coral:'#ff8a6b',        // warm secondary
+    'coral-soft':'#ffe6dd', // warm fill
+    sun:'#ffc145',          // stars / warmth
+    line:'rgba(11,46,51,0.08)'
+  },
+  fontFamily:{display:['Sora','system-ui','sans-serif'],body:['Inter','system-ui','sans-serif']},
+  borderRadius:{'4xl':'2rem','5xl':'2.75rem'}
+}}}
+</script>
+<style>
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+::selection{background:#16c1ad;color:#fff}
+
+/* ── keyframes ── */
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes floatYr{0%,100%{transform:translateY(0)}50%{transform:translateY(13px)}}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+@keyframes blob{0%,100%{border-radius:42% 58% 63% 37%/42% 44% 56% 58%}50%{border-radius:60% 40% 38% 62%/55% 58% 42% 45%}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.float{animation:floatY 7s ease-in-out infinite}
+.float-r{animation:floatYr 8s ease-in-out infinite}
+.spin-slow{animation:spinSlow 30s linear infinite}
+.blob{animation:blob 14s ease-in-out infinite}
+
+/* ── springy press / hover micro-interactions ── */
+.spring{transition:transform .45s cubic-bezier(.34,1.56,.64,1),box-shadow .45s ease,border-color .45s ease}
+.spring:hover{transform:translateY(-7px) scale(1.015)}
+.spring:active{transform:translateY(-1px) scale(.985);transition-duration:.12s}
+.press{transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .35s ease,background-color .35s ease}
+.press:hover{transform:scale(1.045)}
+.press:active{transform:scale(.95);transition-duration:.1s}
+
+/* ── soft card lift ── */
+.lift{transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .5s ease,border-color .5s ease}
+.lift:hover{transform:translateY(-9px);box-shadow:0 30px 55px -25px rgba(11,46,51,.32);border-color:rgba(22,193,173,.5)}
+
+/* ── reveal-on-scroll fallback (GSAP overrides when present) ── */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── nav ── */
+#nav{transition:background-color .4s ease,box-shadow .4s ease,padding .4s ease}
+#nav.scrolled{background:rgba(255,255,255,.82);backdrop-filter:blur(16px);box-shadow:0 10px 30px -18px rgba(11,46,51,.25)}
+
+/* ── soft depth shadow util ── */
+.soft{box-shadow:0 22px 45px -28px rgba(11,46,51,.30)}
+.soft-lg{box-shadow:0 40px 80px -40px rgba(11,46,51,.40)}
+
+/* ── pill / badge ── */
+.pill{box-shadow:0 6px 18px -10px rgba(22,193,173,.7)}
+
+/* ── step tracker fill rail ── */
+.rail{position:absolute;left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,#16c1ad,#0e9d8c);transform:scaleY(0);transform-origin:top;border-radius:99px}
+@media(min-width:1024px){.rail{background:linear-gradient(90deg,#16c1ad,#0e9d8c);transform:scaleX(0);transform-origin:left}}
+
+/* ── accordion ── */
+.acc-body{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.16,1,.3,1)}
+.acc-icon{transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.acc.open .acc-icon{transform:rotate(45deg)}
+
+/* ── gradient text ── */
+.grad{background:linear-gradient(100deg,#16c1ad,#0e9d8c 45%,#ff8a6b);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ── shimmer underline on links ── */
+.navlink{position:relative}
+.navlink::after{content:'';position:absolute;left:0;bottom:-4px;width:0;height:2px;border-radius:9px;background:#16c1ad;transition:width .35s cubic-bezier(.34,1.56,.64,1)}
+.navlink:hover::after{width:100%}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .reveal{opacity:1!important;transform:none!important}
+}
+</style>
+</head>
+<body class="bg-base font-body text-slate antialiased">
+
+<!-- ░░ floating booking CTA (mobile) ░░ -->
+<a href="#book" class="press fixed bottom-5 right-5 z-50 lg:hidden inline-flex items-center gap-2 rounded-full bg-teal px-5 py-3.5 text-sm font-semibold text-white soft">
+  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Book
+</a>
+
+<!-- ░░ NAV ░░ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-40 py-4">
+  <div class="mx-auto max-w-7xl px-5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5">
+      <span class="grid h-10 w-10 place-items-center rounded-2xl bg-teal text-white soft">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-2 0-3 1.2-5 1.2C4.8 4.2 3 5.6 3 8.4c0 4 1.6 7.4 3 9.8.7 1.2 1.4 2 2.2 2 1 0 1.2-1.4 1.6-3 .3-1.2.6-2 1.2-2s.9.8 1.2 2c.4 1.6.6 3 1.6 3 .8 0 1.5-.8 2.2-2 1.4-2.4 3-5.8 3-9.8 0-2.8-1.8-4.2-4-4.2-2 0-3-1.2-5-1.2z"/></svg>
+      </span>
+      <span class="font-display text-xl font-700 text-ink tracking-tight">Lumio<span class="text-teal">.</span></span>
+    </a>
+    <nav class="hidden lg:flex items-center gap-9 text-[15px] font-500 text-slate">
+      <a href="#why" class="navlink hover:text-ink">Why Lumio</a>
+      <a href="#services" class="navlink hover:text-ink">Services</a>
+      <a href="#team" class="navlink hover:text-ink">Team</a>
+      <a href="#process" class="navlink hover:text-ink">How it works</a>
+      <a href="#faq" class="navlink hover:text-ink">FAQ</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="tel:+15550123456" class="hidden sm:inline-flex items-center gap-2 text-[15px] font-600 text-ink hover:text-teal transition">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3-8.6A2 2 0 014.1 2h3a2 2 0 012 1.7c.1.9.4 1.8.7 2.7a2 2 0 01-.5 2.1L8.1 9.8a16 16 0 006 6l1.3-1.2a2 2 0 012.1-.5c.9.3 1.8.6 2.7.7a2 2 0 011.7 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        (555) 012-3456
+      </a>
+      <a href="#book" class="press inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-600 text-white pill">
+        Book appointment
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ░░ HERO ░░ -->
+<section id="top" class="relative pt-32 pb-20 sm:pt-40 lg:pt-44 lg:pb-28 overflow-hidden">
+  <!-- soft background blobs -->
+  <div class="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-aqua blur-3xl opacity-70"></div>
+  <div class="pointer-events-none absolute top-40 -right-32 h-[28rem] w-[28rem] rounded-full bg-coral-soft blur-3xl opacity-60"></div>
+  <div class="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- copy -->
+    <div>
+      <span data-hero class="pill inline-flex items-center gap-2 rounded-full bg-snow border border-line px-4 py-1.5 text-sm font-600 text-teal-deep">
+        <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full rounded-full bg-teal opacity-75 animate-ping"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-teal"></span></span>
+        Accepting new smiles this month
+      </span>
+      <h1 data-hero class="mt-6 font-display text-[2.6rem] leading-[1.05] sm:text-6xl lg:text-[4.1rem] font-800 text-ink tracking-tight">
+        Dentistry that feels <span class="grad">genuinely&nbsp;kind.</span>
+      </h1>
+      <p data-hero class="mt-6 max-w-md text-lg leading-relaxed text-slate">
+        Bright, gentle, tech-forward care for your whole family. Same-day whitening, invisible aligners and pain-free cleanings — booked online in under a minute.
+      </p>
+      <div data-hero class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="#book" class="press inline-flex items-center gap-2 rounded-full bg-teal px-7 py-4 text-base font-600 text-white pill">
+          Book your smile
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#services" class="press inline-flex items-center gap-2 rounded-full bg-snow border border-line px-7 py-4 text-base font-600 text-ink soft">
+          Explore services
+        </a>
+      </div>
+      <div data-hero class="mt-9 flex items-center gap-4">
+        <div class="flex -space-x-3">
+          <span class="h-10 w-10 rounded-full border-2 border-snow bg-gradient-to-br from-teal to-teal-deep"></span>
+          <span class="h-10 w-10 rounded-full border-2 border-snow bg-gradient-to-br from-coral to-sun"></span>
+          <span class="h-10 w-10 rounded-full border-2 border-snow bg-gradient-to-br from-aqua to-teal"></span>
+          <span class="grid h-10 w-10 place-items-center rounded-full border-2 border-snow bg-ink text-[11px] font-700 text-white">12k</span>
+        </div>
+        <div class="text-sm">
+          <div class="flex text-sun">★★★★★</div>
+          <div class="text-slate"><span class="font-700 text-ink">4.9/5</span> from 2,400+ happy patients</div>
+        </div>
+      </div>
+    </div>
+    <!-- visual -->
+    <div class="relative">
+      <div class="relative rounded-5xl overflow-hidden soft-lg float bg-gradient-to-br from-aqua to-mint aspect-[4/5] max-w-md mx-auto lg:ml-auto lg:mr-0">
+        <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Patient smiling at a modern dental clinic" class="h-full w-full object-cover">
+      </div>
+      <!-- floating stat card -->
+      <div class="absolute -left-3 sm:-left-8 top-10 rounded-3xl bg-snow soft px-5 py-4 float-r border border-line">
+        <div class="text-2xl font-800 text-ink font-display">60s</div>
+        <div class="text-xs text-slate leading-tight">average online<br>booking time</div>
+      </div>
+      <!-- floating badge -->
+      <div class="absolute -right-2 sm:-right-6 bottom-12 flex items-center gap-3 rounded-3xl bg-ink soft px-5 py-4 float">
+        <span class="grid h-9 w-9 place-items-center rounded-full bg-teal text-white">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="text-white text-sm leading-tight"><span class="font-700">Pain-free</span><br><span class="text-white/70 text-xs">comfort guarantee</span></div>
+      </div>
+      <!-- decorative ring -->
+      <div class="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 h-24 w-24 rounded-full border-4 border-dashed border-teal/30 spin-slow"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ STATS / TRUST STRIP ░░ -->
+<section class="relative">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="reveal rounded-4xl bg-ink soft-lg px-6 py-10 sm:px-12 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="font-display text-4xl sm:text-5xl font-800 text-white"><span class="count" data-to="22">0</span>+</div>
+        <div class="mt-1 text-sm text-white/60">Years caring for smiles</div>
+      </div>
+      <div>
+        <div class="font-display text-4xl sm:text-5xl font-800 text-teal"><span class="count" data-to="48">0</span>k</div>
+        <div class="mt-1 text-sm text-white/60">Treatments completed</div>
+      </div>
+      <div>
+        <div class="font-display text-4xl sm:text-5xl font-800 text-white"><span class="count" data-to="98">0</span>%</div>
+        <div class="mt-1 text-sm text-white/60">Would refer a friend</div>
+      </div>
+      <div>
+        <div class="font-display text-4xl sm:text-5xl font-800 text-coral"><span class="count" data-to="15">0</span>min</div>
+        <div class="mt-1 text-sm text-white/60">Average wait time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ WHY US ░░ -->
+<section id="why" class="py-24 lg:py-32">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="max-w-2xl">
+      <span class="reveal pill inline-flex rounded-full bg-mint px-4 py-1.5 text-sm font-600 text-teal-deep">Why Lumio</span>
+      <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-ink tracking-tight leading-tight">Care designed around <span class="grad">how you feel.</span></h2>
+      <p class="reveal mt-4 text-lg text-slate">Less clinical, more human. We pair gentle hands with quiet tech so every visit is calm, clear and quick.</p>
+    </div>
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-aqua text-teal-deep">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 5a5.5 5.5 0 019.5 7c-2.5 4.5-9.5 9-9.5 9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Gentle by default</h3>
+        <p class="mt-2 text-slate leading-relaxed">Numbing that actually works, warm blankets, noise-cancelling headphones and zero judgement — ever.</p>
+      </div>
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-coral-soft text-coral">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Same-day results</h3>
+        <p class="mt-2 text-slate leading-relaxed">In-house 3D scanning and milling means crowns, whitening and fixes done in one relaxed appointment.</p>
+      </div>
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-mint text-teal-deep">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Clear, honest pricing</h3>
+        <p class="mt-2 text-slate leading-relaxed">Upfront quotes before we start, transparent insurance help and flexible 0% monthly plans.</p>
+      </div>
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-aqua text-teal-deep">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v3M16 2v3M3 9h18M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Book in 60 seconds</h3>
+        <p class="mt-2 text-slate leading-relaxed">Real-time availability, instant text reminders and easy rescheduling — no phone tag required.</p>
+      </div>
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-coral-soft text-coral">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.6 5.7 21l2.3-7.1-6-4.5h7.6z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Family-friendly</h3>
+        <p class="mt-2 text-slate leading-relaxed">Kid-calming routines, a play corner and evening hours so the whole household fits one trip.</p>
+      </div>
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-8 soft">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl bg-mint text-teal-deep">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3 class="mt-6 font-display text-xl font-700 text-ink">Sterile & safe</h3>
+        <p class="mt-2 text-slate leading-relaxed">Hospital-grade sterilisation, single-use kits and HEPA air — exceeding every clinical standard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ BENTO SERVICES ░░ -->
+<section id="services" class="py-24 lg:py-28 bg-mint/60">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-xl">
+        <span class="reveal pill inline-flex rounded-full bg-snow border border-line px-4 py-1.5 text-sm font-600 text-teal-deep">Our services</span>
+        <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-ink tracking-tight leading-tight">Everything your smile needs, <span class="grad">under one roof.</span></h2>
+      </div>
+      <a href="#book" class="reveal press inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-600 text-white pill">See full menu</a>
+    </div>
+
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[210px]">
+      <!-- big feature -->
+      <div class="reveal lift relative md:col-span-2 md:row-span-2 rounded-4xl overflow-hidden soft border border-line group">
+        <div class="absolute inset-0 bg-gradient-to-br from-aqua to-mint"></div>
+        <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cosmetic whitening treatment" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent"></div>
+        <div class="absolute bottom-0 p-8">
+          <span class="pill inline-flex rounded-full bg-teal px-3 py-1 text-xs font-700 text-white">Most loved</span>
+          <h3 class="mt-3 font-display text-2xl sm:text-3xl font-700 text-white">Cosmetic whitening</h3>
+          <p class="mt-1 max-w-sm text-white/80 text-sm">Up to 8 shades brighter in a single visit — gentle, sensitivity-free and dazzling.</p>
+        </div>
+      </div>
+      <!-- aligners -->
+      <div class="reveal lift rounded-4xl bg-snow border border-line p-6 soft flex flex-col justify-between">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-coral-soft text-coral">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h7" stroke-linecap="round"/></svg>
+        </span>
+        <div><h3 class="font-display text-lg font-700 text-ink">Invisible aligners</h3><p class="text-sm text-slate mt-0.5">Straighten discreetly from $89/mo.</p></div>
+      </div>
+      <!-- implants -->
+      <div class="reveal lift rounded-4xl bg-ink soft p-6 flex flex-col justify-between">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-teal text-white">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c-2 0-3 1.2-5 1.2C5 4.2 4 5.6 4 8c0 3.6 1.4 6.6 2.6 8.8C7.2 18 7.8 18.6 8.4 18.6c.7 0 .9-1.1 1.2-2.4.3-1 .5-1.6 1-1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div><h3 class="font-display text-lg font-700 text-white">Dental implants</h3><p class="text-sm text-white/60 mt-0.5">Permanent, natural-looking teeth.</p></div>
+      </div>
+      <!-- cleanings wide -->
+      <div class="reveal lift md:col-span-2 rounded-4xl bg-snow border border-line p-6 soft flex items-center gap-5">
+        <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-aqua text-teal-deep">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v2M15 3v2M7 5h10l-1 7a4 4 0 01-8 0z M12 16v5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="flex-1"><h3 class="font-display text-lg font-700 text-ink">Gentle cleanings & checkups</h3><p class="text-sm text-slate mt-0.5">Painless hygiene visits with friendly, thorough hygienists who keep things calm.</p></div>
+        <a href="#book" class="press hidden sm:grid h-10 w-10 place-items-center rounded-full bg-teal text-white shrink-0">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <!-- emergency -->
+      <div class="reveal lift rounded-4xl bg-coral-soft border border-coral/20 p-6 soft flex flex-col justify-between">
+        <span class="grid h-11 w-11 place-items-center rounded-2xl bg-coral text-white">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16h.01M4.9 4.9l4.2 4.2M19.1 4.9l-4.2 4.2" stroke-linecap="round"/></svg>
+        </span>
+        <div><h3 class="font-display text-lg font-700 text-ink">Emergency care</h3><p class="text-sm text-slate mt-0.5">Same-day relief, 7 days a week.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ ABOUT / TEAM ░░ -->
+<section id="team" class="py-24 lg:py-32">
+  <div class="mx-auto max-w-7xl px-5 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative">
+      <div class="reveal grid grid-cols-2 gap-4">
+        <div class="rounded-4xl overflow-hidden soft bg-aqua aspect-[3/4] mt-8 lift border border-line">
+          <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lead dentist portrait" class="h-full w-full object-cover">
+        </div>
+        <div class="rounded-4xl overflow-hidden soft bg-mint aspect-[3/4] lift border border-line">
+          <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dental hygienist at work" class="h-full w-full object-cover">
+        </div>
+      </div>
+      <div class="reveal absolute -bottom-5 left-1/2 -translate-x-1/2 rounded-3xl bg-snow soft border border-line px-6 py-4 flex items-center gap-3">
+        <span class="grid h-10 w-10 place-items-center rounded-full bg-teal text-white">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="text-sm leading-tight"><span class="font-700 text-ink">Board-certified</span><br><span class="text-slate text-xs">specialist team</span></div>
+      </div>
+    </div>
+    <div>
+      <span class="reveal pill inline-flex rounded-full bg-mint px-4 py-1.5 text-sm font-600 text-teal-deep">Meet the team</span>
+      <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-ink tracking-tight leading-tight">Real people who <span class="grad">love teeth</span> — and put you first.</h2>
+      <p class="reveal mt-5 text-lg text-slate leading-relaxed">Led by Dr. Maya Okonkwo, our small, friendly team blends decades of expertise with a genuinely warm chairside manner. We explain everything in plain language, never upsell, and treat you like a neighbour.</p>
+      <div class="reveal mt-8 grid sm:grid-cols-3 gap-4">
+        <div class="rounded-3xl bg-snow border border-line p-5 soft lift">
+          <div class="font-display text-lg font-700 text-ink">Dr. Maya O.</div>
+          <div class="text-sm text-teal-deep font-600">Lead Dentist</div>
+          <div class="text-xs text-slate mt-1">Cosmetic & implants</div>
+        </div>
+        <div class="rounded-3xl bg-snow border border-line p-5 soft lift">
+          <div class="font-display text-lg font-700 text-ink">Dr. Leo R.</div>
+          <div class="text-sm text-teal-deep font-600">Orthodontist</div>
+          <div class="text-xs text-slate mt-1">Aligners & braces</div>
+        </div>
+        <div class="rounded-3xl bg-snow border border-line p-5 soft lift">
+          <div class="font-display text-lg font-700 text-ink">Priya & Sam</div>
+          <div class="text-sm text-teal-deep font-600">Hygienists</div>
+          <div class="text-xs text-slate mt-1">Gentle cleanings</div>
+        </div>
+      </div>
+      <a href="#book" class="reveal press mt-9 inline-flex items-center gap-2 rounded-full bg-teal px-7 py-4 text-base font-600 text-white pill">
+        Meet us in person
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ TESTIMONIALS ░░ -->
+<section class="py-24 lg:py-28 bg-ink relative overflow-hidden">
+  <div class="pointer-events-none absolute -top-20 -right-20 h-80 w-80 rounded-full bg-teal/20 blur-3xl"></div>
+  <div class="mx-auto max-w-7xl px-5 relative">
+    <div class="max-w-xl">
+      <span class="reveal pill inline-flex rounded-full bg-white/10 px-4 py-1.5 text-sm font-600 text-teal">Patient love</span>
+      <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-white tracking-tight leading-tight">Smiles worth <span class="text-teal">talking about.</span></h2>
+    </div>
+    <div class="mt-12 grid md:grid-cols-3 gap-6">
+      <div class="reveal lift rounded-4xl bg-white/[.06] border border-white/10 p-7 backdrop-blur-sm">
+        <div class="flex text-sun text-lg">★★★★★</div>
+        <p class="mt-4 text-white/85 leading-relaxed">"I used to dread the dentist. Lumio completely changed that — calm, quick and they actually listened. My whitening looks unreal."</p>
+        <div class="mt-6 flex items-center gap-3">
+          <span class="h-11 w-11 rounded-full bg-gradient-to-br from-teal to-teal-deep"></span>
+          <div><div class="font-600 text-white text-sm">Hannah K.</div><div class="text-white/50 text-xs">Whitening patient</div></div>
+        </div>
+      </div>
+      <div class="reveal lift rounded-4xl bg-white/[.06] border border-white/10 p-7 backdrop-blur-sm md:-translate-y-4">
+        <div class="flex text-sun text-lg">★★★★★</div>
+        <p class="mt-4 text-white/85 leading-relaxed">"Got my implant done in fewer visits than quoted, zero pain, and the price was exactly what they said. Honestly the best clinic I've been to."</p>
+        <div class="mt-6 flex items-center gap-3">
+          <span class="h-11 w-11 rounded-full bg-gradient-to-br from-coral to-sun"></span>
+          <div><div class="font-600 text-white text-sm">Marcus D.</div><div class="text-white/50 text-xs">Implant patient</div></div>
+        </div>
+      </div>
+      <div class="reveal lift rounded-4xl bg-white/[.06] border border-white/10 p-7 backdrop-blur-sm">
+        <div class="flex text-sun text-lg">★★★★★</div>
+        <p class="mt-4 text-white/85 leading-relaxed">"My kids ask to go back! The team is so warm and the play corner is a lifesaver. Booking online took me one minute flat."</p>
+        <div class="mt-6 flex items-center gap-3">
+          <span class="h-11 w-11 rounded-full bg-gradient-to-br from-aqua to-teal"></span>
+          <div><div class="font-600 text-white text-sm">Sofia L.</div><div class="text-white/50 text-xs">Family patient</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ PROCESS STEP TRACKER ░░ -->
+<section id="process" class="py-24 lg:py-32">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="max-w-xl mx-auto text-center">
+      <span class="reveal pill inline-flex rounded-full bg-mint px-4 py-1.5 text-sm font-600 text-teal-deep">How it works</span>
+      <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-ink tracking-tight leading-tight">From hello to <span class="grad">happy smile</span> in four easy steps.</h2>
+    </div>
+
+    <div id="tracker" class="mt-16 relative grid lg:grid-cols-4 gap-10 lg:gap-6">
+      <!-- rail track -->
+      <div class="hidden lg:block absolute top-7 left-[12.5%] right-[12.5%] h-1.5 bg-line rounded-full overflow-hidden">
+        <div id="railFill" class="rail"></div>
+      </div>
+      <!-- mobile vertical rail -->
+      <div class="lg:hidden absolute left-7 top-7 bottom-7 w-1.5 bg-line rounded-full overflow-hidden">
+        <div id="railFillM" class="rail"></div>
+      </div>
+
+      <!-- step -->
+      <div class="step relative flex lg:flex-col items-start lg:items-center gap-5 lg:gap-0 lg:text-center pl-0 lg:pl-0">
+        <span class="dot relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full bg-snow border-2 border-line text-ink font-700 font-display soft transition-all duration-500">1</span>
+        <div class="lg:mt-6">
+          <h3 class="font-display text-lg font-700 text-ink">Book online</h3>
+          <p class="mt-1 text-sm text-slate max-w-[15rem]">Pick a time in real time — instant confirmation, no phone calls.</p>
+        </div>
+      </div>
+      <div class="step relative flex lg:flex-col items-start lg:items-center gap-5 lg:gap-0 lg:text-center">
+        <span class="dot relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full bg-snow border-2 border-line text-ink font-700 font-display soft transition-all duration-500">2</span>
+        <div class="lg:mt-6">
+          <h3 class="font-display text-lg font-700 text-ink">Friendly consult</h3>
+          <p class="mt-1 text-sm text-slate max-w-[15rem]">A 3D scan and a clear, no-pressure plan built around your goals.</p>
+        </div>
+      </div>
+      <div class="step relative flex lg:flex-col items-start lg:items-center gap-5 lg:gap-0 lg:text-center">
+        <span class="dot relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full bg-snow border-2 border-line text-ink font-700 font-display soft transition-all duration-500">3</span>
+        <div class="lg:mt-6">
+          <h3 class="font-display text-lg font-700 text-ink">Gentle treatment</h3>
+          <p class="mt-1 text-sm text-slate max-w-[15rem]">Calm, comfortable care — many treatments finished the same day.</p>
+        </div>
+      </div>
+      <div class="step relative flex lg:flex-col items-start lg:items-center gap-5 lg:gap-0 lg:text-center">
+        <span class="dot relative z-10 grid h-14 w-14 shrink-0 place-items-center rounded-full bg-snow border-2 border-line text-ink font-700 font-display soft transition-all duration-500">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="lg:mt-6">
+          <h3 class="font-display text-lg font-700 text-ink">Show that smile</h3>
+          <p class="mt-1 text-sm text-slate max-w-[15rem]">Walk out glowing, with easy aftercare and a check-in text.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ FAQ ░░ -->
+<section id="faq" class="py-24 lg:py-28 bg-mint/60">
+  <div class="mx-auto max-w-3xl px-5">
+    <div class="text-center">
+      <span class="reveal pill inline-flex rounded-full bg-snow border border-line px-4 py-1.5 text-sm font-600 text-teal-deep">Questions</span>
+      <h2 class="reveal mt-5 font-display text-3xl sm:text-5xl font-800 text-ink tracking-tight">Good to know</h2>
+    </div>
+    <div class="mt-12 space-y-4" id="faqs">
+      <div class="acc reveal rounded-3xl bg-snow border border-line soft overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-600 text-ink text-lg">Does it really not hurt?</span>
+          <span class="acc-icon grid h-8 w-8 shrink-0 place-items-center rounded-full bg-aqua text-teal-deep text-xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-slate leading-relaxed">Comfort is our whole thing. We use effective numbing, gentle techniques, and offer sedation options for nervous patients. Most people are surprised by how relaxed it feels.</p></div>
+      </div>
+      <div class="acc reveal rounded-3xl bg-snow border border-line soft overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-600 text-ink text-lg">Do you take my insurance?</span>
+          <span class="acc-icon grid h-8 w-8 shrink-0 place-items-center rounded-full bg-aqua text-teal-deep text-xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-slate leading-relaxed">We accept most major plans and file claims for you. No insurance? Ask about our membership and 0% monthly payment plans — clear pricing, always upfront.</p></div>
+      </div>
+      <div class="acc reveal rounded-3xl bg-snow border border-line soft overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-600 text-ink text-lg">How fast can I get an appointment?</span>
+          <span class="acc-icon grid h-8 w-8 shrink-0 place-items-center rounded-full bg-aqua text-teal-deep text-xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-slate leading-relaxed">Often same week — and same day for emergencies. Our online booking shows live availability, so you can grab the next open slot in under a minute.</p></div>
+      </div>
+      <div class="acc reveal rounded-3xl bg-snow border border-line soft overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-600 text-ink text-lg">Is whitening safe for sensitive teeth?</span>
+          <span class="acc-icon grid h-8 w-8 shrink-0 place-items-center rounded-full bg-aqua text-teal-deep text-xl leading-none">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-6 text-slate leading-relaxed">Yes. We use a low-sensitivity professional system and tailor the strength to your enamel, so you get a brighter smile without the zings.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ FINAL CTA / BOOK ░░ -->
+<section id="book" class="py-24 lg:py-28">
+  <div class="mx-auto max-w-7xl px-5">
+    <div class="reveal relative overflow-hidden rounded-5xl bg-teal soft-lg px-7 py-14 sm:px-14 sm:py-20 text-center">
+      <div class="pointer-events-none absolute -top-16 -left-16 h-72 w-72 rounded-full bg-white/15 blob"></div>
+      <div class="pointer-events-none absolute -bottom-20 -right-10 h-80 w-80 rounded-full bg-ink/15 blob"></div>
+      <div class="relative">
+        <span class="pill inline-flex rounded-full bg-white/20 px-4 py-1.5 text-sm font-600 text-white">Your brighter smile starts here</span>
+        <h2 class="mt-5 font-display text-3xl sm:text-5xl lg:text-6xl font-800 text-white tracking-tight leading-[1.05]">Ready to actually <br class="hidden sm:block">enjoy the dentist?</h2>
+        <p class="mt-5 max-w-xl mx-auto text-white/85 text-lg">Book online in 60 seconds. Instant confirmation, friendly reminders, and a smile you'll want to show off.</p>
+        <div class="mt-9 flex flex-wrap justify-center gap-4">
+          <a href="#top" class="press inline-flex items-center gap-2 rounded-full bg-ink px-8 py-4 text-base font-600 text-white pill">
+            Book appointment
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="tel:+15550123456" class="press inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-600 text-teal-deep">
+            Call (555) 012-3456
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ FOOTER ░░ -->
+<footer class="border-t border-line bg-snow">
+  <div class="mx-auto max-w-7xl px-5 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <a href="#top" class="flex items-center gap-2.5">
+        <span class="grid h-10 w-10 place-items-center rounded-2xl bg-teal text-white soft">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-2 0-3 1.2-5 1.2C4.8 4.2 3 5.6 3 8.4c0 4 1.6 7.4 3 9.8.7 1.2 1.4 2 2.2 2 1 0 1.2-1.4 1.6-3 .3-1.2.6-2 1.2-2s.9.8 1.2 2c.4 1.6.6 3 1.6 3 .8 0 1.5-.8 2.2-2 1.4-2.4 3-5.8 3-9.8 0-2.8-1.8-4.2-4-4.2-2 0-3-1.2-5-1.2z"/></svg>
+        </span>
+        <span class="font-display text-xl font-700 text-ink tracking-tight">Lumio<span class="text-teal">.</span></span>
+      </a>
+      <p class="mt-4 text-sm text-slate max-w-xs">Bright, gentle, tech-forward dentistry for your whole family. Smiles, made simple.</p>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-ink text-sm">Hours</h4>
+      <ul class="mt-4 space-y-2 text-sm text-slate">
+        <li class="flex justify-between gap-6"><span>Mon – Fri</span><span class="text-ink font-600">8am – 7pm</span></li>
+        <li class="flex justify-between gap-6"><span>Saturday</span><span class="text-ink font-600">9am – 4pm</span></li>
+        <li class="flex justify-between gap-6"><span>Sunday</span><span class="text-teal font-600">Emergencies</span></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-ink text-sm">Visit us</h4>
+      <ul class="mt-4 space-y-2 text-sm text-slate">
+        <li>248 Brightwater Ave, Suite 4</li>
+        <li>Harborline, CA 90210</li>
+        <li><a href="tel:+15550123456" class="text-teal-deep font-600 hover:text-ink transition">(555) 012-3456</a></li>
+        <li><a href="mailto:hello@lumiodental.com" class="hover:text-ink transition">hello@lumiodental.com</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-700 text-ink text-sm">Stay in the loop</h4>
+      <p class="mt-4 text-sm text-slate">Smile tips & offers, never spam.</p>
+      <form class="mt-3 flex gap-2" onsubmit="return false">
+        <input type="email" placeholder="you@email.com" class="min-w-0 flex-1 rounded-full border border-line bg-base px-4 py-2.5 text-sm text-ink outline-none focus:border-teal transition">
+        <button class="press rounded-full bg-teal px-4 py-2.5 text-sm font-600 text-white pill">Join</button>
+      </form>
+      <div class="mt-5 flex gap-3">
+        <a href="#" class="press grid h-9 w-9 place-items-center rounded-full bg-base border border-line text-slate hover:text-teal">f</a>
+        <a href="#" class="press grid h-9 w-9 place-items-center rounded-full bg-base border border-line text-slate hover:text-teal">in</a>
+        <a href="#" class="press grid h-9 w-9 place-items-center rounded-full bg-base border border-line text-slate hover:text-teal">ig</a>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-5 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate">
+      <p>© 2026 Lumio Dental. All rights reserved.</p>
+      <div class="flex gap-5"><a href="#" class="hover:text-ink transition">Privacy</a><a href="#" class="hover:text-ink transition">Terms</a><a href="#" class="hover:text-ink transition">Accessibility</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- ░░ MOTION ░░ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // nav scrolled state
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 24); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  // accordion (springy)
+  document.querySelectorAll('.acc').forEach(function(acc){
+    var trigger = acc.querySelector('.acc-trigger');
+    var body = acc.querySelector('.acc-body');
+    trigger.addEventListener('click', function(){
+      var open = acc.classList.contains('open');
+      document.querySelectorAll('.acc').forEach(function(a){
+        a.classList.remove('open'); a.querySelector('.acc-body').style.maxHeight = null;
+      });
+      if(!open){ acc.classList.add('open'); body.style.maxHeight = body.scrollHeight + 'px'; }
+    });
+  });
+
+  if(reduce || typeof gsap === 'undefined'){
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('visible'); });
+    document.querySelectorAll('.count').forEach(function(el){ el.textContent = el.dataset.to; });
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // hero entrance — springy stagger
+  gsap.from('[data-hero]', {y:42, opacity:0, duration:.9, ease:'back.out(1.5)', stagger:.12, delay:.15});
+
+  // reveal-on-scroll
+  gsap.utils.toArray('.reveal').forEach(function(el){
+    gsap.fromTo(el, {y:38, opacity:0}, {
+      y:0, opacity:1, duration:.85, ease:'power3.out',
+      scrollTrigger:{trigger:el, start:'top 88%', once:true}
+    });
+  });
+
+  // count-up stats
+  document.querySelectorAll('.count').forEach(function(el){
+    var to = +el.dataset.to;
+    var obj = {v:0};
+    ScrollTrigger.create({
+      trigger:el, start:'top 90%', once:true,
+      onEnter:function(){
+        gsap.to(obj, {v:to, duration:1.6, ease:'power2.out',
+          onUpdate:function(){ el.textContent = Math.round(obj.v); }});
+      }
+    });
+  });
+
+  // process step tracker — rail fills + dots activate as you scroll
+  var tracker = document.getElementById('tracker');
+  if(tracker){
+    var steps = tracker.querySelectorAll('.step');
+    var isDesktop = window.matchMedia('(min-width:1024px)').matches;
+    var rail = document.getElementById(isDesktop ? 'railFill' : 'railFillM');
+
+    ScrollTrigger.create({
+      trigger:tracker, start:'top 70%', end:'bottom 60%', scrub:.6,
+      onUpdate:function(self){
+        var p = self.progress;
+        gsap.set(rail, isDesktop ? {scaleX:p} : {scaleY:p});
+        steps.forEach(function(step, i){
+          var threshold = i / (steps.length - 1 || 1);
+          var dot = step.querySelector('.dot');
+          if(p >= threshold - 0.04){
+            dot.style.background = '#16c1ad';
+            dot.style.borderColor = '#16c1ad';
+            dot.style.color = '#fff';
+            dot.style.transform = 'scale(1.06)';
+          } else {
+            dot.style.background = '#ffffff';
+            dot.style.borderColor = 'rgba(11,46,51,0.08)';
+            dot.style.color = '#0b2e33';
+            dot.style.transform = 'scale(1)';
+          }
+        });
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

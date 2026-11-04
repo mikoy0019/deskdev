@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VELVETÉ — Bold Beauty, Loud Color · Cosmetics That Talk Back</title>
+<meta name="description" content="VELVETÉ is a modern cosmetics house built for the unmissable. High-pigment lips, gleaming skin, and 64 shades that refuse to whisper. Vegan, cruelty-free, made to be seen." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts: expressive display + clean grotesk -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          night:  '#150611',   // deep aubergine-black
+          plum:   '#21091a',
+          ink:    '#2a0c22',
+          punch:  '#ff2d7e',   // hot magenta-pink (primary accent)
+          flare:  '#ff6a3d',   // coral flare
+          gold:   '#ffd166',   // gilded yellow
+          lilac:  '#b794f6',   // soft violet
+          mint:   '#3fe0c5',   // electric mint
+          cream:  '#fff4ec',   // warm paper
+          smoke:  '#e7c8da',   // muted rose text
+        },
+        fontFamily: {
+          display: ['"Fraunces"', 'Georgia', 'serif'],
+          sans:    ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          brand: '0.42em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --punch:#ff2d7e; --flare:#ff6a3d; --gold:#ffd166; --lilac:#b794f6; --mint:#3fe0c5; }
+  html, body { background:#150611; color:#fff4ec; }
+  body { font-family:'Space Grotesk', system-ui, sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  ::selection { background:rgba(255,45,126,0.4); color:#fff; }
+
+  /* Custom cursor (desktop) */
+  .cur-dot, .cur-ring {
+    position:fixed; top:0; left:0; border-radius:9999px; pointer-events:none;
+    z-index:9999; transform:translate(-50%,-50%); will-change:transform;
+  }
+  .cur-dot  { width:7px; height:7px; background:var(--gold); mix-blend-mode:exclusion; }
+  .cur-ring { width:42px; height:42px; border:1.5px solid rgba(255,45,126,0.7);
+              transition:width .3s ease, height .3s ease, background .3s ease, border-color .3s ease; }
+  .cur-ring.grow { width:84px; height:84px; background:rgba(255,45,126,0.08); border-color:rgba(255,209,102,0.9); }
+  @media (max-width:1024px){ body{cursor:auto;} .cur-dot,.cur-ring{display:none;} }
+
+  /* Oversized animated headline gradient */
+  .glam-text {
+    background:linear-gradient(100deg,#ff2d7e 0%,#ff6a3d 32%,#ffd166 58%,#b794f6 82%,#3fe0c5 100%);
+    background-size:240% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+    animation:hueSlide 9s ease-in-out infinite;
+  }
+  @keyframes hueSlide { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollX 26s linear infinite; }
+  .marquee.rev { animation-direction:reverse; }
+  @keyframes scrollX { to { transform:translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state:paused; }
+
+  /* Reveal */
+  .reveal { opacity:0; transform:translateY(42px); }
+
+  /* Glow blobs */
+  .blob { position:absolute; border-radius:9999px; filter:blur(80px); opacity:0.55; pointer-events:none; }
+
+  /* Product tilt card */
+  .tilt { transition:transform .5s cubic-bezier(.2,.8,.2,1), box-shadow .5s ease; transform-style:preserve-3d; }
+  .tilt:hover { transform:translateY(-10px) rotate(-1.2deg); box-shadow:0 40px 90px -40px rgba(255,45,126,.6); }
+
+  /* Shade swatch */
+  .swatch { width:42px; height:42px; border-radius:9999px; cursor:pointer; transition:transform .25s ease, box-shadow .25s ease; box-shadow:0 0 0 2px rgba(255,255,255,.08) inset; }
+  .swatch:hover { transform:scale(1.18); }
+  .swatch.active { transform:scale(1.28); box-shadow:0 0 0 3px #fff4ec, 0 8px 24px -6px currentColor; }
+
+  /* Accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height:360px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+
+  /* Sticky nav blur */
+  .nav-blur { backdrop-filter:blur(18px); background:rgba(21,6,17,0.66); }
+
+  .pill { box-shadow:inset 0 0 0 1px rgba(255,244,236,0.14); }
+  .grain:before {
+    content:""; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important; transition:none!important;}
+    .reveal{opacity:1!important; transform:none!important;}
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- Cursor -->
+<div class="cur-ring" id="curRing"></div>
+<div class="cur-dot" id="curDot"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 nav-blur">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
+    <a href="#top" class="font-display text-2xl font-black tracking-[0.18em] glam-text">VELVETÉ</a>
+    <ul class="hidden lg:flex items-center gap-9 text-[13px] tracking-wide text-smoke/90 font-medium">
+      <li><a href="#shop" class="hover:text-punch transition">Shop</a></li>
+      <li><a href="#shades" class="hover:text-punch transition">Shades</a></li>
+      <li><a href="#claims" class="hover:text-punch transition">Made&nbsp;Clean</a></li>
+      <li><a href="#tutorial" class="hover:text-punch transition">How-To</a></li>
+      <li><a href="#bundles" class="hover:text-punch transition">Bundles</a></li>
+    </ul>
+    <div class="flex items-center gap-3">
+      <button id="cartBtn" class="relative pill rounded-full px-4 py-2 text-[13px] font-semibold hover:text-punch transition flex items-center gap-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6 5 2H2"/></svg>
+        <span class="hidden sm:inline">Bag</span>
+        <span class="absolute -top-1.5 -right-1.5 bg-punch text-night text-[10px] font-bold w-5 h-5 rounded-full grid place-items-center" id="cartCount">2</span>
+      </button>
+      <a href="#shop" class="hidden sm:inline-flex bg-punch text-night font-bold text-[13px] rounded-full px-5 py-2.5 hover:bg-gold transition">Shop Now</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="blob w-[460px] h-[460px] bg-punch -top-24 -left-24"></div>
+  <div class="blob w-[520px] h-[520px] bg-lilac top-1/3 -right-32"></div>
+  <div class="blob w-[360px] h-[360px] bg-mint bottom-0 left-1/3 opacity-40"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center w-full">
+    <div class="lg:col-span-7">
+      <p class="reveal inline-flex items-center gap-2 pill rounded-full px-4 py-1.5 text-[11px] tracking-[0.28em] text-gold uppercase mb-7">
+        <span class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse"></span> New Drop · Saturn Gloss
+      </p>
+      <h1 class="font-display font-black leading-[0.86] text-[clamp(3rem,9vw,8rem)]">
+        <span class="reveal block">BOLD</span>
+        <span class="reveal block glam-text italic">never asks</span>
+        <span class="reveal block">permission.</span>
+      </h1>
+      <p class="reveal mt-7 max-w-lg text-smoke/85 text-lg leading-relaxed">
+        High-pigment lips. Lit-from-within skin. 64 shades engineered to be impossible to ignore. Vegan, cruelty-free, and loud on purpose.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#shop" data-magnetic class="bg-punch text-night font-bold rounded-full px-8 py-4 text-sm hover:bg-gold transition">Shop the Drop →</a>
+        <a href="#tutorial" class="pill rounded-full px-8 py-4 text-sm font-semibold hover:text-punch transition">Watch the Look</a>
+      </div>
+      <div class="reveal mt-12 flex flex-wrap gap-10">
+        <div><div class="font-display text-4xl font-black text-gold" data-count="64">0</div><div class="text-[11px] tracking-[0.2em] uppercase text-smoke/60 mt-1">Shades</div></div>
+        <div><div class="font-display text-4xl font-black text-mint" data-count="38">0</div><div class="text-[11px] tracking-[0.2em] uppercase text-smoke/60 mt-1">K Reviews</div></div>
+        <div><div class="font-display text-4xl font-black text-lilac" data-count="100">0</div><div class="text-[11px] tracking-[0.2em] uppercase text-smoke/60 mt-1">% Vegan</div></div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-5 relative">
+      <div data-parallax class="tilt relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-punch via-flare to-gold p-[2px]">
+        <div class="rounded-[2rem] overflow-hidden bg-night">
+          <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Velveté hero product"
+               class="w-full h-[520px] object-cover" />
+        </div>
+      </div>
+      <div class="absolute -bottom-5 -left-5 pill bg-night/80 rounded-2xl px-5 py-3 backdrop-blur">
+        <div class="text-[11px] uppercase tracking-[0.2em] text-smoke/60">Best Seller</div>
+        <div class="font-display font-bold text-lg">Saturn Gloss · <span class="text-punch">$24</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="py-5 border-y border-white/10 bg-gradient-to-r from-punch via-flare to-lilac overflow-hidden marquee-wrap">
+  <div class="marquee">
+    <div class="flex items-center gap-6 pr-6 text-night font-display font-black text-2xl italic whitespace-nowrap">
+      <span>HIGH PIGMENT</span><span>✦</span><span>CRUELTY-FREE</span><span>✦</span><span>64 SHADES</span><span>✦</span><span>VEGAN GLOW</span><span>✦</span><span>MADE TO BE SEEN</span><span>✦</span>
+      <span>HIGH PIGMENT</span><span>✦</span><span>CRUELTY-FREE</span><span>✦</span><span>64 SHADES</span><span>✦</span><span>VEGAN GLOW</span><span>✦</span><span>MADE TO BE SEEN</span><span>✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== BESTSELLERS ===================== -->
+<section id="shop" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="text-[11px] tracking-[0.3em] uppercase text-punch mb-3">The Lineup</p>
+        <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4rem)] leading-[0.95]">Cult <span class="glam-text italic">favourites</span></h2>
+      </div>
+      <a href="#bundles" class="pill rounded-full px-6 py-3 text-sm font-semibold hover:text-punch transition">View all 64 →</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card -->
+      <article class="reveal tilt group rounded-[1.6rem] overflow-hidden bg-plum/60 pill">
+        <div class="relative h-64 bg-gradient-to-br from-punch to-flare overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Velvet Matte Lip" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          <span class="absolute top-3 left-3 bg-gold text-night text-[10px] font-bold rounded-full px-3 py-1 uppercase tracking-wide">New</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-bold text-lg">Velvet Matte Lip</h3>
+          <p class="text-smoke/60 text-sm mt-1">Shade · Riot Red</p>
+          <div class="flex items-center justify-between mt-4">
+            <span class="font-bold text-gold">$22</span>
+            <button data-add class="bg-punch text-night text-xs font-bold rounded-full px-4 py-2 hover:bg-gold transition">Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal tilt group rounded-[1.6rem] overflow-hidden bg-plum/60 pill">
+        <div class="relative h-64 bg-gradient-to-br from-lilac to-punch overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Saturn Gloss" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          <span class="absolute top-3 left-3 bg-mint text-night text-[10px] font-bold rounded-full px-3 py-1 uppercase tracking-wide">★ Bestseller</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-bold text-lg">Saturn Gloss</h3>
+          <p class="text-smoke/60 text-sm mt-1">Shade · Solar Flare</p>
+          <div class="flex items-center justify-between mt-4">
+            <span class="font-bold text-gold">$24</span>
+            <button data-add class="bg-punch text-night text-xs font-bold rounded-full px-4 py-2 hover:bg-gold transition">Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal tilt group rounded-[1.6rem] overflow-hidden bg-plum/60 pill">
+        <div class="relative h-64 bg-gradient-to-br from-mint to-lilac overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Glow Drops" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-bold text-lg">Liquid Glow Drops</h3>
+          <p class="text-smoke/60 text-sm mt-1">Shade · 24K Halo</p>
+          <div class="flex items-center justify-between mt-4">
+            <span class="font-bold text-gold">$28</span>
+            <button data-add class="bg-punch text-night text-xs font-bold rounded-full px-4 py-2 hover:bg-gold transition">Add +</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal tilt group rounded-[1.6rem] overflow-hidden bg-plum/60 pill">
+        <div class="relative h-64 bg-gradient-to-br from-flare to-gold overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Blush Cloud" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          <span class="absolute top-3 left-3 bg-lilac text-night text-[10px] font-bold rounded-full px-3 py-1 uppercase tracking-wide">Limited</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-display font-bold text-lg">Cloud Cream Blush</h3>
+          <p class="text-smoke/60 text-sm mt-1">Shade · Peach Riot</p>
+          <div class="flex items-center justify-between mt-4">
+            <span class="font-bold text-gold">$20</span>
+            <button data-add class="bg-punch text-night text-xs font-bold rounded-full px-4 py-2 hover:bg-gold transition">Add +</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SHADE / COLOR STORY ===================== -->
+<section id="shades" class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="blob w-[420px] h-[420px] bg-flare top-10 -left-20 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="text-[11px] tracking-[0.3em] uppercase text-mint mb-3">Find Your Riot</p>
+      <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4.2rem)] leading-[0.92] mb-6">
+        Pick a <span id="shadeWord" class="glam-text italic transition-colors">shade</span>.<br/>Wear it like a dare.
+      </h2>
+      <p class="reveal text-smoke/80 leading-relaxed mb-8 max-w-md">
+        Sixty-four buildable, full-pigment shades — from barely-there to absolutely-not-subtle. Tap a swatch to preview the energy.
+      </p>
+
+      <div class="flex flex-wrap gap-3 mb-8" id="swatchRow">
+        <button class="swatch active" style="background:#ff2d7e;color:#ff2d7e" data-name="Riot Pink" aria-label="Riot Pink"></button>
+        <button class="swatch" style="background:#ff6a3d;color:#ff6a3d" data-name="Solar Flare" aria-label="Solar Flare"></button>
+        <button class="swatch" style="background:#ffd166;color:#ffd166" data-name="24K Halo" aria-label="24K Halo"></button>
+        <button class="swatch" style="background:#b794f6;color:#b794f6" data-name="Violet Hour" aria-label="Violet Hour"></button>
+        <button class="swatch" style="background:#3fe0c5;color:#3fe0c5" data-name="Mint Static" aria-label="Mint Static"></button>
+        <button class="swatch" style="background:#c1121f;color:#c1121f" data-name="Riot Red" aria-label="Riot Red"></button>
+        <button class="swatch" style="background:#7b2cbf;color:#7b2cbf" data-name="Deep Plum" aria-label="Deep Plum"></button>
+        <button class="swatch" style="background:#e09f7d;color:#e09f7d" data-name="Nude Glow" aria-label="Nude Glow"></button>
+      </div>
+
+      <div class="pill rounded-2xl px-6 py-5 bg-plum/50 inline-flex items-center gap-4">
+        <div id="shadeDot" class="w-12 h-12 rounded-full transition-colors" style="background:#ff2d7e"></div>
+        <div>
+          <div class="text-[11px] uppercase tracking-[0.2em] text-smoke/60">Now Previewing</div>
+          <div id="shadeName" class="font-display font-bold text-xl">Riot Pink</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-parallax class="tilt rounded-[2rem] overflow-hidden bg-gradient-to-br from-lilac via-punch to-flare p-[2px]">
+      <div class="rounded-[2rem] overflow-hidden bg-night">
+        <img src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Shade story" class="w-full h-[540px] object-cover" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CLAIMS / INGREDIENTS ===================== -->
+<section id="claims" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="text-[11px] tracking-[0.3em] uppercase text-gold mb-3">Made Clean, Loud Anyway</p>
+      <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4rem)] leading-[0.95]">Bold formulas, <span class="glam-text italic">zero compromise</span></h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal pill rounded-2xl p-7 bg-plum/40 hover:bg-plum/70 transition">
+        <div class="w-12 h-12 rounded-full bg-punch/20 grid place-items-center text-2xl mb-4">🌱</div>
+        <h3 class="font-display font-bold text-lg mb-2">100% Vegan</h3>
+        <p class="text-smoke/70 text-sm leading-relaxed">No animal-derived anything. Leaping Bunny certified, full stop.</p>
+      </div>
+      <div class="reveal pill rounded-2xl p-7 bg-plum/40 hover:bg-plum/70 transition">
+        <div class="w-12 h-12 rounded-full bg-mint/20 grid place-items-center text-2xl mb-4">💧</div>
+        <h3 class="font-display font-bold text-lg mb-2">Hydra-Lock Base</h3>
+        <p class="text-smoke/70 text-sm leading-relaxed">Hyaluronic + squalane keep pigment plush, never cakey.</p>
+      </div>
+      <div class="reveal pill rounded-2xl p-7 bg-plum/40 hover:bg-plum/70 transition">
+        <div class="w-12 h-12 rounded-full bg-gold/20 grid place-items-center text-2xl mb-4">⏱️</div>
+        <h3 class="font-display font-bold text-lg mb-2">12-Hour Hold</h3>
+        <p class="text-smoke/70 text-sm leading-relaxed">Transfer-resistant, eat-your-lunch-proof, photo-ready all day.</p>
+      </div>
+      <div class="reveal pill rounded-2xl p-7 bg-plum/40 hover:bg-plum/70 transition">
+        <div class="w-12 h-12 rounded-full bg-lilac/20 grid place-items-center text-2xl mb-4">🚫</div>
+        <h3 class="font-display font-bold text-lg mb-2">Clean List</h3>
+        <p class="text-smoke/70 text-sm leading-relaxed">No parabens, no phthalates, no talc. Dermatologist-tested.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW-TO / TUTORIAL ===================== -->
+<section id="tutorial" class="py-24 sm:py-32 relative overflow-hidden bg-gradient-to-b from-transparent to-plum/40">
+  <div class="blob w-[400px] h-[400px] bg-lilac bottom-0 right-0 opacity-40"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div data-parallax class="tilt rounded-[2rem] overflow-hidden bg-gradient-to-br from-gold via-flare to-punch p-[2px] order-2 lg:order-1">
+      <div class="rounded-[2rem] overflow-hidden bg-night relative">
+        <img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Tutorial" class="w-full h-[500px] object-cover" />
+        <button class="absolute inset-0 grid place-items-center" data-magnetic>
+          <span class="w-20 h-20 rounded-full bg-punch/90 grid place-items-center text-night text-2xl shadow-2xl">▶</span>
+        </button>
+      </div>
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="text-[11px] tracking-[0.3em] uppercase text-punch mb-3">The 90-Second Glow</p>
+      <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,3.8rem)] leading-[0.95] mb-9">Three steps. <span class="glam-text italic">One look.</span></h2>
+      <ol class="space-y-6">
+        <li class="reveal flex gap-5">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-punch text-night font-display font-black grid place-items-center">1</span>
+          <div><h3 class="font-display font-bold text-lg">Prime &amp; Glow</h3><p class="text-smoke/70 text-sm mt-1">Press two Liquid Glow Drops over moisturiser for lit-from-within base.</p></div>
+        </li>
+        <li class="reveal flex gap-5">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-gold text-night font-display font-black grid place-items-center">2</span>
+          <div><h3 class="font-display font-bold text-lg">Cloud the Cheeks</h3><p class="text-smoke/70 text-sm mt-1">Dab Cloud Cream Blush high on the cheekbone, blend up and out.</p></div>
+        </li>
+        <li class="reveal flex gap-5">
+          <span class="shrink-0 w-11 h-11 rounded-full bg-mint text-night font-display font-black grid place-items-center">3</span>
+          <div><h3 class="font-display font-bold text-lg">Line &amp; Riot</h3><p class="text-smoke/70 text-sm mt-1">Outline with Velvet Matte Lip, flood the centre with Saturn Gloss. Done.</p></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT / BRAND ===================== -->
+<section class="py-24 sm:py-32 relative">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="text-[11px] tracking-[0.3em] uppercase text-mint mb-5">Our Manifesto</p>
+    <h2 class="reveal font-display font-black text-[clamp(2rem,5.5vw,4.4rem)] leading-[0.98]">
+      We make beauty for people who'd rather be <span class="glam-text italic">unforgettable</span> than agreeable.
+    </h2>
+    <p class="reveal mt-8 text-smoke/80 text-lg leading-relaxed max-w-2xl mx-auto">
+      VELVETÉ started in a Lagos kitchen in 2019, mixing pigments that actually showed up on every skin tone. Today we ship 64 shades to 40 countries — still loud, still independent, still made to be seen.
+    </p>
+    <div class="reveal mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6 text-left">
+      <div class="pill rounded-2xl p-6 bg-plum/40"><div class="font-display text-3xl font-black text-punch">2019</div><div class="text-xs text-smoke/60 mt-1 uppercase tracking-wide">Founded</div></div>
+      <div class="pill rounded-2xl p-6 bg-plum/40"><div class="font-display text-3xl font-black text-gold">40</div><div class="text-xs text-smoke/60 mt-1 uppercase tracking-wide">Countries</div></div>
+      <div class="pill rounded-2xl p-6 bg-plum/40"><div class="font-display text-3xl font-black text-mint">1.2M</div><div class="text-xs text-smoke/60 mt-1 uppercase tracking-wide">Community</div></div>
+      <div class="pill rounded-2xl p-6 bg-plum/40"><div class="font-display text-3xl font-black text-lilac">B-Corp</div><div class="text-xs text-smoke/60 mt-1 uppercase tracking-wide">Certified</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS / UGC ===================== -->
+<section class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-14">
+      <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4rem)] leading-[0.95]">They're <span class="glam-text italic">obsessed</span></h2>
+      <p class="pill rounded-full px-5 py-2.5 text-sm text-gold font-semibold">★★★★★ 4.9 · 38K reviews</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal pill rounded-2xl p-7 bg-plum/50">
+        <div class="text-gold mb-3">★★★★★</div>
+        <blockquote class="text-smoke/90 leading-relaxed">"Saturn Gloss survived a wedding, a cry, and three cocktails. Never letting it go."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-punch to-gold"></span><span class="text-sm"><b>@amaragold</b><br/><span class="text-smoke/50">Verified buyer</span></span></figcaption>
+      </figure>
+      <figure class="reveal pill rounded-2xl p-7 bg-plum/50 md:translate-y-6">
+        <div class="text-gold mb-3">★★★★★</div>
+        <blockquote class="text-smoke/90 leading-relaxed">"Finally a brand where Riot Red looks like RIOT RED. Pigment is unreal, zero drying."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-mint to-lilac"></span><span class="text-sm"><b>@dee.faces</b><br/><span class="text-smoke/50">Verified buyer</span></span></figcaption>
+      </figure>
+      <figure class="reveal pill rounded-2xl p-7 bg-plum/50">
+        <div class="text-gold mb-3">★★★★★</div>
+        <blockquote class="text-smoke/90 leading-relaxed">"The glow drops gave me skin I didn't know I had. My whole shelf is VELVETÉ now."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-gradient-to-br from-flare to-punch"></span><span class="text-sm"><b>@kojo.glows</b><br/><span class="text-smoke/50">Verified buyer</span></span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== BUNDLES ===================== -->
+<section id="bundles" class="py-24 sm:py-32 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="text-[11px] tracking-[0.3em] uppercase text-punch mb-3">Save Loud</p>
+      <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4rem)] leading-[0.95]">Build-your-<span class="glam-text italic">riot</span> bundles</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal pill rounded-3xl p-8 bg-plum/40">
+        <h3 class="font-display font-bold text-xl">Starter Glow</h3>
+        <p class="text-smoke/60 text-sm mt-1 mb-5">Pick any 2 · save 15%</p>
+        <div class="font-display text-4xl font-black text-gold mb-1">$38</div>
+        <div class="text-smoke/50 text-sm line-through mb-6">$44</div>
+        <a href="#cta" data-magnetic class="block text-center bg-punch text-night font-bold rounded-full py-3 hover:bg-gold transition">Build it</a>
+      </div>
+      <div class="reveal pill rounded-3xl p-8 bg-gradient-to-br from-punch/30 to-lilac/20 ring-2 ring-punch md:-translate-y-4">
+        <div class="inline-block bg-gold text-night text-[10px] font-bold rounded-full px-3 py-1 uppercase mb-3">Most Loved</div>
+        <h3 class="font-display font-bold text-xl">Full Face Riot</h3>
+        <p class="text-smoke/60 text-sm mt-1 mb-5">Pick any 4 · save 25%</p>
+        <div class="font-display text-4xl font-black text-gold mb-1">$72</div>
+        <div class="text-smoke/50 text-sm line-through mb-6">$96</div>
+        <a href="#cta" data-magnetic class="block text-center bg-punch text-night font-bold rounded-full py-3 hover:bg-gold transition">Build it</a>
+      </div>
+      <div class="reveal pill rounded-3xl p-8 bg-plum/40">
+        <h3 class="font-display font-bold text-xl">The Vault</h3>
+        <p class="text-smoke/60 text-sm mt-1 mb-5">Pick any 7 · save 35%</p>
+        <div class="font-display text-4xl font-black text-gold mb-1">$118</div>
+        <div class="text-smoke/50 text-sm line-through mb-6">$182</div>
+        <a href="#cta" data-magnetic class="block text-center bg-punch text-night font-bold rounded-full py-3 hover:bg-gold transition">Build it</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section class="py-24 sm:py-32 relative">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <h2 class="reveal font-display font-black text-[clamp(2.2rem,5vw,4rem)] leading-[0.95] text-center mb-12">Quick <span class="glam-text italic">answers</span></h2>
+    <div class="space-y-4" id="faq">
+      <div class="faq-item pill rounded-2xl bg-plum/40 overflow-hidden">
+        <button class="w-full flex items-center justify-between gap-4 p-6 text-left"><span class="font-display font-bold text-lg">Are all shades truly buildable?</span><span class="faq-plus text-punch text-2xl transition-transform shrink-0">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-6 text-smoke/75 leading-relaxed">Yes. Every formula is layerable — one swipe for a tint, three for full opacity. Pigment load is identical across the range.</p></div>
+      </div>
+      <div class="faq-item pill rounded-2xl bg-plum/40 overflow-hidden">
+        <button class="w-full flex items-center justify-between gap-4 p-6 text-left"><span class="font-display font-bold text-lg">Is VELVETÉ really cruelty-free?</span><span class="faq-plus text-punch text-2xl transition-transform shrink-0">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-6 text-smoke/75 leading-relaxed">100%. We're Leaping Bunny certified and never test on animals, anywhere — including markets that request it.</p></div>
+      </div>
+      <div class="faq-item pill rounded-2xl bg-plum/40 overflow-hidden">
+        <button class="w-full flex items-center justify-between gap-4 p-6 text-left"><span class="font-display font-bold text-lg">What's your returns policy?</span><span class="faq-plus text-punch text-2xl transition-transform shrink-0">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-6 text-smoke/75 leading-relaxed">Wrong shade? Send it back within 30 days — opened or not — for a full refund or swap. Glow guaranteed.</p></div>
+      </div>
+      <div class="faq-item pill rounded-2xl bg-plum/40 overflow-hidden">
+        <button class="w-full flex items-center justify-between gap-4 p-6 text-left"><span class="font-display font-bold text-lg">Do you ship internationally?</span><span class="faq-plus text-punch text-2xl transition-transform shrink-0">+</span></button>
+        <div class="faq-body"><p class="px-6 pb-6 text-smoke/75 leading-relaxed">We ship to 40 countries with carbon-neutral delivery. Free shipping over $50, always.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section id="cta" class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="blob w-[500px] h-[500px] bg-punch top-0 left-1/4"></div>
+  <div class="blob w-[400px] h-[400px] bg-gold bottom-0 right-1/4 opacity-40"></div>
+  <div class="relative z-10 max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="reveal font-display font-black text-[clamp(2.4rem,7vw,6rem)] leading-[0.9]">Go ahead.<br/><span class="glam-text italic">Be too much.</span></h2>
+    <p class="reveal mt-6 text-smoke/80 text-lg max-w-xl mx-auto">Join 1.2M who stopped asking permission. Get 15% off your first riot.</p>
+    <form class="reveal mt-9 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false">
+      <input type="email" placeholder="your@email.com" class="flex-1 bg-plum/60 pill rounded-full px-5 py-4 text-sm outline-none focus:ring-2 focus:ring-punch placeholder:text-smoke/40" />
+      <button data-magnetic class="bg-punch text-night font-bold rounded-full px-7 py-4 text-sm hover:bg-gold transition whitespace-nowrap">Get 15% Off →</button>
+    </form>
+    <p class="reveal mt-4 text-xs text-smoke/50">No spam. Just shades. Unsubscribe anytime.</p>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="border-t border-white/10 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+      <div class="lg:col-span-2">
+        <a href="#top" class="font-display text-3xl font-black tracking-[0.18em] glam-text">VELVETÉ</a>
+        <p class="text-smoke/60 text-sm mt-4 max-w-xs leading-relaxed">Bold beauty, loud color. 64 shades made to be seen. Vegan, cruelty-free, independent.</p>
+        <div class="flex gap-3 mt-5">
+          <a href="#top" class="w-9 h-9 rounded-full pill grid place-items-center hover:text-punch transition">IG</a>
+          <a href="#top" class="w-9 h-9 rounded-full pill grid place-items-center hover:text-punch transition">TT</a>
+          <a href="#top" class="w-9 h-9 rounded-full pill grid place-items-center hover:text-punch transition">YT</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4">Shop</h4>
+        <ul class="space-y-2 text-sm text-smoke/60">
+          <li><a href="#shop" class="hover:text-punch transition">Lips</a></li>
+          <li><a href="#shop" class="hover:text-punch transition">Face</a></li>
+          <li><a href="#bundles" class="hover:text-punch transition">Bundles</a></li>
+          <li><a href="#shop" class="hover:text-punch transition">New In</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4">Brand</h4>
+        <ul class="space-y-2 text-sm text-smoke/60">
+          <li><a href="#claims" class="hover:text-punch transition">Made Clean</a></li>
+          <li><a href="#tutorial" class="hover:text-punch transition">How-To</a></li>
+          <li><a href="#top" class="hover:text-punch transition">Our Story</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold mb-4">Help</h4>
+        <ul class="space-y-2 text-sm text-smoke/60">
+          <li><a href="#cta" class="hover:text-punch transition">Shipping</a></li>
+          <li><a href="#cta" class="hover:text-punch transition">Returns</a></li>
+          <li><a href="#cta" class="hover:text-punch transition">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-white/10 text-xs text-smoke/40">
+      <p>© 2026 VELVETÉ Cosmetics. All rights reserved. Made loud.</p>
+      <div class="flex gap-5"><a href="#top" class="hover:text-punch transition">Privacy</a><a href="#top" class="hover:text-punch transition">Terms</a><a href="#top" class="hover:text-punch transition">Accessibility</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  const dot = document.getElementById('curDot');
+  const ring = document.getElementById('curRing');
+  if (window.matchMedia('(min-width:1025px)').matches && !reduce){
+    let mx=0,my=0,rx=0,ry=0;
+    window.addEventListener('mousemove', e=>{ mx=e.clientX; my=e.clientY; dot.style.transform=`translate(${mx}px,${my}px) translate(-50%,-50%)`; });
+    (function loop(){ rx+=(mx-rx)*0.18; ry+=(my-ry)*0.18; ring.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
+    document.querySelectorAll('a,button,[data-magnetic],.swatch').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce){
+    document.querySelectorAll('[data-magnetic]').forEach(el=>{
+      el.addEventListener('mousemove', e=>{
+        const r=el.getBoundingClientRect();
+        const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+        el.style.transform=`translate(${x*0.3}px,${y*0.3}px)`;
+      });
+      el.addEventListener('mouseleave',()=>{ el.style.transform=''; });
+    });
+  }
+
+  /* ---------- Shade selector ---------- */
+  const dotEl=document.getElementById('shadeDot');
+  const nameEl=document.getElementById('shadeName');
+  const wordEl=document.getElementById('shadeWord');
+  document.querySelectorAll('#swatchRow .swatch').forEach(s=>{
+    s.addEventListener('click',()=>{
+      document.querySelectorAll('#swatchRow .swatch').forEach(x=>x.classList.remove('active'));
+      s.classList.add('active');
+      const c=getComputedStyle(s).backgroundColor;
+      dotEl.style.background=c; nameEl.textContent=s.dataset.name; if(wordEl){ wordEl.style.color=c; wordEl.style.webkitTextFillColor=c; }
+    });
+  });
+
+  /* ---------- Cart ---------- */
+  let count=2; const cc=document.getElementById('cartCount');
+  document.querySelectorAll('[data-add]').forEach(b=>{
+    b.addEventListener('click',()=>{ count++; cc.textContent=count; cc.animate([{transform:'scale(1.6)'},{transform:'scale(1)'}],{duration:300}); });
+  });
+
+  /* ---------- FAQ ---------- */
+  document.querySelectorAll('#faq .faq-item').forEach(item=>{
+    item.querySelector('button').addEventListener('click',()=>{
+      const open=item.classList.contains('open');
+      document.querySelectorAll('#faq .faq-item').forEach(i=>i.classList.remove('open'));
+      if(!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Count-ups ---------- */
+  function countUp(el){
+    const target=+el.dataset.count; const dur=1600; const start=performance.now();
+    function step(t){ const p=Math.min((t-start)/dur,1); el.textContent=Math.round(p*target); if(p<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+    if(!reduce){
+      gsap.utils.toArray('.reveal').forEach(el=>{
+        gsap.to(el,{opacity:1,y:0,duration:0.9,ease:'power3.out',scrollTrigger:{trigger:el,start:'top 88%'}});
+      });
+      // container parallax on product imagery
+      gsap.utils.toArray('[data-parallax]').forEach(el=>{
+        gsap.fromTo(el,{y:60},{y:-60,ease:'none',scrollTrigger:{trigger:el,start:'top bottom',end:'bottom top',scrub:true}});
+      });
+    } else {
+      gsap.utils.toArray('.reveal').forEach(el=>{ el.style.opacity=1; el.style.transform='none'; });
+    }
+    // count-ups trigger
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      ScrollTrigger.create({trigger:el,start:'top 90%',once:true,onEnter:()=>countUp(el)});
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el=>{ el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('[data-count]').forEach(el=>el.textContent=el.dataset.count);
+  }
+})();
+</script>
+</body>
+</html>

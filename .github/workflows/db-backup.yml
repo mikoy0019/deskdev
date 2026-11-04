@@ -1,0 +1,101 @@
+name: Database backup
+
+# Nightly: DeskDev's Supabase database -> supabase db dump (roles, schema,
+# data) -> gzip -> age (public key only; the private key never touches CI)
+# -> Cloudflare R2 under nightly/, expired by the bucket's 35-day lifecycle
+# rule. Script: scripts/backup/backup.mjs. Runbook: docs/runbooks/BACKUP-RESTORE.md.
+#
+# INERT until the owner sets the repository variable DB_BACKUP_ENABLED=true.
+# A manual run with "dry run" ticked works any time: synthetic dump, nothing
+# read from the database, nothing sent to R2.
+#
+# Settings (names only):
+#   secrets    SUPABASE_BACKUP_DB_URL   session pooler URI, port 5432 (runners have no IPv6)
+#              R2_BACKUP_ACCESS_KEY_ID, R2_BACKUP_SECRET_ACCESS_KEY   (bucket-scoped R2 token)
+#              N8N_WEBHOOK_SECRET       optional: failure alert to n8n ops-alert
+#   variables  DB_BACKUP_ENABLED='true', BACKUP_AGE_RECIPIENTS (age1... public keys),
+#              R2_ACCOUNT_ID, R2_BACKUP_BUCKET (default nixgen-db-backups), N8N_ALERT_URL (optional)
+
+on:
+  schedule:
+    # 19:00 UTC = 03:00 Asia/Manila, quiet hours, clear of the 03:15/03:45 pg_cron jobs' heavy writes.
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (synthetic dump, nothing uploaded)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Dump, encrypt, upload
+    if: >-
+      vars.DB_BACKUP_ENABLED == 'true' ||
+      (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+      BACKUP_DATABASE_URL: ${{ secrets.SUPABASE_BACKUP_DB_URL }}
+      BACKUP_AGE_RECIPIENTS: ${{ vars.BACKUP_AGE_RECIPIENTS }}
+      R2_ACCOUNT_ID: ${{ vars.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ vars.R2_BACKUP_BUCKET || 'nixgen-db-backups' }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_BACKUP_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_BACKUP_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Self-test the backup scripts
+        run: node --test scripts/backup/*.test.mjs
+
+      - name: Install age
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age && age --version
+
+      - name: Install the Supabase CLI
+        if: env.DRY_RUN != 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Backup
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            node scripts/backup/backup.mjs --dry-run
+          else
+            node scripts/backup/backup.mjs
+          fi
+
+      # GitHub already emails whoever last edited the schedule when a scheduled
+      # run fails; this also lands it in the ops inbox through n8n.
+      - name: Alert on failure
+        if: failure() && env.DRY_RUN != 'true'
+        env:
+          N8N_ALERT_URL: ${{ vars.N8N_ALERT_URL }}
+          N8N_WEBHOOK_SECRET: ${{ secrets.N8N_WEBHOOK_SECRET }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$N8N_ALERT_URL" ] || [ -z "$N8N_WEBHOOK_SECRET" ]; then
+            echo "No n8n alert configured; GitHub's own failure email is the alert."
+            exit 0
+          fi
+          now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          body=$(node -e '
+            const [at, url] = process.argv.slice(1)
+            const e = { probe: "db-backup", event: "down", since: at, failures: 1, status: null, detail: "nightly database backup failed", url, dedupe_key: "db-backup:down" }
+            console.log(JSON.stringify({ source: "db-backup", at, stateful: false, subject: "[NixGen] Nightly database backup FAILED",
+              text: "The nightly database backup failed.\n" + url + "\nRunbook: docs/runbooks/BACKUP-RESTORE.md", events: [e], probes: [] }))
+          ' "$now" "$RUN_URL")
+          curl -sS --max-time 60 -o /dev/null -w 'n8n alert: HTTP %{http_code}\n' \
+            -H 'content-type: application/json' -H "x-webhook-secret: $N8N_WEBHOOK_SECRET" \
+            --data "$body" "$N8N_ALERT_URL" || true

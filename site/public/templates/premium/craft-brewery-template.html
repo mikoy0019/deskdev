@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ironhollow Brewing Co. — Independent Craft Brewery & Taproom</title>
+<meta name="description" content="Ironhollow Brewing Co. — a fiercely independent craft brewery and taproom pouring small-batch ales, hazy IPAs, barrel-aged stouts and seasonal experiments. Brewed loud, poured proud." />
+
+<!-- Fonts: bold characterful display + clean body -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Alfa+Slab+One&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          char:   '#1a130c',  // deep charcoal-brown
+          char2:  '#231a10',
+          amber:  '#e08a1e',  // warm amber
+          amberhi:'#f2a93b',
+          ember:  '#c2410c',  // ember orange-red
+          foam:   '#f7ecd6',  // foam cream
+          foam2:  '#efe0c3',
+          gold:   '#c89b3c',
+          hop:    '#5d6b32',  // hop green
+          rust:   '#8a3b1e',
+        },
+        fontFamily: {
+          slab:    ['"Alfa Slab One"', 'serif'],
+          display: ['"Bricolage Grotesque"', 'sans-serif'],
+          body:    ['"DM Sans"', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body { background:#1a130c; color:#f7ecd6; }
+  body { font-family:'DM Sans', sans-serif; overflow-x:hidden; }
+  ::selection { background:#e08a1e; color:#1a130c; }
+
+  /* Grain / paper texture overlay */
+  .grain::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  .font-slab { letter-spacing:.01em; }
+  .ink-stroke { -webkit-text-stroke:2px #f7ecd6; color:transparent; }
+  .ink-stroke-amber { -webkit-text-stroke:2px #e08a1e; color:transparent; }
+
+  /* Masked headline reveal lines */
+  .mask-line { display:block; overflow:hidden; }
+  .mask-line > span { display:block; transform:translateY(110%); }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollx 32s linear infinite; }
+  .marquee.rev { animation-direction:reverse; }
+  @keyframes scrollx { to { transform:translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state:paused; }
+
+  /* Liquid / foam accent */
+  .liquid {
+    background:linear-gradient(180deg,#f2a93b 0%, #e08a1e 38%, #c2410c 100%);
+    position:relative; overflow:hidden;
+  }
+  .liquid .foam {
+    position:absolute; top:-14px; left:0; right:0; height:34px;
+    background:
+      radial-gradient(circle at 12% 60%, #fff 0 9px, transparent 10px),
+      radial-gradient(circle at 30% 40%, #fff 0 13px, transparent 14px),
+      radial-gradient(circle at 50% 65%, #fff 0 11px, transparent 12px),
+      radial-gradient(circle at 70% 42%, #fff 0 14px, transparent 15px),
+      radial-gradient(circle at 88% 60%, #fff 0 10px, transparent 11px);
+    filter:brightness(1.02);
+    animation:foambob 4s ease-in-out infinite;
+  }
+  @keyframes foambob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+  .liquid .bubble {
+    position:absolute; bottom:-20px; width:10px; height:10px; border-radius:50%;
+    background:rgba(255,255,255,.55); animation:rise 5s linear infinite;
+  }
+  @keyframes rise {
+    0%{ transform:translateY(0) scale(.6); opacity:0; }
+    15%{ opacity:.8; }
+    100%{ transform:translateY(-160px) scale(1.1); opacity:0; }
+  }
+
+  /* Can tilt-3d wrapper */
+  .tilt3d { transform-style:preserve-3d; transition:transform .18s ease-out; will-change:transform; }
+
+  /* Magnetic CTA base */
+  .magnetic { will-change:transform; }
+
+  /* Beer card */
+  .beer-card { transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s; }
+  .beer-card:hover { transform:translateY(-8px) rotate(-1deg); box-shadow:0 24px 60px -24px rgba(194,65,12,.6); }
+
+  /* FAQ */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .45s ease; }
+  .faq-item.open .faq-body { max-height:340px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+
+  /* Ticket / label edge */
+  .label-edge {
+    -webkit-mask:radial-gradient(circle 9px at 9px 50%, transparent 98%, #000) left/100% 22px repeat-y;
+    mask:radial-gradient(circle 9px at 9px 50%, transparent 98%, #000) left/100% 22px repeat-y;
+  }
+
+  .underline-grow { background-image:linear-gradient(#e08a1e,#e08a1e); background-size:0% 3px; background-repeat:no-repeat; background-position:left bottom; transition:background-size .35s; }
+  .underline-grow:hover { background-size:100% 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation:none !important; }
+    .liquid .foam, .liquid .bubble { animation:none !important; }
+    .mask-line > span { transform:none !important; }
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 lg:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group">
+      <span class="relative grid place-items-center w-11 h-11 rounded-full bg-amber text-char font-slab text-lg shadow-lg shadow-amber/30 group-hover:rotate-12 transition-transform">IH</span>
+      <span class="font-display font-extrabold tracking-tight text-xl leading-none">Ironhollow<span class="text-amber">.</span><br><span class="text-[10px] tracking-[0.35em] uppercase text-foam/60 font-body">Brewing Co.</span></span>
+    </a>
+    <div class="hidden lg:flex items-center gap-8 font-body text-sm font-medium text-foam/80">
+      <a href="#beers" class="underline-grow hover:text-foam">Our Beers</a>
+      <a href="#taproom" class="underline-grow hover:text-foam">Taproom</a>
+      <a href="#process" class="underline-grow hover:text-foam">Process</a>
+      <a href="#story" class="underline-grow hover:text-foam">Story</a>
+      <a href="#events" class="underline-grow hover:text-foam">Events</a>
+      <a href="#faq" class="underline-grow hover:text-foam">FAQ</a>
+    </div>
+    <a href="#visit" class="magnetic relative inline-flex items-center gap-2 rounded-full bg-amber px-5 py-2.5 font-display font-extrabold text-sm text-char hover:bg-amberhi transition-colors shadow-lg shadow-amber/30">
+      <span class="magnetic-inner">Visit the Taproom</span>
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- backdrop -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-char via-char2 to-char"></div>
+    <div class="absolute -top-1/3 -left-1/4 w-[60vw] h-[60vw] rounded-full bg-amber/15 blur-[120px]"></div>
+    <div class="absolute -bottom-1/3 -right-1/4 w-[55vw] h-[55vw] rounded-full bg-ember/15 blur-[120px]"></div>
+    <!-- giant outline word -->
+    <div data-parallax="0.25" class="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none pointer-events-none">
+      <span class="ink-stroke font-slab text-[26vw] leading-none opacity-[0.05]">ALE</span>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-10 items-center w-full">
+    <!-- copy -->
+    <div class="lg:col-span-7">
+      <div class="inline-flex items-center gap-2 rounded-full border border-amber/40 bg-amber/10 px-4 py-1.5 text-xs font-body uppercase tracking-[0.25em] text-amberhi mb-6">
+        <span class="w-2 h-2 rounded-full bg-amber animate-pulse"></span> Est. 2014 · Fiercely Independent
+      </div>
+
+      <h1 class="font-slab text-[13vw] sm:text-7xl lg:text-[5.6rem] leading-[0.92] mb-6">
+        <span class="mask-line"><span>Brewed Loud.</span></span>
+        <span class="mask-line"><span class="text-amber">Poured Proud.</span></span>
+        <span class="mask-line"><span class="ink-stroke-amber">Drink Local.</span></span>
+      </h1>
+
+      <p data-fade class="max-w-xl text-foam/75 text-lg leading-relaxed mb-9 font-body">
+        Ironhollow Brewing Co. is a small-batch craft brewery and taproom carved into an old foundry. We chase big flavor — hazy IPAs, barrel-aged stouts, and stubbornly seasonal experiments — one tank at a time.
+      </p>
+
+      <div data-fade class="flex flex-wrap items-center gap-4">
+        <a href="#beers" class="magnetic inline-flex items-center gap-2 rounded-full bg-amber px-7 py-4 font-display font-extrabold text-char hover:bg-amberhi transition-colors shadow-xl shadow-amber/30">
+          <span class="magnetic-inner">Explore the Beers</span>
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#taproom" class="inline-flex items-center gap-2 rounded-full border border-foam/25 px-7 py-4 font-display font-extrabold text-foam hover:border-amber hover:text-amber transition-colors">
+          Find the Taproom
+        </a>
+      </div>
+
+      <!-- mini stats -->
+      <div data-fade class="grid grid-cols-3 gap-4 mt-12 max-w-md">
+        <div>
+          <div class="font-slab text-3xl text-amber"><span class="count" data-to="312">0</span></div>
+          <div class="text-xs uppercase tracking-widest text-foam/55 font-body mt-1">Brews Crafted</div>
+        </div>
+        <div>
+          <div class="font-slab text-3xl text-amber"><span class="count" data-to="27">0</span></div>
+          <div class="text-xs uppercase tracking-widest text-foam/55 font-body mt-1">Awards Won</div>
+        </div>
+        <div>
+          <div class="font-slab text-3xl text-amber"><span class="count" data-to="9">0</span></div>
+          <div class="text-xs uppercase tracking-widest text-foam/55 font-body mt-1">On Tap Now</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- can/bottle visual -->
+    <div class="lg:col-span-5 flex justify-center">
+      <div id="hero-can" class="tilt3d relative">
+        <!-- the "can" -->
+        <div class="relative w-56 sm:w-64 h-[26rem] sm:h-[30rem] rounded-[2.2rem] liquid shadow-2xl shadow-ember/40 border-4 border-foam/10">
+          <div class="foam"></div>
+          <span class="bubble" style="left:22%; animation-delay:0s"></span>
+          <span class="bubble" style="left:46%; animation-delay:1.2s"></span>
+          <span class="bubble" style="left:64%; animation-delay:2.1s"></span>
+          <span class="bubble" style="left:80%; animation-delay:3s"></span>
+          <!-- label -->
+          <div class="absolute inset-x-3 top-20 bottom-16 rounded-2xl bg-char/85 border border-foam/15 backdrop-blur-sm flex flex-col items-center justify-center text-center px-4">
+            <span class="font-body text-[10px] tracking-[0.4em] uppercase text-amber">Flagship</span>
+            <span class="font-slab text-3xl mt-2 leading-none text-foam">FOUNDRY</span>
+            <span class="font-slab text-3xl leading-none text-amber">HAZE</span>
+            <span class="font-body text-[10px] tracking-[0.3em] uppercase text-foam/60 mt-3">Hazy IPA · 6.4% ABV</span>
+            <div class="mt-4 w-16 h-px bg-amber/50"></div>
+            <span class="font-body text-[9px] tracking-widest uppercase text-foam/45 mt-3">Ironhollow Brewing Co.</span>
+          </div>
+          <!-- can lid -->
+          <div class="absolute -top-3 inset-x-6 h-6 rounded-full bg-foam/30 blur-[1px]"></div>
+        </div>
+        <!-- floating tag -->
+        <div data-float class="absolute -left-8 top-12 rotate-[-8deg] bg-foam text-char font-display font-extrabold text-sm px-4 py-2 rounded-lg shadow-xl">
+          ⭐ Gold · 2025
+        </div>
+        <div data-float class="absolute -right-6 bottom-16 rotate-[6deg] bg-ember text-foam font-display font-extrabold text-sm px-4 py-2 rounded-lg shadow-xl">
+          Unfiltered
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-foam/40">
+    <span class="text-[10px] uppercase tracking-[0.3em] font-body">Scroll</span>
+    <span class="w-px h-10 bg-gradient-to-b from-amber to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="py-5 bg-amber text-char border-y-4 border-char overflow-hidden marquee-wrap">
+  <div class="marquee items-center gap-8 font-slab text-2xl sm:text-3xl uppercase">
+    <!-- duplicated for seamless loop -->
+    <span class="flex items-center gap-8">
+      <span>Foundry Haze</span><span class="text-ember">✦</span>
+      <span>Rust Belt Red</span><span class="text-ember">✦</span>
+      <span>Midnight Forge Stout</span><span class="text-ember">✦</span>
+      <span>Hop Hammer DIPA</span><span class="text-ember">✦</span>
+      <span>Anvil Amber</span><span class="text-ember">✦</span>
+      <span>Smelter Saison</span><span class="text-ember">✦</span>
+      <span>Cinder Porter</span><span class="text-ember">✦</span>
+    </span>
+    <span class="flex items-center gap-8" aria-hidden="true">
+      <span>Foundry Haze</span><span class="text-ember">✦</span>
+      <span>Rust Belt Red</span><span class="text-ember">✦</span>
+      <span>Midnight Forge Stout</span><span class="text-ember">✦</span>
+      <span>Hop Hammer DIPA</span><span class="text-ember">✦</span>
+      <span>Anvil Amber</span><span class="text-ember">✦</span>
+      <span>Smelter Saison</span><span class="text-ember">✦</span>
+      <span>Cinder Porter</span><span class="text-ember">✦</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ OUR BEERS ============ -->
+<section id="beers" class="relative py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">On Tap & In Cans</span>
+        <h2 class="font-slab text-5xl sm:text-6xl mt-3 leading-none">Our<br class="sm:hidden"> Beers</h2>
+      </div>
+      <p class="max-w-md text-foam/70 font-body leading-relaxed">
+        Nine core pours plus a rotating cast of small-batch oddities. Every recipe is brewed in-house at the foundry — no contract brewing, no shortcuts.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card template -->
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-amber/10 blur-2xl group-hover:bg-amber/20 transition-colors"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Hazy IPA</span>
+          <span class="font-slab text-lg text-foam/30">01</span>
+        </div>
+        <div class="h-28 rounded-2xl liquid mb-5 relative overflow-hidden"><div class="foam"></div></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Foundry Haze</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Pillowy, juicy, dripping with Citra & Mosaic. Our flagship and the reason people queue.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">6.4% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">45 IBU</span>
+        </div>
+      </article>
+
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-rust/20 blur-2xl group-hover:bg-rust/30 transition-colors"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Amber Ale</span>
+          <span class="font-slab text-lg text-foam/30">02</span>
+        </div>
+        <div class="h-28 rounded-2xl mb-5 relative overflow-hidden" style="background:linear-gradient(180deg,#c89b3c,#8a3b1e)"></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Anvil Amber</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Toasty caramel malt with a clean bitter snap. The session beer for long taproom nights.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">5.2% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">28 IBU</span>
+        </div>
+      </article>
+
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-char/60 blur-2xl"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Imperial Stout</span>
+          <span class="font-slab text-lg text-foam/30">03</span>
+        </div>
+        <div class="h-28 rounded-2xl mb-5 relative overflow-hidden" style="background:linear-gradient(180deg,#3a2a18,#0f0a05)"></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Midnight Forge</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Barrel-aged in bourbon casks. Dark chocolate, espresso, vanilla, and a warm boozy finish.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">11.2% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">60 IBU</span>
+        </div>
+      </article>
+
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-hop/20 blur-2xl"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Farmhouse Saison</span>
+          <span class="font-slab text-lg text-foam/30">04</span>
+        </div>
+        <div class="h-28 rounded-2xl mb-5 relative overflow-hidden" style="background:linear-gradient(180deg,#e9d27a,#c89b3c)"></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Smelter Saison</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Dry, peppery, effervescent. Fermented warm with our house Belgian yeast for a rustic spark.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">6.0% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">22 IBU</span>
+        </div>
+      </article>
+
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-ember/20 blur-2xl"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Double IPA</span>
+          <span class="font-slab text-lg text-foam/30">05</span>
+        </div>
+        <div class="h-28 rounded-2xl mb-5 relative overflow-hidden" style="background:linear-gradient(180deg,#f2a93b,#c2410c)"></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Hop Hammer</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Resinous, dank, and dangerously smooth. Triple dry-hopped for a wall of tropical aroma.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">8.5% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">85 IBU</span>
+        </div>
+      </article>
+
+      <article data-reveal class="beer-card group relative rounded-3xl bg-char2 border border-foam/10 p-6 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-rust/20 blur-2xl"></div>
+        <div class="flex items-start justify-between mb-5">
+          <span class="font-body text-[10px] uppercase tracking-[0.3em] text-amber">Robust Porter</span>
+          <span class="font-slab text-lg text-foam/30">06</span>
+        </div>
+        <div class="h-28 rounded-2xl mb-5 relative overflow-hidden" style="background:linear-gradient(180deg,#5a3a22,#1a130c)"></div>
+        <h3 class="font-display font-extrabold text-2xl mb-1">Cinder Porter</h3>
+        <p class="text-foam/65 text-sm font-body mb-5">Smoked malt, roasted cocoa, and a campfire whisper. Brewed for the colder months.</p>
+        <div class="flex items-center gap-4 text-xs font-body">
+          <span class="rounded-full bg-amber/15 text-amberhi px-3 py-1 font-bold">6.8% ABV</span>
+          <span class="rounded-full bg-hop/25 text-foam px-3 py-1 font-bold">38 IBU</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAPROOM / VISIT ============ -->
+<section id="taproom" class="relative py-24 lg:py-32 bg-char2">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div data-reveal class="relative rounded-[2rem] overflow-hidden border border-foam/10 bg-gradient-to-br from-amber/30 to-ember/40 min-h-[24rem]">
+      <img src="https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=1600&q=80"
+           alt="Taproom interior with taps and warm lighting"
+           class="w-full h-full object-cover absolute inset-0" loading="lazy"
+           onerror="this.style.display='none'" />
+      <div class="absolute bottom-5 left-5 bg-char/85 backdrop-blur rounded-2xl px-5 py-3 border border-foam/10">
+        <div class="font-slab text-amber text-lg leading-none">The Foundry Taproom</div>
+        <div class="font-body text-xs text-foam/60 mt-1">14 rotating taps · open fire · no TVs</div>
+      </div>
+    </div>
+
+    <div id="visit">
+      <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Come Pull Up a Stool</span>
+      <h2 class="font-slab text-5xl sm:text-6xl mt-3 mb-6 leading-none">Visit the<br>Taproom</h2>
+      <p class="text-foam/75 font-body leading-relaxed mb-8 max-w-lg">
+        Our taproom lives inside a restored 1920s iron foundry — exposed brick, reclaimed timber, and a forge that still throws heat on a cold night. Fourteen lines, a rotating food truck out front, and zero pretension.
+      </p>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-8">
+        <div class="rounded-2xl border border-foam/10 bg-char p-5">
+          <div class="font-display font-extrabold text-lg text-amber mb-1">Hours</div>
+          <ul class="font-body text-sm text-foam/70 space-y-1">
+            <li>Wed–Thu · 4pm – 11pm</li>
+            <li>Fri–Sat · 12pm – 1am</li>
+            <li>Sunday · 12pm – 9pm</li>
+          </ul>
+        </div>
+        <div class="rounded-2xl border border-foam/10 bg-char p-5">
+          <div class="font-display font-extrabold text-lg text-amber mb-1">Find Us</div>
+          <ul class="font-body text-sm text-foam/70 space-y-1">
+            <li>42 Foundry Lane</li>
+            <li>Ironhollow District</li>
+            <li>Dog-friendly · Step-free</li>
+          </ul>
+        </div>
+      </div>
+
+      <a href="#cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-amber px-7 py-4 font-display font-extrabold text-char hover:bg-amberhi transition-colors shadow-xl shadow-amber/30">
+        <span class="magnetic-inner">Book a Tasting Flight</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BREWING PROCESS ============ -->
+<section id="process" class="relative py-24 lg:py-32 overflow-hidden">
+  <div class="absolute inset-0 -z-10 opacity-20">
+    <img src="https://images.unsplash.com/photo-1518099074172-2e47ee6cfdc0?auto=format&fit=crop&w=1600&q=80"
+         alt="" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'" />
+    <div class="absolute inset-0 bg-char/80"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-16">
+      <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Grain to Glass</span>
+      <h2 class="font-slab text-5xl sm:text-6xl mt-3 leading-none">The Brewing Process</h2>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-6">
+      <div data-reveal class="relative rounded-3xl border border-foam/10 bg-char2 p-7">
+        <div class="font-slab text-6xl text-amber/25 leading-none mb-4">01</div>
+        <h3 class="font-display font-extrabold text-xl mb-2">Mash & Mill</h3>
+        <p class="font-body text-sm text-foam/65 leading-relaxed">We crack whole-grain malt and steep it warm to coax out fermentable sugars. The first sweet smell of the day.</p>
+      </div>
+      <div data-reveal class="relative rounded-3xl border border-foam/10 bg-char2 p-7">
+        <div class="font-slab text-6xl text-amber/25 leading-none mb-4">02</div>
+        <h3 class="font-display font-extrabold text-xl mb-2">Boil & Hop</h3>
+        <p class="font-body text-sm text-foam/65 leading-relaxed">A rolling boil, then hops added in waves for bitterness, flavor, and aroma. Timing is everything.</p>
+      </div>
+      <div data-reveal class="relative rounded-3xl border border-foam/10 bg-char2 p-7">
+        <div class="font-slab text-6xl text-amber/25 leading-none mb-4">03</div>
+        <h3 class="font-display font-extrabold text-xl mb-2">Ferment</h3>
+        <p class="font-body text-sm text-foam/65 leading-relaxed">House yeast does the quiet work — two weeks of patience turning sweet wort into proper beer.</p>
+      </div>
+      <div data-reveal class="relative rounded-3xl border border-foam/10 bg-char2 p-7">
+        <div class="font-slab text-6xl text-amber/25 leading-none mb-4">04</div>
+        <h3 class="font-display font-extrabold text-xl mb-2">Condition & Pour</h3>
+        <p class="font-body text-sm text-foam/65 leading-relaxed">Cold-conditioned, lightly carbonated, and racked straight to the taproom lines. Fresh as it gets.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STORY ============ -->
+<section id="story" class="relative py-24 lg:py-32 bg-char2">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-14 items-center">
+    <div class="lg:col-span-6 order-2 lg:order-1">
+      <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Since 2014</span>
+      <h2 class="font-slab text-5xl sm:text-6xl mt-3 mb-6 leading-none">Built in an<br>Old Foundry</h2>
+      <p class="text-foam/75 font-body leading-relaxed mb-5 max-w-xl">
+        Ironhollow started with two friends, one cobbled-together kettle, and a stubborn belief that the neighborhood deserved better beer. We poured our first pint to a room of twelve people. We've kept the same crew, the same fire, and the same rule: brew what we'd want to drink.
+      </p>
+      <p class="text-foam/75 font-body leading-relaxed mb-8 max-w-xl">
+        A decade later we're still independent, still small-batch, and still answering to nobody but the regulars who pull up a stool.
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <span class="rounded-full border border-amber/40 bg-amber/10 px-4 py-2 font-body text-sm text-amberhi">100% Independent</span>
+        <span class="rounded-full border border-foam/15 px-4 py-2 font-body text-sm text-foam/70">Locally Sourced Malt</span>
+        <span class="rounded-full border border-foam/15 px-4 py-2 font-body text-sm text-foam/70">Solar-Powered Brewhouse</span>
+      </div>
+    </div>
+    <div class="lg:col-span-6 order-1 lg:order-2">
+      <div data-reveal class="grid grid-cols-2 gap-4">
+        <div class="rounded-3xl overflow-hidden border border-foam/10 bg-gradient-to-br from-rust/40 to-char min-h-[14rem]">
+          <img src="https://images.unsplash.com/photo-1436076863939-06870fe779c2?auto=format&fit=crop&w=1600&q=80"
+               alt="Brewer at work" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <div class="rounded-3xl overflow-hidden border border-foam/10 bg-gradient-to-br from-amber/40 to-ember/40 min-h-[14rem] mt-8">
+          <img src="https://images.unsplash.com/photo-1559526324-593bc073d938?auto=format&fit=crop&w=1600&q=80"
+               alt="Pouring a craft beer" class="w-full h-full object-cover" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENTS ============ -->
+<section id="events" class="relative py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">What's On</span>
+        <h2 class="font-slab text-5xl sm:text-6xl mt-3 leading-none">Events at the Foundry</h2>
+      </div>
+      <p class="max-w-md text-foam/70 font-body">Tap takeovers, vinyl nights, and the occasional questionable karaoke. Walk-ins welcome — but the good ones fill up.</p>
+    </div>
+
+    <div class="space-y-4">
+      <div data-reveal class="label-edge group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 rounded-2xl bg-char2 border border-foam/10 px-6 py-6 hover:border-amber/50 transition-colors">
+        <div class="sm:w-24 shrink-0">
+          <div class="font-slab text-3xl text-amber leading-none">14</div>
+          <div class="font-body text-xs uppercase tracking-widest text-foam/55">June</div>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-display font-extrabold text-xl">Fresh Hop Release Party</h3>
+          <p class="font-body text-sm text-foam/60">First pour of our wet-hopped harvest ale, straight from the tank.</p>
+        </div>
+        <span class="font-body text-xs uppercase tracking-widest text-amberhi rounded-full border border-amber/40 px-4 py-1.5">Free Entry</span>
+      </div>
+
+      <div data-reveal class="label-edge group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 rounded-2xl bg-char2 border border-foam/10 px-6 py-6 hover:border-amber/50 transition-colors">
+        <div class="sm:w-24 shrink-0">
+          <div class="font-slab text-3xl text-amber leading-none">21</div>
+          <div class="font-body text-xs uppercase tracking-widest text-foam/55">June</div>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-display font-extrabold text-xl">Brewmaster's Table · Tasting Dinner</h3>
+          <p class="font-body text-sm text-foam/60">Five courses paired with five pours. Twenty seats only.</p>
+        </div>
+        <span class="font-body text-xs uppercase tracking-widest text-amberhi rounded-full border border-amber/40 px-4 py-1.5">Ticketed</span>
+      </div>
+
+      <div data-reveal class="label-edge group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 rounded-2xl bg-char2 border border-foam/10 px-6 py-6 hover:border-amber/50 transition-colors">
+        <div class="sm:w-24 shrink-0">
+          <div class="font-slab text-3xl text-amber leading-none">28</div>
+          <div class="font-body text-xs uppercase tracking-widest text-foam/55">June</div>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-display font-extrabold text-xl">Vinyl & Cask Night</h3>
+          <p class="font-body text-sm text-foam/60">Cask-conditioned ales, a wall of records, and your worst dance moves.</p>
+        </div>
+        <span class="font-body text-xs uppercase tracking-widest text-amberhi rounded-full border border-amber/40 px-4 py-1.5">Free Entry</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 lg:py-32 bg-char2 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Word From the Bar</span>
+      <h2 class="font-slab text-5xl sm:text-6xl mt-3 leading-none">Regulars Say</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure data-reveal class="rounded-3xl bg-char border border-foam/10 p-8">
+        <div class="text-amber text-2xl mb-4">★★★★★</div>
+        <blockquote class="font-body text-foam/80 leading-relaxed mb-6">"Foundry Haze ruined every other IPA for me. The taproom feels like a friend's living room that happens to pour world-class beer."</blockquote>
+        <figcaption class="font-display font-extrabold">Dani R. <span class="font-body font-normal text-foam/50 text-sm block">Tuesday-night regular</span></figcaption>
+      </figure>
+      <figure data-reveal class="rounded-3xl bg-char border border-foam/10 p-8">
+        <div class="text-amber text-2xl mb-4">★★★★★</div>
+        <blockquote class="font-body text-foam/80 leading-relaxed mb-6">"Midnight Forge is the best barrel-aged stout I've had outside of a festival. These people clearly care."</blockquote>
+        <figcaption class="font-display font-extrabold">Marcus T. <span class="font-body font-normal text-foam/50 text-sm block">Certified beer judge</span></figcaption>
+      </figure>
+      <figure data-reveal class="rounded-3xl bg-char border border-foam/10 p-8">
+        <div class="text-amber text-2xl mb-4">★★★★★</div>
+        <blockquote class="font-body text-foam/80 leading-relaxed mb-6">"Brought the whole crew for a birthday. Step-free, dog-friendly, and the staff treated us like family. We've been back four times since."</blockquote>
+        <figcaption class="font-display font-extrabold">Priya N. <span class="font-body font-normal text-foam/50 text-sm block">Neighborhood local</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MERCH / CTA ============ -->
+<section id="cta" class="relative py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Take Us Home</span>
+        <h2 class="font-slab text-5xl sm:text-6xl mt-3 mb-6 leading-none">Merch &<br>Mixed Packs</h2>
+        <p class="text-foam/75 font-body leading-relaxed mb-8 max-w-lg">
+          Grab a four-pack to-go, build your own mixed case, or wear the foundry proud. Free local delivery on orders over a case.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-amber px-7 py-4 font-display font-extrabold text-char hover:bg-amberhi transition-colors shadow-xl shadow-amber/30">
+            <span class="magnetic-inner">Shop the Beer Store</span>
+          </a>
+          <a href="#cta" class="inline-flex items-center gap-2 rounded-full border border-foam/25 px-7 py-4 font-display font-extrabold text-foam hover:border-amber hover:text-amber transition-colors">Browse Merch</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div data-reveal class="rounded-3xl bg-char2 border border-foam/10 p-6">
+          <div class="h-32 rounded-2xl liquid relative overflow-hidden mb-4"><div class="foam"></div></div>
+          <div class="font-display font-extrabold text-lg">Mixed 12-Pack</div>
+          <div class="font-body text-sm text-foam/55">Build your own · 4 styles</div>
+          <div class="font-slab text-amber text-xl mt-2">$36</div>
+        </div>
+        <div data-reveal class="rounded-3xl bg-char2 border border-foam/10 p-6 mt-8">
+          <div class="h-32 rounded-2xl mb-4" style="background:linear-gradient(135deg,#231a10,#8a3b1e)"></div>
+          <div class="font-display font-extrabold text-lg">Foundry Tee</div>
+          <div class="font-body text-sm text-foam/55">Heavyweight cotton</div>
+          <div class="font-slab text-amber text-xl mt-2">$28</div>
+        </div>
+        <div data-reveal class="rounded-3xl bg-char2 border border-foam/10 p-6 -mt-4">
+          <div class="h-32 rounded-2xl mb-4" style="background:linear-gradient(135deg,#c89b3c,#1a130c)"></div>
+          <div class="font-display font-extrabold text-lg">Steel Growler</div>
+          <div class="font-body text-sm text-foam/55">Refillable · 64oz</div>
+          <div class="font-slab text-amber text-xl mt-2">$42</div>
+        </div>
+        <div data-reveal class="rounded-3xl bg-char2 border border-foam/10 p-6 mt-4">
+          <div class="h-32 rounded-2xl mb-4" style="background:linear-gradient(135deg,#f2a93b,#c2410c)"></div>
+          <div class="font-display font-extrabold text-lg">Gift Card</div>
+          <div class="font-body text-sm text-foam/55">From $25</div>
+          <div class="font-slab text-amber text-xl mt-2">$25+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 lg:py-32 bg-char2">
+  <div class="max-w-3xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <span class="font-body text-xs uppercase tracking-[0.35em] text-amber">Good to Know</span>
+      <h2 class="font-slab text-5xl sm:text-6xl mt-3 leading-none">Questions</h2>
+    </div>
+
+    <div class="space-y-4">
+      <div class="faq-item rounded-2xl border border-foam/10 bg-char overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-extrabold text-lg">Do I need a reservation for the taproom?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 font-body text-foam/65 leading-relaxed">Nope — walk-ins are always welcome. We only take bookings for tasting flights, the Brewmaster's Table dinner, and larger groups of eight or more.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl border border-foam/10 bg-char overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-extrabold text-lg">Is there food at the taproom?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 font-body text-foam/65 leading-relaxed">A rotating food truck parks out front every night we're open, and you're welcome to bring your own. We also keep snacks and pretzels behind the bar.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl border border-foam/10 bg-char overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-extrabold text-lg">Can I buy your beer to take home?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 font-body text-foam/65 leading-relaxed">Absolutely. Grab cans and four-packs at the bar, fill a growler, or order a mixed case online for free local delivery over a case.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl border border-foam/10 bg-char overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-extrabold text-lg">Do you have non-alcoholic options?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 font-body text-foam/65 leading-relaxed">Yes — we brew a house NA pale ale plus craft sodas and kombucha on tap. Designated drivers drink for free on event nights.</p></div>
+      </div>
+
+      <div class="faq-item rounded-2xl border border-foam/10 bg-char overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-extrabold text-lg">Can I host a private event here?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 font-body text-foam/65 leading-relaxed">We host private bookings, brewery tours, and corporate tastings in the mezzanine. Drop us a line and we'll build a package around your crew.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-24 lg:py-32 overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-br from-amber via-ember to-rust"></div>
+    <div data-parallax="0.2" class="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none pointer-events-none">
+      <span class="font-slab text-[22vw] leading-none text-char/10">CHEERS</span>
+    </div>
+  </div>
+  <div class="max-w-4xl mx-auto px-5 lg:px-8 text-center text-char">
+    <h2 class="font-slab text-5xl sm:text-7xl leading-none mb-6">Pull Up<br>a Stool.</h2>
+    <p class="font-display font-bold text-lg sm:text-xl mb-10 max-w-xl mx-auto text-char/85">
+      Fourteen taps, an open fire, and a fresh pour with your name on it. The Foundry's waiting.
+    </p>
+    <a href="#visit" class="magnetic inline-flex items-center gap-3 rounded-full bg-char px-9 py-5 font-display font-extrabold text-foam text-lg hover:bg-char2 transition-colors shadow-2xl">
+      <span class="magnetic-inner">Plan Your Visit</span>
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-char border-t border-foam/10 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="grid place-items-center w-11 h-11 rounded-full bg-amber text-char font-slab text-lg">IH</span>
+          <span class="font-display font-extrabold text-xl">Ironhollow Brewing Co.</span>
+        </div>
+        <p class="font-body text-foam/55 max-w-sm leading-relaxed">Independent craft brewery and taproom carved into an old iron foundry. Brewed loud, poured proud, drink local.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="#top" class="w-10 h-10 grid place-items-center rounded-full border border-foam/15 hover:border-amber hover:text-amber transition-colors" aria-label="Instagram">◐</a>
+          <a href="#top" class="w-10 h-10 grid place-items-center rounded-full border border-foam/15 hover:border-amber hover:text-amber transition-colors" aria-label="Untappd">◑</a>
+          <a href="#top" class="w-10 h-10 grid place-items-center rounded-full border border-foam/15 hover:border-amber hover:text-amber transition-colors" aria-label="Facebook">◒</a>
+        </div>
+      </div>
+      <div>
+        <div class="font-display font-extrabold uppercase text-sm tracking-widest text-amber mb-4">Explore</div>
+        <ul class="font-body text-foam/60 space-y-2 text-sm">
+          <li><a href="#beers" class="hover:text-foam">Our Beers</a></li>
+          <li><a href="#taproom" class="hover:text-foam">Taproom</a></li>
+          <li><a href="#process" class="hover:text-foam">Brewing Process</a></li>
+          <li><a href="#events" class="hover:text-foam">Events</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-display font-extrabold uppercase text-sm tracking-widest text-amber mb-4">Visit</div>
+        <ul class="font-body text-foam/60 space-y-2 text-sm">
+          <li>42 Foundry Lane</li>
+          <li>Ironhollow District</li>
+          <li>hello@ironhollow.beer</li>
+          <li>(555) 014-2014</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-foam/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-body text-xs text-foam/40">
+      <p>© 2026 Ironhollow Brewing Co. All rights reserved. Please drink responsibly · 21+</p>
+      <p class="flex gap-5"><a href="#top" class="hover:text-foam">Privacy</a><a href="#top" class="hover:text-foam">Terms</a><a href="#top" class="hover:text-foam">Accessibility</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Nav scroll state ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.classList.add('bg-char/85','backdrop-blur-md','shadow-lg','shadow-black/30');
+    else nav.classList.remove('bg-char/85','backdrop-blur-md','shadow-lg','shadow-black/30');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  if (reduce || typeof gsap === 'undefined') {
+    // Ensure content visible without motion
+    document.querySelectorAll('.mask-line > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('[data-fade],[data-reveal]').forEach(e => { e.style.opacity = 1; e.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach(c => c.textContent = c.dataset.to);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Hero masked headline ----
+  gsap.to('.mask-line > span', {
+    y: '0%', duration: 1, ease: 'power4.out', stagger: 0.12, delay: 0.15
+  });
+
+  // ---- Hero fades ----
+  gsap.from('[data-fade]', {
+    opacity: 0, y: 24, duration: 0.9, ease: 'power3.out', stagger: 0.12, delay: 0.5
+  });
+
+  // ---- Floating tags ----
+  gsap.utils.toArray('[data-float]').forEach((el, i) => {
+    gsap.to(el, { y: i % 2 ? 12 : -12, duration: 2.4 + i * 0.3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  });
+
+  // ---- Section reveals ----
+  gsap.utils.toArray('[data-reveal]').forEach(el => {
+    gsap.from(el, {
+      opacity: 0, y: 50, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 85%' }
+    });
+  });
+
+  // ---- Container parallax ----
+  gsap.utils.toArray('[data-parallax]').forEach(el => {
+    const amt = parseFloat(el.dataset.parallax) || 0.2;
+    gsap.to(el, {
+      yPercent: amt * 100,
+      ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // ---- Count-ups ----
+  document.querySelectorAll('.count').forEach(el => {
+    const to = parseInt(el.dataset.to, 10);
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: to, duration: 1.8, ease: 'power2.out',
+        onUpdate: () => el.textContent = Math.round(obj.v)
+      })
+    });
+  });
+
+  // ---- Magnetic CTAs ----
+  document.querySelectorAll('.magnetic').forEach(btn => {
+    const inner = btn.querySelector('.magnetic-inner') || btn;
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(btn, { x: x * 0.3, y: y * 0.4, duration: 0.4, ease: 'power3.out' });
+      gsap.to(inner, { x: x * 0.15, y: y * 0.2, duration: 0.4, ease: 'power3.out' });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' });
+      gsap.to(inner, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' });
+    });
+  });
+
+  // ---- Hero can tilt-3D ----
+  const can = document.getElementById('hero-can');
+  if (can) {
+    const hero = can.closest('section');
+    hero.addEventListener('mousemove', e => {
+      const r = hero.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(can, { rotationY: px * 22, rotationX: -py * 18, duration: 0.5, ease: 'power2.out', transformPerspective: 900 });
+    });
+    hero.addEventListener('mouseleave', () => {
+      gsap.to(can, { rotationY: 0, rotationX: 0, duration: 0.8, ease: 'power3.out' });
+    });
+  }
+
+  ScrollTrigger.refresh();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+/* /portfolio: the surfaces Tailwind can't express and the mockup loops.
+   Curves and durations are the motion kit's tokens (nx.css: --ease-out,
+   --ease-in-out, --dur-*). Every loop is transform/opacity only, paused while
+   off-screen (LoopRegion sets data-nx-offscreen) and removed under
+   prefers-reduced-motion. Every hover that moves something is gated to a
+   mouse or trackpad. This file is unlayered, so it states its own pause and
+   reduced-motion rules (the kit's live in @layer components and would lose). */
+
+/* ───────── Double-bezel browser frame: a hairline tray holding the screen plate ───────── */
+.tray {
+  --tray-r: 2rem;
+  --tray-pad: 0.375rem;
+  position: relative;
+  padding: var(--tray-pad);
+  border-radius: var(--tray-r);
+  /* Dark: depth comes from light, not shadow. A drop shadow on a near-black
+     page is invisible (and bands), so the tray is a slightly lifted fill with
+     a lit top rim. */
+  background: color-mix(in oklab, var(--fg) 5.5%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    inset 0 1px 0 color-mix(in oklab, var(--fg) 9%, transparent);
+}
+:global(html[data-theme='light']) .tray {
+  background: color-mix(in oklab, var(--fg) 4.5%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    0 40px 80px -44px rgba(12, 16, 28, 0.24);
+}
+.plate {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--tray-r) - var(--tray-pad));
+  background: var(--surface);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--fg) 7%, transparent),
+    0 0 0 1px var(--line);
+}
+:global(html[data-theme='light']) .plate {
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 0 0 1px var(--line),
+    0 1px 2px rgba(12, 16, 28, 0.05);
+}
+/* Screen: inset one more gap into the plate, radius concentric with it. */
+.screen {
+  border-radius: calc(var(--tray-r) - var(--tray-pad) * 2);
+}
+
+/* Press: the frame gives a little under a finger or click (independent `scale`,
+   so it composes with the hover lift). */
+.tray {
+  transition: scale var(--dur-press) var(--ease-out);
+}
+.tray:has(> a:active) {
+  scale: 0.985;
+}
+
+/* Hover (mouse only): the tray lifts 4px and its hairline firms up; the
+   screenshot settles in slowly, growing from its top edge so the captured
+   nav bar is never cut. Colour/shadow use `ease`, movement ease-out. */
+@media (hover: hover) and (pointer: fine) {
+  .tray {
+    transition:
+      scale var(--dur-press) var(--ease-out),
+      translate 300ms var(--ease-out),
+      box-shadow 200ms ease;
+  }
+  .tray:hover {
+    translate: 0 -4px;
+    box-shadow:
+      inset 0 0 0 1px var(--line-2),
+      inset 0 1px 0 color-mix(in oklab, var(--fg) 14%, transparent);
+  }
+  :global(html[data-theme='light']) .tray:hover {
+    box-shadow:
+      inset 0 0 0 1px var(--line-2),
+      0 48px 90px -44px rgba(12, 16, 28, 0.3);
+  }
+  .shot {
+    transform-origin: 50% 0;
+    transition: scale 600ms var(--ease-out);
+  }
+  .tray:hover .shot {
+    scale: 1.03;
+  }
+}
+
+/* ───────── Client card thumbnail ───────── */
+.thumbImg {
+  transition: opacity var(--dur-modal) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .thumbImg {
+    transform-origin: 50% 0;
+  }
+  .thumbImg,
+  .thumbMono {
+    transition:
+      opacity var(--dur-modal) var(--ease-out),
+      scale 600ms var(--ease-out);
+  }
+  :global(.group):hover .thumbImg,
+  :global(.group):hover .thumbMono {
+    scale: 1.04;
+  }
+}
+
+/* ───────── Mockup loops (explanation: what the product does, live) ───────── */
+
+/* Delivery: a driver travels the dispatch route, pin to pin. The wrapper is the
+   map's full size, so translate percentages are map coordinates (same as the
+   SVG viewBox). Constant motion: linear between the route's corners. */
+.driver {
+  animation: driver 10s linear infinite;
+}
+@keyframes driver {
+  0% { transform: translate3d(14%, 78%, 0); opacity: 0; }
+  4% { transform: translate3d(14%, 78%, 0); opacity: 1; }
+  6% { transform: translate3d(14%, 78%, 0); }
+  13.6% { transform: translate3d(14%, 66%, 0); }
+  26.3% { transform: translate3d(34%, 66%, 0); }
+  41.6% { transform: translate3d(34%, 42%, 0); }
+  56.8% { transform: translate3d(58%, 42%, 0); }
+  72% { transform: translate3d(58%, 18%, 0); }
+  86% { transform: translate3d(80%, 18%, 0); opacity: 1; }
+  92% { transform: translate3d(80%, 18%, 0); opacity: 1; }
+  98%, 100% { transform: translate3d(80%, 18%, 0); opacity: 0; }
+}
+
+/* Dashboard: the current period's bar keeps updating (real-time KPIs). */
+.liveBar {
+  transform-origin: 50% 100%;
+  animation: live-bar 2.8s var(--ease-in-out) infinite alternate;
+}
+@keyframes live-bar {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.8); }
+}
+
+/* Ops: the activity strip streams in from the right (two copies, -50%). */
+.stream {
+  animation: stream 16s linear infinite;
+}
+@keyframes stream {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+/* CRM: the synced-contacts avatar breathes (live sync across devices). */
+.sync {
+  position: relative;
+}
+.sync::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  opacity: 0;
+  animation: sync 2.4s var(--ease-out) infinite;
+}
+@keyframes sync {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* POS: the newest order line arrives on the ticket, stays, and clears. */
+.ticketLine {
+  animation: ticket-line 4.8s var(--ease-out) infinite;
+}
+@keyframes ticket-line {
+  0% { transform: translate3d(0, 0.6em, 0); opacity: 0; }
+  10%, 84% { transform: translate3d(0, 0, 0); opacity: 1; }
+  92%, 100% { transform: translate3d(0, 0, 0); opacity: 0; }
+}
+
+/* Every loop above pauses off-screen and in hidden tabs' wake (LoopRegion)… */
+:global([data-nx-offscreen]) .loop,
+:global([data-nx-offscreen]) .loop::after {
+  animation-play-state: paused;
+}
+
+/* …and reduced motion keeps the still frame: no loop, nothing moving. */
+@media (prefers-reduced-motion: reduce) {
+  .loop.loop,
+  .loop.loop::after {
+    animation: none;
+  }
+  .driver.driver {
+    transform: translate3d(46%, 42%, 0);
+    opacity: 1;
+  }
+  .ticketLine.ticketLine {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ───────── "All sites" disclosure (native <details>) ───────── */
+.more > summary {
+  list-style: none;
+}
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+.moreIcon {
+  transition: rotate 200ms var(--ease-out);
+}
+.more[open] > summary .moreIcon {
+  rotate: 45deg;
+}
+@media (prefers-reduced-motion: reduce) {
+  .moreIcon {
+    transition: none;
+  }
+}

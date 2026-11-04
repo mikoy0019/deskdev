@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Velvet Heckle — Stand-Up Comedy Club</title>
+<meta name="description" content="The Velvet Heckle is the loudest little comedy club in the city. Live stand-up seven nights a week, open mics, and private events under one big red spotlight." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#1a0707',
+          crimson: '#c41e2a',
+          ember: '#e63946',
+          spotlight: '#ffd166',
+          cream: '#f7ecd9',
+          velvet: '#3d0a10',
+          plum: '#5b1018',
+        },
+        fontFamily: {
+          display: ['Anton', 'sans-serif'],
+          marquee: ['Bebas Neue', 'sans-serif'],
+          body: ['DM Sans', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#1a0707; color:#f7ecd9; font-family:'DM Sans',sans-serif; }
+
+  ::selection { background:#ffd166; color:#1a0707; }
+
+  /* Spotlight cursor */
+  .spot-cursor {
+    position: fixed; top:0; left:0; width:520px; height:520px;
+    margin:-260px 0 0 -260px; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,209,102,0.16) 0%, rgba(255,209,102,0.05) 35%, transparent 70%);
+    pointer-events:none; z-index:9999; transition:opacity .3s ease;
+    mix-blend-mode:screen;
+  }
+
+  /* Marquee bulbs */
+  .bulb {
+    width:13px; height:13px; border-radius:50%;
+    background:#ffd166;
+    box-shadow:0 0 8px 2px rgba(255,209,102,.9), 0 0 16px 4px rgba(255,209,102,.4);
+  }
+  .bulb-off { background:#7a5a1e; box-shadow:none; }
+  @keyframes bulbChase {
+    0%, 100% { background:#ffd166; box-shadow:0 0 8px 2px rgba(255,209,102,.9), 0 0 16px 4px rgba(255,209,102,.45); }
+    50% { background:#7a5a1e; box-shadow:none; }
+  }
+
+  /* Lineup marquee */
+  .ticker { display:flex; width:max-content; animation:scrollX 32s linear infinite; }
+  @keyframes scrollX { from { transform:translateX(0);} to { transform:translateX(-50%);} }
+  .ticker:hover { animation-play-state:paused; }
+
+  /* Curtain gradient */
+  .curtain {
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255,209,102,.18), transparent 55%),
+      repeating-linear-gradient(90deg, #3d0a10 0px, #5b1018 26px, #3d0a10 52px);
+  }
+
+  .grain::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.06; z-index:1;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-stroke { -webkit-text-stroke:2px #ffd166; color:transparent; }
+
+  .reveal { opacity:0; transform:translateY(40px); }
+
+  .show-card { transition:transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; transform-style:preserve-3d; }
+
+  .faq-a { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .ribbon {
+    background:linear-gradient(180deg,#e63946,#c41e2a);
+    box-shadow:0 4px 0 #8e1620;
+  }
+
+  .btn-glow { box-shadow:0 0 0 0 rgba(255,209,102,.6); }
+  .btn-glow:hover { box-shadow:0 0 30px 4px rgba(255,209,102,.45); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker { animation:none; }
+    .bulb { animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    .spot-cursor { display:none; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased bg-ink text-cream selection:bg-spotlight">
+
+<div class="spot-cursor" id="spotCursor" aria-hidden="true"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-full border border-spotlight/20 bg-velvet/80 backdrop-blur-md px-4 sm:px-6 py-3 shadow-lg shadow-black/40">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="grid place-items-center w-9 h-9 rounded-full ribbon text-cream font-display text-lg leading-none">VH</span>
+        <span class="font-marquee text-2xl tracking-wide text-cream group-hover:text-spotlight transition">The Velvet Heckle</span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-cream/80">
+        <a href="#lineup" class="hover:text-spotlight transition">Lineup</a>
+        <a href="#week" class="hover:text-spotlight transition">This Week</a>
+        <a href="#club" class="hover:text-spotlight transition">The Club</a>
+        <a href="#openmic" class="hover:text-spotlight transition">Open Mic</a>
+        <a href="#events" class="hover:text-spotlight transition">Private Events</a>
+        <a href="#faq" class="hover:text-spotlight transition">FAQ</a>
+      </nav>
+      <a href="#tickets" id="navTickets" class="btn-glow ribbon text-cream font-display tracking-wider text-sm px-5 py-2.5 rounded-full transition-all">
+        TICKETS
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center curtain grain overflow-hidden pt-28 pb-16">
+  <!-- marquee bulb frame -->
+  <div class="pointer-events-none absolute inset-x-4 sm:inset-x-10 top-24 bottom-10 rounded-[2.5rem] border-4 border-spotlight/30 z-[2]"></div>
+
+  <div class="relative z-10 mx-auto max-w-6xl px-6 text-center">
+    <!-- marquee sign -->
+    <div class="inline-block rounded-2xl bg-ink/70 border-2 border-spotlight/40 px-6 sm:px-10 py-5 shadow-2xl shadow-black/60">
+      <div class="flex justify-center gap-2 sm:gap-3 mb-4" id="bulbRow"></div>
+      <p class="font-marquee text-spotlight text-lg sm:text-2xl tracking-[0.35em]">★ NOW APPEARING LIVE ★</p>
+    </div>
+
+    <h1 class="mt-8 font-display leading-[0.86] text-cream">
+      <span class="block text-6xl sm:text-8xl lg:text-[10rem] reveal" data-rev>THE VELVET</span>
+      <span class="block text-6xl sm:text-8xl lg:text-[10rem] text-stroke reveal" data-rev>HECKLE</span>
+    </h1>
+
+    <p class="mt-6 max-w-2xl mx-auto text-cream/80 text-lg sm:text-xl reveal" data-rev>
+      The loudest little comedy room in the city. Seven nights of stand-up, hecklers welcome, two-drink minimum, zero bad seats.
+    </p>
+
+    <div class="mt-9 flex flex-wrap items-center justify-center gap-4 reveal" data-rev>
+      <a href="#tickets" id="heroTickets" class="btn-glow ribbon text-cream font-display tracking-widest text-base sm:text-lg px-9 py-4 rounded-full transition-all">
+        GRAB TICKETS
+      </a>
+      <a href="#lineup" class="font-display tracking-widest text-base sm:text-lg px-9 py-4 rounded-full border-2 border-spotlight/50 text-spotlight hover:bg-spotlight hover:text-ink transition">
+        SEE THE LINEUP
+      </a>
+    </div>
+
+    <!-- count ups -->
+    <div class="mt-14 grid grid-cols-3 gap-4 max-w-2xl mx-auto reveal" data-rev>
+      <div class="rounded-xl bg-ink/50 border border-spotlight/15 py-5">
+        <div class="font-display text-4xl sm:text-5xl text-spotlight" data-count="1850">0</div>
+        <div class="text-xs sm:text-sm uppercase tracking-widest text-cream/60 mt-1">Shows Staged</div>
+      </div>
+      <div class="rounded-xl bg-ink/50 border border-spotlight/15 py-5">
+        <div class="font-display text-4xl sm:text-5xl text-spotlight" data-count="412000">0</div>
+        <div class="text-xs sm:text-sm uppercase tracking-widest text-cream/60 mt-1">Laughs Logged</div>
+      </div>
+      <div class="rounded-xl bg-ink/50 border border-spotlight/15 py-5">
+        <div class="font-display text-4xl sm:text-5xl text-spotlight" data-count="96">0</div>
+        <div class="text-xs sm:text-sm uppercase tracking-widest text-cream/60 mt-1">Seats Per Show</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LINEUP TICKER ============ -->
+<div class="bg-spotlight text-ink py-3 overflow-hidden border-y-4 border-ink">
+  <div class="ticker font-marquee text-2xl tracking-widest">
+    <span class="px-6">DALLAS PRYCE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">MARGO FONTAINE-LE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">THE BISCUIT BROTHERS</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">PENNY OKAFOR</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">RICO "NO NOTES" VALE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">SUNNY DELACROIX</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">DALLAS PRYCE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">MARGO FONTAINE-LE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">THE BISCUIT BROTHERS</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">PENNY OKAFOR</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">RICO "NO NOTES" VALE</span><span class="px-6 text-crimson">✦</span>
+    <span class="px-6">SUNNY DELACROIX</span><span class="px-6 text-crimson">✦</span>
+  </div>
+</div>
+
+<!-- ============ UPCOMING SHOWS LINEUP ============ -->
+<section id="lineup" class="relative py-24 bg-ink grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+      <div>
+        <p class="font-marquee text-ember tracking-[0.3em] text-lg reveal" data-rev>★ HEADLINERS ★</p>
+        <h2 class="font-display text-5xl sm:text-7xl text-cream leading-none mt-2 reveal" data-rev>UPCOMING<br>SHOWS</h2>
+      </div>
+      <p class="max-w-sm text-cream/70 reveal" data-rev>
+        Fresh acts every night. Doors at 7, curtain at 8, last laugh whenever they leave the stage. Book early — the good seats vanish.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="showGrid">
+      <!-- card -->
+      <article class="show-card group relative rounded-2xl overflow-hidden border border-spotlight/15 bg-velvet/40 reveal" data-rev data-tilt>
+        <div class="relative h-56 bg-gradient-to-br from-plum to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1600&q=80" alt="Stand-up spotlight" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-110 transition duration-700" />
+          <span class="absolute top-3 left-3 ribbon text-cream text-xs font-display tracking-wider px-3 py-1 rounded-full">FRI · 8PM</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-2xl text-cream group-hover:text-spotlight transition">DALLAS PRYCE</h3>
+          <p class="text-spotlight/80 text-sm font-marquee tracking-widest mt-1">"GUILTY BY ASSOCIATION"</p>
+          <p class="text-cream/60 text-sm mt-3">Deadpan road stories and one very confused GPS. 70 minutes, no intermission, no mercy.</p>
+          <div class="mt-5 flex items-center justify-between">
+            <span class="font-display text-spotlight text-xl">$28</span>
+            <a href="#tickets" class="text-xs font-display tracking-widest text-cream/80 border border-spotlight/40 rounded-full px-4 py-2 hover:bg-spotlight hover:text-ink transition">BOOK</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden border border-spotlight/15 bg-velvet/40 reveal" data-rev data-tilt>
+        <div class="relative h-56 bg-gradient-to-br from-plum to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=1600&q=80" alt="Comedy club crowd" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-110 transition duration-700" />
+          <span class="absolute top-3 left-3 ribbon text-cream text-xs font-display tracking-wider px-3 py-1 rounded-full">SAT · 9PM</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-2xl text-cream group-hover:text-spotlight transition">MARGO FONTAINE-LE</h3>
+          <p class="text-spotlight/80 text-sm font-marquee tracking-widest mt-1">"FANCY PROBLEMS"</p>
+          <p class="text-cream/60 text-sm mt-3">High society meets low blows. A whip-smart hour about etiquette, divorce, and valet parking.</p>
+          <div class="mt-5 flex items-center justify-between">
+            <span class="font-display text-spotlight text-xl">$34</span>
+            <a href="#tickets" class="text-xs font-display tracking-widest text-cream/80 border border-spotlight/40 rounded-full px-4 py-2 hover:bg-spotlight hover:text-ink transition">BOOK</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden border border-spotlight/15 bg-velvet/40 reveal" data-rev data-tilt>
+        <div class="relative h-56 bg-gradient-to-br from-plum to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1600&q=80" alt="Microphone on stage" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-110 transition duration-700" />
+          <span class="absolute top-3 left-3 ribbon text-cream text-xs font-display tracking-wider px-3 py-1 rounded-full">SUN · 7PM</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-2xl text-cream group-hover:text-spotlight transition">THE BISCUIT BROTHERS</h3>
+          <p class="text-spotlight/80 text-sm font-marquee tracking-widest mt-1">"DOUGH OR DARE"</p>
+          <p class="text-cream/60 text-sm mt-3">Sketch chaos from two siblings who agree on nothing except snacks. Loud, fast, gloriously dumb.</p>
+          <div class="mt-5 flex items-center justify-between">
+            <span class="font-display text-spotlight text-xl">$24</span>
+            <a href="#tickets" class="text-xs font-display tracking-widest text-cream/80 border border-spotlight/40 rounded-full px-4 py-2 hover:bg-spotlight hover:text-ink transition">BOOK</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THIS WEEK ============ -->
+<section id="week" class="relative py-24 bg-velvet grain overflow-hidden">
+  <div class="mx-auto max-w-5xl px-6">
+    <div class="text-center mb-12">
+      <p class="font-marquee text-spotlight tracking-[0.3em] text-lg reveal" data-rev>★ THE CALENDAR ★</p>
+      <h2 class="font-display text-5xl sm:text-7xl text-cream leading-none mt-2 reveal" data-rev>THIS WEEK</h2>
+    </div>
+
+    <div class="space-y-3" id="weekList">
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/15 bg-ink/40 px-5 py-4 hover:border-spotlight/50 transition">
+          <span class="font-display text-spotlight text-xl w-20">MON</span>
+          <span class="font-display text-cream text-lg flex-1">DARK NIGHT — STAFF RECOVERS</span>
+          <span class="text-cream/60 text-sm">Closed · go to bed</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/15 bg-ink/40 px-5 py-4 hover:border-spotlight/50 transition">
+          <span class="font-display text-spotlight text-xl w-20">TUE</span>
+          <span class="font-display text-cream text-lg flex-1">NEW BLOOD SHOWCASE</span>
+          <span class="text-cream/60 text-sm">8PM · $12</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/15 bg-ink/40 px-5 py-4 hover:border-spotlight/50 transition">
+          <span class="font-display text-spotlight text-xl w-20">WED</span>
+          <span class="font-display text-cream text-lg flex-1">PENNY OKAFOR — "ABSOLUTELY NOT"</span>
+          <span class="text-cream/60 text-sm">8PM · $26</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/15 bg-ink/40 px-5 py-4 hover:border-spotlight/50 transition">
+          <span class="font-display text-spotlight text-xl w-20">THU</span>
+          <span class="font-display text-cream text-lg flex-1">RICO "NO NOTES" VALE</span>
+          <span class="text-cream/60 text-sm">8PM · $30</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/30 bg-crimson/20 px-5 py-4 hover:border-spotlight/60 transition">
+          <span class="font-display text-spotlight text-xl w-20">FRI</span>
+          <span class="font-display text-cream text-lg flex-1">DALLAS PRYCE — HEADLINE</span>
+          <span class="text-spotlight text-sm font-marquee tracking-widest">SELLING FAST</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/30 bg-crimson/20 px-5 py-4 hover:border-spotlight/60 transition">
+          <span class="font-display text-spotlight text-xl w-20">SAT</span>
+          <span class="font-display text-cream text-lg flex-1">MARGO FONTAINE-LE — LATE SHOW</span>
+          <span class="text-spotlight text-sm font-marquee tracking-widest">2 SHOWS</span>
+        </div>
+      </div>
+      <div class="reveal" data-rev data-week>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 rounded-xl border border-spotlight/15 bg-ink/40 px-5 py-4 hover:border-spotlight/50 transition">
+          <span class="font-display text-spotlight text-xl w-20">SUN</span>
+          <span class="font-display text-cream text-lg flex-1">THE BISCUIT BROTHERS — FAMILY-ISH</span>
+          <span class="text-cream/60 text-sm">7PM · $24</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE CLUB ============ -->
+<section id="club" class="relative py-24 bg-ink grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative reveal" data-rev data-parallax>
+      <div class="relative rounded-3xl overflow-hidden border-2 border-spotlight/20 bg-gradient-to-br from-plum to-ink h-[28rem]">
+        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=80" alt="The club interior" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        <div class="absolute bottom-5 left-5 ribbon text-cream font-display tracking-widest px-4 py-2 rounded-full text-sm">96 SEATS · 1 BAR · 0 PHONES ON STAGE</div>
+      </div>
+    </div>
+    <div>
+      <p class="font-marquee text-ember tracking-[0.3em] text-lg reveal" data-rev>★ THE ROOM ★</p>
+      <h2 class="font-display text-5xl sm:text-6xl text-cream leading-none mt-2 reveal" data-rev>A LITTLE RED<br>ROOM WITH A<br>BIG MOUTH</h2>
+      <p class="mt-6 text-cream/75 text-lg reveal" data-rev>
+        Tucked beneath a flickering marquee on Lantern Street, The Velvet Heckle is ninety-six chairs, one stubborn spotlight, and a bartender who knows your order before you do. We built the room for laughter and nothing else.
+      </p>
+      <ul class="mt-7 space-y-3 reveal" data-rev>
+        <li class="flex items-center gap-3"><span class="text-spotlight font-display text-xl">›</span><span class="text-cream/80">Velvet booths close enough to heckle, far enough to survive</span></li>
+        <li class="flex items-center gap-3"><span class="text-spotlight font-display text-xl">›</span><span class="text-cream/80">Full bar — signature cocktails named after old bits</span></li>
+        <li class="flex items-center gap-3"><span class="text-spotlight font-display text-xl">›</span><span class="text-cream/80">No bad seats, no bad nights, two-drink minimum</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OPEN MIC ============ -->
+<section id="openmic" class="relative py-24 curtain grain overflow-hidden">
+  <div class="mx-auto max-w-5xl px-6 text-center">
+    <p class="font-marquee text-spotlight tracking-[0.3em] text-lg reveal" data-rev>★ EVERY TUESDAY ★</p>
+    <h2 class="font-display text-5xl sm:text-7xl text-cream leading-none mt-2 reveal" data-rev>OPEN MIC NIGHT</h2>
+    <p class="mt-5 max-w-2xl mx-auto text-cream/80 text-lg reveal" data-rev>
+      Five minutes. One mic. Zero excuses. Sign up at 7, bomb gloriously by 8, become a legend by 9. First-timers get a free shot of courage (non-alcoholic option available).
+    </p>
+    <div class="mt-10 grid sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+      <div class="rounded-2xl border border-spotlight/20 bg-ink/50 p-6 reveal" data-rev>
+        <div class="font-display text-4xl text-spotlight">01</div>
+        <p class="mt-2 font-display text-cream text-lg">SIGN THE LIST</p>
+        <p class="text-cream/60 text-sm mt-1">20 slots, drawn from a hat. It's chaos and we love it.</p>
+      </div>
+      <div class="rounded-2xl border border-spotlight/20 bg-ink/50 p-6 reveal" data-rev>
+        <div class="font-display text-4xl text-spotlight">02</div>
+        <p class="mt-2 font-display text-cream text-lg">GET 5 MINUTES</p>
+        <p class="text-cream/60 text-sm mt-1">The red light means wrap it up. The hook is metaphorical. Mostly.</p>
+      </div>
+      <div class="rounded-2xl border border-spotlight/20 bg-ink/50 p-6 reveal" data-rev>
+        <div class="font-display text-4xl text-spotlight">03</div>
+        <p class="mt-2 font-display text-cream text-lg">KILL OR DIE</p>
+        <p class="text-cream/60 text-sm mt-1">Either way you get a drink ticket and a hug.</p>
+      </div>
+    </div>
+    <a href="#tickets" class="inline-block mt-10 btn-glow ribbon text-cream font-display tracking-widest text-base px-9 py-4 rounded-full transition-all reveal" data-rev>RESERVE A SLOT</a>
+  </div>
+</section>
+
+<!-- ============ PRIVATE EVENTS ============ -->
+<section id="events" class="relative py-24 bg-velvet grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 items-center">
+    <div>
+      <p class="font-marquee text-ember tracking-[0.3em] text-lg reveal" data-rev>★ BOOK THE ROOM ★</p>
+      <h2 class="font-display text-5xl sm:text-6xl text-cream leading-none mt-2 reveal" data-rev>PRIVATE<br>EVENTS</h2>
+      <p class="mt-6 text-cream/75 text-lg reveal" data-rev>
+        Birthdays, send-offs, corporate "fun mandatory" nights — rent the whole heckle. Bring your crowd, we'll bring the headliner, the bar, and the velvet rope. Custom shows for groups of 20 to 96.
+      </p>
+      <div class="mt-8 grid grid-cols-2 gap-4">
+        <div class="rounded-xl border border-spotlight/20 bg-ink/40 p-5 reveal" data-rev>
+          <p class="font-display text-spotlight text-2xl">FULL BUYOUT</p>
+          <p class="text-cream/60 text-sm mt-1">The whole room, your name on the marquee.</p>
+        </div>
+        <div class="rounded-xl border border-spotlight/20 bg-ink/40 p-5 reveal" data-rev>
+          <p class="font-display text-spotlight text-2xl">CORPORATE</p>
+          <p class="text-cream/60 text-sm mt-1">Team morale, hold the trust falls.</p>
+        </div>
+        <div class="rounded-xl border border-spotlight/20 bg-ink/40 p-5 reveal" data-rev>
+          <p class="font-display text-spotlight text-2xl">ROASTS</p>
+          <p class="text-cream/60 text-sm mt-1">A pro writes the burns. You take the credit.</p>
+        </div>
+        <div class="rounded-xl border border-spotlight/20 bg-ink/40 p-5 reveal" data-rev>
+          <p class="font-display text-spotlight text-2xl">CATERED</p>
+          <p class="text-cream/60 text-sm mt-1">Small plates, big laughs, open tab optional.</p>
+        </div>
+      </div>
+    </div>
+    <div class="relative reveal" data-rev data-parallax>
+      <div class="rounded-3xl overflow-hidden border-2 border-spotlight/20 bg-gradient-to-br from-plum to-ink h-[30rem]">
+        <img src="https://images.unsplash.com/photo-1527224538127-2104bb71c51b?auto=format&fit=crop&w=1600&q=80" alt="Private event crowd" onerror="this.style.display='none'" class="w-full h-full object-cover opacity-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-velvet via-transparent to-transparent"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 bg-ink grain overflow-hidden text-center">
+  <div class="mx-auto max-w-3xl px-6">
+    <p class="font-marquee text-spotlight tracking-[0.3em] text-lg reveal" data-rev>★ SINCE 2009 ★</p>
+    <h2 class="font-display text-5xl sm:text-6xl text-cream leading-none mt-2 reveal" data-rev>HOW THE HECKLE STARTED</h2>
+    <p class="mt-6 text-cream/75 text-lg reveal" data-rev>
+      It began as a Tuesday-night dare in the back of a failing diner. One folding chair, one borrowed mic, one comic who refused to leave. Sixteen years later we've got real seats, a liquor license, and a marquee that only flickers when it's feeling dramatic. The dare never ended.
+    </p>
+    <div class="mt-12 grid sm:grid-cols-3 gap-6">
+      <div class="reveal" data-rev>
+        <div class="font-display text-5xl text-ember" data-count="16">0</div>
+        <p class="uppercase tracking-widest text-cream/60 text-sm mt-1">Years On Stage</p>
+      </div>
+      <div class="reveal" data-rev>
+        <div class="font-display text-5xl text-ember" data-count="640">0</div>
+        <p class="uppercase tracking-widest text-cream/60 text-sm mt-1">Comics Hosted</p>
+      </div>
+      <div class="reveal" data-rev>
+        <div class="font-display text-5xl text-ember" data-count="7">0</div>
+        <p class="uppercase tracking-widest text-cream/60 text-sm mt-1">Nights A Week</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 bg-velvet grain overflow-hidden">
+  <div class="mx-auto max-w-7xl px-6">
+    <div class="text-center mb-14">
+      <p class="font-marquee text-ember tracking-[0.3em] text-lg reveal" data-rev>★ WORD ON THE STREET ★</p>
+      <h2 class="font-display text-5xl sm:text-7xl text-cream leading-none mt-2 reveal" data-rev>THEY LAUGHED</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="rounded-2xl border border-spotlight/15 bg-ink/40 p-7 reveal" data-rev>
+        <div class="text-spotlight text-xl mb-3">★★★★★</div>
+        <blockquote class="text-cream/85 text-lg">"Laughed so hard I forgot my own opinions. The booths are tiny, the comics are huge."</blockquote>
+        <figcaption class="mt-5 font-display tracking-widest text-cream/70">— TANYA R., LANTERN STREET LOCAL</figcaption>
+      </figure>
+      <figure class="rounded-2xl border border-spotlight/15 bg-ink/40 p-7 reveal" data-rev>
+        <div class="text-spotlight text-xl mb-3">★★★★★</div>
+        <blockquote class="text-cream/85 text-lg">"Best date night in the city. She heckled, I laughed, we're engaged now. Blame Dallas Pryce."</blockquote>
+        <figcaption class="mt-5 font-display tracking-widest text-cream/70">— MARCUS & JO, REGULARS</figcaption>
+      </figure>
+      <figure class="rounded-2xl border border-spotlight/15 bg-ink/40 p-7 reveal" data-rev>
+        <div class="text-spotlight text-xl mb-3">★★★★★</div>
+        <blockquote class="text-cream/85 text-lg">"Booked our office party here. HR finally relaxed for one entire evening. A miracle."</blockquote>
+        <figcaption class="mt-5 font-display tracking-widest text-cream/70">— DEVI K., RELUCTANT MANAGER</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 bg-ink grain overflow-hidden">
+  <div class="mx-auto max-w-3xl px-6">
+    <div class="text-center mb-12">
+      <p class="font-marquee text-spotlight tracking-[0.3em] text-lg reveal" data-rev>★ ASKING FOR A FRIEND ★</p>
+      <h2 class="font-display text-5xl sm:text-7xl text-cream leading-none mt-2 reveal" data-rev>THE FINE PRINT</h2>
+    </div>
+
+    <div class="space-y-3" id="faqList">
+      <div class="faq-item rounded-xl border border-spotlight/15 bg-velvet/40 overflow-hidden reveal" data-rev>
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-cream text-lg sm:text-xl">Is there really a two-drink minimum?</span>
+          <span class="faq-icon font-display text-spotlight text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-5 text-cream/70">Yes, and they can both be lemonade. We just need the bar humming so the comics feel loved. Water and mocktails count.</p></div>
+      </div>
+      <div class="faq-item rounded-xl border border-spotlight/15 bg-velvet/40 overflow-hidden reveal" data-rev>
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-cream text-lg sm:text-xl">Will I get picked on if I sit up front?</span>
+          <span class="faq-icon font-display text-spotlight text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-5 text-cream/70">Statistically? Absolutely. The front row is a contact sport. Sit there if you're brave, sit in back if you've got a fragile job title.</p></div>
+      </div>
+      <div class="faq-item rounded-xl border border-spotlight/15 bg-velvet/40 overflow-hidden reveal" data-rev>
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-cream text-lg sm:text-xl">What's the age policy?</span>
+          <span class="faq-icon font-display text-spotlight text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-5 text-cream/70">18+ for most shows, 21+ after 9PM. Bring ID. The jokes are for grown-ups and so is the bar.</p></div>
+      </div>
+      <div class="faq-item rounded-xl border border-spotlight/15 bg-velvet/40 overflow-hidden reveal" data-rev>
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-cream text-lg sm:text-xl">Can I get a refund if I don't laugh?</span>
+          <span class="faq-icon font-display text-spotlight text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-5 text-cream/70">No, but we'll buy you a drink and quietly judge your sense of humor. Tickets are non-refundable but fully transferable to a funnier friend.</p></div>
+      </div>
+      <div class="faq-item rounded-xl border border-spotlight/15 bg-velvet/40 overflow-hidden reveal" data-rev>
+        <button class="faq-q w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-cream text-lg sm:text-xl">Where do I park this getaway car?</span>
+          <span class="faq-icon font-display text-spotlight text-2xl shrink-0 transition-transform">+</span>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-5 text-cream/70">Street parking on Lantern Street, a lot two doors down, and a tram stop right outside. Ride-shares love us; the marquee makes a great meeting point.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="tickets" class="relative py-28 curtain grain overflow-hidden">
+  <div class="pointer-events-none absolute inset-x-6 top-8 bottom-8 rounded-[2rem] border-4 border-spotlight/25"></div>
+  <div class="relative z-10 mx-auto max-w-3xl px-6 text-center">
+    <div class="flex justify-center gap-2 mb-6" id="bulbRow2"></div>
+    <h2 class="font-display text-5xl sm:text-8xl text-cream leading-[0.88] reveal" data-rev>
+      GET IN.<br><span class="text-stroke">SIT DOWN.</span><br>LAUGH LOUD.
+    </h2>
+    <p class="mt-6 text-cream/80 text-lg max-w-xl mx-auto reveal" data-rev>
+      Tonight's show is filling up. Grab your seats before they're somebody else's good story.
+    </p>
+    <form class="mt-9 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto reveal" data-rev onsubmit="return false;">
+      <input type="email" required placeholder="your@email.com" class="flex-1 rounded-full bg-ink/60 border border-spotlight/30 px-6 py-4 text-cream placeholder-cream/40 focus:outline-none focus:border-spotlight" />
+      <button id="ctaTickets" class="btn-glow ribbon text-cream font-display tracking-widest text-base px-8 py-4 rounded-full transition-all">SEND ME TICKETS</button>
+    </form>
+    <p class="mt-4 text-cream/50 text-sm reveal" data-rev>No spam, just showtimes. Unsubscribe whenever the laughs run dry (they won't).</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-velvet border-t-4 border-spotlight/20 py-14">
+  <div class="mx-auto max-w-7xl px-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-2 mb-4">
+        <span class="grid place-items-center w-9 h-9 rounded-full ribbon text-cream font-display text-lg">VH</span>
+        <span class="font-marquee text-2xl text-cream">The Velvet Heckle</span>
+      </div>
+      <p class="text-cream/60 text-sm">The loudest little comedy room in the city. 14 Lantern Street, under the flickering marquee.</p>
+    </div>
+    <div>
+      <h4 class="font-display tracking-widest text-spotlight mb-4">VISIT</h4>
+      <ul class="space-y-2 text-cream/70 text-sm">
+        <li><a href="#lineup" class="hover:text-spotlight transition">Lineup</a></li>
+        <li><a href="#week" class="hover:text-spotlight transition">This Week</a></li>
+        <li><a href="#openmic" class="hover:text-spotlight transition">Open Mic</a></li>
+        <li><a href="#events" class="hover:text-spotlight transition">Private Events</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display tracking-widest text-spotlight mb-4">HOURS</h4>
+      <ul class="space-y-2 text-cream/70 text-sm">
+        <li>Mon — Dark</li>
+        <li>Tue — 7PM Open Mic</li>
+        <li>Wed–Thu — 8PM</li>
+        <li>Fri–Sun — Doors 7PM</li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display tracking-widest text-spotlight mb-4">SAY HELLO</h4>
+      <ul class="space-y-2 text-cream/70 text-sm">
+        <li>hello@velvetheckle.club</li>
+        <li>(555) 014-LAFF</li>
+        <li class="flex gap-3 pt-2">
+          <a href="#" class="hover:text-spotlight transition">IG</a>
+          <a href="#" class="hover:text-spotlight transition">TT</a>
+          <a href="#" class="hover:text-spotlight transition">X</a>
+          <a href="#" class="hover:text-spotlight transition">YT</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="mx-auto max-w-7xl px-6 mt-12 pt-6 border-t border-spotlight/10 flex flex-col sm:flex-row justify-between gap-3 text-cream/50 text-sm">
+    <p>© 2026 The Velvet Heckle. All bits original, all hecklers welcome.</p>
+    <p class="font-marquee tracking-widest text-spotlight/70">★ TWO-DRINK MINIMUM ★ NO BAD SEATS ★</p>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- Marquee bulbs ---- */
+  function buildBulbs(id, count) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    for (let i = 0; i < count; i++) {
+      const b = document.createElement('span');
+      b.className = 'bulb';
+      if (!reduce) {
+        b.style.animation = 'bulbChase 1s ease-in-out infinite';
+        b.style.animationDelay = (i * 0.12) + 's';
+      }
+      row.appendChild(b);
+    }
+  }
+  buildBulbs('bulbRow', 14);
+  buildBulbs('bulbRow2', 12);
+
+  /* ---- Spotlight cursor ---- */
+  const spot = document.getElementById('spotCursor');
+  if (spot && !reduce && window.matchMedia('(pointer:fine)').matches) {
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
+    (function follow() {
+      cx += (tx - cx) * 0.15; cy += (ty - cy) * 0.15;
+      spot.style.transform = `translate(${cx}px, ${cy}px)`;
+      requestAnimationFrame(follow);
+    })();
+  } else if (spot) {
+    spot.style.display = 'none';
+  }
+
+  /* ---- Nav shrink on scroll ---- */
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) nav.classList.add('scale-[.98]');
+    else nav.classList.remove('scale-[.98]');
+  });
+
+  /* ---- FAQ accordion ---- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const btn = item.querySelector('.faq-q');
+    const ans = item.querySelector('.faq-a');
+    const icon = item.querySelector('.faq-icon');
+    btn.addEventListener('click', () => {
+      const open = ans.style.maxHeight && ans.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-a').forEach(a => a.style.maxHeight = '0px');
+      document.querySelectorAll('.faq-icon').forEach(i => { i.textContent = '+'; i.style.transform = 'rotate(0deg)'; });
+      if (!open) {
+        ans.style.maxHeight = ans.scrollHeight + 'px';
+        icon.textContent = '–';
+        icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  /* ---- Magnetic Tickets CTAs ---- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    ['navTickets','heroTickets','ctaTickets'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width / 2;
+        const my = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${mx * 0.3}px, ${my * 0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---- Card tilt + hover lift ---- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg) translateY(-6px)`;
+        card.style.boxShadow = '0 20px 40px -10px rgba(0,0,0,.6)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(800px) rotateY(0) rotateX(0) translateY(0)';
+        card.style.boxShadow = 'none';
+      });
+    });
+  }
+
+  /* ---- GSAP reveals + parallax + count-ups ---- */
+  if (window.gsap && window.ScrollTrigger && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('[data-rev]').forEach(el => {
+      gsap.fromTo(el, { opacity: 0, y: 40 }, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    gsap.utils.toArray('[data-week]').forEach((el, i) => {
+      gsap.fromTo(el, { opacity: 0, x: -30 }, {
+        opacity: 1, x: 0, duration: 0.6, ease: 'power2.out', delay: i * 0.05,
+        scrollTrigger: { trigger: el, start: 'top 92%' }
+      });
+    });
+
+    gsap.utils.toArray('[data-parallax]').forEach(el => {
+      gsap.to(el, {
+        y: -60, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = +el.getAttribute('data-count');
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: target, duration: 2, ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = target >= 1000
+              ? Math.floor(obj.v).toLocaleString()
+              : Math.floor(obj.v);
+          }
+        })
+      });
+    });
+  } else {
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const t = +el.getAttribute('data-count');
+      el.textContent = t >= 1000 ? t.toLocaleString() : t;
+    });
+  }
+})();
+</script>
+</body>
+</html>

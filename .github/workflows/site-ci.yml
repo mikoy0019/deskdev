@@ -1,0 +1,56 @@
+name: Site CI
+
+# The NixGen site and DeskDev (/workspace) are one app in site/.
+
+on:
+  push:
+    paths:
+      - 'site/**'
+      - 'scripts/check-shared-drift.mjs'
+      - '.github/workflows/site-ci.yml'
+  pull_request:
+    paths:
+      - 'site/**'
+      - 'scripts/check-shared-drift.mjs'
+      - '.github/workflows/site-ci.yml'
+
+jobs:
+  site-checks:
+    name: Build, typecheck, test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install
+        run: npm ci --legacy-peer-deps
+      # Build first: next build writes .next/types, which next-env.d.ts
+      # includes. The OpenNext build runs it and then bundles the Worker, so a
+      # change that only breaks the Worker bundle fails here too.
+      - name: Build
+        run: npx opennextjs-cloudflare build
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Test
+        run: npm test
+      # The app code only. ESLint exits 0 on warnings, so only an error fails
+      # the job.
+      - name: Lint
+        run: npx eslint src
+
+  shared-lib-drift:
+    name: Shared lib drift (site/src/deskdev/lib must mirror mobile/src/lib)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Check site/src/deskdev/lib vs mobile/src/lib
+        run: node scripts/check-shared-drift.mjs

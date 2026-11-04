@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wexford Vale &mdash; Private Golf &amp; Country Club</title>
+<meta name="description" content="Wexford Vale is a members-only golf and country club set across 280 acres of sweeping fairways, heritage parkland and timeless hospitality." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          fairway: '#0e2a1f',
+          forest:  '#143b2b',
+          moss:    '#1d5239',
+          sage:    '#7a9a86',
+          gold:    '#c4a35a',
+          champagne: '#e7d6a8',
+          cream:   '#f6f1e4',
+          parchment: '#efe7d2',
+          ink:     '#0a1c14'
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          display: ['"Playfair Display"', 'serif'],
+          sans: ['"Jost"', 'sans-serif']
+        },
+        letterSpacing: {
+          mega: '0.42em'
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --gold:#c4a35a; }
+  * { box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #f6f1e4;
+    color: #0e2a1f;
+    font-family: 'Jost', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
+  ::selection { background: #c4a35a; color: #0e2a1f; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%); border-radius: 9999px; mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #f6f1e4; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1px solid rgba(246,241,228,0.6);
+    transition: width .3s ease, height .3s ease, opacity .3s ease, background .3s ease;
+  }
+  .cursor-ring.is-hover { width: 64px; height: 64px; background: rgba(196,163,90,0.18); border-color: transparent; }
+  @media (hover: none) { .cursor-dot, .cursor-ring { display: none; } body { cursor: auto; } }
+
+  /* Masked text reveal lines */
+  .reveal-line { display: block; overflow: hidden; }
+  .reveal-line > span { display: block; transform: translateY(110%); }
+
+  /* Clip reveal images */
+  .clip-reveal { clip-path: inset(0 0 100% 0); }
+
+  .parallax-wrap { overflow: hidden; }
+  .parallax-img { will-change: transform; transform: scale(1.18); }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: marquee 38s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee:hover { animation-play-state: paused; }
+
+  /* Gold hairline */
+  .hairline { height: 1px; background: linear-gradient(90deg, transparent, rgba(196,163,90,.7), transparent); }
+
+  .gold-text { color: var(--gold); }
+
+  /* Membership card hover */
+  .tier-card { transition: transform .5s cubic-bezier(.16,.84,.44,1), box-shadow .5s ease, border-color .5s ease; }
+  .tier-card:hover { transform: translateY(-10px); box-shadow: 0 40px 80px -30px rgba(14,42,31,.55); border-color: rgba(196,163,90,.6); }
+
+  /* Accordion */
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.16,.84,.44,1); }
+  .faq-item.open .faq-answer { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .45s ease; }
+
+  /* Magnetic button base */
+  .magnetic { will-change: transform; }
+
+  .img-fallback {
+    background: linear-gradient(135deg, #0e2a1f 0%, #1d5239 60%, #143b2b 100%);
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: -4px; height: 1px; width: 0;
+    background: var(--gold); transition: width .4s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  .vignette::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(120% 90% at 50% 30%, transparent 40%, rgba(10,28,20,.65) 100%);
+    pointer-events: none;
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased">
+
+<!-- Cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group" data-hover>
+      <span class="w-9 h-9 rounded-full border border-gold/70 flex items-center justify-center text-gold font-display text-lg">W</span>
+      <span class="font-display text-cream tracking-wide text-lg leading-none">Wexford&nbsp;Vale</span>
+    </a>
+    <nav class="hidden lg:flex items-center gap-9 text-[13px] tracking-[0.18em] uppercase text-cream/85 font-light">
+      <a href="#course" class="nav-link" data-hover>The Course</a>
+      <a href="#amenities" class="nav-link" data-hover>Amenities</a>
+      <a href="#membership" class="nav-link" data-hover>Membership</a>
+      <a href="#events" class="nav-link" data-hover>Events</a>
+      <a href="#dining" class="nav-link" data-hover>Dining</a>
+    </nav>
+    <a href="#enquire" data-hover class="magnetic hidden sm:inline-flex items-center gap-2 border border-gold/70 text-gold px-5 py-2.5 text-[12px] tracking-[0.2em] uppercase rounded-full hover:bg-gold hover:text-fairway transition-colors duration-500">
+      Membership Enquiry
+    </a>
+    <button id="burger" class="lg:hidden text-cream" aria-label="Menu">
+      <span class="block w-7 h-px bg-cream mb-1.5"></span>
+      <span class="block w-7 h-px bg-cream"></span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-40 bg-fairway/98 backdrop-blur-sm translate-x-full transition-transform duration-500 lg:hidden flex flex-col items-center justify-center gap-8 text-cream font-display text-3xl">
+  <a href="#course" class="mobile-link">The Course</a>
+  <a href="#amenities" class="mobile-link">Amenities</a>
+  <a href="#membership" class="mobile-link">Membership</a>
+  <a href="#events" class="mobile-link">Events</a>
+  <a href="#dining" class="mobile-link">Dining</a>
+  <a href="#enquire" class="mobile-link text-gold">Enquire</a>
+</div>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-end overflow-hidden vignette">
+  <div class="parallax-wrap absolute inset-0">
+    <img id="heroImg" src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1600&q=80"
+         alt="Sweeping fairway at dawn"
+         onerror="this.style.display='none'"
+         class="parallax-img absolute inset-0 w-full h-full object-cover" />
+    <div class="img-fallback absolute inset-0 -z-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-fairway via-fairway/30 to-fairway/40"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-20 lg:pb-28 w-full">
+    <p class="hero-kicker text-gold tracking-[0.42em] uppercase text-xs mb-6 opacity-0">Est. 1924 &middot; Berkshire, England</p>
+    <h1 class="font-display text-cream leading-[0.95] text-[14vw] sm:text-7xl lg:text-8xl xl:text-9xl">
+      <span class="reveal-line"><span>Wexford</span></span>
+      <span class="reveal-line"><span class="italic gold-text">Vale</span></span>
+    </h1>
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-end gap-8 max-w-3xl">
+      <p class="hero-sub text-cream/80 font-light text-base sm:text-lg leading-relaxed max-w-md opacity-0">
+        A members-only golf &amp; country club where championship fairways meet a century of quiet tradition.
+      </p>
+      <a href="#membership" data-hover class="magnetic hero-cta opacity-0 shrink-0 inline-flex items-center justify-center gap-3 bg-gold text-fairway px-8 py-4 rounded-full text-[12px] tracking-[0.22em] uppercase font-medium hover:bg-champagne transition-colors duration-500">
+        Explore Membership
+        <span class="text-base">&rarr;</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 right-6 lg:right-10 z-10 hidden sm:flex items-center gap-3 text-cream/60 text-[11px] tracking-[0.3em] uppercase">
+    <span>Scroll</span>
+    <span class="w-10 h-px bg-cream/40"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="bg-fairway text-cream/70 py-5 border-y border-cream/10 overflow-hidden">
+  <div class="marquee text-2xl sm:text-3xl font-display italic">
+    <div class="flex items-center gap-10 pr-10">
+      <span>Championship Parkland</span><span class="text-gold">&bull;</span>
+      <span>Members Only</span><span class="text-gold">&bull;</span>
+      <span>280 Acres</span><span class="text-gold">&bull;</span>
+      <span>Est. 1924</span><span class="text-gold">&bull;</span>
+      <span>Fine Dining</span><span class="text-gold">&bull;</span>
+    </div>
+    <div class="flex items-center gap-10 pr-10" aria-hidden="true">
+      <span>Championship Parkland</span><span class="text-gold">&bull;</span>
+      <span>Members Only</span><span class="text-gold">&bull;</span>
+      <span>280 Acres</span><span class="text-gold">&bull;</span>
+      <span>Est. 1924</span><span class="text-gold">&bull;</span>
+      <span>Fine Dining</span><span class="text-gold">&bull;</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HERITAGE / INTRO ============ -->
+<section class="relative bg-cream py-24 lg:py-36">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+    <div class="lg:col-span-7">
+      <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-7" data-reveal>A Century in the Making</p>
+      <h2 class="font-display text-fairway text-4xl sm:text-5xl lg:text-6xl leading-tight">
+        <span class="reveal-line"><span>A landscape shaped by</span></span>
+        <span class="reveal-line"><span class="italic gold-text">time, tradition &amp; care.</span></span>
+      </h2>
+      <p class="mt-8 text-fairway/70 font-light text-lg leading-relaxed max-w-xl" data-reveal>
+        Carved into Berkshire's ancient parkland in 1924, Wexford Vale was conceived not merely as a course, but as a sanctuary. Generations of members have walked these fairways &mdash; through morning mist, golden afternoons, and the long shadows of midsummer evenings.
+      </p>
+      <p class="mt-5 text-fairway/60 font-light leading-relaxed max-w-xl" data-reveal>
+        Today the club remains proudly private: a place of unhurried excellence, where every detail is considered and every season is honoured.
+      </p>
+    </div>
+
+    <div class="lg:col-span-5 grid grid-cols-2 gap-5">
+      <div class="parallax-wrap rounded-sm overflow-hidden aspect-[3/4] clip-reveal" data-clip>
+        <img src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1600&q=80"
+             alt="Manicured green" onerror="this.style.display='none'"
+             class="parallax-img w-full h-full object-cover" />
+        <div class="img-fallback absolute inset-0 -z-10"></div>
+      </div>
+      <div class="parallax-wrap rounded-sm overflow-hidden aspect-[3/4] mt-10 clip-reveal" data-clip>
+        <img src="https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=1600&q=80"
+             alt="Clubhouse terrace" onerror="this.style.display='none'"
+             class="parallax-img w-full h-full object-cover" />
+        <div class="img-fallback absolute inset-0 -z-10"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Count-ups -->
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 mt-20 lg:mt-28">
+    <div class="hairline mb-12"></div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-10 text-center lg:text-left">
+      <div data-reveal>
+        <div class="font-display text-fairway text-5xl lg:text-6xl"><span class="count" data-to="18">0</span></div>
+        <p class="mt-2 text-moss/70 tracking-[0.2em] uppercase text-[11px]">Signature Holes</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-fairway text-5xl lg:text-6xl"><span class="count" data-to="280">0</span></div>
+        <p class="mt-2 text-moss/70 tracking-[0.2em] uppercase text-[11px]">Acres of Parkland</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-fairway text-5xl lg:text-6xl"><span class="count" data-to="101">0</span></div>
+        <p class="mt-2 text-moss/70 tracking-[0.2em] uppercase text-[11px]">Years of Heritage</p>
+      </div>
+      <div data-reveal>
+        <div class="font-display text-fairway text-5xl lg:text-6xl"><span class="count" data-to="72">0</span><span class="text-gold">.6</span></div>
+        <p class="mt-2 text-moss/70 tracking-[0.2em] uppercase text-[11px]">Course Rating</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE COURSE ============ -->
+<section id="course" class="relative bg-fairway text-cream py-24 lg:py-36 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+      <div>
+        <p class="text-gold tracking-[0.3em] uppercase text-xs mb-6" data-reveal>The Championship Course</p>
+        <h2 class="font-display text-4xl sm:text-5xl lg:text-6xl leading-tight max-w-2xl">
+          <span class="reveal-line"><span>Eighteen holes of</span></span>
+          <span class="reveal-line"><span class="italic gold-text">pure parkland artistry.</span></span>
+        </h2>
+      </div>
+      <p class="text-cream/60 font-light max-w-sm leading-relaxed" data-reveal>
+        Designed by Harland &amp; Crewe, our par-72 layout rewards strategy over strength &mdash; framed by century oaks, water meadows and undulating greens.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+      <!-- Hole card 1 -->
+      <article class="hole-card group relative border border-cream/15 rounded-sm p-7 hover:border-gold/50 transition-colors duration-500" data-reveal data-hover>
+        <div class="flex items-start justify-between mb-8">
+          <span class="font-display text-gold text-5xl">07</span>
+          <span class="text-cream/50 text-[11px] tracking-[0.2em] uppercase">Par 3 &middot; 168y</span>
+        </div>
+        <h3 class="font-display text-2xl mb-3">The Cathedral</h3>
+        <p class="text-cream/55 font-light text-sm leading-relaxed">A short carry over the millpond to a green cradled by ancient beeches. Beautiful, and entirely unforgiving.</p>
+      </article>
+      <!-- Hole card 2 -->
+      <article class="hole-card group relative border border-cream/15 rounded-sm p-7 hover:border-gold/50 transition-colors duration-500 md:mt-10" data-reveal data-hover>
+        <div class="flex items-start justify-between mb-8">
+          <span class="font-display text-gold text-5xl">12</span>
+          <span class="text-cream/50 text-[11px] tracking-[0.2em] uppercase">Par 5 &middot; 561y</span>
+        </div>
+        <h3 class="font-display text-2xl mb-3">Long Meadow</h3>
+        <p class="text-cream/55 font-light text-sm leading-relaxed">A sweeping dogleg through the water meadows. Reachable in two for the brave; punishing for the proud.</p>
+      </article>
+      <!-- Hole card 3 -->
+      <article class="hole-card group relative border border-cream/15 rounded-sm p-7 hover:border-gold/50 transition-colors duration-500 md:mt-4" data-reveal data-hover>
+        <div class="flex items-start justify-between mb-8">
+          <span class="font-display text-gold text-5xl">18</span>
+          <span class="text-cream/50 text-[11px] tracking-[0.2em] uppercase">Par 4 &middot; 432y</span>
+        </div>
+        <h3 class="font-display text-2xl mb-3">The Homestead</h3>
+        <p class="text-cream/55 font-light text-sm leading-relaxed">An uphill finish to a green beneath the clubhouse terrace, where members raise a glass to the day's play.</p>
+      </article>
+    </div>
+  </div>
+
+  <!-- Wide parallax band -->
+  <div class="parallax-wrap relative mt-20 lg:mt-28 h-[46vh] lg:h-[60vh] clip-reveal" data-clip>
+    <img src="https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1600&q=80"
+         alt="Aerial of the golf course" onerror="this.style.display='none'"
+         class="parallax-img absolute inset-0 w-full h-full object-cover" />
+    <div class="img-fallback absolute inset-0 -z-10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-fairway/70 to-transparent"></div>
+    <div class="absolute bottom-8 left-6 lg:left-10 font-display italic text-2xl lg:text-3xl text-cream/90">&ldquo;The finest parkland in the home counties.&rdquo;</div>
+  </div>
+</section>
+
+<!-- ============ AMENITIES ============ -->
+<section id="amenities" class="bg-parchment py-24 lg:py-36">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-6" data-reveal>Beyond the Fairway</p>
+      <h2 class="font-display text-fairway text-4xl sm:text-5xl lg:text-6xl leading-tight">
+        <span class="reveal-line"><span class="italic">A club for every season.</span></span>
+      </h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-fairway/10 border border-fairway/10 rounded-sm overflow-hidden">
+      <div class="amenity bg-cream p-8 hover:bg-fairway hover:text-cream transition-colors duration-500 group" data-reveal data-hover>
+        <span class="block text-gold font-display text-3xl mb-6 group-hover:text-champagne">01</span>
+        <h3 class="font-display text-2xl mb-3">Practice Academy</h3>
+        <p class="font-light text-sm leading-relaxed opacity-70">Floodlit range, short-game studio and PGA tuition from our resident professionals.</p>
+      </div>
+      <div class="amenity bg-cream p-8 hover:bg-fairway hover:text-cream transition-colors duration-500 group" data-reveal data-hover>
+        <span class="block text-gold font-display text-3xl mb-6 group-hover:text-champagne">02</span>
+        <h3 class="font-display text-2xl mb-3">Spa &amp; Wellness</h3>
+        <p class="font-light text-sm leading-relaxed opacity-70">Vitality pool, treatment suites and a quiet sanctuary overlooking the eighteenth.</p>
+      </div>
+      <div class="amenity bg-cream p-8 hover:bg-fairway hover:text-cream transition-colors duration-500 group" data-reveal data-hover>
+        <span class="block text-gold font-display text-3xl mb-6 group-hover:text-champagne">03</span>
+        <h3 class="font-display text-2xl mb-3">Tennis &amp; Croquet</h3>
+        <p class="font-light text-sm leading-relaxed opacity-70">Grass and all-weather courts beside a traditional croquet lawn for summer afternoons.</p>
+      </div>
+      <div class="amenity bg-cream p-8 hover:bg-fairway hover:text-cream transition-colors duration-500 group" data-reveal data-hover>
+        <span class="block text-gold font-display text-3xl mb-6 group-hover:text-champagne">04</span>
+        <h3 class="font-display text-2xl mb-3">The Snug Library</h3>
+        <p class="font-light text-sm leading-relaxed opacity-70">Leather, firelight and a cellar of fine spirits &mdash; the heart of members' evenings.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEMBERSHIP TIERS ============ -->
+<section id="membership" class="bg-cream py-24 lg:py-36">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16">
+      <div>
+        <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-6" data-reveal>By Invitation</p>
+        <h2 class="font-display text-fairway text-4xl sm:text-5xl lg:text-6xl leading-tight max-w-xl">
+          <span class="reveal-line"><span>Membership at</span></span>
+          <span class="reveal-line"><span class="italic gold-text">Wexford Vale.</span></span>
+        </h2>
+      </div>
+      <p class="text-fairway/60 font-light max-w-sm leading-relaxed" data-reveal>
+        A limited membership ensures the course is never crowded and the welcome always warm. Annual subscriptions, proposed and seconded.
+      </p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 lg:gap-8">
+      <!-- Tier 1 -->
+      <div class="tier-card bg-cream border border-fairway/15 rounded-sm p-9 flex flex-col" data-reveal data-hover>
+        <p class="tracking-[0.25em] uppercase text-xs text-moss/70 mb-6">Country</p>
+        <div class="font-display text-fairway text-5xl mb-1">&pound;2,400<span class="text-lg text-fairway/50">/yr</span></div>
+        <div class="hairline my-7"></div>
+        <ul class="space-y-3 text-sm font-light text-fairway/70 flex-1">
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Full course access, weekdays</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Spa &amp; wellness facilities</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Clubhouse &amp; dining rooms</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Two guest passes per month</li>
+        </ul>
+        <a href="#enquire" data-hover class="magnetic mt-8 inline-flex justify-center border border-fairway/30 text-fairway px-6 py-3 rounded-full text-[12px] tracking-[0.2em] uppercase hover:bg-fairway hover:text-cream transition-colors duration-500">Enquire</a>
+      </div>
+      <!-- Tier 2 featured -->
+      <div class="tier-card bg-fairway text-cream border border-gold/50 rounded-sm p-9 flex flex-col lg:-mt-6 relative" data-reveal data-hover>
+        <span class="absolute -top-3 left-9 bg-gold text-fairway text-[10px] tracking-[0.25em] uppercase px-3 py-1 rounded-full">Most Chosen</span>
+        <p class="tracking-[0.25em] uppercase text-xs text-gold mb-6">Full</p>
+        <div class="font-display text-5xl mb-1">&pound;4,800<span class="text-lg text-cream/50">/yr</span></div>
+        <div class="hairline my-7"></div>
+        <ul class="space-y-3 text-sm font-light text-cream/80 flex-1">
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Unlimited seven-day play</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Priority tee reservations</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Full tennis &amp; croquet access</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Four guest passes per month</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Reciprocal global club access</li>
+        </ul>
+        <a href="#enquire" data-hover class="magnetic mt-8 inline-flex justify-center bg-gold text-fairway px-6 py-3 rounded-full text-[12px] tracking-[0.2em] uppercase hover:bg-champagne transition-colors duration-500">Enquire</a>
+      </div>
+      <!-- Tier 3 -->
+      <div class="tier-card bg-cream border border-fairway/15 rounded-sm p-9 flex flex-col" data-reveal data-hover>
+        <p class="tracking-[0.25em] uppercase text-xs text-moss/70 mb-6">Legacy</p>
+        <div class="font-display text-fairway text-5xl mb-1">&pound;9,500<span class="text-lg text-fairway/50">/yr</span></div>
+        <div class="hairline my-7"></div>
+        <ul class="space-y-3 text-sm font-light text-fairway/70 flex-1">
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> All Full member privileges</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Private locker &amp; concierge</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Family &amp; junior inclusion</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Unlimited guest privileges</li>
+          <li class="flex gap-3"><span class="text-gold">&mdash;</span> Lifetime tenure option</li>
+        </ul>
+        <a href="#enquire" data-hover class="magnetic mt-8 inline-flex justify-center border border-fairway/30 text-fairway px-6 py-3 rounded-full text-[12px] tracking-[0.2em] uppercase hover:bg-fairway hover:text-cream transition-colors duration-500">Enquire</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENTS / WEDDINGS ============ -->
+<section id="events" class="relative bg-fairway text-cream py-24 lg:py-36 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
+    <div class="parallax-wrap rounded-sm overflow-hidden aspect-[4/5] clip-reveal order-2 lg:order-1" data-clip>
+      <img src="https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=1600&q=80"
+           alt="Clubhouse event terrace" onerror="this.style.display='none'"
+           class="parallax-img w-full h-full object-cover" />
+      <div class="img-fallback absolute inset-0 -z-10"></div>
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="text-gold tracking-[0.3em] uppercase text-xs mb-6" data-reveal>Events &amp; Weddings</p>
+      <h2 class="font-display text-4xl sm:text-5xl lg:text-6xl leading-tight">
+        <span class="reveal-line"><span>Occasions worthy of</span></span>
+        <span class="reveal-line"><span class="italic gold-text">a hundred summers.</span></span>
+      </h2>
+      <p class="mt-8 text-cream/65 font-light text-lg leading-relaxed max-w-lg" data-reveal>
+        From candlelit weddings on the south lawn to private dinners in the Oak Room, our events team curates celebrations of rare elegance &mdash; framed by gardens that have witnessed a century of milestones.
+      </p>
+      <div class="mt-10 grid grid-cols-2 gap-6 max-w-md">
+        <div data-reveal>
+          <div class="font-display text-3xl text-cream">Weddings</div>
+          <p class="text-cream/50 text-sm font-light mt-1">Up to 180 guests</p>
+        </div>
+        <div data-reveal>
+          <div class="font-display text-3xl text-cream">Private Dining</div>
+          <p class="text-cream/50 text-sm font-light mt-1">Intimate &amp; bespoke</p>
+        </div>
+      </div>
+      <a href="#enquire" data-hover class="magnetic mt-10 inline-flex items-center gap-3 border border-gold/70 text-gold px-7 py-3.5 rounded-full text-[12px] tracking-[0.2em] uppercase hover:bg-gold hover:text-fairway transition-colors duration-500">
+        Plan an Occasion <span>&rarr;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DINING ============ -->
+<section id="dining" class="bg-cream py-24 lg:py-36">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-6" data-reveal>The Table</p>
+      <h2 class="font-display text-fairway text-4xl sm:text-5xl lg:text-6xl leading-tight">
+        <span class="reveal-line"><span>Seasonal kitchens,</span></span>
+        <span class="reveal-line"><span class="italic gold-text">estate to plate.</span></span>
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="group" data-reveal data-hover>
+        <div class="parallax-wrap rounded-sm overflow-hidden aspect-[4/5] mb-6 clip-reveal" data-clip>
+          <img src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=1600&q=80"
+               alt="The Oak Room" onerror="this.style.display='none'"
+               class="parallax-img w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div class="img-fallback absolute inset-0 -z-10"></div>
+        </div>
+        <h3 class="font-display text-2xl text-fairway mb-2">The Oak Room</h3>
+        <p class="text-fairway/60 font-light text-sm leading-relaxed">Our signature dining room &mdash; a refined seasonal menu beneath panelled oak and chandelier light.</p>
+      </div>
+      <div class="group md:mt-12" data-reveal data-hover>
+        <div class="parallax-wrap rounded-sm overflow-hidden aspect-[4/5] mb-6 clip-reveal" data-clip>
+          <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1600&q=80"
+               alt="The Terrace" onerror="this.style.display='none'"
+               class="parallax-img w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div class="img-fallback absolute inset-0 -z-10"></div>
+        </div>
+        <h3 class="font-display text-2xl text-fairway mb-2">The Terrace</h3>
+        <p class="text-fairway/60 font-light text-sm leading-relaxed">All-day dining overlooking the eighteenth green &mdash; light plates, garden cocktails, golden hours.</p>
+      </div>
+      <div class="group" data-reveal data-hover>
+        <div class="parallax-wrap rounded-sm overflow-hidden aspect-[4/5] mb-6 clip-reveal" data-clip>
+          <img src="https://images.unsplash.com/photo-1611374243147-44a702c2d44c?auto=format&fit=crop&w=1600&q=80"
+               alt="The Cellar Bar" onerror="this.style.display='none'"
+               class="parallax-img w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+          <div class="img-fallback absolute inset-0 -z-10"></div>
+        </div>
+        <h3 class="font-display text-2xl text-fairway mb-2">The Cellar Bar</h3>
+        <p class="text-fairway/60 font-light text-sm leading-relaxed">A curated cellar of fine wine and rare malt, served by firelight in the heart of the old clubhouse.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative bg-fairway text-cream py-24 lg:py-36 overflow-hidden">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-gold tracking-[0.3em] uppercase text-xs mb-8" data-reveal>The Wexford Spirit</p>
+    <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl leading-snug">
+      <span class="reveal-line"><span>&ldquo;A club is not its buildings, nor even</span></span>
+      <span class="reveal-line"><span>its course &mdash; but the company kept</span></span>
+      <span class="reveal-line"><span class="italic gold-text">across its hundred quiet years.&rdquo;</span></span>
+    </h2>
+    <p class="mt-10 text-cream/60 font-light text-lg leading-relaxed max-w-2xl mx-auto" data-reveal>
+      Wexford Vale is governed by its members, for its members. We hold to the old courtesies &mdash; discretion, sportsmanship and a genuine welcome &mdash; while quietly tending the finest parkland course in the home counties.
+    </p>
+    <div class="mt-12 flex items-center justify-center gap-4 text-cream/50 text-[11px] tracking-[0.3em] uppercase" data-reveal>
+      <span class="w-10 h-px bg-gold/60"></span>
+      <span>Margaret Holloway &middot; Club Secretary</span>
+      <span class="w-10 h-px bg-gold/60"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="bg-parchment py-24 lg:py-36">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-14 text-center" data-reveal>In the Words of Members</p>
+    <div class="grid md:grid-cols-3 gap-8">
+      <figure class="bg-cream border border-fairway/10 rounded-sm p-9" data-reveal data-hover>
+        <div class="text-gold text-3xl font-display mb-5">&ldquo;</div>
+        <blockquote class="font-display italic text-fairway text-xl leading-relaxed">The seventh at dawn is reason enough to belong. Two decades a member and it still takes my breath.</blockquote>
+        <figcaption class="mt-7 text-fairway/60 text-sm tracking-[0.15em] uppercase">Edward C. &middot; Full Member</figcaption>
+      </figure>
+      <figure class="bg-cream border border-fairway/10 rounded-sm p-9 md:mt-8" data-reveal data-hover>
+        <div class="text-gold text-3xl font-display mb-5">&ldquo;</div>
+        <blockquote class="font-display italic text-fairway text-xl leading-relaxed">Our wedding on the south lawn was flawless. The team treated it as their own celebration.</blockquote>
+        <figcaption class="mt-7 text-fairway/60 text-sm tracking-[0.15em] uppercase">Sophie &amp; James R.</figcaption>
+      </figure>
+      <figure class="bg-cream border border-fairway/10 rounded-sm p-9" data-reveal data-hover>
+        <div class="text-gold text-3xl font-display mb-5">&ldquo;</div>
+        <blockquote class="font-display italic text-fairway text-xl leading-relaxed">Unhurried, gracious, and never crowded. Wexford Vale is the last true country club.</blockquote>
+        <figcaption class="mt-7 text-fairway/60 text-sm tracking-[0.15em] uppercase">Priya N. &middot; Legacy Member</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="bg-cream py-24 lg:py-36">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="text-moss/70 tracking-[0.3em] uppercase text-xs mb-6" data-reveal>Enquiries</p>
+      <h2 class="font-display text-fairway text-4xl sm:text-5xl leading-tight">
+        <span class="reveal-line"><span class="italic">Questions, answered.</span></span>
+      </h2>
+    </div>
+
+    <div class="divide-y divide-fairway/15 border-y border-fairway/15">
+      <div class="faq-item" data-hover>
+        <button class="faq-toggle w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-fairway text-xl pr-6">How does one join the club?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-answer"><p class="pb-6 text-fairway/65 font-light leading-relaxed">Membership is by proposal and second from two existing members. Prospective members are warmly invited to visit, play the course and dine before any application proceeds to the committee.</p></div>
+      </div>
+      <div class="faq-item" data-hover>
+        <button class="faq-toggle w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-fairway text-xl pr-6">Is there a waiting list?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-answer"><p class="pb-6 text-fairway/65 font-light leading-relaxed">To preserve the character of the club, membership is capped. Most categories have availability; Legacy tenure may carry a short waiting period. The secretary will advise on current openings.</p></div>
+      </div>
+      <div class="faq-item" data-hover>
+        <button class="faq-toggle w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-fairway text-xl pr-6">May I bring guests?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-answer"><p class="pb-6 text-fairway/65 font-light leading-relaxed">Yes. Each membership tier includes a monthly allowance of guest passes, with additional guests welcome at the prevailing day rate. Reciprocal access is available at over forty partner clubs worldwide.</p></div>
+      </div>
+      <div class="faq-item" data-hover>
+        <button class="faq-toggle w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-fairway text-xl pr-6">Is there a dress code?</span>
+          <span class="faq-plus text-gold text-2xl shrink-0">+</span>
+        </button>
+        <div class="faq-answer"><p class="pb-6 text-fairway/65 font-light leading-relaxed">Smart traditional attire is expected on the course and in the clubhouse. The Oak Room observes a jacket-and-tie convention for dinner. Our full guidelines are shared upon enquiry.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA / ENQUIRE ============ -->
+<section id="enquire" class="relative bg-fairway text-cream py-28 lg:py-40 overflow-hidden vignette">
+  <div class="parallax-wrap absolute inset-0 opacity-30">
+    <img src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=1600&q=80"
+         alt="Fairway at golden hour" onerror="this.style.display='none'"
+         class="parallax-img absolute inset-0 w-full h-full object-cover" />
+    <div class="img-fallback absolute inset-0 -z-10"></div>
+  </div>
+  <div class="relative z-10 max-w-3xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-gold tracking-[0.42em] uppercase text-xs mb-8" data-reveal>Membership Enquiry</p>
+    <h2 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.0]">
+      <span class="reveal-line"><span>Begin your</span></span>
+      <span class="reveal-line"><span class="italic gold-text">Wexford story.</span></span>
+    </h2>
+    <p class="mt-8 text-cream/70 font-light text-lg leading-relaxed max-w-xl mx-auto" data-reveal>
+      Arrange a private tour of the course and clubhouse. Our secretary will be delighted to welcome you.
+    </p>
+    <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-5">
+      <a href="mailto:secretary@wexfordvale.example" data-hover class="magnetic inline-flex items-center justify-center gap-3 bg-gold text-fairway px-9 py-4 rounded-full text-[12px] tracking-[0.22em] uppercase font-medium hover:bg-champagne transition-colors duration-500">
+        Request an Introduction <span>&rarr;</span>
+      </a>
+      <a href="tel:+441234567890" data-hover class="magnetic inline-flex items-center justify-center gap-3 border border-cream/40 text-cream px-9 py-4 rounded-full text-[12px] tracking-[0.22em] uppercase hover:border-gold hover:text-gold transition-colors duration-500">
+        +44 1234 567 890
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-cream/70 pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-12 mb-16">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="w-9 h-9 rounded-full border border-gold/70 flex items-center justify-center text-gold font-display text-lg">W</span>
+          <span class="font-display text-cream text-xl">Wexford Vale</span>
+        </div>
+        <p class="font-light text-sm leading-relaxed max-w-sm text-cream/55">
+          A private members' golf &amp; country club set across 280 acres of Berkshire parkland. Established 1924.
+        </p>
+      </div>
+      <div>
+        <h4 class="text-cream tracking-[0.2em] uppercase text-[11px] mb-5">Explore</h4>
+        <ul class="space-y-3 text-sm font-light">
+          <li><a href="#course" class="hover:text-gold transition-colors" data-hover>The Course</a></li>
+          <li><a href="#membership" class="hover:text-gold transition-colors" data-hover>Membership</a></li>
+          <li><a href="#events" class="hover:text-gold transition-colors" data-hover>Events</a></li>
+          <li><a href="#dining" class="hover:text-gold transition-colors" data-hover>Dining</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream tracking-[0.2em] uppercase text-[11px] mb-5">Visit</h4>
+        <ul class="space-y-3 text-sm font-light text-cream/55">
+          <li>Wexford Lane, Berkshire</li>
+          <li>RG10 0WV, England</li>
+          <li><a href="mailto:secretary@wexfordvale.example" class="hover:text-gold transition-colors" data-hover>secretary@wexfordvale.example</a></li>
+          <li>+44 1234 567 890</li>
+        </ul>
+      </div>
+    </div>
+    <div class="hairline mb-8"></div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] tracking-[0.15em] uppercase text-cream/40">
+      <p>&copy; 1924&ndash;2026 Wexford Vale Golf &amp; Country Club</p>
+      <div class="flex gap-7">
+        <a href="#" class="hover:text-gold transition-colors" data-hover>Privacy</a>
+        <a href="#" class="hover:text-gold transition-colors" data-hover>Members' Charter</a>
+        <a href="#" class="hover:text-gold transition-colors" data-hover>Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('bg-fairway/90', 'backdrop-blur-md', 'shadow-lg', 'shadow-fairway/20');
+    } else {
+      nav.classList.remove('bg-fairway/90', 'backdrop-blur-md', 'shadow-lg', 'shadow-fairway/20');
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Mobile menu ---------- */
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+  burger.addEventListener('click', () => menu.classList.toggle('translate-x-full'));
+  document.querySelectorAll('.mobile-link').forEach(l =>
+    l.addEventListener('click', () => menu.classList.add('translate-x-full'))
+  );
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Custom cursor ---------- */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!matchMedia('(hover: none)').matches && !reduce) {
+    let rx = 0, ry = 0, mx = 0, my = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    const ringLoop = () => {
+      rx += (mx - rx) * 0.16; ry += (my - ry) * 0.16;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(ringLoop);
+    };
+    ringLoop();
+    document.querySelectorAll('[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('is-hover'));
+    });
+  } else {
+    dot.style.display = 'none'; ring.style.display = 'none';
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!matchMedia('(hover: none)').matches && !reduce) {
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.28}px, ${y * 0.4}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+  }
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reduce) {
+      gsap.set('.reveal-line > span, [data-reveal]', { clearProps: 'all', opacity: 1, y: 0 });
+      gsap.set('.clip-reveal', { clipPath: 'inset(0 0 0% 0)' });
+      gsap.set('.hero-kicker, .hero-sub, .hero-cta', { opacity: 1, y: 0 });
+      document.querySelectorAll('.count').forEach(c => c.textContent = c.dataset.to);
+      return;
+    }
+
+    /* Hero intro timeline */
+    const heroTl = gsap.timeline({ delay: 0.2 });
+    heroTl.to('.hero-kicker', { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out' })
+      .from('h1 .reveal-line > span', { yPercent: 110, duration: 1.2, ease: 'power4.out', stagger: 0.12 }, '-=0.5')
+      .to('.hero-sub', { opacity: 1, duration: 1 }, '-=0.6')
+      .to('.hero-cta', { opacity: 1, y: 0, duration: 0.9 }, '-=0.8');
+
+    /* Masked text reveals (non-hero) */
+    gsap.utils.toArray('.reveal-line > span').forEach(span => {
+      if (span.closest('h1')) return;
+      gsap.from(span, {
+        yPercent: 115, duration: 1.1, ease: 'power4.out',
+        scrollTrigger: { trigger: span, start: 'top 88%' }
+      });
+    });
+
+    /* Generic fade-up reveals */
+    gsap.utils.toArray('[data-reveal]').forEach(el => {
+      gsap.from(el, {
+        y: 40, opacity: 0, duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 90%' }
+      });
+    });
+
+    /* Clip-path image reveals */
+    gsap.utils.toArray('[data-clip]').forEach(el => {
+      gsap.fromTo(el, { clipPath: 'inset(0 0 100% 0)' }, {
+        clipPath: 'inset(0 0 0% 0)', duration: 1.5, ease: 'power3.inOut',
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    /* Container parallax on imagery */
+    gsap.utils.toArray('.parallax-img').forEach(img => {
+      gsap.fromTo(img, { yPercent: -9 }, {
+        yPercent: 9, ease: 'none',
+        scrollTrigger: { trigger: img.closest('.parallax-wrap'), start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* Hero image slow drift */
+    gsap.to('#heroImg', {
+      yPercent: 14, ease: 'none',
+      scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach(el => {
+      const to = +el.dataset.to;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => el.textContent = Math.round(obj.v)
+        })
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

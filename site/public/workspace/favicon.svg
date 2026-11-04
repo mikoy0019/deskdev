@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="DeskDev Studio">
+  <!-- Editorial Ink: brand-600 tile, white letterform. Geometric, no gradients. -->
+  <rect width="32" height="32" rx="7" fill="#2563eb"/>
+  <!-- "D" — a printed counter-form, squared off to read at 16px -->
+  <path d="M10 8h6.2c4.6 0 7.8 3.2 7.8 8s-3.2 8-7.8 8H10V8Zm4.3 3.6v8.8h1.7c2.5 0 4-1.7 4-4.4s-1.5-4.4-4-4.4h-1.7Z" fill="#ffffff"/>
+</svg>

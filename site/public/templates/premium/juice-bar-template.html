@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pulpa — Cold-Pressed Juice &amp; Smoothie Bar</title>
+<meta name="description" content="Pulpa — small-batch cold-pressed juices, blended smoothies and feel-good cleanses. Pressed at dawn, delivered fresh, zero junk." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#1B2D1A',
+          cream: '#FFFCF2',
+          pulp: '#FF5E3A',     // vibrant tangerine accent
+          mango: '#FFB627',
+          lime: '#9BE564',
+          melon: '#FF6FB5',
+          berry: '#7C3AED',
+          leaf: '#2FA84F',
+          sky: '#3AC6E8',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        },
+        borderRadius: {
+          blob: '42% 58% 60% 40% / 48% 42% 58% 52%',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; background: #FFFCF2; color: #1B2D1A; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .font-display { font-family: 'Fraunces', serif; }
+
+  ::selection { background: #FF5E3A; color: #FFFCF2; }
+
+  /* Animated juicy mesh background */
+  .juice-mesh {
+    background:
+      radial-gradient(circle at 18% 20%, rgba(255,182,39,0.55), transparent 45%),
+      radial-gradient(circle at 82% 12%, rgba(255,111,181,0.45), transparent 42%),
+      radial-gradient(circle at 75% 78%, rgba(155,229,100,0.55), transparent 48%),
+      radial-gradient(circle at 25% 85%, rgba(58,198,232,0.40), transparent 45%);
+    filter: saturate(1.15);
+  }
+
+  /* Floating fruit blobs */
+  .fruit {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(0.4px);
+    will-change: transform;
+    pointer-events: none;
+  }
+  @keyframes floaty {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%     { transform: translateY(-26px) rotate(8deg); }
+  }
+  .floaty   { animation: floaty 7s ease-in-out infinite; }
+  .floaty-2 { animation: floaty 9s ease-in-out infinite; }
+  .floaty-3 { animation: floaty 11s ease-in-out infinite; }
+
+  /* Color-shifting accent text */
+  @keyframes hueshift {
+    0%   { color: #FF5E3A; }
+    25%  { color: #FFB627; }
+    50%  { color: #2FA84F; }
+    75%  { color: #FF6FB5; }
+    100% { color: #FF5E3A; }
+  }
+  .hue { animation: hueshift 6s linear infinite; }
+
+  /* Marquee */
+  .marquee-track { display: flex; width: max-content; animation: marquee 26s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* Tilt bottle */
+  .tilt-wrap { perspective: 1000px; }
+  .tilt { transition: transform 0.18s ease-out; transform-style: preserve-3d; will-change: transform; }
+
+  /* Product card hover */
+  .prod { transition: transform .4s cubic-bezier(.2,.9,.3,1.3), box-shadow .4s ease; }
+  .prod:hover { transform: translateY(-12px) rotate(-1.2deg); box-shadow: 0 30px 60px -25px rgba(255,94,58,.5); }
+
+  /* Magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* Wavy divider */
+  .wave { display:block; line-height:0; }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-chev { transform: rotate(45deg); }
+  .faq-chev { transition: transform .35s ease; }
+
+  /* Squiggle underline */
+  .squiggle { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='12'><path d='M2 8 Q 15 2, 30 8 T 60 8 T 90 8 T 118 8' fill='none' stroke='%23FF5E3A' stroke-width='4' stroke-linecap='round'/></svg>"); background-repeat: repeat-x; background-position: 0 100%; padding-bottom: 12px; background-size: 120px 12px; }
+
+  .reveal { opacity: 0; transform: translateY(40px); }
+  .hover-grow { transition: transform .3s cubic-bezier(.2,.9,.3,1.4); }
+  .hover-grow:hover { transform: scale(1.06); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .floaty, .floaty-2, .floaty-3, .marquee-track, .hue { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-full bg-cream/80 backdrop-blur-md border border-ink/10 px-5 py-3 shadow-[0_10px_30px_-15px_rgba(27,45,26,.4)]">
+      <a href="#hero" class="flex items-center gap-2 font-display font-black text-xl tracking-tight">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-full bg-pulp text-cream text-lg">◍</span>
+        Pulpa
+      </a>
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold text-ink/70">
+        <a href="#bestsellers" class="hover:text-pulp transition">Bottles</a>
+        <a href="#cleanse" class="hover:text-pulp transition">Cleanses</a>
+        <a href="#ingredients" class="hover:text-pulp transition">Goodness</a>
+        <a href="#how" class="hover:text-pulp transition">Subscribe</a>
+        <a href="#locations" class="hover:text-pulp transition">Find Us</a>
+      </nav>
+      <a href="#cta" id="navOrder" class="magnetic inline-flex items-center gap-2 rounded-full bg-ink text-cream px-5 py-2.5 text-sm font-bold hover:bg-pulp transition-colors">
+        Order Now <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="hero" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <div class="absolute inset-0 juice-mesh opacity-90"></div>
+  <!-- floating fruit -->
+  <div class="fruit floaty"   style="top:14%; left:8%;  width:90px;  height:90px; background:radial-gradient(circle at 35% 30%, #FFD56B, #FF9F1C);"></div>
+  <div class="fruit floaty-2" style="top:62%; left:4%;  width:60px;  height:60px; background:radial-gradient(circle at 35% 30%, #B9F27C, #4CAF50);"></div>
+  <div class="fruit floaty-3" style="top:20%; right:10%; width:120px; height:120px; background:radial-gradient(circle at 35% 30%, #FFA1CB, #FF4D8D);"></div>
+  <div class="fruit floaty"   style="bottom:14%; right:16%; width:70px; height:70px; background:radial-gradient(circle at 35% 30%, #8BE3F5, #1FB6D8);"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <!-- copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-cream/80 border border-ink/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-leaf">
+        <span class="w-2 h-2 rounded-full bg-lime animate-pulse"></span> Pressed fresh at dawn
+      </span>
+      <h1 class="reveal font-display font-black leading-[0.92] mt-6 text-5xl sm:text-6xl xl:text-7xl tracking-tight">
+        Drink the
+        <span id="rotateWord" class="hue inline-block">sunshine</span>.<br/>
+        Feel <span class="squiggle">unreasonably</span> good.
+      </h1>
+      <p class="reveal mt-6 text-lg text-ink/70 max-w-md">
+        Pulpa is a tiny cold-pressed juice &amp; smoothie bar making loud, fruit-forward bottles with absolutely zero junk. Same-day delivery, refillable bottles, ridiculously fresh.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#cta" class="magnetic inline-flex items-center gap-2 rounded-full bg-pulp text-cream px-7 py-4 font-bold text-lg shadow-[0_18px_40px_-15px_rgba(255,94,58,.8)] hover:bg-ink transition-colors">
+          Order Now <span aria-hidden="true">→</span>
+        </a>
+        <a href="#bestsellers" class="inline-flex items-center gap-2 rounded-full border-2 border-ink/15 px-7 py-4 font-bold text-lg hover:border-pulp hover:text-pulp transition">
+          See the menu
+        </a>
+      </div>
+      <!-- count ups -->
+      <div class="reveal mt-12 grid grid-cols-3 gap-6 max-w-md">
+        <div>
+          <div class="font-display font-black text-4xl text-pulp"><span class="count" data-to="14">0</span></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Real ingredients</div>
+        </div>
+        <div>
+          <div class="font-display font-black text-4xl text-leaf"><span class="count" data-to="9">0</span></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Vitamins / bottle</div>
+        </div>
+        <div>
+          <div class="font-display font-black text-4xl text-berry"><span class="count" data-to="0">0</span></div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Grams of junk</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottle / tilt -->
+    <div class="relative flex justify-center tilt-wrap reveal">
+      <div class="absolute w-[78%] aspect-square rounded-blob bg-gradient-to-br from-mango via-pulp to-melon blur-2xl opacity-60 floaty-2"></div>
+      <div id="tiltBottle" class="tilt relative w-[72%] max-w-sm aspect-[3/5] rounded-[2.5rem] overflow-hidden border-4 border-cream shadow-2xl bg-gradient-to-br from-lime via-mango to-pulp">
+        <img src="https://images.unsplash.com/photo-1622597467836-f3285f2131b8?auto=format&fit=crop&w=1600&q=80"
+             alt="Cold-pressed juice bottle" class="w-full h-full object-cover"
+             onerror="this.style.display='none'" />
+        <div class="absolute bottom-4 inset-x-4 rounded-2xl bg-cream/90 backdrop-blur px-4 py-3 flex items-center justify-between">
+          <div>
+            <div class="font-display font-extrabold leading-none">Sunrise Citrus</div>
+            <div class="text-xs text-ink/60">orange · carrot · turmeric · ginger</div>
+          </div>
+          <div class="font-display font-black text-pulp text-lg">$9</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<div class="marquee bg-ink text-cream py-4 overflow-hidden select-none">
+  <div class="marquee-track">
+    <div class="flex items-center gap-8 pr-8 font-display font-black text-2xl uppercase tracking-tight">
+      <span>🍊 Sunrise Citrus</span><span class="text-mango">●</span>
+      <span>🥬 Green Machine</span><span class="text-lime">●</span>
+      <span>🍓 Berry Bliss</span><span class="text-melon">●</span>
+      <span>🥭 Mango Tango</span><span class="text-pulp">●</span>
+      <span>🫐 Blue Calm</span><span class="text-sky">●</span>
+      <span>🍍 Pineapple Punch</span><span class="text-mango">●</span>
+    </div>
+    <div class="flex items-center gap-8 pr-8 font-display font-black text-2xl uppercase tracking-tight" aria-hidden="true">
+      <span>🍊 Sunrise Citrus</span><span class="text-mango">●</span>
+      <span>🥬 Green Machine</span><span class="text-lime">●</span>
+      <span>🍓 Berry Bliss</span><span class="text-melon">●</span>
+      <span>🥭 Mango Tango</span><span class="text-pulp">●</span>
+      <span>🫐 Blue Calm</span><span class="text-sky">●</span>
+      <span>🍍 Pineapple Punch</span><span class="text-mango">●</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================= BESTSELLERS ================= -->
+<section id="bestsellers" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-pulp">The fan favourites</span>
+        <h2 class="reveal font-display font-black text-4xl sm:text-5xl mt-3">Best-selling bottles</h2>
+      </div>
+      <p class="reveal max-w-sm text-ink/60">Cold-pressed in tiny batches, never heat-treated, bottled the same morning you sip them.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- card -->
+      <article class="prod reveal rounded-3xl p-5 bg-gradient-to-br from-mango/30 to-pulp/20 border border-ink/5">
+        <div class="rounded-2xl overflow-hidden aspect-square bg-gradient-to-br from-mango to-pulp mb-4">
+          <img src="https://images.unsplash.com/photo-1610970881699-44a5587cabec?auto=format&fit=crop&w=1600&q=80" alt="Sunrise Citrus juice" class="w-full h-full object-cover hover-grow" onerror="this.style.display='none'"/>
+        </div>
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-extrabold text-xl">Sunrise Citrus</h3>
+          <span class="font-display font-black text-pulp">$9</span>
+        </div>
+        <p class="text-sm text-ink/60 mt-1">Orange, carrot, turmeric, ginger.</p>
+        <button class="addBtn mt-4 w-full rounded-full bg-ink text-cream py-2.5 font-bold text-sm hover:bg-pulp transition">Add to box</button>
+      </article>
+
+      <article class="prod reveal rounded-3xl p-5 bg-gradient-to-br from-lime/40 to-leaf/20 border border-ink/5">
+        <div class="rounded-2xl overflow-hidden aspect-square bg-gradient-to-br from-lime to-leaf mb-4">
+          <img src="https://images.unsplash.com/photo-1502741224143-90386d7f8c82?auto=format&fit=crop&w=1600&q=80" alt="Green Machine juice" class="w-full h-full object-cover hover-grow" onerror="this.style.display='none'"/>
+        </div>
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-extrabold text-xl">Green Machine</h3>
+          <span class="font-display font-black text-leaf">$10</span>
+        </div>
+        <p class="text-sm text-ink/60 mt-1">Kale, cucumber, apple, mint, lemon.</p>
+        <button class="addBtn mt-4 w-full rounded-full bg-ink text-cream py-2.5 font-bold text-sm hover:bg-leaf transition">Add to box</button>
+      </article>
+
+      <article class="prod reveal rounded-3xl p-5 bg-gradient-to-br from-melon/35 to-berry/20 border border-ink/5">
+        <div class="rounded-2xl overflow-hidden aspect-square bg-gradient-to-br from-melon to-berry mb-4">
+          <img src="https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=1600&q=80" alt="Berry Bliss smoothie" class="w-full h-full object-cover hover-grow" onerror="this.style.display='none'"/>
+        </div>
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-extrabold text-xl">Berry Bliss</h3>
+          <span class="font-display font-black text-melon">$11</span>
+        </div>
+        <p class="text-sm text-ink/60 mt-1">Strawberry, blueberry, banana, oat.</p>
+        <button class="addBtn mt-4 w-full rounded-full bg-ink text-cream py-2.5 font-bold text-sm hover:bg-melon transition">Add to box</button>
+      </article>
+
+      <article class="prod reveal rounded-3xl p-5 bg-gradient-to-br from-sky/35 to-berry/20 border border-ink/5">
+        <div class="rounded-2xl overflow-hidden aspect-square bg-gradient-to-br from-sky to-berry mb-4 grid place-items-center">
+          <span class="font-display font-black text-6xl text-cream/90">🫐</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-extrabold text-xl">Blue Calm</h3>
+          <span class="font-display font-black text-sky">$11</span>
+        </div>
+        <p class="text-sm text-ink/60 mt-1">Blueberry, lavender, coconut, chia.</p>
+        <button class="addBtn mt-4 w-full rounded-full bg-ink text-cream py-2.5 font-bold text-sm hover:bg-sky transition">Add to box</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CLEANSE PROGRAMS ================= -->
+<section id="cleanse" class="relative py-24 sm:py-32 bg-ink text-cream overflow-hidden">
+  <div class="fruit floaty" style="top:8%; right:6%; width:80px; height:80px; background:radial-gradient(circle at 35% 30%, #B9F27C,#4CAF50);"></div>
+  <div class="fruit floaty-3" style="bottom:10%; left:5%; width:110px; height:110px; background:radial-gradient(circle at 35% 30%, #FFA1CB,#FF4D8D);"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-mango">Reset &amp; reboot</span>
+      <h2 class="reveal font-display font-black text-4xl sm:text-5xl mt-3">Cleanse programs that don't punish you</h2>
+      <p class="reveal mt-4 text-cream/70">Six bottles a day, balanced for energy not misery. Pick a length, we press &amp; deliver on a schedule.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal rounded-3xl p-8 bg-cream/5 border border-cream/10 hover:border-mango/50 transition">
+        <div class="text-mango font-display font-black text-5xl">1<span class="text-xl"> day</span></div>
+        <h3 class="font-display font-extrabold text-2xl mt-4">The Refresh</h3>
+        <p class="text-cream/60 mt-2 text-sm">A gentle one-day glow-up. Perfect after a heavy weekend.</p>
+        <div class="mt-6 font-display font-black text-3xl">$49</div>
+        <a href="#cta" class="mt-5 block text-center rounded-full bg-mango text-ink py-3 font-bold hover:bg-cream transition">Start Refresh</a>
+      </div>
+      <div class="reveal rounded-3xl p-8 bg-gradient-to-br from-pulp to-melon text-cream relative scale-[1.03] shadow-2xl">
+        <span class="absolute -top-3 right-6 rounded-full bg-cream text-pulp text-xs font-black px-3 py-1 uppercase tracking-wider">Most loved</span>
+        <div class="font-display font-black text-5xl">3<span class="text-xl"> day</span></div>
+        <h3 class="font-display font-extrabold text-2xl mt-4">The Reset</h3>
+        <p class="text-cream/80 mt-2 text-sm">Our signature reset. Rebuild your habits, reboot your gut.</p>
+        <div class="mt-6 font-display font-black text-3xl">$129</div>
+        <a href="#cta" class="mt-5 block text-center rounded-full bg-ink text-cream py-3 font-bold hover:bg-cream hover:text-ink transition">Start Reset</a>
+      </div>
+      <div class="reveal rounded-3xl p-8 bg-cream/5 border border-cream/10 hover:border-lime/50 transition">
+        <div class="text-lime font-display font-black text-5xl">5<span class="text-xl"> day</span></div>
+        <h3 class="font-display font-extrabold text-2xl mt-4">The Renew</h3>
+        <p class="text-cream/60 mt-2 text-sm">For the committed. Deep nutrient flooding, real glow.</p>
+        <div class="mt-6 font-display font-black text-3xl">$199</div>
+        <a href="#cta" class="mt-5 block text-center rounded-full bg-lime text-ink py-3 font-bold hover:bg-cream transition">Start Renew</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= INGREDIENTS / BENEFITS ================= -->
+<section id="ingredients" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="reveal relative">
+      <div class="aspect-square rounded-blob overflow-hidden bg-gradient-to-br from-lime via-mango to-melon floaty-2 border-4 border-cream shadow-2xl">
+        <img src="https://images.unsplash.com/photo-1502741224143-90386d7f8c82?auto=format&fit=crop&w=1600&q=80" alt="Fresh fruit and vegetables" class="w-full h-full object-cover" onerror="this.style.display='none'"/>
+      </div>
+      <div class="absolute -bottom-4 -left-4 rounded-2xl bg-cream border border-ink/10 px-5 py-4 shadow-xl">
+        <div class="font-display font-black text-3xl text-pulp"><span class="count" data-to="100">0</span>%</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-ink/50">Plants, nothing else</div>
+      </div>
+    </div>
+    <div>
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-leaf">Real goodness</span>
+      <h2 class="reveal font-display font-black text-4xl sm:text-5xl mt-3">Every bottle is basically a vitamin you can taste</h2>
+      <p class="reveal mt-4 text-ink/60 max-w-md">No concentrates, no added sugar, no weird powders. Just cold-pressed produce, locked in raw so the nutrients actually survive the trip to you.</p>
+
+      <div class="reveal mt-8 space-y-4">
+        <div>
+          <div class="flex justify-between text-sm font-bold mb-1"><span>Vitamin C</span><span class="text-pulp">92%</span></div>
+          <div class="h-3 rounded-full bg-ink/10 overflow-hidden"><div class="bar h-full rounded-full bg-pulp" style="width:0" data-w="92%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm font-bold mb-1"><span>Antioxidants</span><span class="text-melon">86%</span></div>
+          <div class="h-3 rounded-full bg-ink/10 overflow-hidden"><div class="bar h-full rounded-full bg-melon" style="width:0" data-w="86%"></div></div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm font-bold mb-1"><span>Leafy greens</span><span class="text-leaf">78%</span></div>
+          <div class="h-3 rounded-full bg-ink/10 overflow-hidden"><div class="bar h-full rounded-full bg-leaf" style="width:0" data-w="78%"></div></div>
+        </div>
+      </div>
+
+      <div class="reveal mt-8 grid grid-cols-3 gap-3">
+        <div class="rounded-2xl bg-mango/20 p-4 text-center"><div class="text-2xl">🍊</div><div class="text-xs font-bold mt-1">No concentrate</div></div>
+        <div class="rounded-2xl bg-lime/30 p-4 text-center"><div class="text-2xl">🌿</div><div class="text-xs font-bold mt-1">Organic produce</div></div>
+        <div class="rounded-2xl bg-melon/20 p-4 text-center"><div class="text-2xl">♻️</div><div class="text-xs font-bold mt-1">Refill bottles</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HOW IT WORKS / SUBSCRIBE ================= -->
+<section id="how" class="relative py-24 sm:py-32 juice-mesh">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-sm font-bold uppercase tracking-widest text-berry">Set it &amp; sip it</span>
+      <h2 class="reveal font-display font-black text-4xl sm:text-5xl mt-3">Subscribe in four happy steps</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal rounded-3xl bg-cream p-7 border border-ink/5 hover-grow">
+        <div class="w-12 h-12 rounded-full bg-pulp text-cream grid place-items-center font-display font-black text-xl">1</div>
+        <h3 class="font-display font-extrabold text-xl mt-4">Build your box</h3>
+        <p class="text-sm text-ink/60 mt-2">Mix &amp; match bottles or pick a cleanse. Min 6 per box.</p>
+      </div>
+      <div class="reveal rounded-3xl bg-cream p-7 border border-ink/5 hover-grow">
+        <div class="w-12 h-12 rounded-full bg-mango text-ink grid place-items-center font-display font-black text-xl">2</div>
+        <h3 class="font-display font-extrabold text-xl mt-4">Choose a rhythm</h3>
+        <p class="text-sm text-ink/60 mt-2">Weekly, fortnightly or whenever. Skip anytime, no drama.</p>
+      </div>
+      <div class="reveal rounded-3xl bg-cream p-7 border border-ink/5 hover-grow">
+        <div class="w-12 h-12 rounded-full bg-leaf text-cream grid place-items-center font-display font-black text-xl">3</div>
+        <h3 class="font-display font-extrabold text-xl mt-4">We press at dawn</h3>
+        <p class="text-sm text-ink/60 mt-2">Squeezed the morning of delivery. Never sitting on a shelf.</p>
+      </div>
+      <div class="reveal rounded-3xl bg-cream p-7 border border-ink/5 hover-grow">
+        <div class="w-12 h-12 rounded-full bg-melon text-cream grid place-items-center font-display font-black text-xl">4</div>
+        <h3 class="font-display font-extrabold text-xl mt-4">Sip &amp; glow</h3>
+        <p class="text-sm text-ink/60 mt-2">Chilled to your door. Return empties for $1 off each.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="relative py-24 sm:py-32">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <span class="reveal text-sm font-bold uppercase tracking-widest text-pulp">Our story</span>
+    <h2 class="reveal font-display font-black text-4xl sm:text-6xl mt-4 leading-tight">
+      Started in a kitchen with one <span class="hue">battered</span> juicer and a stubborn idea: fresh should taste loud.
+    </h2>
+    <p class="reveal mt-6 text-lg text-ink/60 max-w-2xl mx-auto">
+      We were tired of "healthy" drinks that tasted like punishment. So we built Pulpa — small batches, big flavour, real produce from growers we actually know. No factory, no shortcuts, no apology for being delicious.
+    </p>
+    <div class="reveal mt-12 grid grid-cols-2 sm:grid-cols-4 gap-6">
+      <div><div class="font-display font-black text-4xl text-pulp"><span class="count" data-to="42">0</span>k</div><div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Bottles pressed</div></div>
+      <div><div class="font-display font-black text-4xl text-leaf"><span class="count" data-to="18">0</span></div><div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Local growers</div></div>
+      <div><div class="font-display font-black text-4xl text-melon"><span class="count" data-to="6">0</span></div><div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Neighbourhood bars</div></div>
+      <div><div class="font-display font-black text-4xl text-berry"><span class="count" data-to="97">0</span>%</div><div class="text-xs font-semibold uppercase tracking-wider text-ink/50 mt-1">Bottles returned</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TESTIMONIALS ================= -->
+<section class="relative py-24 sm:py-32 bg-lime/20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <h2 class="reveal font-display font-black text-4xl sm:text-5xl text-center mb-14">Sippers say nice things</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-cream p-7 border border-ink/5 shadow-sm">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">"The Sunrise Citrus genuinely fixed my mornings. I cancelled my coffee subscription, not even joking."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-pulp to-mango grid place-items-center font-bold text-cream">M</span>
+          <div><div class="font-bold text-sm">Maya R.</div><div class="text-xs text-ink/50">3-day Reset regular</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream p-7 border border-ink/5 shadow-sm">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">"Finally a cleanse that doesn't make me hate my life by 2pm. Green Machine is dangerously good."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-leaf to-lime grid place-items-center font-bold text-cream">D</span>
+          <div><div class="font-bold text-sm">Devon K.</div><div class="text-xs text-ink/50">Weekly subscriber</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-cream p-7 border border-ink/5 shadow-sm">
+        <div class="text-mango text-xl">★★★★★</div>
+        <blockquote class="mt-4 text-ink/80">"Bottles arrive ice-cold, taste like the fruit was picked this morning. The refill thing is genius."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-gradient-to-br from-melon to-berry grid place-items-center font-bold text-cream">A</span>
+          <div><div class="font-bold text-sm">Aisha T.</div><div class="text-xs text-ink/50">Berry Bliss devotee</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LOCATIONS ================= -->
+<section id="locations" class="relative py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+      <div>
+        <span class="reveal text-sm font-bold uppercase tracking-widest text-sky">Come say hi</span>
+        <h2 class="reveal font-display font-black text-4xl sm:text-5xl mt-3">Find a Pulpa bar near you</h2>
+      </div>
+      <p class="reveal max-w-sm text-ink/60">Six bright little bars, all open 7am–7pm. Pop in for a fresh-pressed glass or grab your box.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-mango/20 to-pulp/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">Harbourline</h3>
+        <p class="text-sm text-ink/60 mt-1">12 Marina Walk · Open 7–7</p>
+        <p class="text-xs text-leaf font-bold mt-3">● Open now</p>
+      </div>
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-lime/30 to-leaf/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">Maple Quarter</h3>
+        <p class="text-sm text-ink/60 mt-1">88 Maple Street · Open 7–7</p>
+        <p class="text-xs text-leaf font-bold mt-3">● Open now</p>
+      </div>
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-melon/20 to-berry/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">The Greenhouse</h3>
+        <p class="text-sm text-ink/60 mt-1">3 Orchard Lane · Open 7–7</p>
+        <p class="text-xs text-leaf font-bold mt-3">● Open now</p>
+      </div>
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-sky/20 to-berry/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">Sunnyside</h3>
+        <p class="text-sm text-ink/60 mt-1">201 Sunny Boulevard · Open 7–7</p>
+        <p class="text-xs text-leaf font-bold mt-3">● Open now</p>
+      </div>
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-mango/20 to-melon/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">Riverbend</h3>
+        <p class="text-sm text-ink/60 mt-1">7 River Bend · Open 7–7</p>
+        <p class="text-xs text-mango font-bold mt-3">● Opens 7am</p>
+      </div>
+      <div class="reveal rounded-3xl p-6 bg-gradient-to-br from-lime/30 to-sky/10 border border-ink/5">
+        <h3 class="font-display font-extrabold text-xl">Old Market</h3>
+        <p class="text-sm text-ink/60 mt-1">45 Market Square · Open 7–7</p>
+        <p class="text-xs text-leaf font-bold mt-3">● Open now</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq" class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <h2 class="reveal font-display font-black text-4xl sm:text-5xl text-center mb-12">Questions, juiced</h2>
+    <div class="space-y-4">
+      <div class="faq-item reveal rounded-2xl border border-ink/10 bg-white/60 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-bold">
+          How fresh is "fresh", really?
+          <span class="faq-chev text-pulp text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60">Every bottle is cold-pressed the same morning it reaches you and never heat-treated, so it's as close to the raw fruit as drinkable gets. Sip within 4 days for peak punch.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-ink/10 bg-white/60 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-bold">
+          Is there any added sugar?
+          <span class="faq-chev text-pulp text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60">Never. The only sugar in a Pulpa bottle comes straight from whole fruit. No syrups, no concentrates, no sneaky sweeteners.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-ink/10 bg-white/60 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-bold">
+          Can I pause or skip my subscription?
+          <span class="faq-chev text-pulp text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60">Anytime, from your dashboard, no phone calls and no guilt. Skip a week, change your bottles, or pause for a month — it's all one tap.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-ink/10 bg-white/60 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-bold">
+          How does the bottle return work?
+          <span class="faq-chev text-pulp text-2xl leading-none">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-ink/60">Leave your rinsed empties out on your next delivery day and we'll collect, sterilise and reuse them — you get $1 off per bottle returned. Better for you, better for the planet.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section id="cta" class="relative py-24 sm:py-32 overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-pulp via-mango to-melon"></div>
+  <div class="fruit floaty" style="top:12%; left:8%; width:70px; height:70px; background:radial-gradient(circle at 35% 30%, #B9F27C,#4CAF50);"></div>
+  <div class="fruit floaty-3" style="bottom:14%; right:10%; width:100px; height:100px; background:radial-gradient(circle at 35% 30%, #8BE3F5,#1FB6D8);"></div>
+  <div class="relative max-w-3xl mx-auto px-5 sm:px-8 text-center text-cream">
+    <h2 class="reveal font-display font-black text-4xl sm:text-6xl leading-tight">Your first box is calling.</h2>
+    <p class="reveal mt-5 text-lg text-cream/90 max-w-xl mx-auto">Build a box of six, get it pressed at dawn and delivered ice-cold tomorrow. First-timers get 15% off — no code needed.</p>
+    <form class="reveal mt-9 flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onsubmit="return false;">
+      <input type="email" required placeholder="your@email.com" class="flex-1 rounded-full px-6 py-4 text-ink placeholder-ink/40 outline-none border-2 border-transparent focus:border-ink" />
+      <button class="magnetic rounded-full bg-ink text-cream px-7 py-4 font-bold hover:bg-cream hover:text-ink transition">Order Now</button>
+    </form>
+    <p class="reveal mt-4 text-xs text-cream/70">No spam, just fruit. Cancel whenever.</p>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ink text-cream/80 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <a href="#hero" class="flex items-center gap-2 font-display font-black text-2xl text-cream">
+          <span class="inline-grid place-items-center w-9 h-9 rounded-full bg-pulp text-cream text-lg">◍</span> Pulpa
+        </a>
+        <p class="mt-4 text-sm text-cream/60 max-w-xs">Loud, fresh, plant-only juice. Pressed at dawn, delivered cold, bottled with zero junk.</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-3">Drink</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#bestsellers" class="hover:text-pulp transition">Bottles</a></li>
+          <li><a href="#cleanse" class="hover:text-pulp transition">Cleanses</a></li>
+          <li><a href="#how" class="hover:text-pulp transition">Subscribe</a></li>
+          <li><a href="#ingredients" class="hover:text-pulp transition">What's inside</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-3">Company</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#about" class="hover:text-pulp transition">Our story</a></li>
+          <li><a href="#locations" class="hover:text-pulp transition">Find us</a></li>
+          <li><a href="#faq" class="hover:text-pulp transition">FAQ</a></li>
+          <li><a href="#cta" class="hover:text-pulp transition">Order now</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-cream mb-3">Stay juicy</h4>
+        <p class="text-sm text-cream/60 mb-3">Recipes, drops &amp; cleanse tips.</p>
+        <div class="flex gap-3 text-xl">
+          <a href="#" aria-label="Instagram" class="hover:text-pulp transition">◐</a>
+          <a href="#" aria-label="TikTok" class="hover:text-pulp transition">◑</a>
+          <a href="#" aria-label="Newsletter" class="hover:text-pulp transition">✉</a>
+        </div>
+      </div>
+    </div>
+    <div class="mt-12 pt-8 border-t border-cream/10 flex flex-col sm:flex-row justify-between gap-4 text-xs text-cream/50">
+      <p>© 2026 Pulpa Juice Co. All flavours invented for this template.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-cream transition">Privacy</a>
+        <a href="#" class="hover:text-cream transition">Terms</a>
+        <a href="#" class="hover:text-cream transition">Stockists</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Nav shrink on scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 30) nav.classList.add('shadow-lg');
+    else nav.classList.remove('shadow-lg');
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  // Add-to-box feedback
+  document.querySelectorAll('.addBtn').forEach((b) => {
+    b.addEventListener('click', () => {
+      const t = b.textContent;
+      b.textContent = 'Added ✓';
+      b.classList.add('bg-leaf');
+      setTimeout(() => { b.textContent = t; b.classList.remove('bg-leaf'); }, 1300);
+    });
+  });
+
+  // Rotating hero word
+  const rotateWord = document.getElementById('rotateWord');
+  const words = ['sunshine', 'the rainbow', 'pure fruit', 'good days'];
+  let wi = 0;
+  if (!reduce && rotateWord) {
+    setInterval(() => {
+      wi = (wi + 1) % words.length;
+      rotateWord.style.opacity = 0;
+      setTimeout(() => { rotateWord.textContent = words[wi]; rotateWord.style.opacity = 1; }, 250);
+    }, 2600);
+    rotateWord.style.transition = 'opacity .25s ease';
+  }
+
+  if (reduce) {
+    // counts and bars to final instantly
+    document.querySelectorAll('.count').forEach(c => c.textContent = c.dataset.to);
+    document.querySelectorAll('.bar').forEach(bar => bar.style.width = bar.dataset.w);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Reveal animations
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'back.out(1.5)',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  // Count-ups
+  document.querySelectorAll('.count').forEach((el) => {
+    const to = parseFloat(el.dataset.to);
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => {
+        gsap.to({ v: 0 }, {
+          v: to, duration: 1.6, ease: 'power2.out',
+          onUpdate: function () { el.textContent = Math.round(this.targets()[0].v); }
+        });
+      }
+    });
+  });
+
+  // Benefit bars
+  document.querySelectorAll('.bar').forEach((bar) => {
+    ScrollTrigger.create({
+      trigger: bar, start: 'top 92%', once: true,
+      onEnter: () => gsap.to(bar, { width: bar.dataset.w, duration: 1.3, ease: 'power3.out' })
+    });
+  });
+
+  // Hero container parallax
+  gsap.to('#hero .juice-mesh', {
+    yPercent: 18, ease: 'none',
+    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+  });
+
+  // Magnetic buttons
+  document.querySelectorAll('.magnetic').forEach((btn) => {
+    btn.addEventListener('mousemove', (e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(btn, { x: x * 0.35, y: y * 0.35, duration: 0.3 });
+    });
+    btn.addEventListener('mouseleave', () => gsap.to(btn, { x: 0, y: 0, duration: 0.4, ease: 'elastic.out(1,0.4)' }));
+  });
+
+  // 3D tilt bottle
+  const bottle = document.getElementById('tiltBottle');
+  const wrap = bottle ? bottle.closest('.tilt-wrap') : null;
+  if (bottle && wrap) {
+    wrap.addEventListener('mousemove', (e) => {
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      gsap.to(bottle, { rotateY: px * 22, rotateX: -py * 22, duration: 0.4, ease: 'power2.out' });
+    });
+    wrap.addEventListener('mouseleave', () => gsap.to(bottle, { rotateY: 0, rotateX: 0, duration: 0.6, ease: 'elastic.out(1,0.5)' }));
+  }
+})();
+</script>
+</body>
+</html>

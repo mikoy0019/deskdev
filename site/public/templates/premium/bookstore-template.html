@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Margin &amp; Marrow — An Independent Bookstore</title>
+<meta name="description" content="Margin & Marrow is a curated independent bookstore and small press. Staff picks, new releases, a book club, and a reading membership for the literary-minded." />
+
+<!-- Fonts: refined serif (Fraunces) + clean sans (Inter) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:  "#F5EFE2",
+          parch:  "#EFE6D3",
+          paper:  "#FBF7EE",
+          ink:    "#221C18",
+          coffee: "#473A30",
+          claret: "#7C2D2D",
+          rust:   "#B45A3C",
+          sage:   "#5E6E55",
+          gold:   "#B8893C",
+          mute:   "#8A7E6E",
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'Georgia', 'serif'],
+          sans:  ['Inter', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: { tightest: '-0.045em' },
+      }
+    }
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --paper:#FBF7EE; --ink:#221C18; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
+  @media (hover: none), (pointer: coarse) { body { cursor: auto; } }
+
+  ::selection { background: #7C2D2D; color: #F5EFE2; }
+
+  /* Grain / paper texture overlay */
+  .grain::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 60;
+    opacity: .05; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Masked headline reveal */
+  .reveal-mask { display:inline-block; overflow:hidden; vertical-align:bottom; }
+  .reveal-mask > span { display:inline-block; transform: translateY(110%); }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top:0; left:0; border-radius:9999px; pointer-events:none;
+    z-index: 90; mix-blend-mode: multiply; will-change: transform;
+  }
+  .cursor-dot  { width:7px; height:7px; background:#7C2D2D; transform: translate(-50%,-50%); }
+  .cursor-ring { width:40px; height:40px; border:1px solid rgba(124,45,45,.5); transform: translate(-50%,-50%); transition: width .25s, height .25s, background .25s, border-color .25s; }
+  .cursor-ring.grow { width:74px; height:74px; background:rgba(124,45,45,.08); border-color: rgba(124,45,45,.7); }
+  @media (hover:none),(pointer:coarse){ .cursor-dot,.cursor-ring{ display:none; } }
+
+  /* Book object — 3D tilt */
+  .book { transform-style: preserve-3d; perspective: 900px; }
+  .book-inner {
+    position: relative; transform-style: preserve-3d;
+    transition: transform .15s ease-out;
+    will-change: transform;
+  }
+  .book-cover {
+    position: relative; border-radius: 4px 7px 7px 4px; overflow: hidden;
+    box-shadow: 0 18px 40px -18px rgba(34,28,24,.55), inset 0 0 0 1px rgba(255,255,255,.06);
+  }
+  /* spine sheen */
+  .book-cover::before {
+    content:""; position:absolute; left:0; top:0; bottom:0; width:11px;
+    background: linear-gradient(90deg, rgba(0,0,0,.35), rgba(255,255,255,.18) 55%, rgba(0,0,0,.22));
+    z-index:3;
+  }
+  /* gloss following tilt */
+  .book-cover::after {
+    content:""; position:absolute; inset:0; z-index:4; pointer-events:none;
+    background: radial-gradient(120% 80% at var(--gx,30%) var(--gy,0%), rgba(255,255,255,.28), rgba(255,255,255,0) 55%);
+    opacity:0; transition: opacity .3s;
+  }
+  .book:hover .book-cover::after { opacity:1; }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation: slide 34s linear infinite; }
+  .marquee:hover { animation-play-state: paused; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  /* Accordion */
+  .faq-body { max-height:0; overflow:hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq.open .faq-body { max-height: 320px; }
+  .faq.open .faq-plus { transform: rotate(45deg); }
+
+  .magnetic { will-change: transform; }
+
+  a, button { cursor: none; }
+  @media (hover:none),(pointer:coarse){ a,button{ cursor:auto; } }
+
+  .hairline { border-color: rgba(34,28,24,.14); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal-mask > span { transform: none !important; }
+    .marquee { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cRing"></div>
+<div class="cursor-dot" id="cDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-center justify-between h-[72px]">
+      <a href="#top" class="flex items-center gap-2.5 group" data-hover>
+        <span class="w-9 h-9 rounded-full bg-claret text-cream grid place-items-center font-serif text-lg leading-none shadow-sm">M</span>
+        <span class="font-serif text-[19px] tracking-tightest leading-none">Margin <span class="text-claret italic">&amp;</span> Marrow</span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-9 text-[13.5px] text-coffee/90">
+        <a href="#shelf" class="hover:text-claret transition-colors" data-hover>Staff Picks</a>
+        <a href="#new" class="hover:text-claret transition-colors" data-hover>New Releases</a>
+        <a href="#shop" class="hover:text-claret transition-colors" data-hover>The Shop</a>
+        <a href="#events" class="hover:text-claret transition-colors" data-hover>Events</a>
+        <a href="#membership" class="hover:text-claret transition-colors" data-hover>Membership</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:flex items-center gap-2 text-[13px] text-coffee/80 hover:text-claret transition-colors" data-hover>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </a>
+        <a href="#" class="relative flex items-center gap-2 rounded-full hairline border px-3.5 py-2 text-[13px] hover:bg-cream transition-colors" data-hover>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span>Cart</span>
+          <span class="absolute -top-1.5 -right-1.5 w-[18px] h-[18px] rounded-full bg-claret text-cream text-[10px] grid place-items-center font-medium">3</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="h-px w-full bg-gradient-to-r from-transparent via-ink/10 to-transparent"></div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-32 pb-16 sm:pt-40 sm:pb-24 overflow-hidden" data-parallax-root>
+  <!-- soft warm wash -->
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-b from-cream via-paper to-paper"></div>
+    <div class="absolute -top-40 -right-40 w-[640px] h-[640px] rounded-full bg-rust/10 blur-[120px]"></div>
+    <div class="absolute top-1/3 -left-52 w-[520px] h-[520px] rounded-full bg-sage/10 blur-[120px]"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+      <!-- copy -->
+      <div class="lg:col-span-7">
+        <div class="inline-flex items-center gap-2 rounded-full hairline border bg-paper/60 px-3.5 py-1.5 text-[12px] tracking-wide text-coffee mb-7" data-fade>
+          <span class="w-1.5 h-1.5 rounded-full bg-claret animate-pulse"></span>
+          Est. on Marrowgate Lane — open seven days
+        </div>
+
+        <h1 class="font-serif tracking-tightest leading-[0.95] text-[clamp(2.7rem,7.5vw,5.6rem)]">
+          <span class="reveal-mask"><span>Books with</span></span><br/>
+          <span class="reveal-mask"><span class="italic text-claret">marrow</span></span>
+          <span class="reveal-mask"><span> in the</span></span><br/>
+          <span class="reveal-mask"><span>spine.</span></span>
+        </h1>
+
+        <p class="mt-7 max-w-md text-[15.5px] leading-relaxed text-coffee/85" data-fade>
+          A small, fiercely curated bookshop and press on the edge of the old quarter.
+          We read everything we sell, hand-shelve the strange and the tender, and
+          believe a good paragraph can rearrange a life.
+        </p>
+
+        <div class="mt-9 flex flex-wrap items-center gap-4" data-fade>
+          <a href="#shelf" class="magnetic group inline-flex items-center gap-2.5 rounded-full bg-ink text-cream pl-6 pr-5 py-3.5 text-[14px] font-medium hover:bg-claret transition-colors" data-hover>
+            Browse the shelves
+            <span class="w-7 h-7 rounded-full bg-cream/15 grid place-items-center group-hover:translate-x-0.5 transition-transform">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </a>
+          <a href="#membership" class="inline-flex items-center gap-2 text-[14px] text-coffee underline decoration-claret/40 underline-offset-4 hover:decoration-claret transition" data-hover>
+            Join the reading circle
+          </a>
+        </div>
+
+        <!-- count-ups -->
+        <div class="mt-12 grid grid-cols-3 gap-6 max-w-lg" data-fade>
+          <div>
+            <div class="font-serif text-3xl text-ink"><span data-count="8400" data-suffix="+">0</span></div>
+            <div class="text-[12px] text-mute mt-1 tracking-wide">titles on the floor</div>
+          </div>
+          <div>
+            <div class="font-serif text-3xl text-ink"><span data-count="1260" data-suffix="">0</span></div>
+            <div class="text-[12px] text-mute mt-1 tracking-wide">reading members</div>
+          </div>
+          <div>
+            <div class="font-serif text-3xl text-ink"><span data-count="14" data-suffix=" yrs">0</span></div>
+            <div class="text-[12px] text-mute mt-1 tracking-wide">on the lane</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- featured book -->
+      <div class="lg:col-span-5 flex justify-center lg:justify-end" data-parallax data-speed="0.12">
+        <div class="relative">
+          <div class="absolute -inset-8 rounded-[2rem] bg-gradient-to-br from-rust/15 via-transparent to-sage/15 blur-2xl"></div>
+
+          <div class="book relative" data-tilt>
+            <div class="book-inner">
+              <div class="book-cover w-[260px] h-[380px] sm:w-[300px] sm:h-[440px]"
+                   style="background:linear-gradient(160deg,#7C2D2D 0%,#5a1f1f 60%,#3c1414 100%);">
+                <div class="absolute inset-0 flex flex-col justify-between p-7 pl-9 text-cream">
+                  <div class="text-[11px] tracking-[0.3em] uppercase text-cream/60">Margin &amp; Marrow Press</div>
+                  <div>
+                    <div class="text-[11px] tracking-[0.25em] uppercase text-gold/90 mb-3">Featured · No. 41</div>
+                    <h3 class="font-serif text-[2rem] leading-[1.02] tracking-tightest">The Salt<br/>Almanac</h3>
+                    <div class="mt-4 h-px w-12 bg-cream/40"></div>
+                    <p class="mt-4 text-[13px] italic text-cream/75">a novel by Orin Vale</p>
+                  </div>
+                  <div class="flex items-center justify-between text-[11px] text-cream/55">
+                    <span>First Edition</span><span>★ ★ ★ ★ ★</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- floating price tag -->
+          <div class="absolute -bottom-5 -left-6 sm:-left-10 bg-paper hairline border rounded-xl px-4 py-3 shadow-xl rotate-[-4deg]" data-parallax data-speed="-0.08">
+            <div class="text-[11px] text-mute">Signed first run</div>
+            <div class="font-serif text-xl text-claret">$28.00</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATEGORY MARQUEE ============ -->
+<section class="py-5 border-y hairline bg-cream/50">
+  <div class="overflow-hidden">
+    <div class="marquee">
+      <div class="flex items-center gap-10 pr-10 text-[15px] font-serif text-coffee/80">
+        <span>Literary Fiction</span><span class="text-claret">✦</span>
+        <span>Poetry &amp; Letters</span><span class="text-claret">✦</span>
+        <span>Nature Writing</span><span class="text-claret">✦</span>
+        <span>Translated Voices</span><span class="text-claret">✦</span>
+        <span>Strange Tales</span><span class="text-claret">✦</span>
+        <span>Cookery</span><span class="text-claret">✦</span>
+        <span>Children &amp; Wonder</span><span class="text-claret">✦</span>
+        <span>Essays</span><span class="text-claret">✦</span>
+      </div>
+      <div class="flex items-center gap-10 pr-10 text-[15px] font-serif text-coffee/80" aria-hidden="true">
+        <span>Literary Fiction</span><span class="text-claret">✦</span>
+        <span>Poetry &amp; Letters</span><span class="text-claret">✦</span>
+        <span>Nature Writing</span><span class="text-claret">✦</span>
+        <span>Translated Voices</span><span class="text-claret">✦</span>
+        <span>Strange Tales</span><span class="text-claret">✦</span>
+        <span>Cookery</span><span class="text-claret">✦</span>
+        <span>Children &amp; Wonder</span><span class="text-claret">✦</span>
+        <span>Essays</span><span class="text-claret">✦</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATEGORY RAIL ============ -->
+<section class="py-14 sm:py-20">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-9" data-fade>
+      <h2 class="font-serif text-[clamp(1.6rem,3vw,2.3rem)] tracking-tightest">Browse by shelf</h2>
+      <a href="#shelf" class="text-[13px] text-coffee hover:text-claret transition" data-hover>All categories →</a>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3" data-stagger>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-claret/10 text-claret grid place-items-center mb-4 font-serif">F</div>
+        <div class="font-serif text-[17px] leading-tight">Fiction</div>
+        <div class="text-[12px] text-mute mt-1">2,140 titles</div>
+      </a>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-sage/15 text-sage grid place-items-center mb-4 font-serif">P</div>
+        <div class="font-serif text-[17px] leading-tight">Poetry</div>
+        <div class="text-[12px] text-mute mt-1">610 titles</div>
+      </a>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-gold/15 text-gold grid place-items-center mb-4 font-serif">N</div>
+        <div class="font-serif text-[17px] leading-tight">Nature</div>
+        <div class="text-[12px] text-mute mt-1">430 titles</div>
+      </a>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-rust/15 text-rust grid place-items-center mb-4 font-serif">T</div>
+        <div class="font-serif text-[17px] leading-tight">Translated</div>
+        <div class="text-[12px] text-mute mt-1">880 titles</div>
+      </a>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-coffee/12 text-coffee grid place-items-center mb-4 font-serif">E</div>
+        <div class="font-serif text-[17px] leading-tight">Essays</div>
+        <div class="text-[12px] text-mute mt-1">520 titles</div>
+      </a>
+      <a href="#" class="group rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-9 h-9 rounded-lg bg-claret/10 text-claret grid place-items-center mb-4 font-serif">C</div>
+        <div class="font-serif text-[17px] leading-tight">Children</div>
+        <div class="text-[12px] text-mute mt-1">740 titles</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STAFF PICKS ============ -->
+<section id="shelf" class="py-16 sm:py-24 bg-cream/40 border-y hairline">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-12" data-fade>
+      <div class="text-[12px] tracking-[0.25em] uppercase text-claret mb-3">Hand-shelved</div>
+      <h2 class="font-serif text-[clamp(2rem,4.5vw,3.4rem)] tracking-tightest leading-[1.02]">Staff picks, chosen with bias.</h2>
+      <p class="mt-4 text-coffee/80 text-[15px] leading-relaxed">Every book here is loved by a name you can ask for at the counter. Tilt a cover to feel the weight of it.</p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12" data-stagger>
+      <!-- card template -->
+      <article class="group" data-stag>
+        <div class="book mx-auto" data-tilt>
+          <div class="book-inner">
+            <div class="book-cover w-full aspect-[2/3]" style="background:linear-gradient(155deg,#5E6E55,#3f4d39);">
+              <div class="absolute inset-0 p-5 pl-7 flex flex-col justify-between text-cream">
+                <div class="text-[9px] tracking-[0.3em] uppercase text-cream/55">M&amp;M Select</div>
+                <div>
+                  <h3 class="font-serif text-[1.35rem] leading-[1.02] tracking-tightest">A Field of<br/>Small Hours</h3>
+                  <p class="mt-2 text-[11px] italic text-cream/70">Wren Halloway</p>
+                </div>
+                <div class="text-[10px] text-cream/45">Nature · 2025</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div>
+            <div class="font-serif text-[15px] leading-tight">A Field of Small Hours</div>
+            <div class="text-[12px] text-mute">Wren Halloway</div>
+          </div>
+          <button class="shrink-0 rounded-full bg-ink text-cream text-[12px] px-3.5 py-2 hover:bg-claret transition" data-hover>$24</button>
+        </div>
+      </article>
+
+      <article class="group" data-stag>
+        <div class="book mx-auto" data-tilt>
+          <div class="book-inner">
+            <div class="book-cover w-full aspect-[2/3]" style="background:linear-gradient(155deg,#B45A3C,#7c3a25);">
+              <div class="absolute inset-0 p-5 pl-7 flex flex-col justify-between text-cream">
+                <div class="text-[9px] tracking-[0.3em] uppercase text-cream/55">M&amp;M Select</div>
+                <div>
+                  <h3 class="font-serif text-[1.35rem] leading-[1.02] tracking-tightest">The Cartographer's<br/>Apology</h3>
+                  <p class="mt-2 text-[11px] italic text-cream/70">Dario Mott</p>
+                </div>
+                <div class="text-[10px] text-cream/45">Fiction · 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div>
+            <div class="font-serif text-[15px] leading-tight">The Cartographer's Apology</div>
+            <div class="text-[12px] text-mute">Dario Mott</div>
+          </div>
+          <button class="shrink-0 rounded-full bg-ink text-cream text-[12px] px-3.5 py-2 hover:bg-claret transition" data-hover>$26</button>
+        </div>
+      </article>
+
+      <article class="group" data-stag>
+        <div class="book mx-auto" data-tilt>
+          <div class="book-inner">
+            <div class="book-cover w-full aspect-[2/3]" style="background:linear-gradient(155deg,#2c3550,#161c2e);">
+              <div class="absolute inset-0 p-5 pl-7 flex flex-col justify-between text-cream">
+                <div class="text-[9px] tracking-[0.3em] uppercase text-gold/80">M&amp;M Select</div>
+                <div>
+                  <h3 class="font-serif text-[1.35rem] leading-[1.02] tracking-tightest">Nightjar,<br/>Then Nothing</h3>
+                  <p class="mt-2 text-[11px] italic text-cream/70">Iseult Pham</p>
+                </div>
+                <div class="text-[10px] text-cream/45">Poetry · 2025</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div>
+            <div class="font-serif text-[15px] leading-tight">Nightjar, Then Nothing</div>
+            <div class="text-[12px] text-mute">Iseult Pham</div>
+          </div>
+          <button class="shrink-0 rounded-full bg-ink text-cream text-[12px] px-3.5 py-2 hover:bg-claret transition" data-hover>$19</button>
+        </div>
+      </article>
+
+      <article class="group" data-stag>
+        <div class="book mx-auto" data-tilt>
+          <div class="book-inner">
+            <div class="book-cover w-full aspect-[2/3]" style="background:linear-gradient(155deg,#B8893C,#8a5f22);">
+              <div class="absolute inset-0 p-5 pl-7 flex flex-col justify-between text-ink">
+                <div class="text-[9px] tracking-[0.3em] uppercase text-ink/50">M&amp;M Select</div>
+                <div>
+                  <h3 class="font-serif text-[1.35rem] leading-[1.02] tracking-tightest">Bread, Ash<br/>&amp; Honey</h3>
+                  <p class="mt-2 text-[11px] italic text-ink/60">Cosima Reyes</p>
+                </div>
+                <div class="text-[10px] text-ink/45">Cookery · 2024</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <div>
+            <div class="font-serif text-[15px] leading-tight">Bread, Ash &amp; Honey</div>
+            <div class="text-[12px] text-mute">Cosima Reyes</div>
+          </div>
+          <button class="shrink-0 rounded-full bg-ink text-cream text-[12px] px-3.5 py-2 hover:bg-claret transition" data-hover>$32</button>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NEW RELEASES ============ -->
+<section id="new" class="py-16 sm:py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-end justify-between mb-10" data-fade>
+      <div>
+        <div class="text-[12px] tracking-[0.25em] uppercase text-claret mb-3">Fresh off the table</div>
+        <h2 class="font-serif text-[clamp(1.8rem,3.6vw,2.8rem)] tracking-tightest leading-[1.04]">New &amp; arriving</h2>
+      </div>
+      <a href="#" class="text-[13px] text-coffee hover:text-claret transition" data-hover>See the full list →</a>
+    </div>
+
+    <div class="space-y-3" data-stagger>
+      <!-- row -->
+      <a href="#" class="group grid grid-cols-[44px_1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] items-center gap-4 sm:gap-6 rounded-xl hairline border bg-paper p-3 sm:p-4 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-11 h-16 rounded-sm shadow-md" style="background:linear-gradient(150deg,#7C2D2D,#3c1414)"></div>
+        <div>
+          <div class="font-serif text-[16px] leading-tight">The Glasswright's Daughter</div>
+          <div class="text-[12px] text-mute">Lev Antunes · Literary Fiction</div>
+        </div>
+        <div class="hidden sm:block text-[13px] text-coffee/70 italic">"Quiet, devastating, perfect."</div>
+        <div class="flex items-center gap-4">
+          <span class="font-serif text-[15px] text-claret">$27</span>
+          <span class="w-8 h-8 rounded-full bg-ink/5 grid place-items-center group-hover:bg-claret group-hover:text-cream transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a href="#" class="group grid grid-cols-[44px_1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] items-center gap-4 sm:gap-6 rounded-xl hairline border bg-paper p-3 sm:p-4 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-11 h-16 rounded-sm shadow-md" style="background:linear-gradient(150deg,#5E6E55,#2f3a2a)"></div>
+        <div>
+          <div class="font-serif text-[16px] leading-tight">Tidewrack</div>
+          <div class="text-[12px] text-mute">Marisol Behn · Nature Writing</div>
+        </div>
+        <div class="hidden sm:block text-[13px] text-coffee/70 italic">"A coastline you can taste."</div>
+        <div class="flex items-center gap-4">
+          <span class="font-serif text-[15px] text-claret">$23</span>
+          <span class="w-8 h-8 rounded-full bg-ink/5 grid place-items-center group-hover:bg-claret group-hover:text-cream transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a href="#" class="group grid grid-cols-[44px_1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] items-center gap-4 sm:gap-6 rounded-xl hairline border bg-paper p-3 sm:p-4 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-11 h-16 rounded-sm shadow-md" style="background:linear-gradient(150deg,#B45A3C,#6e3220)"></div>
+        <div>
+          <div class="font-serif text-[16px] leading-tight">An Inventory of Goodbyes</div>
+          <div class="text-[12px] text-mute">Pio Castellan · Essays</div>
+        </div>
+        <div class="hidden sm:block text-[13px] text-coffee/70 italic">"Funny until it isn't."</div>
+        <div class="flex items-center gap-4">
+          <span class="font-serif text-[15px] text-claret">$21</span>
+          <span class="w-8 h-8 rounded-full bg-ink/5 grid place-items-center group-hover:bg-claret group-hover:text-cream transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <a href="#" class="group grid grid-cols-[44px_1fr_auto] sm:grid-cols-[48px_1fr_1fr_auto] items-center gap-4 sm:gap-6 rounded-xl hairline border bg-paper p-3 sm:p-4 hover:bg-cream transition-colors" data-hover data-stag>
+        <div class="w-11 h-16 rounded-sm shadow-md" style="background:linear-gradient(150deg,#2c3550,#12172a)"></div>
+        <div>
+          <div class="font-serif text-[16px] leading-tight">The Hour of the Owl-Keeper</div>
+          <div class="text-[12px] text-mute">Sunniva Kade · Translated</div>
+        </div>
+        <div class="hidden sm:block text-[13px] text-coffee/70 italic">"Folklore with sharp teeth."</div>
+        <div class="flex items-center gap-4">
+          <span class="font-serif text-[15px] text-claret">$25</span>
+          <span class="w-8 h-8 rounded-full bg-ink/5 grid place-items-center group-hover:bg-claret group-hover:text-cream transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT THE SHOP ============ -->
+<section id="shop" class="py-16 sm:py-24 bg-ink text-cream overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <!-- image -->
+      <div class="relative" data-parallax data-speed="0.1">
+        <div class="rounded-3xl overflow-hidden bg-gradient-to-br from-claret/60 to-coffee aspect-[4/5] relative">
+          <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'"
+               alt="Inside the shop" class="w-full h-full object-cover opacity-90 mix-blend-luminosity" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink/60 via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute -bottom-6 -right-4 sm:-right-8 bg-cream text-ink rounded-2xl p-5 w-56 shadow-2xl rotate-[3deg]">
+          <div class="font-serif text-[15px] leading-snug">"We don't sell the bestseller list. We sell what kept <span class="italic text-claret">us</span> up."</div>
+          <div class="mt-3 text-[12px] text-mute">— the booksellers</div>
+        </div>
+      </div>
+
+      <!-- copy -->
+      <div>
+        <div class="text-[12px] tracking-[0.25em] uppercase text-gold mb-4" data-fade>About Margin &amp; Marrow</div>
+        <h2 class="font-serif text-[clamp(2rem,4vw,3.2rem)] tracking-tightest leading-[1.04]" data-fade>
+          A room that smells of paper and rain.
+        </h2>
+        <p class="mt-6 text-cream/75 leading-relaxed text-[15px]" data-fade>
+          We opened on Marrowgate Lane with three folding tables and a cat named Index.
+          Today we're a proper shop and a small press, printing a handful of titles a year
+          we couldn't bear to leave unpublished. The cat is still here. He has opinions.
+        </p>
+        <p class="mt-4 text-cream/75 leading-relaxed text-[15px]" data-fade>
+          Come for a recommendation, stay for the back room. We make tea, we argue about
+          endings, and we'll never make you feel foolish for what you love to read.
+        </p>
+
+        <div class="mt-9 grid grid-cols-3 gap-6" data-stagger>
+          <div data-stag>
+            <div class="font-serif text-3xl text-cream"><span data-count="320" data-suffix="+">0</span></div>
+            <div class="text-[12px] text-cream/50 mt-1">events hosted</div>
+          </div>
+          <div data-stag>
+            <div class="font-serif text-3xl text-cream"><span data-count="17" data-suffix="">0</span></div>
+            <div class="text-[12px] text-cream/50 mt-1">titles we printed</div>
+          </div>
+          <div data-stag>
+            <div class="font-serif text-3xl text-cream"><span data-count="1" data-suffix=" cat">0</span></div>
+            <div class="text-[12px] text-cream/50 mt-1">in residence</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENTS / BOOK CLUB ============ -->
+<section id="events" class="py-16 sm:py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-12 gap-10 lg:gap-12">
+      <div class="lg:col-span-4" data-fade>
+        <div class="text-[12px] tracking-[0.25em] uppercase text-claret mb-3">In the back room</div>
+        <h2 class="font-serif text-[clamp(1.9rem,3.6vw,2.9rem)] tracking-tightest leading-[1.04]">Events &amp; the Marrow Book Club</h2>
+        <p class="mt-5 text-coffee/80 leading-relaxed text-[15px]">
+          One reading a week, one club a month. Wine is poured, opinions are loud,
+          and newcomers always get the good chair.
+        </p>
+        <a href="#" class="mt-7 inline-flex items-center gap-2 rounded-full bg-ink text-cream px-5 py-3 text-[14px] hover:bg-claret transition" data-hover>
+          View the calendar
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+
+      <div class="lg:col-span-8 space-y-3" data-stagger>
+        <div class="group flex items-center gap-5 rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+          <div class="text-center shrink-0 w-14">
+            <div class="font-serif text-2xl text-claret leading-none">12</div>
+            <div class="text-[11px] uppercase tracking-wide text-mute">Jun</div>
+          </div>
+          <div class="flex-1">
+            <div class="font-serif text-[17px] leading-tight">Reading: Orin Vale, <span class="italic">The Salt Almanac</span></div>
+            <div class="text-[12px] text-mute mt-0.5">7:00 PM · Back Room · Free, RSVP</div>
+          </div>
+          <span class="hidden sm:inline text-[11px] rounded-full bg-sage/15 text-sage px-3 py-1">Reading</span>
+        </div>
+
+        <div class="group flex items-center gap-5 rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+          <div class="text-center shrink-0 w-14">
+            <div class="font-serif text-2xl text-claret leading-none">19</div>
+            <div class="text-[11px] uppercase tracking-wide text-mute">Jun</div>
+          </div>
+          <div class="flex-1">
+            <div class="font-serif text-[17px] leading-tight">Marrow Book Club · <span class="italic">Tidewrack</span></div>
+            <div class="text-[12px] text-mute mt-0.5">6:30 PM · Members + guests · Wine included</div>
+          </div>
+          <span class="hidden sm:inline text-[11px] rounded-full bg-claret/12 text-claret px-3 py-1">Book Club</span>
+        </div>
+
+        <div class="group flex items-center gap-5 rounded-2xl hairline border bg-paper p-5 hover:bg-cream transition-colors" data-hover data-stag>
+          <div class="text-center shrink-0 w-14">
+            <div class="font-serif text-2xl text-claret leading-none">26</div>
+            <div class="text-[11px] uppercase tracking-wide text-mute">Jun</div>
+          </div>
+          <div class="flex-1">
+            <div class="font-serif text-[17px] leading-tight">Poetry Open Floor &amp; Letterpress Demo</div>
+            <div class="text-[12px] text-mute mt-0.5">7:30 PM · Bring six lines · All welcome</div>
+          </div>
+          <span class="hidden sm:inline text-[11px] rounded-full bg-gold/15 text-gold px-3 py-1">Workshop</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEMBERSHIP ============ -->
+<section id="membership" class="py-16 sm:py-24 bg-cream/50 border-y hairline">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-12" data-fade>
+      <div class="text-[12px] tracking-[0.25em] uppercase text-claret mb-3">The Reading Circle</div>
+      <h2 class="font-serif text-[clamp(2rem,4.2vw,3.2rem)] tracking-tightest leading-[1.04]">A membership for people who reread.</h2>
+      <p class="mt-4 text-coffee/80 text-[15px]">Every tier includes our hand-typed monthly letter of recommendations.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5" data-stagger>
+      <div class="rounded-3xl hairline border bg-paper p-7 flex flex-col" data-stag>
+        <div class="font-serif text-[19px]">Margin</div>
+        <div class="mt-3 flex items-end gap-1"><span class="font-serif text-4xl">$9</span><span class="text-mute text-[13px] mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-[14px] text-coffee/85 flex-1">
+          <li class="flex gap-2"><span class="text-claret">—</span> 10% off every book</li>
+          <li class="flex gap-2"><span class="text-claret">—</span> Monthly recommendation letter</li>
+          <li class="flex gap-2"><span class="text-claret">—</span> First seat at readings</li>
+        </ul>
+        <a href="#" class="mt-7 text-center rounded-full hairline border py-3 text-[14px] hover:bg-cream transition" data-hover>Choose Margin</a>
+      </div>
+
+      <div class="rounded-3xl bg-ink text-cream p-7 flex flex-col relative shadow-2xl md:-translate-y-3" data-stag>
+        <div class="absolute top-5 right-5 text-[11px] rounded-full bg-gold text-ink px-3 py-1 font-medium">Most loved</div>
+        <div class="font-serif text-[19px]">Marrow</div>
+        <div class="mt-3 flex items-end gap-1"><span class="font-serif text-4xl">$22</span><span class="text-cream/50 text-[13px] mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-[14px] text-cream/85 flex-1">
+          <li class="flex gap-2"><span class="text-gold">—</span> 15% off + free book club</li>
+          <li class="flex gap-2"><span class="text-gold">—</span> A surprise title each month</li>
+          <li class="flex gap-2"><span class="text-gold">—</span> Members-only press editions</li>
+          <li class="flex gap-2"><span class="text-gold">—</span> Tea &amp; the good chair</li>
+        </ul>
+        <a href="#" class="mt-7 text-center rounded-full bg-cream text-ink py-3 text-[14px] font-medium hover:bg-gold transition" data-hover>Choose Marrow</a>
+      </div>
+
+      <div class="rounded-3xl hairline border bg-paper p-7 flex flex-col" data-stag>
+        <div class="font-serif text-[19px]">Spine</div>
+        <div class="mt-3 flex items-end gap-1"><span class="font-serif text-4xl">$44</span><span class="text-mute text-[13px] mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-[14px] text-coffee/85 flex-1">
+          <li class="flex gap-2"><span class="text-claret">—</span> Everything in Marrow</li>
+          <li class="flex gap-2"><span class="text-claret">—</span> Two signed first runs / year</li>
+          <li class="flex gap-2"><span class="text-claret">—</span> Name in our colophon</li>
+        </ul>
+        <a href="#" class="mt-7 text-center rounded-full hairline border py-3 text-[14px] hover:bg-cream transition" data-hover>Choose Spine</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-16 sm:py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <h2 class="font-serif text-[clamp(1.8rem,3.5vw,2.8rem)] tracking-tightest text-center mb-12" data-fade>Readers in their own words</h2>
+    <div class="grid md:grid-cols-3 gap-5" data-stagger>
+      <figure class="rounded-3xl hairline border bg-paper p-7" data-stag>
+        <div class="text-gold text-[15px] mb-4">★ ★ ★ ★ ★</div>
+        <blockquote class="font-serif text-[18px] leading-relaxed text-ink">"They handed me a slim green book I'd never have found, and now I've bought it four times — for other people."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-sage/20 text-sage grid place-items-center font-serif text-sm">H</span>
+          <span class="text-[13px]"><span class="block font-medium">Halvard E.</span><span class="text-mute">Member, 3 years</span></span>
+        </figcaption>
+      </figure>
+
+      <figure class="rounded-3xl hairline border bg-paper p-7" data-stag>
+        <div class="text-gold text-[15px] mb-4">★ ★ ★ ★ ★</div>
+        <blockquote class="font-serif text-[18px] leading-relaxed text-ink">"The book club ruined me for every other book club. Loud, kind, and there's always wine left."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-claret/15 text-claret grid place-items-center font-serif text-sm">N</span>
+          <span class="text-[13px]"><span class="block font-medium">Nadia R.</span><span class="text-mute">Marrow member</span></span>
+        </figcaption>
+      </figure>
+
+      <figure class="rounded-3xl hairline border bg-paper p-7" data-stag>
+        <div class="text-gold text-[15px] mb-4">★ ★ ★ ★ ★</div>
+        <blockquote class="font-serif text-[18px] leading-relaxed text-ink">"Their press editions feel like objects, not products. I keep them face-out on the shelf."</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-gold/20 text-gold grid place-items-center font-serif text-sm">T</span>
+          <span class="text-[13px]"><span class="block font-medium">Tomasz W.</span><span class="text-mute">Spine member</span></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="py-16 sm:py-24 bg-cream/40 border-y hairline">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <h2 class="font-serif text-[clamp(1.8rem,3.5vw,2.8rem)] tracking-tightest text-center mb-10" data-fade>Questions at the counter</h2>
+
+    <div class="space-y-3" data-stagger>
+      <div class="faq rounded-2xl hairline border bg-paper overflow-hidden" data-stag>
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-serif text-[17px]">Do you ship, or is it shop-only?</span>
+          <span class="faq-plus shrink-0 text-claret text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-[14.5px] text-coffee/80 leading-relaxed">We ship anywhere, wrapped in brown paper and string. Members get free shipping over $35; everyone gets a hand-written note if you ask for one.</p></div>
+      </div>
+
+      <div class="faq rounded-2xl hairline border bg-paper overflow-hidden" data-stag>
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-serif text-[17px]">Can you find a book that's out of print?</span>
+          <span class="faq-plus shrink-0 text-claret text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-[14.5px] text-coffee/80 leading-relaxed">Often, yes. Our hunting service trawls small dealers and estates. Tell us the title, the smell of the cover, the half-remembered line — we love a chase.</p></div>
+      </div>
+
+      <div class="faq rounded-2xl hairline border bg-paper overflow-hidden" data-stag>
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-serif text-[17px]">How do I join the Marrow Book Club?</span>
+          <span class="faq-plus shrink-0 text-claret text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-[14.5px] text-coffee/80 leading-relaxed">It's bundled into Marrow and Spine memberships, or join any single month as a guest. We cap each circle at twelve so everyone gets to talk.</p></div>
+      </div>
+
+      <div class="faq rounded-2xl hairline border bg-paper overflow-hidden" data-stag>
+        <button class="faq-head w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-serif text-[17px]">Do you buy used books?</span>
+          <span class="faq-plus shrink-0 text-claret text-2xl leading-none transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-[14.5px] text-coffee/80 leading-relaxed">We take trade on Sundays for shop credit. Bring a box, bring patience — Index will inspect each one personally.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-20 sm:py-28 relative overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute inset-0 bg-gradient-to-br from-claret to-coffee"></div>
+    <div class="absolute -bottom-32 -left-20 w-[500px] h-[500px] rounded-full bg-rust/30 blur-[120px]"></div>
+    <div class="absolute -top-24 right-0 w-[420px] h-[420px] rounded-full bg-ink/40 blur-[120px]"></div>
+  </div>
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 text-center text-cream">
+    <h2 class="font-serif text-[clamp(2.2rem,5vw,4rem)] tracking-tightest leading-[1.02]" data-fade>
+      Come find your next<br/><span class="italic text-gold">favourite</span> book.
+    </h2>
+    <p class="mt-6 text-cream/80 text-[16px] max-w-lg mx-auto" data-fade>
+      Drop in on Marrowgate Lane, or let the monthly letter find you. No algorithms — just us, reading.
+    </p>
+    <div class="mt-9 flex flex-wrap items-center justify-center gap-4" data-fade>
+      <a href="#membership" class="magnetic inline-flex items-center gap-2 rounded-full bg-cream text-ink px-7 py-4 text-[15px] font-medium hover:bg-gold transition" data-hover>
+        Join the reading circle
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#shelf" class="inline-flex items-center gap-2 rounded-full border border-cream/30 px-7 py-4 text-[15px] hover:bg-cream/10 transition" data-hover>
+        Browse the shop
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-cream/70 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-12 gap-10 pb-12 border-b border-cream/10">
+      <div class="md:col-span-4">
+        <a href="#top" class="flex items-center gap-2.5 mb-4" data-hover>
+          <span class="w-9 h-9 rounded-full bg-claret text-cream grid place-items-center font-serif text-lg">M</span>
+          <span class="font-serif text-[19px] text-cream tracking-tightest">Margin <span class="italic text-gold">&amp;</span> Marrow</span>
+        </a>
+        <p class="text-[14px] leading-relaxed max-w-xs">An independent bookstore &amp; small press on Marrowgate Lane. We read everything we sell.</p>
+        <div class="mt-5 flex gap-3">
+          <a href="#" class="w-9 h-9 rounded-full border border-cream/15 grid place-items-center hover:bg-cream/10 transition" data-hover aria-label="Instagram"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+          <a href="#" class="w-9 h-9 rounded-full border border-cream/15 grid place-items-center hover:bg-cream/10 transition" data-hover aria-label="Newsletter"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+          <a href="#" class="w-9 h-9 rounded-full border border-cream/15 grid place-items-center hover:bg-cream/10 transition" data-hover aria-label="Bluesky"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 10c-2-4-6-6-8-5s-1 5 1 7 5 3 7 3 5-1 7-3 3-6 1-7-6-1-8 5Z"/></svg></a>
+        </div>
+      </div>
+
+      <div class="md:col-span-2">
+        <div class="text-cream text-[13px] font-medium mb-4">Shop</div>
+        <ul class="space-y-2.5 text-[14px]">
+          <li><a href="#shelf" class="hover:text-cream transition" data-hover>Staff Picks</a></li>
+          <li><a href="#new" class="hover:text-cream transition" data-hover>New Releases</a></li>
+          <li><a href="#" class="hover:text-cream transition" data-hover>Press Editions</a></li>
+          <li><a href="#" class="hover:text-cream transition" data-hover>Gift Cards</a></li>
+        </ul>
+      </div>
+
+      <div class="md:col-span-2">
+        <div class="text-cream text-[13px] font-medium mb-4">The Shop</div>
+        <ul class="space-y-2.5 text-[14px]">
+          <li><a href="#shop" class="hover:text-cream transition" data-hover>Our Story</a></li>
+          <li><a href="#events" class="hover:text-cream transition" data-hover>Events</a></li>
+          <li><a href="#membership" class="hover:text-cream transition" data-hover>Membership</a></li>
+          <li><a href="#" class="hover:text-cream transition" data-hover>Book Hunting</a></li>
+        </ul>
+      </div>
+
+      <div class="md:col-span-4">
+        <div class="text-cream text-[13px] font-medium mb-4">The monthly letter</div>
+        <p class="text-[14px] mb-4">Hand-typed recommendations, once a month. No noise.</p>
+        <form class="flex gap-2" onsubmit="return false;">
+          <input type="email" placeholder="you@example.com" class="flex-1 bg-cream/10 border border-cream/15 rounded-full px-4 py-2.5 text-[14px] text-cream placeholder:text-cream/40 focus:outline-none focus:border-gold/60" />
+          <button class="rounded-full bg-gold text-ink px-4 py-2.5 text-[14px] font-medium hover:bg-cream transition" data-hover>Subscribe</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12.5px] text-cream/50">
+      <div>© 2026 Margin &amp; Marrow Booksellers. Marrowgate Lane. All invented, all ours.</div>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-cream transition" data-hover>Privacy</a>
+        <a href="#" class="hover:text-cream transition" data-hover>Terms</a>
+        <a href="#" class="hover:text-cream transition" data-hover>Returns</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (fine && !reduce) {
+    const dot = document.getElementById('cDot');
+    const ring = document.getElementById('cRing');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`; });
+    (function loop(){ rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-hover]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+      el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+    });
+    document.querySelectorAll('.magnetic').forEach(el=>{
+      el.addEventListener('mousemove',e=>{
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left+r.width/2);
+        const y = e.clientY - (r.top+r.height/2);
+        el.style.transform = `translate(${x*0.25}px,${y*0.35}px)`;
+      });
+      el.addEventListener('mouseleave',()=>{ el.style.transform=''; });
+    });
+  }
+
+  /* ---------- Nav shadow on scroll ---------- */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll',()=>{
+    if (scrollY > 12) nav.classList.add('bg-paper/85','backdrop-blur-md','shadow-[0_1px_0_rgba(34,28,24,0.06)]');
+    else nav.classList.remove('bg-paper/85','backdrop-blur-md','shadow-[0_1px_0_rgba(34,28,24,0.06)]');
+  });
+
+  /* ---------- Book 3D tilt ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('[data-tilt]').forEach(book=>{
+      const inner = book.querySelector('.book-inner');
+      const cover = book.querySelector('.book-cover');
+      book.addEventListener('mousemove',e=>{
+        const r = book.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width;
+        const py = (e.clientY - r.top)/r.height;
+        const ry = (px-0.5)*22, rxa = (0.5-py)*16;
+        inner.style.transform = `rotateY(${ry}deg) rotateX(${rxa}deg) translateZ(8px)`;
+        if (cover){ cover.style.setProperty('--gx',(px*100)+'%'); cover.style.setProperty('--gy',(py*100)+'%'); }
+      });
+      book.addEventListener('mouseleave',()=>{ inner.style.transform=''; });
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq').forEach(faq=>{
+    faq.querySelector('.faq-head').addEventListener('click',()=>{
+      const open = faq.classList.contains('open');
+      document.querySelectorAll('.faq').forEach(f=>f.classList.remove('open'));
+      if(!open) faq.classList.add('open');
+    });
+  });
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reduce) {
+      document.querySelectorAll('.reveal-mask > span,[data-fade],[data-stag]').forEach(el=>{
+        gsap.set(el,{ y:0, opacity:1, clearProps:'all' });
+      });
+    } else {
+      // Hero masked headline
+      gsap.to('.reveal-mask > span', {
+        y:'0%', duration:1.1, ease:'power4.out', stagger:0.09, delay:0.15
+      });
+
+      // Generic fade-ins
+      gsap.utils.toArray('[data-fade]').forEach(el=>{
+        gsap.from(el,{ y:26, opacity:0, duration:0.9, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 86%' } });
+      });
+
+      // Staggered groups
+      gsap.utils.toArray('[data-stagger]').forEach(group=>{
+        const items = group.querySelectorAll('[data-stag]');
+        gsap.from(items,{ y:34, opacity:0, duration:0.8, ease:'power3.out', stagger:0.08,
+          scrollTrigger:{ trigger:group, start:'top 82%' } });
+      });
+
+      // Container parallax
+      gsap.utils.toArray('[data-parallax]').forEach(el=>{
+        const sp = parseFloat(el.dataset.speed||'0.1');
+        gsap.to(el,{ yPercent: sp*-100, ease:'none',
+          scrollTrigger:{ trigger:el.closest('[data-parallax-root]')||el, start:'top bottom', end:'bottom top', scrub:true } });
+      });
+    }
+
+    // Count-ups (run regardless; instant if reduced)
+    gsap.utils.toArray('[data-count]').forEach(el=>{
+      const end = parseFloat(el.dataset.count);
+      const suf = el.dataset.suffix || '';
+      const fmt = v => Math.round(v).toLocaleString() + suf;
+      if (reduce){ el.textContent = fmt(end); return; }
+      const obj = { v:0 };
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+        gsap.to(obj,{ v:end, duration:1.6, ease:'power2.out',
+          onUpdate:()=> el.textContent = fmt(obj.v) });
+      }});
+    });
+  }
+})();
+</script>
+</body>
+</html>

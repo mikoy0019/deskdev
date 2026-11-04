@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumiflux Protocol — The Liquidity Layer for a Faster Chain</title>
+<meta name="description" content="Lumiflux is a modular L2 settlement protocol delivering sub-second finality, unified liquidity, and on-chain yield routing across 40+ networks." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          body: ['"Inter"', 'system-ui', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        colors: {
+          ink: '#05030f',
+          ink2: '#0a0720',
+          violet: '#8b5cf6',
+          cyan: '#22d3ee',
+          magenta: '#f0abfc',
+          lime: '#a3e635',
+          glass: 'rgba(255,255,255,0.04)',
+        },
+        boxShadow: {
+          glow: '0 0 40px -6px rgba(139,92,246,0.55)',
+          glowcy: '0 0 40px -6px rgba(34,211,238,0.55)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --x: 50%; --y: 50%; }
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #05030f;
+    color: #e7e3ff;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* ---------- Animated gradient mesh ---------- */
+  .mesh {
+    position: fixed;
+    inset: -25%;
+    z-index: 0;
+    filter: blur(70px) saturate(140%);
+    pointer-events: none;
+    opacity: 0.85;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform;
+  }
+  .b1 { width: 46vw; height: 46vw; left: 4%;  top: 2%;  background: radial-gradient(circle at 30% 30%, #8b5cf6, transparent 70%); animation: drift1 22s ease-in-out infinite; }
+  .b2 { width: 42vw; height: 42vw; right: 2%; top: 8%;  background: radial-gradient(circle at 60% 40%, #22d3ee, transparent 70%); animation: drift2 26s ease-in-out infinite; }
+  .b3 { width: 50vw; height: 50vw; left: 25%; bottom: 0; background: radial-gradient(circle at 50% 50%, #f0abfc, transparent 72%); animation: drift3 30s ease-in-out infinite; }
+  .b4 { width: 30vw; height: 30vw; right: 18%; bottom: 6%; background: radial-gradient(circle at 50% 50%, #6366f1, transparent 70%); animation: drift1 28s ease-in-out infinite reverse; }
+
+  @keyframes drift1 { 0%,100%{ transform: translate(0,0) scale(1);} 33%{ transform: translate(8vw,5vh) scale(1.15);} 66%{ transform: translate(-5vw,8vh) scale(.92);} }
+  @keyframes drift2 { 0%,100%{ transform: translate(0,0) scale(1);} 33%{ transform: translate(-7vw,6vh) scale(1.1);} 66%{ transform: translate(6vw,-4vh) scale(.95);} }
+  @keyframes drift3 { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(4vw,-7vh) scale(1.18);} }
+
+  /* subtle grid */
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(139,92,246,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,211,238,0.06) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 80%);
+  }
+
+  /* pointer-reactive glow that follows cursor */
+  .pointer-glow {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(360px circle at var(--x) var(--y), rgba(139,92,246,0.14), transparent 60%);
+    transition: background .12s ease-out;
+  }
+
+  /* glass */
+  .glass {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #c4b5fd 0%, #22d3ee 45%, #f0abfc 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* shimmering border on hover */
+  .neon-border { position: relative; }
+  .neon-border::before {
+    content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+    background: linear-gradient(120deg, rgba(139,92,246,.6), rgba(34,211,238,.6), rgba(240,171,252,.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .neon-border:hover::before { opacity: 1; }
+
+  /* tilt card */
+  .tilt { transform-style: preserve-3d; transition: transform .25s ease; will-change: transform; }
+
+  /* magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* marquee */
+  .marquee-track { display: flex; gap: 3rem; width: max-content; animation: scrollx 26s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+
+  /* accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* reveal init */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .pulse-dot { box-shadow: 0 0 0 0 rgba(163,230,53,.7); animation: pulse 2.2s infinite; }
+  @keyframes pulse { 70%{ box-shadow: 0 0 0 10px rgba(163,230,53,0);} 100%{ box-shadow: 0 0 0 0 rgba(163,230,53,0);} }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .marquee-track, .pulse-dot { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .pointer-glow { display: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="font-body antialiased relative">
+
+<!-- backgrounds -->
+<div class="mesh" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+</div>
+<div class="grid-overlay" aria-hidden="true"></div>
+<div class="pointer-glow" aria-hidden="true"></div>
+
+<!-- ============ NAV ============ -->
+<header class="relative z-30">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet to-cyan shadow-glow">
+        <span class="h-3.5 w-3.5 rotate-45 rounded-[3px] bg-ink"></span>
+      </span>
+      <span class="font-display text-lg font-700 tracking-tight">Lumiflux</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8 text-sm text-white/70">
+      <a href="#features" class="hover:text-white transition">Protocol</a>
+      <a href="#how" class="hover:text-white transition">How it works</a>
+      <a href="#tokenomics" class="hover:text-white transition">$LMX</a>
+      <a href="#roadmap" class="hover:text-white transition">Roadmap</a>
+      <a href="#faq" class="hover:text-white transition">FAQ</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="#" class="hidden sm:inline-flex text-sm text-white/75 hover:text-white transition px-3 py-2">Docs</a>
+      <a href="#cta" class="magnetic neon-border inline-flex items-center gap-2 rounded-xl glass px-4 py-2.5 text-sm font-500 hover:shadow-glow transition">
+        Launch App
+        <span class="h-1.5 w-1.5 rounded-full bg-lime pulse-dot"></span>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-20 pb-24">
+  <div class="grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-7">
+      <div class="reveal inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs font-mono text-cyan mb-7">
+        <span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
+        v3 Mainnet · sub-second finality is live
+      </div>
+      <h1 class="font-display font-700 leading-[0.98] tracking-tight text-5xl sm:text-6xl lg:text-7xl">
+        <span class="block reveal">The liquidity layer</span>
+        <span id="scramble" class="block gradient-text reveal">for a faster chain</span>
+      </h1>
+      <p class="reveal mt-7 text-lg text-white/65 max-w-xl">
+        Lumiflux is a modular settlement protocol that unifies fragmented liquidity, routes on-chain yield automatically, and finalizes transactions in under 400&nbsp;milliseconds across 40+ networks.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#cta" class="magnetic group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet to-cyan px-6 py-3.5 font-600 text-ink shadow-glow hover:shadow-glowcy transition">
+          Start building
+          <svg class="h-4 w-4 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#how" class="magnetic neon-border inline-flex items-center gap-2 rounded-xl glass px-6 py-3.5 font-500 hover:shadow-glow transition">
+          Read the litepaper
+        </a>
+      </div>
+    </div>
+
+    <!-- glass stat panel -->
+    <div class="lg:col-span-5">
+      <div class="tilt glass neon-border rounded-3xl p-7 shadow-glow">
+        <div class="flex items-center justify-between mb-6">
+          <span class="font-mono text-xs text-white/50">PROTOCOL · LIVE</span>
+          <span class="flex items-center gap-1.5 text-xs text-lime"><span class="h-1.5 w-1.5 rounded-full bg-lime pulse-dot"></span>healthy</span>
+        </div>
+        <div class="grid grid-cols-2 gap-5">
+          <div>
+            <div class="font-display text-3xl font-700"><span class="count" data-to="8.42" data-dec="2" data-prefix="$">0</span><span class="text-cyan">B</span></div>
+            <div class="text-xs text-white/50 mt-1">Total value locked</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-700"><span class="count" data-to="1.96" data-dec="2">0</span><span class="text-magenta">M</span></div>
+            <div class="text-xs text-white/50 mt-1">Active wallets</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-700"><span class="count" data-to="42">0</span></div>
+            <div class="text-xs text-white/50 mt-1">Chains connected</div>
+          </div>
+          <div>
+            <div class="font-display text-3xl font-700"><span class="count" data-to="380">0</span><span class="text-violet">ms</span></div>
+            <div class="text-xs text-white/50 mt-1">Avg finality</div>
+          </div>
+        </div>
+        <div class="mt-6 h-px bg-white/10"></div>
+        <div class="mt-5 flex items-center justify-between text-xs">
+          <span class="font-mono text-white/45">$LMX</span>
+          <span class="font-mono text-lime">$4.137 <span class="text-lime/70">▲ 6.2%</span></span>
+        </div>
+        <div class="mt-3 flex items-end gap-1 h-12">
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:40%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:62%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:50%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:78%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:66%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:92%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:74%"></div>
+          <div class="w-full bg-gradient-to-t from-violet/20 to-cyan/60 rounded-sm" style="height:100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CHAINS / TRUST STRIP ============ -->
+<section class="relative z-20 py-10 border-y border-white/5">
+  <p class="text-center text-xs font-mono text-white/40 mb-6 reveal">SETTLING ACROSS THE MODULAR STACK</p>
+  <div class="overflow-hidden">
+    <div class="marquee-track px-8 text-white/45 font-display font-600 text-lg">
+      <span>Nebula&nbsp;L2</span><span>Helios&nbsp;Chain</span><span>Orbit&nbsp;DA</span><span>Zephyr&nbsp;Net</span><span>Quasar&nbsp;Roll</span><span>Cobalt&nbsp;Hub</span><span>Vellum&nbsp;ZK</span><span>Mirage&nbsp;Layer</span>
+      <span>Nebula&nbsp;L2</span><span>Helios&nbsp;Chain</span><span>Orbit&nbsp;DA</span><span>Zephyr&nbsp;Net</span><span>Quasar&nbsp;Roll</span><span>Cobalt&nbsp;Hub</span><span>Vellum&nbsp;ZK</span><span>Mirage&nbsp;Layer</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BENTO FEATURES ============ -->
+<section id="features" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="max-w-2xl mb-14">
+    <span class="reveal font-mono text-xs text-cyan">// PROTOCOL PRIMITIVES</span>
+    <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">One settlement layer.<br><span class="gradient-text">Infinite liquidity.</span></h2>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-5 auto-rows-[200px]">
+    <!-- big tile -->
+    <div class="reveal tilt glass neon-border rounded-3xl p-7 md:col-span-2 md:row-span-2 flex flex-col justify-between overflow-hidden relative">
+      <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-violet/30 blur-3xl"></div>
+      <div class="relative">
+        <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-violet/20 text-violet mb-5">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+        </div>
+        <h3 class="font-display text-2xl font-600">Unified Liquidity Mesh</h3>
+        <p class="text-white/60 mt-3 max-w-md">A single virtual pool stitched across every connected rollup. Swap, lend, and bridge without ever fragmenting capital again.</p>
+      </div>
+      <div class="relative mt-6 grid grid-cols-3 gap-3 text-center font-mono text-xs">
+        <div class="glass rounded-xl py-3">99.98% uptime</div>
+        <div class="glass rounded-xl py-3">0 slippage*</div>
+        <div class="glass rounded-xl py-3">40+ routes</div>
+      </div>
+    </div>
+
+    <div class="reveal tilt glass neon-border rounded-3xl p-7 flex flex-col justify-between">
+      <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-cyan/20 text-cyan">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+      </div>
+      <div><h3 class="font-display text-xl font-600">Sub-second finality</h3><p class="text-white/55 text-sm mt-1.5">Deterministic settlement in ~380ms.</p></div>
+    </div>
+
+    <div class="reveal tilt glass neon-border rounded-3xl p-7 flex flex-col justify-between">
+      <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-magenta/20 text-magenta">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M5 5l14 14M19 5 5 19"/></svg>
+      </div>
+      <div><h3 class="font-display text-xl font-600">Autonomous yield</h3><p class="text-white/55 text-sm mt-1.5">Idle capital is routed to best APY.</p></div>
+    </div>
+
+    <div class="reveal tilt glass neon-border rounded-3xl p-7 md:col-span-2 flex items-center gap-6">
+      <div class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime/20 text-lime">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 4 6v6c0 5 8 8 8 8s8-3 8-8V6l-8-4z"/></svg>
+      </div>
+      <div><h3 class="font-display text-xl font-600">ZK-secured by default</h3><p class="text-white/55 text-sm mt-1.5">Every settlement is validity-proven on-chain — audited by Halborn & Spearbit, with a permanent $3M bounty.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="text-center max-w-2xl mx-auto mb-16">
+    <span class="reveal font-mono text-xs text-cyan">// EXECUTION FLOW</span>
+    <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">Three hops to finality</h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="reveal glass neon-border rounded-3xl p-8">
+      <div class="font-mono text-5xl font-700 gradient-text">01</div>
+      <h3 class="font-display text-xl font-600 mt-5">Intent submitted</h3>
+      <p class="text-white/55 text-sm mt-2">You sign a single intent. Lumiflux abstracts gas, chain, and routing entirely away from you.</p>
+    </div>
+    <div class="reveal glass neon-border rounded-3xl p-8">
+      <div class="font-mono text-5xl font-700 gradient-text">02</div>
+      <h3 class="font-display text-xl font-600 mt-5">Solvers compete</h3>
+      <p class="text-white/55 text-sm mt-2">A decentralized solver market races to fill your intent at the best price across the mesh.</p>
+    </div>
+    <div class="reveal glass neon-border rounded-3xl p-8">
+      <div class="font-mono text-5xl font-700 gradient-text">03</div>
+      <h3 class="font-display text-xl font-600 mt-5">ZK settlement</h3>
+      <p class="text-white/55 text-sm mt-2">The fill is proven and finalized in under 400ms, settled to your wallet trustlessly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOKENOMICS / ECOSYSTEM ============ -->
+<section id="tokenomics" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="reveal font-mono text-xs text-cyan">// $LMX TOKEN</span>
+      <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">Aligned incentives, <span class="gradient-text">on-chain forever</span></h2>
+      <p class="reveal text-white/60 mt-5 max-w-lg">$LMX captures protocol fees, secures the solver network through staking, and governs every parameter of the liquidity mesh. 1B fixed supply, no team unlocks before 2027.</p>
+      <div class="reveal mt-8 grid sm:grid-cols-3 gap-4">
+        <div class="glass rounded-2xl p-5"><div class="font-display text-2xl font-700"><span class="count" data-to="38">0</span>%</div><div class="text-xs text-white/50 mt-1">Community & airdrop</div></div>
+        <div class="glass rounded-2xl p-5"><div class="font-display text-2xl font-700"><span class="count" data-to="24">0</span>%</div><div class="text-xs text-white/50 mt-1">Ecosystem fund</div></div>
+        <div class="glass rounded-2xl p-5"><div class="font-display text-2xl font-700"><span class="count" data-to="18">0</span>%</div><div class="text-xs text-white/50 mt-1">Staking rewards</div></div>
+      </div>
+    </div>
+    <div class="relative">
+      <div class="tilt glass neon-border rounded-3xl p-8 shadow-glow overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-violet/10 to-cyan/10"></div>
+        <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=900&q=60"
+             alt="" loading="lazy" onerror="this.style.display='none'"
+             class="relative rounded-2xl w-full h-56 object-cover opacity-70" />
+        <div class="relative mt-6 space-y-3 font-mono text-sm">
+          <div class="flex justify-between"><span class="text-white/50">Staking APR</span><span class="text-lime">14.8%</span></div>
+          <div class="flex justify-between"><span class="text-white/50">Fees burned (30d)</span><span class="text-magenta">$2.41M</span></div>
+          <div class="flex justify-between"><span class="text-white/50">Circulating</span><span class="text-cyan">412M / 1B</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="glass neon-border rounded-3xl p-10 sm:p-14 text-center">
+    <span class="reveal font-mono text-xs text-cyan">// THE THESIS</span>
+    <h2 class="reveal font-display font-700 text-3xl sm:text-4xl mt-3 max-w-3xl mx-auto tracking-tight">Liquidity should be a public utility, not a moat</h2>
+    <p class="reveal text-white/60 mt-6 max-w-2xl mx-auto">Lumiflux Labs is a small, distributed team of cryptographers and systems engineers building toward one outcome: a world where capital flows as freely as information. We open-source our core, govern in public, and ship to mainnet weekly.</p>
+    <div class="reveal mt-10 grid grid-cols-2 sm:grid-cols-4 gap-6">
+      <div><div class="font-display text-3xl font-700"><span class="count" data-to="2021">0</span></div><div class="text-xs text-white/50 mt-1">Founded</div></div>
+      <div><div class="font-display text-3xl font-700"><span class="count" data-to="31">0</span></div><div class="text-xs text-white/50 mt-1">Contributors</div></div>
+      <div><div class="font-display text-3xl font-700"><span class="count" data-to="6" data-prefix="$">0</span>M</div><div class="text-xs text-white/50 mt-1">Grants paid</div></div>
+      <div><div class="font-display text-3xl font-700"><span class="count" data-to="100">0</span>%</div><div class="text-xs text-white/50 mt-1">On-chain</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="max-w-2xl mb-14">
+    <span class="reveal font-mono text-xs text-cyan">// SIGNAL</span>
+    <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">Builders are routing through us</h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <figure class="reveal tilt glass neon-border rounded-3xl p-7">
+      <blockquote class="text-white/75">"We deprecated three bridges and an entire routing service the week we integrated Lumiflux. Finality just feels instant now."</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-violet to-cyan"></div>
+        <div><div class="text-sm font-600">Maya Okonkwo</div><div class="text-xs text-white/45">Core Dev · Quasar Roll</div></div>
+      </figcaption>
+    </figure>
+    <figure class="reveal tilt glass neon-border rounded-3xl p-7">
+      <blockquote class="text-white/75">"The solver market is genuinely the cleanest intent design I've audited. Capital efficiency is in a different league."</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-magenta to-violet"></div>
+        <div><div class="text-sm font-600">Devon Carver</div><div class="text-xs text-white/45">Partner · Helix Capital</div></div>
+      </figcaption>
+    </figure>
+    <figure class="reveal tilt glass neon-border rounded-3xl p-7">
+      <blockquote class="text-white/75">"Our users stopped asking 'which chain?' That question simply disappeared. That's the whole value prop, delivered."</blockquote>
+      <figcaption class="mt-6 flex items-center gap-3">
+        <div class="h-9 w-9 rounded-full bg-gradient-to-br from-cyan to-lime"></div>
+        <div><div class="text-sm font-600">Priya Raman</div><div class="text-xs text-white/45">Founder · Orbit Wallet</div></div>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ ROADMAP ============ -->
+<section id="roadmap" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="max-w-2xl mb-14">
+    <span class="reveal font-mono text-xs text-cyan">// TRAJECTORY</span>
+    <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">Where we're headed</h2>
+  </div>
+  <div class="grid md:grid-cols-4 gap-5">
+    <div class="reveal glass neon-border rounded-3xl p-6">
+      <div class="flex items-center gap-2 text-lime text-xs font-mono mb-3"><span class="h-1.5 w-1.5 rounded-full bg-lime"></span>SHIPPED</div>
+      <div class="font-display font-600">Q4 · Mainnet v3</div>
+      <p class="text-white/55 text-sm mt-2">Sub-second finality + 40-chain mesh launch.</p>
+    </div>
+    <div class="reveal glass neon-border rounded-3xl p-6">
+      <div class="flex items-center gap-2 text-cyan text-xs font-mono mb-3"><span class="h-1.5 w-1.5 rounded-full bg-cyan pulse-dot"></span>IN PROGRESS</div>
+      <div class="font-display font-600">Q1 · Intent SDK</div>
+      <p class="text-white/55 text-sm mt-2">One-line integration for any app or wallet.</p>
+    </div>
+    <div class="reveal glass neon-border rounded-3xl p-6">
+      <div class="flex items-center gap-2 text-white/40 text-xs font-mono mb-3"><span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>NEXT</div>
+      <div class="font-display font-600">Q2 · Solver DAO</div>
+      <p class="text-white/55 text-sm mt-2">Permissionless solver onboarding & governance.</p>
+    </div>
+    <div class="reveal glass neon-border rounded-3xl p-6">
+      <div class="flex items-center gap-2 text-white/40 text-xs font-mono mb-3"><span class="h-1.5 w-1.5 rounded-full bg-white/30"></span>HORIZON</div>
+      <div class="font-display font-600">Q3 · Native fiat rails</div>
+      <p class="text-white/55 text-sm mt-2">On/off-ramp settlement inside the mesh.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative z-20 max-w-3xl mx-auto px-5 sm:px-8 py-24">
+  <div class="text-center mb-12">
+    <span class="reveal font-mono text-xs text-cyan">// QUESTIONS</span>
+    <h2 class="reveal font-display font-700 text-4xl sm:text-5xl mt-3 tracking-tight">Frequently asked</h2>
+  </div>
+  <div class="space-y-3" id="faq-list">
+    <div class="faq-item glass neon-border rounded-2xl overflow-hidden reveal">
+      <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-500">
+        Is Lumiflux non-custodial?
+        <svg class="faq-icon h-5 w-5 shrink-0 text-cyan transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="faq-body"><p class="px-5 pb-5 text-white/60 text-sm">Always. You never surrender custody — intents are signed locally and settled trustlessly via ZK validity proofs. The protocol holds nothing.</p></div>
+    </div>
+    <div class="faq-item glass neon-border rounded-2xl overflow-hidden reveal">
+      <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-500">
+        How does sub-second finality work?
+        <svg class="faq-icon h-5 w-5 shrink-0 text-cyan transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="faq-body"><p class="px-5 pb-5 text-white/60 text-sm">A competitive solver market pre-commits liquidity, then proves the fill with a succinct ZK proof. Settlement is deterministic and averages 380ms across the mesh.</p></div>
+    </div>
+    <div class="faq-item glass neon-border rounded-2xl overflow-hidden reveal">
+      <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-500">
+        Do I need $LMX to use the protocol?
+        <svg class="faq-icon h-5 w-5 shrink-0 text-cyan transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="faq-body"><p class="px-5 pb-5 text-white/60 text-sm">No. Anyone can transact gas-abstracted. $LMX is only required to run a solver, stake for security, or participate in governance.</p></div>
+    </div>
+    <div class="faq-item glass neon-border rounded-2xl overflow-hidden reveal">
+      <button class="faq-head w-full flex items-center justify-between gap-4 p-5 text-left font-500">
+        Has the protocol been audited?
+        <svg class="faq-icon h-5 w-5 shrink-0 text-cyan transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <div class="faq-body"><p class="px-5 pb-5 text-white/60 text-sm">Yes — multiple independent firms review every release, and a permanent $3M Immunefi bounty keeps the core under constant adversarial scrutiny.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="relative z-20 max-w-7xl mx-auto px-5 sm:px-8 py-24">
+  <div class="relative glass neon-border rounded-[2rem] p-10 sm:p-16 text-center overflow-hidden">
+    <div class="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-violet/30 blur-3xl"></div>
+    <div class="absolute -right-20 -bottom-20 h-72 w-72 rounded-full bg-cyan/30 blur-3xl"></div>
+    <div class="relative">
+      <h2 class="font-display font-700 text-4xl sm:text-6xl tracking-tight reveal">Plug into the <span class="gradient-text">liquidity layer</span></h2>
+      <p class="text-white/65 mt-5 max-w-xl mx-auto reveal">Ship cross-chain in an afternoon. The SDK, faucet, and testnet are open — no waitlist, no permission.</p>
+      <div class="mt-9 flex flex-wrap justify-center gap-4 reveal">
+        <a href="#" class="magnetic inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet to-cyan px-7 py-4 font-600 text-ink shadow-glow hover:shadow-glowcy transition">Launch the app</a>
+        <a href="#" class="magnetic neon-border inline-flex items-center gap-2 rounded-xl glass px-7 py-4 font-500 hover:shadow-glow transition">Read the docs</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative z-20 border-t border-white/5 mt-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <div class="flex items-center gap-2.5 mb-4">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet to-cyan"><span class="h-3 w-3 rotate-45 rounded-[3px] bg-ink"></span></span>
+        <span class="font-display text-lg font-700">Lumiflux</span>
+      </div>
+      <p class="text-white/45 text-sm max-w-xs">The modular liquidity layer for a faster, unified chain. Built in public.</p>
+    </div>
+    <div><h4 class="text-sm font-600 mb-4">Protocol</h4><ul class="space-y-2.5 text-sm text-white/50"><li><a href="#features" class="hover:text-white transition">Primitives</a></li><li><a href="#how" class="hover:text-white transition">How it works</a></li><li><a href="#tokenomics" class="hover:text-white transition">$LMX token</a></li></ul></div>
+    <div><h4 class="text-sm font-600 mb-4">Resources</h4><ul class="space-y-2.5 text-sm text-white/50"><li><a href="#" class="hover:text-white transition">Docs</a></li><li><a href="#" class="hover:text-white transition">Litepaper</a></li><li><a href="#faq" class="hover:text-white transition">FAQ</a></li></ul></div>
+    <div><h4 class="text-sm font-600 mb-4">Community</h4><ul class="space-y-2.5 text-sm text-white/50"><li><a href="#" class="hover:text-white transition">Discord</a></li><li><a href="#" class="hover:text-white transition">X / Twitter</a></li><li><a href="#" class="hover:text-white transition">GitHub</a></li></ul></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/40">
+    <span>© 2026 Lumiflux Labs. All rights reserved.</span>
+    <span class="font-mono">Audited · Open-source · 100% on-chain</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- pointer-reactive glow ---------- */
+  if (!reduce) {
+    window.addEventListener('pointermove', (e) => {
+      document.documentElement.style.setProperty('--x', e.clientX + 'px');
+      document.documentElement.style.setProperty('--y', e.clientY + 'px');
+    }, { passive: true });
+  }
+
+  /* ---------- magnetic buttons ---------- */
+  if (!reduce) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width / 2;
+        const my = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${mx * 0.25}px, ${my * 0.35}px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---------- tilt cards ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.tilt').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(900px) rotateY(${px * 7}deg) rotateX(${-py * 7}deg) translateY(-2px)`;
+      });
+      el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach((item) => {
+    item.querySelector('.faq-head').addEventListener('click', () => {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- scramble / decode headline ---------- */
+  (function () {
+    const el = document.getElementById('scramble');
+    if (!el) return;
+    const final = el.textContent;
+    if (reduce) return;
+    const chars = '!<>-_\\/[]{}—=+*^?#01';
+    let frame = 0;
+    const queue = [];
+    for (let i = 0; i < final.length; i++) {
+      queue.push({ to: final[i], start: Math.floor(Math.random() * 18), end: 18 + Math.floor(Math.random() * 24) });
+    }
+    function tick() {
+      let out = '', done = 0;
+      for (let i = 0; i < queue.length; i++) {
+        const q = queue[i];
+        if (frame >= q.end) { done++; out += q.to; }
+        else if (frame >= q.start) {
+          if (!q.char || Math.random() < 0.3) q.char = chars[Math.floor(Math.random() * chars.length)];
+          out += `<span style="opacity:.6">${q.char}</span>`;
+        } else { out += q.to === ' ' ? ' ' : '<span style="opacity:0">' + q.to + '</span>'; }
+      }
+      el.innerHTML = out;
+      frame++;
+      if (done < queue.length) requestAnimationFrame(tick);
+      else el.textContent = final;
+    }
+    setTimeout(tick, 350);
+  })();
+
+  /* ---------- GSAP reveal + count-ups ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+    } else {
+      gsap.utils.toArray('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    }
+
+    /* count-ups */
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.dec || '0', 10);
+      const prefix = el.dataset.prefix || '';
+      const obj = { v: 0 };
+      const render = () => { el.textContent = prefix + obj.v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }); };
+      if (reduce) { obj.v = to; render(); return; }
+      ScrollTrigger.create({
+        trigger: el, start: 'top 92%', once: true,
+        onEnter: () => gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out', onUpdate: render }),
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

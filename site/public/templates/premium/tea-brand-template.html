@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdant &amp; Vale — Artisan Loose-Leaf Tea</title>
+<meta name="description" content="Verdant &amp; Vale — small-batch, single-origin loose-leaf teas and botanical wellness blends. Slow-steeped rituals for a calmer day." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sage:   { 50:'#f4f7f2', 100:'#e7efe2', 200:'#cfdfc6', 300:'#aec9a0', 400:'#86ab74', 500:'#648f53', 600:'#4d7340', 700:'#3e5c35', 800:'#34492e', 900:'#2c3d28' },
+          cream:  { 50:'#fdfcf7', 100:'#faf7ee', 200:'#f3eddc', 300:'#e8dec3' },
+          clay:   { 400:'#d99a6c', 500:'#c87f4d', 600:'#b06636' },
+          ink:    '#2a2f29',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'serif'],
+          sans:  ['"Jost"', 'system-ui', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --sage:#648f53; --clay:#c87f4d; --cream:#faf7ee; }
+  html, body { overflow-x:hidden; background:var(--cream); color:#2a2f29; }
+  body { font-family:'Jost',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .font-serif { font-family:'Cormorant Garamond',serif; }
+
+  /* Floating botanical leaves */
+  .leaf {
+    position:absolute; pointer-events:none; opacity:.32;
+    background:radial-gradient(closest-side at 30% 30%, #86ab74, #4d7340 80%, transparent);
+    border-radius:0 60% 0 60%;
+    filter:blur(.3px);
+    animation:drift 18s ease-in-out infinite;
+  }
+  @keyframes drift {
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-26px) rotate(14deg); }
+  }
+
+  /* Steam */
+  .steam { position:absolute; bottom:100%; width:9px; height:60px; left:50%;
+    background:linear-gradient(to top, rgba(255,255,255,.0), rgba(255,255,255,.55), rgba(255,255,255,0));
+    border-radius:50%; filter:blur(5px); opacity:0; transform-origin:bottom center;
+    animation:rise 4.2s ease-in-out infinite; }
+  .steam.s2{ animation-delay:1.1s; margin-left:-16px; }
+  .steam.s3{ animation-delay:2.2s; margin-left:14px; }
+  @keyframes rise {
+    0%{ opacity:0; transform:translateY(10px) scaleX(1); }
+    25%{ opacity:.7; }
+    100%{ opacity:0; transform:translateY(-90px) scaleX(1.8) translateX(8px); }
+  }
+
+  .reveal { opacity:0; transform:translateY(30px); }
+  .img-fade { transition:transform 1.1s cubic-bezier(.2,.8,.2,1); }
+  .group:hover .img-fade { transform:scale(1.06); }
+
+  /* Marquee */
+  .marquee { display:flex; width:max-content; animation:scrollx 32s linear infinite; }
+  @keyframes scrollx { to { transform:translateX(-50%); } }
+  .marquee:hover { animation-play-state:paused; }
+
+  .accordion-body { max-height:0; overflow:hidden; transition:max-height .5s ease; }
+  .magnetic { will-change:transform; }
+  .tilt { transition:transform .4s cubic-bezier(.2,.8,.2,1); transform-style:preserve-3d; }
+
+  .ink-link { position:relative; }
+  .ink-link::after { content:''; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:var(--sage); transition:width .4s ease; }
+  .ink-link:hover::after { width:100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+  }
+</style>
+</head>
+
+<body class="bg-cream-50 antialiased selection:bg-sage-200 selection:text-sage-900">
+
+<!-- ===================== NAV ===================== -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <a href="#top" class="font-serif text-2xl tracking-wide text-sage-800 flex items-center gap-2">
+      <span class="inline-block w-7 h-7 rounded-full bg-sage-500/90 relative">
+        <span class="absolute inset-1 rounded-full border border-cream-50/70"></span>
+      </span>
+      Verdant <span class="text-clay-500">&amp;</span> Vale
+    </a>
+    <div class="hidden md:flex items-center gap-9 text-sm tracking-wide text-sage-800/80">
+      <a href="#blends" class="ink-link">Blends</a>
+      <a href="#collections" class="ink-link">Collections</a>
+      <a href="#story" class="ink-link">Our Story</a>
+      <a href="#subscribe" class="ink-link">Subscribe</a>
+      <a href="#faq" class="ink-link">FAQ</a>
+    </div>
+    <a href="#blends" id="shopCta" class="magnetic group relative inline-flex items-center gap-2 rounded-full bg-sage-700 text-cream-50 px-6 py-2.5 text-sm tracking-wide overflow-hidden">
+      <span class="relative z-10">Shop Tea</span>
+      <span class="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+      <span class="absolute inset-0 bg-clay-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+    </a>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- floating leaves -->
+  <span class="leaf" style="width:46px;height:46px;top:18%;left:8%;"></span>
+  <span class="leaf" style="width:30px;height:30px;top:62%;left:14%;animation-delay:3s;"></span>
+  <span class="leaf" style="width:58px;height:58px;top:24%;right:10%;animation-delay:5s;"></span>
+  <span class="leaf" style="width:24px;height:24px;top:74%;right:18%;animation-delay:1.5s;"></span>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-14 items-center w-full relative z-10">
+    <div>
+      <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-6">Small-batch · Single-origin</p>
+      <h1 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[1.02] text-sage-900 mb-7">
+        <span class="hero-line block">Slow mornings,</span>
+        <span class="hero-line block italic text-sage-600">steeped with care.</span>
+      </h1>
+      <p class="reveal text-lg text-sage-800/75 max-w-md mb-9 leading-relaxed">
+        Hand-selected loose-leaf teas and botanical wellness blends — harvested in small lots, packed at peak freshness, and steeped into a quiet daily ritual.
+      </p>
+      <div class="reveal flex flex-wrap items-center gap-5">
+        <a href="#blends" class="magnetic group relative inline-flex items-center gap-2 rounded-full bg-sage-700 text-cream-50 px-8 py-4 tracking-wide overflow-hidden">
+          <span class="relative z-10">Shop the Collection</span>
+          <span class="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+          <span class="absolute inset-0 bg-clay-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+        </a>
+        <a href="#story" class="text-sage-800/80 tracking-wide ink-link">Discover our ritual</a>
+      </div>
+
+      <div class="reveal mt-12 flex gap-10">
+        <div><div class="font-serif text-4xl text-sage-800" data-count="38">0</div><div class="text-xs uppercase tracking-widest text-sage-700/60 mt-1">Signature blends</div></div>
+        <div><div class="font-serif text-4xl text-sage-800" data-count="12">0</div><div class="text-xs uppercase tracking-widest text-sage-700/60 mt-1">Origin gardens</div></div>
+        <div><div class="font-serif text-4xl text-sage-800" data-count="100" data-suffix="%">0</div><div class="text-xs uppercase tracking-widest text-sage-700/60 mt-1">Whole leaf</div></div>
+      </div>
+    </div>
+
+    <div class="relative parallax-wrap">
+      <div class="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-sage-900/20 bg-gradient-to-br from-sage-200 via-cream-200 to-clay-400/40 aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="A cup of loose-leaf tea"
+             class="img-fade w-full h-full object-cover mix-blend-multiply opacity-95" />
+        <!-- steam -->
+        <div class="absolute left-[46%] top-[40%]">
+          <span class="steam"></span><span class="steam s2"></span><span class="steam s3"></span>
+        </div>
+      </div>
+      <div class="absolute -bottom-6 -left-6 bg-cream-50 rounded-2xl shadow-xl px-6 py-4 hidden sm:block">
+        <p class="font-serif text-2xl text-sage-800">Misty Valley Oolong</p>
+        <p class="text-xs tracking-widest uppercase text-clay-600">Harvest of the season</p>
+      </div>
+    </div>
+  </div>
+  <div class="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-cream-100 to-transparent"></div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="py-6 border-y border-sage-200/60 bg-cream-100 overflow-hidden">
+  <div class="marquee text-sage-700/70 font-serif italic text-2xl whitespace-nowrap">
+    <span class="flex">
+      <span class="mx-8">Jasmine Pearl</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Silver Needle</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Golden Chamomile</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Smoked Keemun</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Mountain Sencha</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Rooibos Bloom</span><span class="mx-8 text-clay-500">✦</span>
+    </span>
+    <span class="flex" aria-hidden="true">
+      <span class="mx-8">Jasmine Pearl</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Silver Needle</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Golden Chamomile</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Smoked Keemun</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Mountain Sencha</span><span class="mx-8 text-clay-500">✦</span>
+      <span class="mx-8">Rooibos Bloom</span><span class="mx-8 text-clay-500">✦</span>
+    </span>
+  </div>
+</section>
+
+<!-- ===================== BESTSELLING BLENDS ===================== -->
+<section id="blends" class="py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-4">Most loved</p>
+        <h2 class="reveal font-serif text-4xl sm:text-5xl text-sage-900">Bestselling Blends</h2>
+      </div>
+      <p class="reveal max-w-sm text-sage-800/70 leading-relaxed">Four jars that never stay long on the shelf — each steeped from whole leaves and dried botanicals.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-7">
+      <!-- card 1 -->
+      <article class="reveal product group cursor-pointer">
+        <div class="tilt rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-sage-200 to-cream-200 relative shadow-lg shadow-sage-900/10">
+          <img src="https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Misty Valley Oolong" class="img-fade w-full h-full object-cover" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest uppercase bg-cream-50/90 text-sage-700 px-3 py-1 rounded-full">Oolong</span>
+        </div>
+        <div class="mt-4 flex items-start justify-between">
+          <div><h3 class="font-serif text-2xl text-sage-900 leading-tight">Misty Valley Oolong</h3><p class="text-sm text-sage-700/60">Honeyed · floral</p></div>
+          <span class="font-serif text-xl text-clay-600">$24</span>
+        </div>
+      </article>
+      <!-- card 2 -->
+      <article class="reveal product group cursor-pointer">
+        <div class="tilt rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-clay-400/40 to-cream-200 relative shadow-lg shadow-sage-900/10">
+          <img src="https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Golden Chamomile" class="img-fade w-full h-full object-cover" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest uppercase bg-cream-50/90 text-sage-700 px-3 py-1 rounded-full">Herbal</span>
+        </div>
+        <div class="mt-4 flex items-start justify-between">
+          <div><h3 class="font-serif text-2xl text-sage-900 leading-tight">Golden Chamomile</h3><p class="text-sm text-sage-700/60">Soft · soothing</p></div>
+          <span class="font-serif text-xl text-clay-600">$19</span>
+        </div>
+      </article>
+      <!-- card 3 -->
+      <article class="reveal product group cursor-pointer">
+        <div class="tilt rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-sage-300 to-sage-100 relative shadow-lg shadow-sage-900/10">
+          <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Mountain Sencha" class="img-fade w-full h-full object-cover" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest uppercase bg-cream-50/90 text-sage-700 px-3 py-1 rounded-full">Green</span>
+        </div>
+        <div class="mt-4 flex items-start justify-between">
+          <div><h3 class="font-serif text-2xl text-sage-900 leading-tight">Mountain Sencha</h3><p class="text-sm text-sage-700/60">Grassy · bright</p></div>
+          <span class="font-serif text-xl text-clay-600">$22</span>
+        </div>
+      </article>
+      <!-- card 4 -->
+      <article class="reveal product group cursor-pointer">
+        <div class="tilt rounded-2xl overflow-hidden aspect-[4/5] bg-gradient-to-br from-sage-700/30 to-cream-200 relative shadow-lg shadow-sage-900/10">
+          <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Smoked Keemun" class="img-fade w-full h-full object-cover" />
+          <span class="absolute top-3 left-3 text-[10px] tracking-widest uppercase bg-cream-50/90 text-sage-700 px-3 py-1 rounded-full">Black</span>
+        </div>
+        <div class="mt-4 flex items-start justify-between">
+          <div><h3 class="font-serif text-2xl text-sage-900 leading-tight">Smoked Keemun</h3><p class="text-sm text-sage-700/60">Malty · warm</p></div>
+          <span class="font-serif text-xl text-clay-600">$26</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RITUAL / ABOUT ===================== -->
+<section class="py-24 bg-sage-800 text-cream-50 relative overflow-hidden">
+  <span class="leaf" style="width:70px;height:70px;top:12%;right:6%;opacity:.18;"></span>
+  <span class="leaf" style="width:40px;height:40px;bottom:14%;left:7%;opacity:.18;animation-delay:4s;"></span>
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center relative z-10">
+    <p class="reveal text-clay-400 tracking-[0.35em] text-xs uppercase mb-6">The ritual</p>
+    <h2 class="reveal font-serif text-4xl sm:text-6xl leading-[1.05] mb-8">
+      Tea is not a drink we hurry.<br><span class="italic text-sage-300">It is a pause we keep.</span>
+    </h2>
+    <p class="reveal text-cream-200/80 max-w-2xl mx-auto leading-relaxed text-lg">
+      Heat the water just shy of a boil. Measure a heaping spoon of leaf. Watch the colour unfurl. Three slow minutes — and the day softens. Every blend we make is built to honour that quiet.
+    </p>
+    <div class="reveal grid sm:grid-cols-3 gap-8 mt-16 text-left">
+      <div class="border-t border-cream-200/20 pt-5"><span class="font-serif text-2xl text-sage-300">01 · Measure</span><p class="text-cream-200/70 mt-2 text-sm">One rounded teaspoon per cup of fresh, soft water.</p></div>
+      <div class="border-t border-cream-200/20 pt-5"><span class="font-serif text-2xl text-sage-300">02 · Steep</span><p class="text-cream-200/70 mt-2 text-sm">Let the leaves open fully — never rushed, never bitter.</p></div>
+      <div class="border-t border-cream-200/20 pt-5"><span class="font-serif text-2xl text-sage-300">03 · Linger</span><p class="text-cream-200/70 mt-2 text-sm">Pour, breathe, and let the morning settle around you.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COLLECTIONS ===================== -->
+<section id="collections" class="py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-4">Browse by character</p>
+      <h2 class="reveal font-serif text-4xl sm:text-5xl text-sage-900">Our Collections</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-7">
+      <a href="#blends" class="reveal group relative rounded-2xl overflow-hidden aspect-[3/4] block">
+        <div class="absolute inset-0 bg-gradient-to-br from-sage-400 to-sage-700"></div>
+        <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Green tea" class="img-fade absolute inset-0 w-full h-full object-cover opacity-70 mix-blend-multiply" />
+        <div class="absolute inset-0 bg-gradient-to-t from-sage-900/80 to-transparent"></div>
+        <div class="absolute bottom-0 p-7"><p class="text-clay-300 text-xs tracking-widest uppercase mb-1">14 blends</p><h3 class="font-serif text-3xl text-cream-50">Green &amp; White</h3><p class="text-cream-200/80 text-sm mt-1">Fresh, vegetal, delicate.</p></div>
+      </a>
+      <a href="#blends" class="reveal group relative rounded-2xl overflow-hidden aspect-[3/4] block">
+        <div class="absolute inset-0 bg-gradient-to-br from-clay-500 to-sage-800"></div>
+        <img src="https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Black tea" class="img-fade absolute inset-0 w-full h-full object-cover opacity-70 mix-blend-multiply" />
+        <div class="absolute inset-0 bg-gradient-to-t from-sage-900/80 to-transparent"></div>
+        <div class="absolute bottom-0 p-7"><p class="text-clay-300 text-xs tracking-widest uppercase mb-1">11 blends</p><h3 class="font-serif text-3xl text-cream-50">Black &amp; Oolong</h3><p class="text-cream-200/80 text-sm mt-1">Bold, malty, warming.</p></div>
+      </a>
+      <a href="#blends" class="reveal group relative rounded-2xl overflow-hidden aspect-[3/4] block">
+        <div class="absolute inset-0 bg-gradient-to-br from-clay-400 to-cream-300"></div>
+        <img src="https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Herbal tea" class="img-fade absolute inset-0 w-full h-full object-cover opacity-70 mix-blend-multiply" />
+        <div class="absolute inset-0 bg-gradient-to-t from-sage-900/80 to-transparent"></div>
+        <div class="absolute bottom-0 p-7"><p class="text-clay-200 text-xs tracking-widest uppercase mb-1">13 blends</p><h3 class="font-serif text-3xl text-cream-50">Herbal &amp; Botanical</h3><p class="text-cream-100/80 text-sm mt-1">Caffeine-free, calming.</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOURCING / STORY ===================== -->
+<section id="story" class="py-24 bg-cream-100">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative parallax-wrap order-2 lg:order-1">
+      <div class="rounded-[2rem] overflow-hidden aspect-[5/6] bg-gradient-to-br from-sage-300 to-cream-200 shadow-2xl shadow-sage-900/20">
+        <img src="https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Tea garden sourcing" class="img-fade w-full h-full object-cover" />
+      </div>
+      <div class="absolute -top-6 -right-4 bg-sage-700 text-cream-50 rounded-2xl px-6 py-5 shadow-xl hidden sm:block">
+        <div class="font-serif text-3xl" data-count="12">0</div>
+        <div class="text-[11px] uppercase tracking-widest text-cream-200/80">Partner gardens</div>
+      </div>
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-5">From garden to cup</p>
+      <h2 class="reveal font-serif text-4xl sm:text-5xl text-sage-900 mb-7 leading-tight">Sourced direct, harvested by hand.</h2>
+      <p class="reveal text-sage-800/75 leading-relaxed mb-5">We work with twelve family gardens across misted highlands — visiting each season, tasting at altitude, and buying only the lots that earn a place in our cellar. No middlemen, no warehouse blends, no compromise.</p>
+      <p class="reveal text-sage-800/75 leading-relaxed mb-8">Every tin is sealed within days of arrival so the leaf reaches you bright, aromatic, and alive.</p>
+      <ul class="reveal space-y-3 text-sage-800/80">
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-clay-500"></span> Direct-trade, fairly paid harvests</li>
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-clay-500"></span> Whole-leaf only — never dust or fannings</li>
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-clay-500"></span> Plastic-free, compostable packaging</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SUBSCRIPTION ===================== -->
+<section id="subscribe" class="py-24 lg:py-32">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10">
+    <div class="reveal relative rounded-[2.5rem] bg-sage-700 text-cream-50 overflow-hidden p-10 lg:p-16">
+      <span class="leaf" style="width:90px;height:90px;top:-10px;right:-10px;opacity:.18;"></span>
+      <span class="leaf" style="width:50px;height:50px;bottom:8%;left:5%;opacity:.16;animation-delay:3s;"></span>
+      <div class="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <p class="text-clay-300 tracking-[0.35em] text-xs uppercase mb-4">The Tea Club</p>
+          <h2 class="font-serif text-4xl sm:text-5xl leading-tight mb-5">A new ritual at your door, every month.</h2>
+          <p class="text-cream-200/80 leading-relaxed">Two hand-picked blends, brewing notes, and a small surprise from the garden — delivered fresh. Pause or cancel anytime.</p>
+        </div>
+        <div class="bg-cream-50/10 backdrop-blur rounded-2xl p-7 border border-cream-200/20">
+          <div class="flex items-baseline gap-2 mb-1"><span class="font-serif text-5xl">$32</span><span class="text-cream-200/70">/ month</span></div>
+          <p class="text-cream-200/70 text-sm mb-6">Free shipping · skip whenever you like.</p>
+          <form onsubmit="return false" class="space-y-3">
+            <input type="email" required placeholder="your@email.com" class="w-full rounded-full bg-cream-50 text-sage-900 placeholder:text-sage-700/50 px-5 py-3 outline-none focus:ring-2 ring-clay-400" />
+            <button class="magnetic group relative w-full rounded-full bg-clay-500 text-cream-50 px-6 py-3.5 tracking-wide overflow-hidden">
+              <span class="relative z-10">Start my subscription</span>
+              <span class="absolute inset-0 bg-clay-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="py-20 bg-cream-100">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10 text-center">
+    <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-5">About Verdant &amp; Vale</p>
+    <h2 class="reveal font-serif text-3xl sm:text-4xl text-sage-900 mb-6 leading-snug">Founded on a single belief — that good tea is a small, daily act of kindness to yourself.</h2>
+    <p class="reveal text-sage-800/75 leading-relaxed max-w-2xl mx-auto">What began as a kitchen-table experiment with a cracked teapot has grown into a quiet little house of tea. We're still a small team, still tasting everything ourselves, and still convinced that the right cup can change the shape of a day.</p>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-24">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <h2 class="reveal font-serif text-4xl sm:text-5xl text-sage-900 text-center mb-16">Kind words from kindred spirits</h2>
+    <div class="grid md:grid-cols-3 gap-7">
+      <blockquote class="reveal bg-cream-100 rounded-2xl p-8 border border-sage-200/60">
+        <div class="text-clay-500 mb-4">★★★★★</div>
+        <p class="font-serif text-xl text-sage-900 leading-relaxed mb-6">"The Misty Valley Oolong is the first thing I think of when I wake. It's become my whole morning."</p>
+        <footer class="text-sm text-sage-700/70">— Imara K., Lisbon</footer>
+      </blockquote>
+      <blockquote class="reveal bg-sage-800 text-cream-50 rounded-2xl p-8">
+        <div class="text-clay-400 mb-4">★★★★★</div>
+        <p class="font-serif text-xl leading-relaxed mb-6">"You can taste that someone cared. The freshness is a different world from supermarket tea."</p>
+        <footer class="text-sm text-cream-200/70">— Theo R., Copenhagen</footer>
+      </blockquote>
+      <blockquote class="reveal bg-cream-100 rounded-2xl p-8 border border-sage-200/60">
+        <div class="text-clay-500 mb-4">★★★★★</div>
+        <p class="font-serif text-xl text-sage-900 leading-relaxed mb-6">"The subscription is the gift I keep giving myself. Every box feels like a tiny holiday."</p>
+        <footer class="text-sm text-sage-700/70">— Sena M., Kyoto</footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-24 bg-cream-100">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="reveal text-clay-600 tracking-[0.35em] text-xs uppercase mb-4">Good to know</p>
+      <h2 class="reveal font-serif text-4xl sm:text-5xl text-sage-900">Steeping questions</h2>
+    </div>
+    <div class="space-y-4" id="faqList">
+      <div class="reveal faq-item bg-cream-50 rounded-2xl border border-sage-200/60 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-serif text-xl text-sage-900">How fresh is the tea when it arrives?</span>
+          <span class="faq-icon text-clay-500 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-sage-800/75 leading-relaxed">Every tin is sealed within days of the harvest reaching us and shipped within 48 hours of your order — so the leaf you steep is as bright as the day it was picked.</p></div>
+      </div>
+      <div class="reveal faq-item bg-cream-50 rounded-2xl border border-sage-200/60 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-serif text-xl text-sage-900">Is your packaging really plastic-free?</span>
+          <span class="faq-icon text-clay-500 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-sage-800/75 leading-relaxed">Yes. Our tins are reusable steel, pouches are compostable, and every shipping box is recycled and recyclable. No mixed plastics, anywhere.</p></div>
+      </div>
+      <div class="reveal faq-item bg-cream-50 rounded-2xl border border-sage-200/60 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-serif text-xl text-sage-900">Can I pause or cancel the Tea Club?</span>
+          <span class="faq-icon text-clay-500 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-sage-800/75 leading-relaxed">Anytime, in two clicks. Skip a month, swap a blend, or cancel entirely — no emails, no awkward retention loops, no fuss.</p></div>
+      </div>
+      <div class="reveal faq-item bg-cream-50 rounded-2xl border border-sage-200/60 overflow-hidden">
+        <button class="faq-toggle w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-serif text-xl text-sage-900">Do you ship internationally?</span>
+          <span class="faq-icon text-clay-500 text-2xl transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-sage-800/75 leading-relaxed">We ship to most of the world. Shipping is free on orders over $45 and on every Tea Club subscription, wherever you are.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="py-28 relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-br from-sage-200 via-cream-100 to-clay-400/30"></div>
+  <span class="leaf" style="width:60px;height:60px;top:18%;left:12%;"></span>
+  <span class="leaf" style="width:36px;height:36px;bottom:20%;right:14%;animation-delay:3s;"></span>
+  <div class="max-w-3xl mx-auto px-6 lg:px-10 text-center relative z-10">
+    <h2 class="reveal font-serif text-5xl sm:text-6xl text-sage-900 mb-6 leading-tight">Make a little time<br><span class="italic text-sage-600">for the leaf.</span></h2>
+    <p class="reveal text-sage-800/75 text-lg mb-9 max-w-lg mx-auto">Find your blend, brew it slow, and let the morning catch its breath.</p>
+    <a href="#blends" class="magnetic group relative inline-flex items-center gap-2 rounded-full bg-sage-700 text-cream-50 px-10 py-4 tracking-wide overflow-hidden text-lg">
+      <span class="relative z-10">Shop the Collection</span>
+      <span class="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+      <span class="absolute inset-0 bg-clay-500 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></span>
+    </a>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-sage-900 text-cream-200/80 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div>
+        <div class="font-serif text-2xl text-cream-50 flex items-center gap-2 mb-4">
+          <span class="inline-block w-6 h-6 rounded-full bg-sage-500 relative"><span class="absolute inset-1 rounded-full border border-cream-50/60"></span></span>
+          Verdant <span class="text-clay-400">&amp;</span> Vale
+        </div>
+        <p class="text-sm text-cream-200/60 leading-relaxed">Small-batch loose-leaf tea &amp; botanical wellness blends, steeped with care.</p>
+      </div>
+      <div><h4 class="text-cream-50 tracking-widest uppercase text-xs mb-4">Shop</h4><ul class="space-y-2 text-sm"><li><a href="#blends" class="ink-link">Bestsellers</a></li><li><a href="#collections" class="ink-link">Collections</a></li><li><a href="#subscribe" class="ink-link">Tea Club</a></li></ul></div>
+      <div><h4 class="text-cream-50 tracking-widest uppercase text-xs mb-4">House</h4><ul class="space-y-2 text-sm"><li><a href="#story" class="ink-link">Our Story</a></li><li><a href="#story" class="ink-link">Sourcing</a></li><li><a href="#faq" class="ink-link">FAQ</a></li></ul></div>
+      <div>
+        <h4 class="text-cream-50 tracking-widest uppercase text-xs mb-4">Stay in touch</h4>
+        <form onsubmit="return false" class="flex gap-2">
+          <input type="email" placeholder="email" class="flex-1 min-w-0 rounded-full bg-cream-50/10 border border-cream-200/20 px-4 py-2 text-sm text-cream-50 placeholder:text-cream-200/40 outline-none focus:ring-1 ring-clay-400" />
+          <button class="rounded-full bg-clay-500 text-cream-50 px-4 py-2 text-sm">→</button>
+        </form>
+        <div class="flex gap-4 mt-5 text-sm"><a href="#" class="ink-link">Instagram</a><a href="#" class="ink-link">Pinterest</a><a href="#" class="ink-link">Journal</a></div>
+      </div>
+    </div>
+    <div class="border-t border-cream-200/15 pt-6 flex flex-col sm:flex-row justify-between gap-3 text-xs text-cream-200/50">
+      <p>© 2026 Verdant &amp; Vale Tea Co. All rights reserved.</p>
+      <p>Steeped slowly · packed fresh · shipped plastic-free</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Nav scroll state ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.classList.add('bg-cream-50/85','backdrop-blur','shadow-sm','shadow-sage-900/5');
+    else nav.classList.remove('bg-cream-50/85','backdrop-blur','shadow-sm','shadow-sage-900/5');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform='rotate(0deg)'; });
+      if (!open) { body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(45deg)'; }
+    });
+  });
+
+  if (reduce) return;
+
+  // ---- Magnetic buttons ----
+  document.querySelectorAll('.magnetic').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width/2;
+      const y = e.clientY - r.top - r.height/2;
+      el.style.transform = `translate(${x*0.25}px, ${y*0.35}px)`;
+    });
+    el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+  });
+
+  // ---- Product tilt ----
+  document.querySelectorAll('.product').forEach(card => {
+    const tilt = card.querySelector('.tilt');
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - .5;
+      const py = (e.clientY - r.top)/r.height - .5;
+      tilt.style.transform = `perspective(800px) rotateY(${px*7}deg) rotateX(${-py*7}deg)`;
+    });
+    card.addEventListener('mouseleave', () => { tilt.style.transform = 'perspective(800px) rotateY(0) rotateX(0)'; });
+  });
+
+  // ---- GSAP ----
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero headline
+    gsap.from('.hero-line', { y:50, opacity:0, duration:1.1, stagger:0.15, ease:'power3.out', delay:0.2 });
+
+    // Generic reveals
+    gsap.utils.toArray('.reveal').forEach(el => {
+      gsap.to(el, {
+        opacity:1, y:0, duration:1, ease:'power2.out',
+        scrollTrigger:{ trigger:el, start:'top 88%' }
+      });
+    });
+
+    // Container parallax
+    gsap.utils.toArray('.parallax-wrap').forEach(el => {
+      gsap.to(el, { y:-50, ease:'none', scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true } });
+    });
+
+    // Count-ups
+    gsap.utils.toArray('[data-count]').forEach(el => {
+      const end = +el.dataset.count;
+      const suffix = el.dataset.suffix || '';
+      const obj = { v:0 };
+      ScrollTrigger.create({
+        trigger:el, start:'top 90%', once:true,
+        onEnter:() => gsap.to(obj, { v:end, duration:1.8, ease:'power2.out',
+          onUpdate:() => { el.textContent = Math.round(obj.v) + suffix; } })
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('[data-count]').forEach(el => el.textContent = el.dataset.count + (el.dataset.suffix||''));
+  }
+})();
+</script>
+</body>
+</html>

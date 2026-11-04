@@ -1,0 +1,11 @@
+# Headers for the files the Workers asset layer serves before the Worker runs
+# (next.config.ts headers() never sees them). Build output has a content hash
+# in its name, so it can be cached for good.
+/_next/static/*
+  Cache-Control: public,max-age=31536000,immutable
+
+# DeskDev for Windows (desktop/build.mjs). Same file names every release, so
+# caches must check back: a new version reaches people as soon as it deploys.
+/downloads/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff

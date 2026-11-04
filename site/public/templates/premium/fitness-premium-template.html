@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>IRON â€” Premium Fitness</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{
+  colors:{accent:'#ef4444','accent-dim':'#dc2626',neon:'#22d3ee',surface:'#09090b',card:'#18181b','card-hi':'#27272a',txt:'#fafafa',muted:'#71717a',border:'rgba(255,255,255,0.06)'},
+  fontFamily:{display:['Bebas Neue','Impact','sans-serif'],body:['Inter','system-ui','sans-serif']}
+}}}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(239,68,68,.2)}50%{box-shadow:0 0 40px rgba(239,68,68,.4)}}
+@keyframes count{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+@keyframes stripe{0%{background-position:0 0}100%{background-position:40px 40px}}
+.reveal{opacity:0;transform:translateY(40px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.1s}.st2{transition-delay:.2s}.st3{transition-delay:.3s}.st4{transition-delay:.4s}
+.class-card{transition:all .4s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+.class-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(239,68,68,.06),transparent);opacity:0;transition:opacity .4s}
+.class-card:hover{transform:translateY(-8px) scale(1.01);border-color:rgba(239,68,68,.3)!important}
+.class-card:hover::before{opacity:1}
+.stripe-bg{background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(239,68,68,.03) 10px,rgba(239,68,68,.03) 20px)}
+</style>
+</head>
+<body class="bg-surface text-txt font-body antialiased overflow-x-hidden">
+
+<!-- â•â•â• NAV â€” Bold, athletic â•â•â• -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-surface/90 backdrop-blur-xl border-b border-border transition-all" id="nav">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#" class="font-display text-3xl tracking-wider text-accent">IRON</a>
+    <div class="hidden md:flex gap-8 text-sm font-semibold uppercase tracking-wider">
+      <a href="#classes" class="text-muted hover:text-accent transition-colors">Classes</a>
+      <a href="#trainers" class="text-muted hover:text-accent transition-colors">Trainers</a>
+      <a href="#pricing" class="text-muted hover:text-accent transition-colors">Pricing</a>
+      <a href="#join" class="text-muted hover:text-accent transition-colors">Join</a>
+    </div>
+    <button class="bg-accent text-white px-6 py-2.5 font-bold text-sm uppercase tracking-wider hover:bg-accent-dim transition-all hover:scale-105" style="clip-path:polygon(0 0,100% 0,95% 100%,0 100%)">
+      Start Free Trial
+    </button>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” High energy, angular â•â•â• -->
+<section class="min-h-screen flex items-center relative overflow-hidden pt-20">
+  <!-- Diagonal stripe background -->
+  <div class="absolute inset-0 stripe-bg"></div>
+  <!-- Red accent glow -->
+  <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 blur-[120px] rounded-full"></div>
+  <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-neon/3 blur-[100px] rounded-full"></div>
+
+  <div class="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-16 items-center relative z-10 py-20">
+    <div>
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/20 mb-8" style="animation:fadeUp .7s .2s both;clip-path:polygon(0 0,100% 0,97% 100%,0 100%)">
+        <span class="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+        <span class="text-accent text-xs font-bold uppercase tracking-widest">Now Open 24/7</span>
+      </div>
+
+      <!-- Headline â€” massive display font -->
+      <h1 class="font-display text-7xl md:text-8xl lg:text-[8rem] leading-[0.85] tracking-wide text-white mb-6" style="animation:fadeUp .9s .3s both">
+        UNLEASH<br>YOUR<br>
+        <span class="text-accent">POWER</span>
+      </h1>
+
+      <p class="text-muted text-lg leading-relaxed max-w-md mb-10 font-light" style="animation:fadeUp .9s .5s both">
+        State-of-the-art equipment, world-class trainers, and a community that pushes you beyond your limits. This isn't just a gym â€” it's a movement.
+      </p>
+
+      <div class="flex gap-4 flex-wrap" style="animation:fadeUp .9s .7s both">
+        <button class="bg-accent text-white px-10 py-4 font-bold text-sm uppercase tracking-wider hover:bg-accent-dim transition-all hover:scale-105 animation:pulse-glow 3s infinite" style="clip-path:polygon(0 0,100% 0,96% 100%,0 100%)">
+          Join Now â€” $0 First Month â†’
+        </button>
+        <button class="border border-border text-white px-10 py-4 font-semibold text-sm uppercase tracking-wider hover:border-accent hover:text-accent transition-all">
+          Take a Tour
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Stats grid -->
+    <div class="grid grid-cols-2 gap-4" style="animation:fadeUp 1s .4s both">
+      <div class="bg-card border border-border p-8 text-center" style="clip-path:polygon(0 0,100% 0,100% 90%,90% 100%,0 100%)">
+        <div class="font-display text-5xl text-accent">24/7</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-2">Access</div>
+      </div>
+      <div class="bg-card border border-border p-8 text-center" style="clip-path:polygon(0 0,100% 0,100% 100%,0 100%,0 10%)">
+        <div class="font-display text-5xl text-white">200+</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-2">Machines</div>
+      </div>
+      <div class="bg-card border border-border p-8 text-center" style="clip-path:polygon(10% 0,100% 0,100% 100%,0 100%,0 0)">
+        <div class="font-display text-5xl text-neon">50+</div>
+        <div class="text-xs text-muted uppercase tracking-wider mt-2">Classes/Week</div>
+      </div>
+      <div class="bg-accent/10 border border-accent/20 p-8 text-center" style="clip-path:polygon(0 0,100% 0,90% 100%,0 100%)">
+        <div class="font-display text-5xl text-accent">15</div>
+        <div class="text-xs text-accent uppercase tracking-wider mt-2">Pro Trainers</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CLASSES â€” Grid with angular cards â•â•â• -->
+<section id="classes" class="py-32 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-16">
+      <div class="reveal text-accent text-xs font-bold uppercase tracking-[0.3em] mb-3">Our Classes</div>
+      <h2 class="reveal st1 font-display text-5xl md:text-6xl tracking-wide">TRAIN YOUR <span class="text-accent">WAY</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal class-card bg-card border border-border p-8 cursor-pointer">
+        <div class="text-4xl mb-6">ðŸ¥Š</div>
+        <div class="text-accent text-xs font-bold uppercase tracking-widest mb-2">High Intensity</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">BOXING</h3>
+        <p class="text-muted text-sm leading-relaxed mb-6">Full-body combat training that builds strength, speed, and endurance. All levels welcome.</p>
+        <div class="flex justify-between items-center text-xs text-muted uppercase tracking-wider">
+          <span>45 min</span>
+          <span>Mon Â· Wed Â· Fri</span>
+        </div>
+      </div>
+
+      <div class="reveal st1 class-card bg-card border border-border p-8 cursor-pointer">
+        <div class="text-4xl mb-6">ðŸ‹ï¸</div>
+        <div class="text-neon text-xs font-bold uppercase tracking-widest mb-2">Strength</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">POWER LIFT</h3>
+        <p class="text-muted text-sm leading-relaxed mb-6">Progressive overload training focused on compound movements. Build raw strength.</p>
+        <div class="flex justify-between items-center text-xs text-muted uppercase tracking-wider">
+          <span>60 min</span>
+          <span>Daily</span>
+        </div>
+      </div>
+
+      <div class="reveal st2 class-card bg-card border border-border p-8 cursor-pointer">
+        <div class="text-4xl mb-6">ðŸƒ</div>
+        <div class="text-accent text-xs font-bold uppercase tracking-widest mb-2">Cardio</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">HIIT BURN</h3>
+        <p class="text-muted text-sm leading-relaxed mb-6">High-intensity intervals that torch calories and boost metabolism. Maximum results in minimum time.</p>
+        <div class="flex justify-between items-center text-xs text-muted uppercase tracking-wider">
+          <span>30 min</span>
+          <span>Tue Â· Thu Â· Sat</span>
+        </div>
+      </div>
+
+      <div class="reveal st3 class-card bg-card border border-border p-8 cursor-pointer">
+        <div class="text-4xl mb-6">ðŸ§˜</div>
+        <div class="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-2">Recovery</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">FLEX YOGA</h3>
+        <p class="text-muted text-sm leading-relaxed mb-6">Active recovery through yoga flows. Improve flexibility, reduce injury risk, and restore balance.</p>
+        <div class="flex justify-between items-center text-xs text-muted uppercase tracking-wider">
+          <span>50 min</span>
+          <span>Mon Â· Wed Â· Sun</span>
+        </div>
+      </div>
+
+      <div class="reveal st4 class-card bg-card border border-border p-8 cursor-pointer">
+        <div class="text-4xl mb-6">ðŸš´</div>
+        <div class="text-purple-400 text-xs font-bold uppercase tracking-widest mb-2">Endurance</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">SPIN CYCLE</h3>
+        <p class="text-muted text-sm leading-relaxed mb-6">Music-driven indoor cycling that pushes your cardiovascular limits. Immersive lighting and sound.</p>
+        <div class="flex justify-between items-center text-xs text-muted uppercase tracking-wider">
+          <span>45 min</span>
+          <span>Daily</span>
+        </div>
+      </div>
+
+      <div class="reveal class-card bg-accent p-8 cursor-pointer text-white">
+        <div class="text-4xl mb-6">âš¡</div>
+        <div class="text-white/70 text-xs font-bold uppercase tracking-widest mb-2">Personal</div>
+        <h3 class="font-display text-3xl tracking-wide mb-3">1-ON-1</h3>
+        <p class="text-white/80 text-sm leading-relaxed mb-6">Custom programming, form coaching, and accountability. Your goals, your pace, your results.</p>
+        <span class="text-sm font-bold uppercase tracking-wider underline">Book a Session â†’</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• PRICING â€” Bold, 2-column â•â•â• -->
+<section id="pricing" class="py-32 px-6 stripe-bg">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal text-accent text-xs font-bold uppercase tracking-[0.3em] mb-3">Membership</div>
+      <h2 class="reveal st1 font-display text-5xl md:text-6xl tracking-wide">CHOOSE YOUR <span class="text-accent">PLAN</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Basic -->
+      <div class="reveal bg-card border border-border p-10">
+        <div class="text-muted text-xs font-bold uppercase tracking-widest mb-2">Essential</div>
+        <div class="flex items-baseline gap-2 mb-2">
+          <span class="font-display text-6xl text-white">$49</span>
+          <span class="text-muted text-sm">/month</span>
+        </div>
+        <p class="text-muted text-sm mb-8">Full gym access with group classes included.</p>
+        <ul class="space-y-3 mb-10">
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> 24/7 Gym Access</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> All Group Classes</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Locker Room & Showers</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> App Tracking</li>
+          <li class="flex items-center gap-3 text-sm text-muted"><span class="text-muted/30">â€”</span> Personal Training</li>
+          <li class="flex items-center gap-3 text-sm text-muted"><span class="text-muted/30">â€”</span> Nutrition Planning</li>
+        </ul>
+        <button class="w-full border border-border text-white py-4 font-bold text-sm uppercase tracking-wider hover:border-accent hover:text-accent transition-all">
+          Get Started
+        </button>
+      </div>
+
+      <!-- Pro -->
+      <div class="reveal st1 bg-card border-2 border-accent p-10 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-neon"></div>
+        <div class="absolute top-4 right-4 bg-accent text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1">Most Popular</div>
+        <div class="text-accent text-xs font-bold uppercase tracking-widest mb-2">Pro Athlete</div>
+        <div class="flex items-baseline gap-2 mb-2">
+          <span class="font-display text-6xl text-accent">$99</span>
+          <span class="text-muted text-sm">/month</span>
+        </div>
+        <p class="text-muted text-sm mb-8">Everything plus personal training and nutrition.</p>
+        <ul class="space-y-3 mb-10">
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Everything in Essential</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> 4x Personal Training/month</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Custom Nutrition Plan</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Body Composition Scans</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Recovery Suite Access</li>
+          <li class="flex items-center gap-3 text-sm"><span class="text-accent">âœ“</span> Guest Passes (2/month)</li>
+        </ul>
+        <button class="w-full bg-accent text-white py-4 font-bold text-sm uppercase tracking-wider hover:bg-accent-dim transition-all hover:scale-[1.02]" style="animation:pulse-glow 3s infinite">
+          Start Free Trial â†’
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â•â•â• -->
+<section id="join" class="py-32 px-6 text-center relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-accent/3 to-transparent"></div>
+  <div class="max-w-3xl mx-auto relative z-10">
+    <h2 class="reveal font-display text-6xl md:text-7xl tracking-wide mb-6">
+      STOP WAITING.<br><span class="text-accent">START TRAINING.</span>
+    </h2>
+    <p class="reveal st1 text-muted text-lg mb-10 max-w-lg mx-auto">Your first month is free. No commitment. No excuses. Just results.</p>
+    <div class="reveal st2 flex gap-4 justify-center flex-wrap">
+      <button class="bg-accent text-white px-12 py-5 font-bold text-base uppercase tracking-wider hover:bg-accent-dim transition-all hover:scale-105" style="clip-path:polygon(0 0,100% 0,96% 100%,0 100%)">
+        Claim Free Month â†’
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-12 px-6">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
+    <div>
+      <div class="font-display text-3xl text-accent tracking-wider mb-3">IRON</div>
+      <p class="text-muted text-sm max-w-xs">Premium fitness facility. 24/7 access. World-class trainers. No excuses.</p>
+    </div>
+    <div class="grid grid-cols-3 gap-12 text-sm">
+      <div>
+        <div class="font-bold uppercase tracking-wider text-xs text-muted mb-3">Facility</div>
+        <div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">Classes</a><a href="#" class="hover:text-accent transition-colors">Equipment</a><a href="#" class="hover:text-accent transition-colors">Trainers</a><a href="#" class="hover:text-accent transition-colors">Virtual Tour</a></div>
+      </div>
+      <div>
+        <div class="font-bold uppercase tracking-wider text-xs text-muted mb-3">Membership</div>
+        <div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">Pricing</a><a href="#" class="hover:text-accent transition-colors">Free Trial</a><a href="#" class="hover:text-accent transition-colors">Corporate</a><a href="#" class="hover:text-accent transition-colors">Student</a></div>
+      </div>
+      <div>
+        <div class="font-bold uppercase tracking-wider text-xs text-muted mb-3">Hours</div>
+        <div class="flex flex-col gap-2 text-muted text-xs"><span>Monâ€“Sun: 24/7</span><span>Staffed: 6AMâ€“10PM</span><span class="text-accent mt-2">(917) 555-0142</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-border flex justify-between text-xs text-muted">
+    <span>Â© 2026 IRON Fitness. All rights reserved.</span>
+    <div class="flex gap-4"><a href="#" class="hover:text-accent transition-colors">Privacy</a><a href="#" class="hover:text-accent transition-colors">Terms</a><a href="#" class="hover:text-accent transition-colors">Waiver</a></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+document.body.style.opacity='0';document.body.style.transition='opacity .4s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

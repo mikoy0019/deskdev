@@ -1,0 +1,248 @@
+{
+  "name": "[deskdev] overdue-tasks",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0,
+              "field": "days"
+            }
+          ]
+        }
+      },
+      "id": "daily-8am",
+      "name": "Daily 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=*&order=created_at.asc&limit=500",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "recipients",
+      "name": "Recipients",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/tasks?select=title,status,priority,due_date,archived,clients(name)&archived=is.false&status=neq.done&due_date=lt.{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd') }}&order=due_date.asc&limit=300",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "fetch",
+      "name": "Fetch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      },
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recipients come from profiles (the Recipients node), never a hardcoded\n// personal address: the mail follows whoever holds the role today, and a\n// deactivated account (profiles.deactivated_at, migration 032) stops getting\n// it. The company inbox is used only when nobody qualifies.\nconst FALLBACK_TO = 'nixgensolutions@gmail.com';\nconst EMAIL_RE = /^[^\\s@,;<>\"']+@[^\\s@,;<>\"']+\\.[^\\s@,;<>\"']+$/;\nconst people = $('Recipients').all().map(i => i.json).flat()\n  .filter(p => p && p.id && !p.deactivated_at && EMAIL_RE.test(String(p.email || '').trim()));\nconst can = (p, feature, level) => p.role === 'admin'\n  || (p.permissions || {})[feature] === 'edit'\n  || (level === 'view' && (p.permissions || {})[feature] === 'view');\nconst addressOf = (list) => [...new Set(list.map(p => String(p.email).trim().toLowerCase()))].join(',');\nconst TO = addressOf(people.filter(p => p.role === 'admin')) || FALLBACK_TO;\n\nconst rows = $input.all().map(i => i.json).flat()\n  .filter(x => x && typeof x === 'object' && Object.keys(x).length > 0);\nconst MNL = 'Asia/Manila';\nconst dkey = (d) => new Intl.DateTimeFormat('en-CA',{timeZone:MNL,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d));\nconst today = dkey(new Date());\nconst peso = n => '₱' + Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});\nconst wrap = (title, sub, body) => `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 4px\">${title}</h2><p style=\"margin:0 0 16px;color:#666\">${sub}</p>${body}\n  <p style=\"margin-top:20px;color:#999;font-size:12px\">Sent by n8n</p></div>`;\nconst table = (headers, trs) => `<table style=\"border-collapse:collapse;font-size:14px\">\n  <tr style=\"text-align:left;color:#666;font-size:12px;text-transform:uppercase\">${headers.map(h=>`<th style=\"padding:6px 12px\">${h}</th>`).join('')}</tr>\n  ${trs}</table>`;\n// Cell values are DB text (task titles, client names) members edit: always escaped.\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst td = (v, extra='') => `<td style=\"padding:6px 12px;border-bottom:1px solid #eee;${extra}\">${esc(v)}</td>`;\n\nconst od = rows.filter(t => t.due_date && t.status !== 'done' && dkey(t.due_date) < today);\nconst trs = od.map(t => `<tr>${td(t.title)}${td(t.clients?.name||'—')}${td(t.priority||'—')}${td(t.due_date,'color:#b91c1c;font-family:monospace')}</tr>`).join('')\n  || `<tr>${td('Nothing overdue 🎉','color:#999')}${td('')}${td('')}${td('')}</tr>`;\n// Fetch caps at 300 rows; say so rather than under-report silently.\nconst html = wrap('DeskDev — Overdue tasks', `${od.length >= 300 ? '300+' : od.length} task(s) past due`, table(['Task','Client','Priority','Due'], trs));\nconst __n = od.length; return (false && !__n) ? [] : [{ json: { html, count: __n, to: TO } }];\n"
+      },
+      "id": "build",
+      "name": "Build",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "=DeskDev — {{ $json.count }} overdue task(s)",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "ed628063-6bb0-47f8-9cb7-95e47a3dd143"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "addLabels",
+        "messageId": "={{ $json.id }}",
+        "labelIds": [
+          "Label_7494873874672194724"
+        ]
+      },
+      "id": "label",
+      "name": "Label",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1100,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "c0cd31ad-af8a-43be-ad0d-61c57e689075",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/automation_runs",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job: 'overdue-tasks', workflow: $workflow.name, status: 'ok', execution_id: String($execution.id), detail: { count: $('Build').first().json.count } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "log-run",
+      "name": "Log run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "executeOnce": true,
+      "position": [
+        1320,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 8am": {
+      "main": [
+        [
+          {
+            "node": "Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch": {
+      "main": [
+        [
+          {
+            "node": "Build",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email": {
+      "main": [
+        [
+          {
+            "node": "Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Label": {
+      "main": [
+        [
+          {
+            "node": "Log run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recipients": {
+      "main": [
+        [
+          {
+            "node": "Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vitality Health â€” Modern Healthcare</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{
+  colors:{accent:'#10b981','accent-dim':'#059669',surface:'#fafbfc','surface-dark':'#f0f4f8','card':'#ffffff',txt:'#0f172a',muted:'#64748b',border:'rgba(0,0,0,0.06)'},
+  fontFamily:{sans:['DM Sans','system-ui','sans-serif']}
+}}}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.reveal{opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.1s}.st2{transition-delay:.2s}.st3{transition-delay:.3s}.st4{transition-delay:.4s}
+.service-card{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.service-card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(16,185,129,.08)}
+</style>
+</head>
+<body class="bg-surface text-txt font-sans antialiased overflow-x-hidden">
+
+<!-- â•â•â• NAV â€” Clean, trustworthy â•â•â• -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-border">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      </div>
+      <span class="font-bold text-xl tracking-tight">Vitality<span class="text-accent">Health</span></span>
+    </div>
+    <div class="hidden md:flex gap-8 text-sm font-medium text-muted">
+      <a href="#services" class="hover:text-txt transition-colors">Services</a>
+      <a href="#doctors" class="hover:text-txt transition-colors">Our Team</a>
+      <a href="#testimonials" class="hover:text-txt transition-colors">Reviews</a>
+      <a href="#contact" class="hover:text-txt transition-colors">Contact</a>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="tel:+1234567890" class="hidden md:flex items-center gap-2 text-sm text-accent font-semibold">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        (212) 555-0190
+      </a>
+      <button class="bg-accent text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-dim transition-all hover:shadow-lg hover:shadow-accent/20">
+        Book Appointment
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” Warm, trustworthy, light â•â•â• -->
+<section class="py-24 md:py-32 px-6 relative overflow-hidden">
+  <div class="absolute top-20 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-0 left-10 w-64 h-64 bg-emerald-100 rounded-full blur-3xl opacity-50"></div>
+
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
+    <div>
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6" style="animation:fadeUp .7s .2s both">
+        <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-accent"></span></span>
+        <span class="text-accent text-xs font-semibold tracking-wide">Now Accepting New Patients</span>
+      </div>
+
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-800 leading-[0.95] tracking-tight mb-6" style="animation:fadeUp .8s .3s both">
+        Your health,<br>
+        <span class="text-accent">our priority</span>
+      </h1>
+
+      <p class="text-muted text-lg leading-relaxed max-w-lg mb-10" style="animation:fadeUp .8s .5s both">
+        Comprehensive healthcare with a personal touch. Our team of board-certified physicians combines cutting-edge medicine with compassionate care.
+      </p>
+
+      <div class="flex gap-4 flex-wrap mb-10" style="animation:fadeUp .8s .7s both">
+        <button class="bg-accent text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-accent-dim transition-all hover:shadow-lg hover:shadow-accent/20 hover:scale-[1.02]">
+          Book Appointment â†’
+        </button>
+        <button class="border border-border text-txt px-8 py-4 rounded-xl font-medium text-sm hover:border-accent hover:text-accent transition-all">
+          Our Services
+        </button>
+      </div>
+
+      <!-- Trust indicators -->
+      <div class="flex gap-6 flex-wrap" style="animation:fadeUp .8s .9s both">
+        <div class="flex items-center gap-2 text-sm text-muted">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          HIPAA Compliant
+        </div>
+        <div class="flex items-center gap-2 text-sm text-muted">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Board Certified
+        </div>
+        <div class="flex items-center gap-2 text-sm text-muted">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Same-Day Visits
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Doctor card visual -->
+    <div class="relative" style="animation:fadeUp 1s .4s both">
+      <div class="rounded-3xl bg-white border border-border shadow-xl shadow-black/5 p-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent to-emerald-300"></div>
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center text-accent text-2xl font-bold">DR</div>
+          <div>
+            <div class="font-bold text-lg">Dr. Sarah Mitchell</div>
+            <div class="text-muted text-sm">Chief Medical Officer</div>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between py-3 border-b border-border">
+            <span class="text-sm text-muted">Specialty</span>
+            <span class="text-sm font-semibold">Internal Medicine</span>
+          </div>
+          <div class="flex items-center justify-between py-3 border-b border-border">
+            <span class="text-sm text-muted">Experience</span>
+            <span class="text-sm font-semibold">18+ Years</span>
+          </div>
+          <div class="flex items-center justify-between py-3 border-b border-border">
+            <span class="text-sm text-muted">Rating</span>
+            <span class="text-sm font-semibold text-accent">â˜…â˜…â˜…â˜…â˜… 4.97</span>
+          </div>
+          <div class="flex items-center justify-between py-3">
+            <span class="text-sm text-muted">Next Available</span>
+            <span class="text-sm font-semibold text-accent">Today, 2:30 PM</span>
+          </div>
+        </div>
+        <button class="w-full mt-6 bg-accent text-white py-3.5 rounded-xl font-bold text-sm hover:bg-accent-dim transition-all">
+          Book with Dr. Mitchell â†’
+        </button>
+      </div>
+      <!-- Floating stat -->
+      <div class="absolute -bottom-4 -right-4 bg-white border border-border rounded-2xl px-5 py-3 shadow-lg" style="animation:float 4s ease-in-out infinite">
+        <div class="text-2xl font-bold text-accent">50K+</div>
+        <div class="text-xs text-muted">Patients Served</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• STATS â•â•â• -->
+<section class="py-16 px-6 bg-accent/5 border-y border-accent/10">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <div class="text-4xl font-800 text-accent">50K+</div>
+      <div class="text-sm text-muted mt-1">Patients Served</div>
+    </div>
+    <div class="reveal st1">
+      <div class="text-4xl font-800 text-accent">98%</div>
+      <div class="text-sm text-muted mt-1">Satisfaction Rate</div>
+    </div>
+    <div class="reveal st2">
+      <div class="text-4xl font-800 text-accent">25+</div>
+      <div class="text-sm text-muted mt-1">Specialists</div>
+    </div>
+    <div class="reveal st3">
+      <div class="text-4xl font-800 text-accent">24/7</div>
+      <div class="text-sm text-muted mt-1">Emergency Care</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• SERVICES â•â•â• -->
+<section id="services" class="py-32 px-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal text-accent text-xs font-semibold tracking-[0.3em] uppercase mb-3">Our Services</div>
+      <h2 class="reveal st1 text-4xl font-800 tracking-tight">Comprehensive <span class="text-accent">Care</span></h2>
+      <p class="reveal st2 text-muted mt-4 max-w-lg mx-auto">From preventive wellness to specialized treatment, we offer a full spectrum of healthcare services.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal service-card bg-white rounded-2xl p-8 border border-border cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center text-2xl mb-6">ðŸ’Š</div>
+        <h3 class="font-bold text-lg mb-2">Primary Care</h3>
+        <p class="text-muted text-sm leading-relaxed">Annual physicals, wellness screenings, chronic disease management, and preventive care for the whole family.</p>
+      </div>
+      <div class="reveal st1 service-card bg-white rounded-2xl p-8 border border-border cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-2xl mb-6">ðŸ©º</div>
+        <h3 class="font-bold text-lg mb-2">Telehealth</h3>
+        <p class="text-muted text-sm leading-relaxed">HIPAA-compliant video consultations from the comfort of your home. Available 7 days a week.</p>
+      </div>
+      <div class="reveal st2 service-card bg-white rounded-2xl p-8 border border-border cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-2xl mb-6">ðŸ§ </div>
+        <h3 class="font-bold text-lg mb-2">Mental Health</h3>
+        <p class="text-muted text-sm leading-relaxed">Therapy, counseling, and psychiatric services. Individual, couples, and group sessions available.</p>
+      </div>
+      <div class="reveal st3 service-card bg-white rounded-2xl p-8 border border-border cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl mb-6">ðŸ”¬</div>
+        <h3 class="font-bold text-lg mb-2">Lab & Diagnostics</h3>
+        <p class="text-muted text-sm leading-relaxed">On-site laboratory with same-day results. Advanced imaging and diagnostic testing.</p>
+      </div>
+      <div class="reveal st4 service-card bg-white rounded-2xl p-8 border border-border cursor-pointer">
+        <div class="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center text-2xl mb-6">â¤ï¸</div>
+        <h3 class="font-bold text-lg mb-2">Cardiology</h3>
+        <p class="text-muted text-sm leading-relaxed">Heart health assessments, ECG monitoring, stress tests, and cardiovascular disease management.</p>
+      </div>
+      <div class="reveal service-card bg-accent rounded-2xl p-8 cursor-pointer text-white">
+        <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl mb-6">ðŸ“…</div>
+        <h3 class="font-bold text-lg mb-2">Book Today</h3>
+        <p class="text-white/80 text-sm leading-relaxed mb-4">Same-day and next-day appointments available. No referral needed.</p>
+        <span class="text-sm font-bold underline">Schedule Now â†’</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• TESTIMONIAL â•â•â• -->
+<section id="testimonials" class="py-32 px-6 bg-surface-dark">
+  <div class="max-w-4xl mx-auto text-center">
+    <div class="reveal text-accent text-xs font-semibold tracking-[0.3em] uppercase mb-3">Patient Reviews</div>
+    <h2 class="reveal st1 text-3xl font-800 tracking-tight mb-12">What our patients say</h2>
+
+    <div class="reveal st2 bg-white rounded-3xl p-12 border border-border shadow-sm relative">
+      <div class="text-accent text-3xl mb-6">â˜…â˜…â˜…â˜…â˜…</div>
+      <blockquote class="text-xl leading-relaxed text-txt/80 italic mb-8 max-w-2xl mx-auto">
+        "The entire experience at Vitality Health has been exceptional. From the moment I walked in, the staff made me feel welcome and heard. Dr. Mitchell took the time to truly understand my concerns."
+      </blockquote>
+      <div class="flex items-center justify-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">JW</div>
+        <div class="text-left">
+          <div class="font-bold text-sm">Jennifer Williams</div>
+          <div class="text-muted text-xs">Patient since 2023</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• CTA â•â•â• -->
+<section id="contact" class="py-32 px-6 text-center">
+  <div class="max-w-2xl mx-auto">
+    <div class="reveal text-accent text-xs font-semibold tracking-[0.3em] uppercase mb-3">Get Started</div>
+    <h2 class="reveal st1 text-4xl font-800 tracking-tight mb-4">Your health journey<br><span class="text-accent">starts here</span></h2>
+    <p class="reveal st2 text-muted mb-10">Schedule your first visit today. We accept most major insurance plans.</p>
+    <div class="reveal st3 flex gap-4 justify-center flex-wrap">
+      <button class="bg-accent text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-accent-dim transition-all hover:shadow-lg hover:shadow-accent/20">Book Appointment â†’</button>
+      <a href="tel:+12125550190" class="border border-border text-txt px-10 py-4 rounded-xl font-medium text-sm hover:border-accent transition-all">(212) 555-0190</a>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-12 px-6">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <span class="font-bold text-lg">Vitality<span class="text-accent">Health</span></span>
+      </div>
+      <p class="text-muted text-sm max-w-xs leading-relaxed">Comprehensive healthcare with a personal touch. Serving our community since 2015.</p>
+    </div>
+    <div class="grid grid-cols-3 gap-12 text-sm">
+      <div>
+        <div class="font-bold mb-3">Services</div>
+        <div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">Primary Care</a><a href="#" class="hover:text-accent transition-colors">Telehealth</a><a href="#" class="hover:text-accent transition-colors">Mental Health</a><a href="#" class="hover:text-accent transition-colors">Lab Work</a></div>
+      </div>
+      <div>
+        <div class="font-bold mb-3">Company</div>
+        <div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-accent transition-colors">About Us</a><a href="#" class="hover:text-accent transition-colors">Our Team</a><a href="#" class="hover:text-accent transition-colors">Careers</a><a href="#" class="hover:text-accent transition-colors">News</a></div>
+      </div>
+      <div>
+        <div class="font-bold mb-3">Contact</div>
+        <div class="flex flex-col gap-2 text-muted"><span>142 Health Ave</span><span>New York, NY 10012</span><span class="text-accent">(212) 555-0190</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-12 pt-6 border-t border-border flex justify-between text-xs text-muted">
+    <span>Â© 2026 Vitality Health. All rights reserved.</span>
+    <div class="flex gap-4"><a href="#" class="hover:text-accent transition-colors">Privacy</a><a href="#" class="hover:text-accent transition-colors">Terms</a><a href="#" class="hover:text-accent transition-colors">HIPAA Notice</a></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+document.body.style.opacity='0';document.body.style.transition='opacity .4s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumavault — Digital Art &amp; Collectibles Marketplace</title>
+<meta name="description" content="Lumavault is a curated marketplace for luminous digital art, generative collectibles, and rare 1-of-1 drops. Collect, bid, and trade glowing originals." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'sans-serif'],
+          body: ['Space Grotesk', 'sans-serif'],
+        },
+        colors: {
+          ink: '#070512',
+          panel: '#0e0a1f',
+          violet: '#a06bff',
+          magenta: '#ff5cc8',
+          cyan: '#3ef0ff',
+          lime: '#9dff5c',
+          dusk: '#1a1330',
+        },
+        boxShadow: {
+          glow: '0 0 40px -8px rgba(160,107,255,0.55)',
+          neon: '0 0 24px -4px rgba(62,240,255,0.5)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --x: 50%; --y: 50%; }
+  html, body { background: #070512; color: #ece7ff; }
+  body { font-family: 'Space Grotesk', sans-serif; overflow-x: hidden; }
+  ::selection { background: rgba(255,92,200,0.35); color: #fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: #0a0716; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(#a06bff,#ff5cc8); border-radius: 99px; }
+
+  .font-display { font-family: 'Sora', sans-serif; }
+
+  /* Gradient mesh glow background */
+  .mesh {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(40% 40% at 18% 22%, rgba(160,107,255,0.28), transparent 70%),
+      radial-gradient(38% 38% at 82% 18%, rgba(62,240,255,0.20), transparent 70%),
+      radial-gradient(46% 46% at 70% 82%, rgba(255,92,200,0.22), transparent 70%),
+      radial-gradient(40% 40% at 25% 85%, rgba(157,255,92,0.12), transparent 72%);
+    filter: blur(8px);
+  }
+  .grid-overlay {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 80%);
+  }
+
+  /* Glass card */
+  .glass {
+    background: linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.09);
+    backdrop-filter: blur(14px);
+  }
+  .glass:hover { border-color: rgba(160,107,255,0.4); }
+
+  /* Pointer glow that follows cursor on a card */
+  .pglow { position: relative; overflow: hidden; }
+  .pglow::before {
+    content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .4s; pointer-events: none;
+    background: radial-gradient(180px 180px at var(--x) var(--y), rgba(160,107,255,0.28), transparent 70%);
+  }
+  .pglow:hover::before { opacity: 1; }
+
+  /* Gradient text */
+  .gtext {
+    background: linear-gradient(92deg, #a06bff 0%, #ff5cc8 45%, #3ef0ff 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Generative art tiles */
+  .art { position: relative; overflow: hidden; border-radius: 18px; isolation: isolate; }
+  .art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(7,5,18,0.55)); }
+  .a1 { background: conic-gradient(from 120deg at 35% 30%, #ff5cc8, #a06bff, #3ef0ff, #ff5cc8); }
+  .a2 { background: radial-gradient(circle at 30% 30%, #3ef0ff, transparent 45%), radial-gradient(circle at 70% 70%, #ff5cc8, transparent 45%), #1a1330; }
+  .a3 { background: linear-gradient(135deg, #9dff5c, #3ef0ff 45%, #a06bff); }
+  .a4 { background: repeating-linear-gradient(45deg, #a06bff 0 18px, #ff5cc8 18px 36px); }
+  .a5 { background: radial-gradient(circle at 50% 120%, #ff5cc8, #a06bff 40%, #070512 80%); }
+  .a6 { background: conic-gradient(from 0deg, #3ef0ff, #9dff5c, #a06bff, #ff5cc8, #3ef0ff); }
+  .a7 { background: linear-gradient(120deg, #1a1330 20%, #a06bff), radial-gradient(circle at 80% 20%, #3ef0ff, transparent 40%); }
+  .a8 { background: radial-gradient(ellipse at 20% 80%, #ff5cc8, transparent 55%), radial-gradient(ellipse at 80% 20%, #9dff5c, transparent 50%), #0e0a1f; }
+  .blob { position: absolute; border-radius: 50%; mix-blend-mode: screen; filter: blur(2px); opacity: .85; }
+  .ring { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,0.35); }
+  .shard { position: absolute; mix-blend-mode: screen; }
+
+  .float { animation: float 7s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-16px) rotate(6deg); } }
+  .spin-slow { animation: spin 26s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+
+  /* Marquee rail */
+  .rail-track { display: flex; gap: 1.25rem; width: max-content; animation: rail 38s linear infinite; }
+  .rail:hover .rail-track { animation-play-state: paused; }
+  @keyframes rail { to { transform: translateX(-50%); } }
+
+  /* Magnetic CTA */
+  .mag { transition: transform .25s cubic-bezier(.2,.8,.2,1); will-change: transform; }
+
+  /* Tilt cards */
+  .tilt { transform-style: preserve-3d; transition: transform .2s ease; will-change: transform; }
+
+  /* Live bid pulse */
+  .live-dot { box-shadow: 0 0 0 0 rgba(157,255,92,0.7); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(157,255,92,0.6);} 70% { box-shadow: 0 0 0 10px rgba(157,255,92,0);} 100% { box-shadow: 0 0 0 0 rgba(157,255,92,0);} }
+
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease, opacity .4s; opacity: 0; }
+  .faq-item.open .faq-body { max-height: 320px; opacity: 1; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .35s; }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .float, .spin-slow, .rail-track, .live-dot { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body class="relative">
+
+<div class="mesh"></div>
+<div class="grid-overlay"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <nav class="max-w-7xl mx-auto px-5 lg:px-8 mt-4">
+    <div class="glass rounded-2xl px-5 py-3 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 font-display font-extrabold text-lg">
+        <span class="relative grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-violet via-magenta to-cyan shadow-glow">
+          <span class="w-3.5 h-3.5 rounded-[4px] bg-ink rotate-45"></span>
+        </span>
+        Luma<span class="gtext">vault</span>
+      </a>
+      <ul class="hidden lg:flex items-center gap-8 text-sm text-white/70 font-medium">
+        <li><a href="#trending" class="hover:text-white transition">Explore</a></li>
+        <li><a href="#auctions" class="hover:text-white transition">Auctions</a></li>
+        <li><a href="#creators" class="hover:text-white transition">Creators</a></li>
+        <li><a href="#how" class="hover:text-white transition">How it works</a></li>
+        <li><a href="#faq" class="hover:text-white transition">FAQ</a></li>
+      </ul>
+      <button class="mag group relative inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-ink bg-gradient-to-r from-cyan via-violet to-magenta shadow-neon">
+        <span class="w-2 h-2 rounded-full bg-ink/70"></span> Connect Wallet
+      </button>
+    </div>
+  </nav>
+</header>
+
+<main id="top" class="relative z-10">
+
+<!-- ===================== HERO ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 pt-36 pb-20 lg:pt-44">
+  <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <div data-parallax>
+      <span class="pill inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium text-white/70 reveal">
+        <span class="w-1.5 h-1.5 rounded-full bg-lime live-dot"></span> Drop 014 — “Aurora Fragments” is live
+      </span>
+      <h1 class="hero-h font-display font-extrabold leading-[0.98] tracking-tight mt-6 text-[clamp(2.6rem,7vw,5.2rem)]">
+        Collect light.<br/>Own the <span class="gtext">glow.</span>
+      </h1>
+      <p class="mt-6 text-lg text-white/65 max-w-md reveal">
+        A curated marketplace for luminous digital art and generative collectibles. Discover 1-of-1 originals, place live bids, and trade rare drops from a hand-picked roster of fictional artists.
+      </p>
+      <div class="mt-9 flex flex-wrap items-center gap-4 reveal">
+        <button class="mag rounded-xl px-7 py-3.5 font-semibold text-ink bg-gradient-to-r from-cyan via-violet to-magenta shadow-neon">Explore the gallery</button>
+        <a href="#how" class="rounded-xl px-7 py-3.5 font-semibold text-white/80 glass">How it works</a>
+      </div>
+      <div class="mt-10 flex items-center gap-6 reveal">
+        <div class="flex -space-x-3">
+          <span class="art a1 w-9 h-9 rounded-full ring-2 ring-ink"></span>
+          <span class="art a3 w-9 h-9 rounded-full ring-2 ring-ink"></span>
+          <span class="art a6 w-9 h-9 rounded-full ring-2 ring-ink"></span>
+          <span class="art a8 w-9 h-9 rounded-full ring-2 ring-ink"></span>
+        </div>
+        <p class="text-sm text-white/55">Trusted by <span class="text-white font-semibold">28,400+</span> collectors worldwide</p>
+      </div>
+    </div>
+
+    <!-- Featured art card -->
+    <div class="relative" data-parallax>
+      <div class="absolute -inset-6 bg-gradient-to-tr from-violet/30 via-magenta/20 to-cyan/30 blur-3xl rounded-[40px]"></div>
+      <article id="featured-card" class="tilt pglow glass relative rounded-3xl p-4 max-w-md mx-auto shadow-glow">
+        <div class="art a5 aspect-[4/5] w-full">
+          <span class="blob spin-slow" style="width:180px;height:180px;background:radial-gradient(circle,#3ef0ff,transparent 65%);top:8%;left:12%"></span>
+          <span class="ring float" style="width:140px;height:140px;right:14%;top:18%"></span>
+          <span class="ring spin-slow" style="width:220px;height:220px;right:-6%;bottom:-10%;border-color:rgba(255,92,200,0.4)"></span>
+          <span class="shard float" style="left:30%;bottom:18%;width:80px;height:80px;background:linear-gradient(45deg,#9dff5c,#3ef0ff);clip-path:polygon(50% 0,100% 100%,0 100%)"></span>
+        </div>
+        <div class="flex items-center justify-between mt-4 px-2 pb-2">
+          <div>
+            <p class="text-xs text-white/45">Featured 1/1</p>
+            <h3 class="font-display font-bold text-lg">Solar Bloom #07</h3>
+            <p class="text-xs text-white/50 mt-0.5">by <span class="text-violet">@nova_seraph</span></p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs text-white/45">Current bid</p>
+            <p class="font-display font-bold text-lg gtext bid-val">4.82 ETH</p>
+          </div>
+        </div>
+        <button class="mag w-full mt-1 rounded-xl py-3 font-semibold text-ink bg-gradient-to-r from-lime to-cyan place-bid">Place a bid</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS STRIP ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 -mt-4 mb-8">
+  <div class="glass rounded-3xl grid grid-cols-2 lg:grid-cols-4 divide-x divide-white/10">
+    <div class="p-7 text-center reveal">
+      <p class="font-display font-extrabold text-4xl gtext" data-count="184" data-suffix="K"></p>
+      <p class="text-sm text-white/55 mt-1">Volume traded (ETH)</p>
+    </div>
+    <div class="p-7 text-center reveal">
+      <p class="font-display font-extrabold text-4xl gtext" data-count="6200" data-suffix="+"></p>
+      <p class="text-sm text-white/55 mt-1">Verified artists</p>
+    </div>
+    <div class="p-7 text-center reveal">
+      <p class="font-display font-extrabold text-4xl gtext" data-count="312" data-suffix="K"></p>
+      <p class="text-sm text-white/55 mt-1">Items minted</p>
+    </div>
+    <div class="p-7 text-center reveal">
+      <p class="font-display font-extrabold text-4xl gtext" data-count="99" data-suffix="%"></p>
+      <p class="text-sm text-white/55 mt-1">Gas-optimized mints</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRENDING RAIL ===================== -->
+<section id="trending" class="py-16 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 flex items-end justify-between mb-8">
+    <div>
+      <h2 class="font-display font-extrabold text-3xl lg:text-4xl reveal">Trending collections</h2>
+      <p class="text-white/55 mt-2 reveal">Curated drops climbing the charts this week.</p>
+    </div>
+    <a href="#auctions" class="hidden sm:inline-block text-sm text-violet hover:text-magenta transition reveal">View all →</a>
+  </div>
+
+  <div class="rail relative">
+    <div class="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-ink to-transparent z-10"></div>
+    <div class="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-ink to-transparent z-10"></div>
+    <div class="rail-track px-5">
+      <!-- group -->
+      <div class="flex gap-5" id="rail-group">
+        <!-- cards injected + duplicated by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LIVE AUCTIONS GRID ===================== -->
+<section id="auctions" class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+  <div class="flex items-end justify-between mb-9">
+    <div>
+      <span class="pill inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs text-white/70"><span class="w-1.5 h-1.5 rounded-full bg-lime live-dot"></span> Live now</span>
+      <h2 class="font-display font-extrabold text-3xl lg:text-4xl mt-3 reveal">Open auctions</h2>
+    </div>
+  </div>
+  <div id="auction-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+</section>
+
+<!-- ===================== CATEGORIES ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+  <h2 class="font-display font-extrabold text-3xl lg:text-4xl mb-9 reveal">Browse by category</h2>
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="cat glass pglow rounded-3xl p-5 reveal">
+      <div class="art a6 h-28 w-full mb-4"></div>
+      <h3 class="font-display font-bold text-lg">Generative</h3>
+      <p class="text-sm text-white/50 mt-1">42.1K items</p>
+    </div>
+    <div class="cat glass pglow rounded-3xl p-5 reveal">
+      <div class="art a2 h-28 w-full mb-4"></div>
+      <h3 class="font-display font-bold text-lg">Photography</h3>
+      <p class="text-sm text-white/50 mt-1">28.7K items</p>
+    </div>
+    <div class="cat glass pglow rounded-3xl p-5 reveal">
+      <div class="art a4 h-28 w-full mb-4"></div>
+      <h3 class="font-display font-bold text-lg">Pixel &amp; 8-bit</h3>
+      <p class="text-sm text-white/50 mt-1">15.3K items</p>
+    </div>
+    <div class="cat glass pglow rounded-3xl p-5 reveal">
+      <div class="art a8 h-28 w-full mb-4"></div>
+      <h3 class="font-display font-bold text-lg">3D &amp; Motion</h3>
+      <p class="text-sm text-white/50 mt-1">19.9K items</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section id="how" class="max-w-7xl mx-auto px-5 lg:px-8 py-20">
+  <div class="text-center mb-14">
+    <h2 class="font-display font-extrabold text-3xl lg:text-4xl reveal">Start collecting in three steps</h2>
+    <p class="text-white/55 mt-3 reveal">No friction. Just light.</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="glass rounded-3xl p-8 reveal">
+      <span class="font-display font-extrabold text-5xl gtext">01</span>
+      <h3 class="font-display font-bold text-xl mt-4">Connect a wallet</h3>
+      <p class="text-white/55 mt-2">Link any supported wallet in seconds. We never touch your keys — you stay fully in control.</p>
+    </div>
+    <div class="glass rounded-3xl p-8 reveal">
+      <span class="font-display font-extrabold text-5xl gtext">02</span>
+      <h3 class="font-display font-bold text-xl mt-4">Discover &amp; bid</h3>
+      <p class="text-white/55 mt-2">Explore curated drops, follow your favorite creators, and place bids on live auctions with one tap.</p>
+    </div>
+    <div class="glass rounded-3xl p-8 reveal">
+      <span class="font-display font-extrabold text-5xl gtext">03</span>
+      <h3 class="font-display font-bold text-xl mt-4">Own &amp; trade</h3>
+      <p class="text-white/55 mt-2">Win the piece, hold it in your vault, and re-list anytime. Every transfer is verifiable on-chain.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TOP CREATORS ===================== -->
+<section id="creators" class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+  <h2 class="font-display font-extrabold text-3xl lg:text-4xl mb-9 reveal">Top creators this season</h2>
+  <div id="creator-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 py-20">
+  <div class="glass rounded-[32px] p-8 lg:p-14 grid lg:grid-cols-2 gap-12 items-center relative overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-72 h-72 bg-violet/30 blur-3xl rounded-full"></div>
+    <div data-parallax>
+      <h2 class="font-display font-extrabold text-3xl lg:text-4xl reveal">Built for artists.<br/><span class="gtext">Curated for collectors.</span></h2>
+      <p class="text-white/60 mt-5 reveal">Lumavault is a hand-curated home for luminous digital art. We champion emerging creators with low fees, instant payouts, and a gallery experience that makes every piece feel like it belongs in a museum of light.</p>
+      <ul class="mt-7 space-y-3 text-white/70 reveal">
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-cyan"></span> 1.5% flat marketplace fee — the lowest in its class</li>
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-magenta"></span> Carbon-aware minting on low-energy chains</li>
+        <li class="flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-lime"></span> Lifetime royalties enforced on every resale</li>
+      </ul>
+    </div>
+    <div class="grid grid-cols-2 gap-4" data-parallax>
+      <div class="art a1 aspect-square float"><span class="ring spin-slow" style="width:90px;height:90px;top:20%;left:20%"></span></div>
+      <div class="art a3 aspect-square float" style="animation-delay:1.2s"></div>
+      <div class="art a7 aspect-square float" style="animation-delay:.6s"></div>
+      <div class="art a6 aspect-square float" style="animation-delay:1.8s"><span class="ring float" style="width:70px;height:70px;right:14%;bottom:14%"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+  <h2 class="font-display font-extrabold text-3xl lg:text-4xl mb-9 reveal">Voices from the vault</h2>
+  <div class="grid md:grid-cols-3 gap-6">
+    <figure class="glass pglow rounded-3xl p-7 reveal">
+      <p class="text-white/75 leading-relaxed">“My first solo drop sold out in eleven minutes. The royalty engine alone changed how I price my work.”</p>
+      <figcaption class="flex items-center gap-3 mt-6">
+        <span class="art a3 w-10 h-10 rounded-full"></span>
+        <span><span class="block font-semibold text-sm">Imani Vael</span><span class="block text-xs text-white/45">Generative artist</span></span>
+      </figcaption>
+    </figure>
+    <figure class="glass pglow rounded-3xl p-7 reveal">
+      <p class="text-white/75 leading-relaxed">“The live-bid feel is addictive — clean, fast, and zero confusing pop-ups. I collect more here than anywhere.”</p>
+      <figcaption class="flex items-center gap-3 mt-6">
+        <span class="art a6 w-10 h-10 rounded-full"></span>
+        <span><span class="block font-semibold text-sm">Dex Or…</span><span class="block text-xs text-white/45">Collector, 140+ pieces</span></span>
+      </figcaption>
+    </figure>
+    <figure class="glass pglow rounded-3xl p-7 reveal">
+      <p class="text-white/75 leading-relaxed">“Curation is everything. Lumavault feels like walking through a gallery, not scrolling a flea market.”</p>
+      <figcaption class="flex items-center gap-3 mt-6">
+        <span class="art a8 w-10 h-10 rounded-full"></span>
+        <span><span class="block font-semibold text-sm">Sable Quinn</span><span class="block text-xs text-white/45">Curator &amp; collector</span></span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="max-w-3xl mx-auto px-5 lg:px-8 py-20">
+  <h2 class="font-display font-extrabold text-3xl lg:text-4xl text-center mb-10 reveal">Frequently asked</h2>
+  <div id="faq-list" class="space-y-4"></div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="max-w-7xl mx-auto px-5 lg:px-8 py-16">
+  <div class="relative glass rounded-[36px] p-10 lg:p-16 text-center overflow-hidden shadow-glow">
+    <img src="https://images.unsplash.com/photo-1634973357973-f2ed2657db3c?auto=format&fit=crop&w=1600&q=80"
+         alt="" onerror="this.style.display='none'"
+         class="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity" />
+    <div class="absolute inset-0 bg-gradient-to-tr from-ink via-ink/70 to-transparent"></div>
+    <div class="relative">
+      <h2 class="font-display font-extrabold text-3xl lg:text-5xl reveal">Your next piece is <span class="gtext">glowing</span> somewhere.</h2>
+      <p class="text-white/65 mt-5 max-w-xl mx-auto reveal">Join 28,000+ collectors and creators shaping the future of luminous digital art.</p>
+      <div class="mt-9 flex flex-wrap justify-center gap-4 reveal">
+        <button class="mag rounded-xl px-8 py-4 font-semibold text-ink bg-gradient-to-r from-cyan via-violet to-magenta shadow-neon">Launch the marketplace</button>
+        <button class="rounded-xl px-8 py-4 font-semibold text-white/80 glass">Become a creator</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="max-w-7xl mx-auto px-5 lg:px-8 py-14 border-t border-white/10">
+  <div class="grid md:grid-cols-4 gap-10">
+    <div>
+      <a href="#top" class="flex items-center gap-2.5 font-display font-extrabold text-lg">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-violet via-magenta to-cyan">
+          <span class="w-3.5 h-3.5 rounded-[4px] bg-ink rotate-45"></span>
+        </span>
+        Luma<span class="gtext">vault</span>
+      </a>
+      <p class="text-sm text-white/50 mt-4 max-w-xs">A curated marketplace for luminous digital art and generative collectibles.</p>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Marketplace</h4>
+      <ul class="space-y-2 text-sm text-white/55">
+        <li><a href="#trending" class="hover:text-white transition">Explore</a></li>
+        <li><a href="#auctions" class="hover:text-white transition">Live auctions</a></li>
+        <li><a href="#creators" class="hover:text-white transition">Creators</a></li>
+        <li><a href="#" class="hover:text-white transition">Drops calendar</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Company</h4>
+      <ul class="space-y-2 text-sm text-white/55">
+        <li><a href="#" class="hover:text-white transition">About</a></li>
+        <li><a href="#" class="hover:text-white transition">Careers</a></li>
+        <li><a href="#" class="hover:text-white transition">Press kit</a></li>
+        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-semibold mb-4">Stay in the loop</h4>
+      <p class="text-sm text-white/55 mb-3">New drops, weekly. No noise.</p>
+      <form class="flex glass rounded-xl p-1.5" onsubmit="return false">
+        <input type="email" placeholder="you@email.com" class="bg-transparent flex-1 px-3 text-sm outline-none placeholder:text-white/35" />
+        <button class="mag rounded-lg px-4 py-2 text-sm font-semibold text-ink bg-gradient-to-r from-lime to-cyan">Join</button>
+      </form>
+    </div>
+  </div>
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-12 pt-8 border-t border-white/10 text-sm text-white/40">
+    <p>© 2026 Lumavault Labs — a fictional template by NixGen. All art is generative.</p>
+    <div class="flex gap-5">
+      <a href="#" class="hover:text-white transition">Terms</a>
+      <a href="#" class="hover:text-white transition">Privacy</a>
+      <a href="#" class="hover:text-white transition">Discord</a>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const artClasses = ['a1','a2','a3','a4','a5','a6','a7','a8'];
+  const rnd = (a,b) => a + Math.random()*(b-a);
+
+  /* ---------- Build a generative art tile node ---------- */
+  function artTile(cls, h) {
+    const d = document.createElement('div');
+    d.className = `art ${cls} ${h}`;
+    // decorate
+    const deco = Math.floor(rnd(1,3));
+    for (let i=0;i<deco;i++){
+      const s = document.createElement('span');
+      if (Math.random()>0.5){ s.className='ring float'; const sz=rnd(40,110); s.style.cssText=`width:${sz}px;height:${sz}px;top:${rnd(5,60)}%;left:${rnd(5,60)}%`; }
+      else { s.className='blob'; const sz=rnd(50,120); s.style.cssText=`width:${sz}px;height:${sz}px;top:${rnd(0,60)}%;left:${rnd(0,60)}%;background:radial-gradient(circle,${['#3ef0ff','#9dff5c','#ff5cc8','#a06bff'][Math.floor(rnd(0,4))]},transparent 65%)`; }
+      d.appendChild(s);
+    }
+    return d;
+  }
+
+  /* ---------- Data (fictional) ---------- */
+  const collections = [
+    ['Aurora Fragments','floor 1.2 ETH','+38%'],
+    ['Neon Mirage','floor 0.8 ETH','+21%'],
+    ['Glasswing','floor 2.4 ETH','+14%'],
+    ['Solar Bloom','floor 3.1 ETH','+57%'],
+    ['Prism Echo','floor 0.6 ETH','+9%'],
+    ['Lumen Drift','floor 1.9 ETH','+44%'],
+    ['Voidlight','floor 4.0 ETH','+27%'],
+    ['Halcyon Code','floor 0.95 ETH','+33%'],
+  ];
+  const auctions = [
+    ['Glasswing #128','@kira.flux','3.4 ETH','12h 04m'],
+    ['Voidlight #02','@nova_seraph','5.1 ETH','03h 51m'],
+    ['Prism Echo #77','@aether.lab','0.92 ETH','18h 22m'],
+    ['Lumen Drift #41','@sable.q','2.6 ETH','06h 13m'],
+    ['Neon Mirage #19','@dex.ore','1.1 ETH','21h 40m'],
+    ['Solar Bloom #07','@nova_seraph','4.8 ETH','01h 09m'],
+    ['Halcyon #310','@imani.vael','0.74 ETH','14h 55m'],
+    ['Aurora #256','@kira.flux','1.85 ETH','09h 30m'],
+  ];
+  const creators = [
+    ['Nova Seraph','@nova_seraph','428 ETH'],
+    ['Kira Flux','@kira.flux','391 ETH'],
+    ['Aether Lab','@aether.lab','355 ETH'],
+    ['Imani Vael','@imani.vael','302 ETH'],
+    ['Sable Quinn','@sable.q','277 ETH'],
+    ['Dex Ore','@dex.ore','248 ETH'],
+  ];
+  const faqs = [
+    ['Is Lumavault a real marketplace?','No — this is an original demo template. All brands, artists, collections, and stats are fictional and generated for design purposes.'],
+    ['What wallets are supported?','In a live build, Lumavault connects to standard browser wallets. Your keys never leave your device — we only read public addresses to display holdings.'],
+    ['How much are the fees?','The template advertises a flat 1.5% marketplace fee with enforced lifetime royalties for creators on every resale.'],
+    ['Can I sell my own art?','Yes. The "Become a creator" flow would let you mint, set royalties, and schedule timed drops or open auctions.'],
+    ['How do live auctions work?','Each open auction has a countdown. Placing a bid extends nothing artificially — the highest bid at zero wins, and settlement is on-chain.'],
+  ];
+
+  /* ---------- Rail (trending) ---------- */
+  const railGroup = document.getElementById('rail-group');
+  function railCard(c, i) {
+    const el = document.createElement('div');
+    el.className = 'glass pglow rounded-3xl p-3 w-[230px] shrink-0';
+    el.innerHTML = `
+      <div class="art-slot"></div>
+      <div class="px-1.5 pt-3 pb-1">
+        <div class="flex items-center justify-between">
+          <h3 class="font-display font-semibold">${c[0]}</h3>
+          <span class="text-xs font-semibold text-lime">${c[2]}</span>
+        </div>
+        <p class="text-xs text-white/50 mt-1">${c[1]}</p>
+      </div>`;
+    el.querySelector('.art-slot').replaceWith(artTile(artClasses[i%8], 'h-36 w-full'));
+    bindGlow(el);
+    return el;
+  }
+  collections.forEach((c,i)=> railGroup.appendChild(railCard(c,i)));
+  // duplicate for seamless loop
+  collections.forEach((c,i)=> railGroup.appendChild(railCard(c,i)));
+
+  /* ---------- Auction grid ---------- */
+  const ag = document.getElementById('auction-grid');
+  auctions.forEach((a,i)=>{
+    const el = document.createElement('article');
+    el.className = 'tilt pglow glass rounded-3xl p-3 reveal';
+    el.innerHTML = `
+      <div class="relative art-slot">
+        <span class="absolute top-2 left-2 z-10 pill rounded-full px-2.5 py-1 text-[10px] flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-lime live-dot"></span>${a[3]}</span>
+      </div>
+      <div class="px-1.5 pt-3 pb-1">
+        <h3 class="font-display font-semibold text-sm">${a[0]}</h3>
+        <p class="text-xs text-violet mt-0.5">${a[1]}</p>
+        <div class="flex items-end justify-between mt-3">
+          <div><p class="text-[10px] text-white/45">Current bid</p><p class="font-display font-bold text-sm gtext bid-val">${a[2]}</p></div>
+          <button class="place-bid mag rounded-lg px-3 py-1.5 text-xs font-semibold text-ink bg-gradient-to-r from-lime to-cyan">Bid</button>
+        </div>
+      </div>`;
+    const slot = el.querySelector('.art-slot');
+    slot.prepend(artTile(artClasses[i%8],'aspect-square w-full'));
+    bindGlow(el); bindTilt(el);
+    ag.appendChild(el);
+  });
+
+  /* ---------- Creators ---------- */
+  const cg = document.getElementById('creator-grid');
+  creators.forEach((c,i)=>{
+    const el = document.createElement('article');
+    el.className = 'glass pglow rounded-3xl p-5 flex items-center gap-4 reveal';
+    el.innerHTML = `
+      <span class="font-display font-bold text-white/30 text-lg w-6">${i+1}</span>
+      <div class="avatar-slot"></div>
+      <div class="flex-1">
+        <h3 class="font-display font-semibold">${c[0]}</h3>
+        <p class="text-xs text-white/50">${c[1]}</p>
+      </div>
+      <div class="text-right"><p class="text-[10px] text-white/45">Volume</p><p class="font-semibold text-sm gtext">${c[2]}</p></div>`;
+    el.querySelector('.avatar-slot').replaceWith(artTile(artClasses[i%8],'w-12 h-12 rounded-full'));
+    bindGlow(el);
+    cg.appendChild(el);
+  });
+
+  /* ---------- FAQ ---------- */
+  const fl = document.getElementById('faq-list');
+  faqs.forEach((f,i)=>{
+    const el = document.createElement('div');
+    el.className = 'faq-item glass rounded-2xl px-6 py-5 reveal cursor-pointer' + (i===0?' open':'');
+    el.innerHTML = `
+      <div class="flex items-center justify-between gap-4">
+        <h3 class="font-display font-semibold">${f[0]}</h3>
+        <span class="faq-plus text-2xl text-violet leading-none">+</span>
+      </div>
+      <div class="faq-body"><p class="text-white/55 pt-4">${f[1]}</p></div>`;
+    el.addEventListener('click', ()=>{
+      const open = el.classList.contains('open');
+      fl.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));
+      if(!open) el.classList.add('open');
+    });
+    fl.appendChild(el);
+  });
+
+  /* ---------- Pointer glow binding ---------- */
+  function bindGlow(el){
+    el.addEventListener('pointermove', e=>{
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--x', (e.clientX-r.left)+'px');
+      el.style.setProperty('--y', (e.clientY-r.top)+'px');
+    });
+  }
+
+  /* ---------- 3D tilt ---------- */
+  function bindTilt(el){
+    if(reduce) return;
+    el.addEventListener('pointermove', e=>{
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX-r.left)/r.width - .5;
+      const py = (e.clientY-r.top)/r.height - .5;
+      el.style.transform = `perspective(800px) rotateY(${px*9}deg) rotateX(${-py*9}deg) translateZ(6px)`;
+    });
+    el.addEventListener('pointerleave', ()=> el.style.transform='');
+  }
+  bindTilt(document.getElementById('featured-card'));
+  bindGlow(document.getElementById('featured-card'));
+
+  /* ---------- Magnetic CTAs ---------- */
+  if(!reduce){
+    document.querySelectorAll('.mag').forEach(btn=>{
+      btn.addEventListener('pointermove', e=>{
+        const r = btn.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width/2)*0.3;
+        const y = (e.clientY - r.top - r.height/2)*0.4;
+        btn.style.transform = `translate(${x}px,${y}px)`;
+      });
+      btn.addEventListener('pointerleave', ()=> btn.style.transform='');
+    });
+  }
+
+  /* ---------- Live bid micro-interaction ---------- */
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('.place-bid');
+    if(!b) return;
+    const card = b.closest('article') || b.closest('.glass');
+    const val = card && card.querySelector('.bid-val');
+    if(val){
+      const num = parseFloat(val.textContent) || 1;
+      const next = (num + (0.01 + Math.random()*0.12)).toFixed(2);
+      val.textContent = next + ' ETH';
+      val.animate([{transform:'scale(1)'},{transform:'scale(1.18)'},{transform:'scale(1)'}], {duration:420, easing:'ease-out'});
+      // floating "+bid" tag
+      const tag = document.createElement('span');
+      tag.textContent = 'You\'re top bidder!';
+      tag.className = 'fixed z-[60] text-xs font-semibold text-ink bg-lime rounded-full px-3 py-1 pointer-events-none';
+      tag.style.left = e.clientX+'px'; tag.style.top = e.clientY+'px';
+      document.body.appendChild(tag);
+      tag.animate([{transform:'translate(-50%,-50%)',opacity:1},{transform:'translate(-50%,-160%)',opacity:0}], {duration:900, easing:'ease-out'}).onfinish=()=>tag.remove();
+    }
+  });
+
+  /* ---------- Count-ups ---------- */
+  function countUp(el){
+    const target = +el.dataset.count;
+    const suffix = el.dataset.suffix || '';
+    const fmt = n => (target>=1000 ? Math.round(n).toLocaleString() : Math.round(n));
+    const dur = 1600; const start = performance.now();
+    function step(t){
+      const p = Math.min((t-start)/dur,1);
+      const e = 1-Math.pow(1-p,3);
+      el.textContent = fmt(target*e) + suffix;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- GSAP reveals + parallax + headline ---------- */
+  if(window.gsap){
+    gsap.registerPlugin(ScrollTrigger);
+
+    if(!reduce){
+      // hero headline kinetic
+      const h = document.querySelector('.hero-h');
+      gsap.from(h, {y:40, opacity:0, duration:1, ease:'power3.out', delay:.15});
+
+      // reveals
+      gsap.utils.toArray('.reveal').forEach(el=>{
+        gsap.to(el, {
+          opacity:1, y:0, duration:.9, ease:'power3.out',
+          scrollTrigger:{ trigger:el, start:'top 88%' }
+        });
+      });
+
+      // container parallax
+      gsap.utils.toArray('[data-parallax]').forEach(el=>{
+        gsap.to(el, {
+          yPercent: -8, ease:'none',
+          scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:0.6 }
+        });
+      });
+    } else {
+      gsap.set('.reveal',{opacity:1,y:0});
+    }
+
+    // count-ups trigger
+    document.querySelectorAll('[data-count]').forEach(el=>{
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>countUp(el) });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(e=>{e.style.opacity=1;e.style.transform='none';});
+    document.querySelectorAll('[data-count]').forEach(countUp);
+  }
+
+  /* ---------- Auto bid simulation on featured card ---------- */
+  if(!reduce){
+    setInterval(()=>{
+      const v = document.querySelector('#featured-card .bid-val');
+      if(!v || document.hidden) return;
+      const n = (parseFloat(v.textContent)+ 0.01 + Math.random()*0.05).toFixed(2);
+      v.textContent = n + ' ETH';
+      v.animate([{opacity:.5},{opacity:1}],{duration:500});
+    }, 6500);
+  }
+})();
+</script>
+</body>
+</html>

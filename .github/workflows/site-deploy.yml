@@ -1,0 +1,221 @@
+name: Site deploy
+
+# Deploys the one Worker that serves the NixGen site and DeskDev (site/):
+#   push to master        -> production (nixgen-site, custom domains)
+#   pull request          -> preview Worker on *.workers.dev, URL posted on the PR
+#   workflow_dispatch     -> production, from master only
+#
+# INERT until the owner switches it on (docs/runbooks/DNS-CUTOVER.md, "Deploy
+# pipeline"): every job is skipped unless the repository variable
+# SITE_DEPLOY_ENABLED is 'true', and the deploy steps fail fast with a clear
+# message if CLOUDFLARE_API_TOKEN is missing. Turn off the old Workers Builds
+# (dashboard Git hookup) before enabling this, or every push deploys twice.
+#
+# Settings it reads (names only):
+#   repo variable   SITE_DEPLOY_ENABLED = 'true'
+#   secret          CLOUDFLARE_API_TOKEN   (Workers Scripts:Edit, Workers R2 Storage:Edit
+#                                           (the deploy fills the page cache), Workers
+#                                           Routes:Edit, Zone:Read on nixgensolutions.com,
+#                                           Account:Read)
+#   variables, per GitHub environment ("production", "preview"); NEXT_PUBLIC_* are
+#   inlined at build time, so they are build settings, not Worker secrets:
+#     NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_SITE_URL,
+#     NEXT_PUBLIC_APP_URL, NEXT_PUBLIC_VAPID_PUBLIC_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+#     NEXT_PUBLIC_CF_BEACON_TOKEN
+#   Leave the Supabase pair unset on "preview" (DeskDev runs in local demo mode)
+#   or point it at the staging project. Never point previews at production data.
+#   Runtime secrets (LEAD_INTAKE_SECRET, TURNSTILE_SECRET_KEY, LEAD_IP_SALT,
+#   FORM_TOKEN_SECRET) live on the Worker itself (site/README.md, Deploy), not here.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-deploy.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Preview (workers.dev)
+    # Same-repo PRs only: a fork's PR gets no secrets, and must never run with them.
+    if: >-
+      github.event_name == 'pull_request' &&
+      vars.SITE_DEPLOY_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: site-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        working-directory: site
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+      # No SITE_URL / APP_URL: one workers.dev host serves both, DeskDev at /workspace.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      # Install first: the target check below reads wrangler.jsonc with
+      # TypeScript's JSONC parser (comments and trailing commas).
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      # A preview must never land on the production Worker. `--env preview`
+      # deploys wrangler.jsonc's "preview" environment, which has to name a
+      # Worker of its own and no custom domains. Until it does, the preview is
+      # skipped (not failed).
+      - name: Check the preview target
+        id: target
+        run: |
+          node --input-type=module -e "
+          import ts from 'typescript'
+          import fs from 'node:fs'
+          const { config, error } = ts.parseConfigFileTextToJson('wrangler.jsonc', fs.readFileSync('wrangler.jsonc', 'utf8'))
+          if (error) throw new Error('wrangler.jsonc does not parse')
+          const w = (config.env ?? {}).preview ?? {}
+          const domains = (w.routes ?? []).length + (w.route ? 1 : 0)
+          const safe = Boolean(w.name) && w.name !== config.name && domains === 0
+          console.log('preview worker: ' + w.name + ', custom domains/routes: ' + domains)
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'safe=' + safe + '\n')
+          if (!safe) console.log('::notice::Preview skipped: wrangler.jsonc gives env.preview no Worker of its own. See docs/runbooks/DNS-CUTOVER.md.')
+          "
+
+      - name: Require the deploy token
+        if: steps.target.outputs.safe == 'true'
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN secret is not set (Settings > Secrets and variables > Actions)."
+            exit 1
+          fi
+
+      - name: Test
+        if: steps.target.outputs.safe == 'true'
+        run: npm test
+
+      - name: Deploy preview
+        id: deploy
+        if: steps.target.outputs.safe == 'true'
+        run: |
+          set -o pipefail
+          npx opennextjs-cloudflare build
+          npx opennextjs-cloudflare deploy --env preview 2>&1 | tee deploy.log
+          url=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev[^ ]*' deploy.log | tail -n 1 || true)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Post the preview URL
+        if: steps.target.outputs.safe == 'true' && steps.deploy.outputs.url != ''
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- site-preview -->'
+            const body = `${marker}\n**Preview:** ${process.env.PREVIEW_URL}\n\nCommit ${context.sha.slice(0, 7)}. DeskDev is at \`/workspace\` on this host. Previews use the "preview" environment's settings (demo mode or staging), never production data.`
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 })
+            const mine = comments.find((c) => c.body && c.body.startsWith(marker))
+            if (mine) await github.rest.issues.updateComment({ owner, repo, comment_id: mine.id, body })
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body })
+
+  production:
+    name: Production
+    if: >-
+      vars.SITE_DEPLOY_ENABLED == 'true' &&
+      github.ref == 'refs/heads/master' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Add required reviewers on this environment to hold every production
+    # deploy for a click (Settings > Environments > production).
+    environment:
+      name: production
+      url: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+    # One production deploy at a time; a newer push waits instead of cancelling
+    # a deploy halfway.
+    concurrency:
+      group: site-production
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: site
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+      NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+      NEXT_PUBLIC_CF_BEACON_TOKEN: ${{ vars.NEXT_PUBLIC_CF_BEACON_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Require the deploy settings
+        run: |
+          missing=""
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then missing="$missing CLOUDFLARE_API_TOKEN(secret)"; fi
+          # A production build without these silently ships DeskDev in demo
+          # mode and the site without the workspace host split.
+          for v in NEXT_PUBLIC_SUPABASE_URL NEXT_PUBLIC_SUPABASE_ANON_KEY NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_APP_URL; do
+            if [ -z "${!v}" ]; then missing="$missing $v(variable)"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Production deploy settings missing:$missing"
+            exit 1
+          fi
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      - name: Test
+        run: npm test
+
+      - name: Deploy
+        run: |
+          npx opennextjs-cloudflare build
+          npx opennextjs-cloudflare deploy
+
+      # The deploy returning 0 is not the same as the site answering.
+      - name: Smoke check
+        run: |
+          check() {
+            for i in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' -H 'cache-control: no-cache' "$1" || true)
+              if [ "$code" = "200" ]; then echo "ok   $1"; return 0; fi
+              echo "wait $1 -> $code (attempt $i)"; sleep 10
+            done
+            echo "::error::$1 did not answer 200 after deploy. Roll back: Workers > nixgen-site > Deployments > previous version > Rollback."
+            return 1
+          }
+          check "$NEXT_PUBLIC_SITE_URL/"
+          check "$NEXT_PUBLIC_SITE_URL/robots.txt"
+          check "$NEXT_PUBLIC_APP_URL/"

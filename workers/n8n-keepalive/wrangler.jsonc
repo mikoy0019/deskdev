@@ -1,0 +1,71 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Was "nixgen-n8n-keepalive". The folder keeps its old name so CI paths and
+  // docs stay valid; after the first deploy of this name, delete the old
+  // Worker (dashboard → Workers → nixgen-n8n-keepalive → Delete) or both cron.
+  "name": "nixgen-watchdog",
+  "main": "src/index.ts",
+  // Pinned so a deploy can't follow whichever account Wrangler is logged into.
+  // Nixgensolutions@gmail.com's Account (same as the site and the web app).
+  "account_id": "5c6cabb0e7c2e306c3dd792599736a46",
+  // Not "today": Cloudflare rejects a date that is in the future on ITS clock,
+  // and Manila (UTC+8) is a day ahead of UTC every evening.
+  "compatibility_date": "2026-10-01",
+
+  // Cron only: no *.workers.dev URL and no preview URLs. Cron triggers fire
+  // without any route, and a public URL would let anyone trigger probes and
+  // alerts.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  // A separate worker, not a cron bolted onto the site: the site's entrypoint
+  // belongs to OpenNext, and the watchdog must survive a broken site deploy,
+  // which is exactly when it is needed.
+  "triggers": {
+    // Every 5 minutes: inside Render's ~15-minute idle window with room for
+    // two failed ticks. 8,640 invocations a month against a free allowance of
+    // 100,000 a day.
+    "crons": ["*/5 * * * *"]
+  },
+
+  "observability": {
+    // Every probe and alert is a JSON log line here.
+    "enabled": true
+  },
+
+  // Dedupe + recovery notices need memory between ticks. Optional: without it
+  // the watchdog still alerts, but only on the first tick of each half hour
+  // and with no "recovered" notice. To enable (owner):
+  //   npx wrangler kv namespace create WATCHDOG_STATE
+  // then uncomment and paste the id it prints.
+  // "kv_namespaces": [
+  //   { "binding": "WATCHDOG_STATE", "id": "<namespace id>" }
+  // ],
+
+  "vars": {
+    // Empty string = that probe is skipped. Before the DNS cutover these
+    // hosts still serve the old WordPress site, so point SITE_URL and
+    // WORKSPACE_URL at the *.workers.dev deploy until then
+    // (docs/runbooks/DNS-CUTOVER.md).
+    "SITE_URL": "https://nixgensolutions.com/",
+    "WORKSPACE_URL": "https://workspace.nixgensolutions.com/",
+    // DeskDev's project. The anon key is the secret SUPABASE_ANON_KEY.
+    "SUPABASE_URL": "https://rgasjotvqwkjbeivlhvn.supabase.co",
+    // A read the anon key is allowed to make (published showcase rows, 037).
+    // Until 037 is applied, use "/rest/v1/" or the probe reports a 404.
+    "SUPABASE_REST_PROBE": "/rest/v1/showcase_items?select=slug&limit=1",
+    // The PUBLIC url: the request has to enter through Render's router to
+    // count as the inbound traffic its sleep timer watches.
+    "N8N_HEALTH_URL": "https://nixgen-n8n-8gp7.onrender.com/healthz",
+    // [deskdev] ops-alert workflow (Header Auth x-webhook-secret).
+    "N8N_ALERT_URL": "https://nixgen-n8n-8gp7.onrender.com/webhook/deskdev-ops-alert",
+    "ALERT_AFTER_FAILURES": "2",
+    "REALERT_MINUTES": "60"
+  }
+
+  // Secrets (npx wrangler secret put <NAME>), none required to deploy:
+  //   SUPABASE_ANON_KEY    the project's anon key (without it the supabase probe is skipped)
+  //   N8N_WEBHOOK_SECRET   same value as n8n's "DeskDev Webhook Secret" credential
+  //   RESEND_API_KEY, ALERT_EMAIL_TO, ALERT_EMAIL_FROM
+  //                        optional fallback channel for when n8n itself is down
+}

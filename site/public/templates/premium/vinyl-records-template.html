@@ -1,0 +1,751 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crate & Coda Records &mdash; Vinyl Shop & Label</title>
+<meta name="description" content="Crate & Coda Records â€” an independent vinyl record shop & label. Crate-digging, warm sound, hand-pressed releases." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#F4E9D8',
+          sand:  '#E7D3B1',
+          rust:  '#C75B2B',
+          ember: '#E8821E',
+          cocoa: '#3A2418',
+          espresso: '#241409',
+          mustard: '#D9A441',
+          olive: '#6E6A3A',
+          oxblood: '#7A2E1E',
+        },
+        fontFamily: {
+          display: ['"Bebas Neue"', 'sans-serif'],
+          serif: ['Fraunces', 'serif'],
+          mono: ['"DM Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background-color: #F4E9D8;
+    color: #241409;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(232,130,30,0.10), transparent 42%),
+      radial-gradient(circle at 88% 8%, rgba(199,91,43,0.10), transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+  ::selection { background: #E8821E; color: #241409; }
+
+  /* Spinning vinyl */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .vinyl-spin { animation: spin 7s linear infinite; }
+  .vinyl {
+    background:
+      radial-gradient(circle at center, #C75B2B 0 16%, transparent 16.4%),
+      radial-gradient(circle at center, #1c0f06 0 17%, #120a04 17% 100%);
+    position: relative;
+  }
+  .vinyl::before {
+    content: "";
+    position: absolute; inset: 0; border-radius: 9999px;
+    background:
+      repeating-radial-gradient(circle at center,
+        rgba(255,255,255,0.045) 0 1px, transparent 1px 4px);
+    pointer-events: none;
+  }
+  .vinyl::after {
+    content: "";
+    position: absolute; inset: 0; border-radius: 9999px;
+    background: conic-gradient(from 0deg, transparent 0 80%, rgba(255,255,255,0.10) 88%, transparent 96%);
+    pointer-events: none;
+  }
+  .vinyl-hole {
+    position: absolute; top:50%; left:50%; width:5%; height:5%;
+    transform: translate(-50%,-50%); border-radius:9999px;
+    background:#F4E9D8; box-shadow:0 0 0 2px rgba(0,0,0,0.4);
+  }
+
+  /* Marquee */
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-track { display:flex; width:max-content; animation: marquee 28s linear infinite; }
+  .marquee-track:hover { animation-play-state: paused; }
+
+  /* Retro animated headline */
+  .word { display:inline-block; }
+  .char { display:inline-block; will-change: transform, opacity; }
+
+  /* Album flip card */
+  .flip { perspective: 1100px; }
+  .flip-inner { transition: transform .7s cubic-bezier(.2,.7,.2,1); transform-style: preserve-3d; position:relative; }
+  .flip:hover .flip-inner { transform: rotateY(180deg); }
+  .flip-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  .flip-back { position:absolute; inset:0; transform: rotateY(180deg); }
+
+  /* Tilt */
+  .tilt { transition: transform .25s ease; transform-style: preserve-3d; }
+
+  /* Magnetic CTA */
+  .magnetic { transition: transform .2s cubic-bezier(.2,.7,.2,1); }
+
+  /* FAQ */
+  .faq-panel { max-height:0; overflow:hidden; transition: max-height .45s ease; }
+  .faq-item.open .faq-panel { max-height: 360px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .35s ease; }
+
+  .grain-card { box-shadow: 8px 8px 0 rgba(58,36,24,0.18); }
+  .stamp { letter-spacing: .35em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vinyl-spin, .marquee-track { animation: none !important; }
+    .flip-inner { transition: none; }
+  }
+</style>
+</head>
+<body class="font-serif antialiased">
+
+<!-- ======================= NAV ======================= -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 mt-3">
+    <div class="flex items-center justify-between rounded-full border-2 border-cocoa/80 bg-cream/85 backdrop-blur px-5 py-3 grain-card">
+      <a href="#top" class="flex items-center gap-3 group">
+        <span class="w-9 h-9 rounded-full vinyl flex-shrink-0 vinyl-spin" style="animation-duration:9s">
+          <span class="vinyl-hole"></span>
+        </span>
+        <span class="font-display text-2xl tracking-wide text-cocoa leading-none">DUSTY&nbsp;GROOVE</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-7 font-mono text-xs uppercase tracking-widest text-cocoa/80">
+        <a href="#arrivals" class="hover:text-rust transition">New Arrivals</a>
+        <a href="#genres" class="hover:text-rust transition">Genres</a>
+        <a href="#label" class="hover:text-rust transition">The Label</a>
+        <a href="#events" class="hover:text-rust transition">In-Store</a>
+        <a href="#faq" class="hover:text-rust transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="relative w-10 h-10 rounded-full border-2 border-cocoa/70 flex items-center justify-center hover:bg-ember/20 transition" aria-label="Cart">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 fill-none stroke-cocoa" stroke-width="1.8"><path d="M3 4h2l2.4 12.2a1 1 0 0 0 1 .8h8.7a1 1 0 0 0 1-.8L21 8H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
+          <span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rust text-cream text-[10px] font-mono flex items-center justify-center">3</span>
+        </button>
+        <a href="#arrivals" id="navShop" class="magnetic hidden sm:inline-flex items-center gap-2 rounded-full bg-cocoa text-cream font-mono text-xs uppercase tracking-widest px-5 py-3 hover:bg-rust transition">Shop</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ======================= HERO ======================= -->
+<section class="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+  <div class="absolute inset-0 -z-10 parallax-bg" data-speed="0.18">
+    <div class="absolute -top-24 -left-24 w-[34rem] h-[34rem] rounded-full bg-ember/20 blur-3xl"></div>
+    <div class="absolute bottom-0 -right-32 w-[36rem] h-[36rem] rounded-full bg-rust/20 blur-3xl"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <div>
+      <p class="reveal font-mono text-xs uppercase stamp text-rust mb-6">Est. 1974 &middot; Independent Shop & Label</p>
+      <h1 class="headline font-display text-cocoa leading-[0.86] text-6xl sm:text-7xl md:text-8xl mb-6">
+        <span class="block">CRATE-DUG</span>
+        <span class="block text-rust">WARMTH ON</span>
+        <span class="block">WAX.</span>
+      </h1>
+      <p class="reveal font-serif text-lg text-cocoa/80 max-w-md mb-9">
+        A neighborhood record shop and pressing label spinning rare grooves, fresh wax,
+        and the kind of low-end you can feel in your ribs.
+      </p>
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <a href="#arrivals" id="heroShop" class="magnetic inline-flex items-center gap-3 rounded-full bg-rust text-cream font-mono uppercase text-sm tracking-widest px-8 py-4 hover:bg-cocoa transition">
+          Shop the Crates
+          <svg viewBox="0 0 24 24" class="w-4 h-4 fill-none stroke-cream" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#label" class="font-mono text-xs uppercase tracking-widest text-cocoa underline decoration-ember decoration-2 underline-offset-4 hover:text-rust">Hear the label &rarr;</a>
+      </div>
+
+      <!-- Count-ups -->
+      <div class="reveal mt-12 grid grid-cols-3 gap-4 max-w-md">
+        <div>
+          <div class="count font-display text-5xl text-rust" data-target="48200">0</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">Records in stock</div>
+        </div>
+        <div>
+          <div class="count font-display text-5xl text-rust" data-target="37">0</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">Genres dug</div>
+        </div>
+        <div>
+          <div class="count font-display text-5xl text-rust" data-target="112">0</div>
+          <div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">In-house pressings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spinning record stack -->
+    <div class="relative flex justify-center items-center">
+      <div class="relative w-[20rem] h-[20rem] sm:w-[26rem] sm:h-[26rem]">
+        <div class="absolute inset-0 rounded-full vinyl vinyl-spin grain-card"></div>
+        <div class="absolute inset-0 rounded-full vinyl vinyl-spin">
+          <span class="vinyl-hole"></span>
+        </div>
+        <!-- center label -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/3 rounded-full bg-mustard border-4 border-espresso flex flex-col items-center justify-center text-center vinyl-spin" style="animation-duration:7s">
+          <span class="font-display text-cocoa text-xl leading-none">DUSTY</span>
+          <span class="font-mono text-[8px] text-cocoa/70 tracking-widest">GROOVE REC.</span>
+        </div>
+      </div>
+      <span class="absolute -bottom-4 right-2 rotate-[8deg] bg-cocoa text-cream font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded">33â…“ RPM</span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= MARQUEE ======================= -->
+<section class="border-y-2 border-cocoa/70 bg-cocoa text-cream py-4 overflow-hidden">
+  <div class="marquee-track gap-10 font-display text-3xl tracking-wide">
+    <span class="flex gap-10 pr-10">
+      <span>DESERT FUNK</span><span class="text-ember">â€¢</span><span>NEON SOUL</span><span class="text-ember">â€¢</span>
+      <span>DUB ECHOES</span><span class="text-ember">â€¢</span><span>SPACE JAZZ</span><span class="text-ember">â€¢</span>
+      <span>LOFI GROOVE</span><span class="text-ember">â€¢</span><span>PSYCH ROCK</span><span class="text-ember">â€¢</span>
+    </span>
+    <span class="flex gap-10 pr-10" aria-hidden="true">
+      <span>DESERT FUNK</span><span class="text-ember">â€¢</span><span>NEON SOUL</span><span class="text-ember">â€¢</span>
+      <span>DUB ECHOES</span><span class="text-ember">â€¢</span><span>SPACE JAZZ</span><span class="text-ember">â€¢</span>
+      <span>LOFI GROOVE</span><span class="text-ember">â€¢</span><span>PSYCH ROCK</span><span class="text-ember">â€¢</span>
+    </span>
+  </div>
+</section>
+
+<!-- ======================= NEW ARRIVALS ======================= -->
+<section id="arrivals" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="reveal flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
+      <div>
+        <p class="font-mono text-xs uppercase stamp text-rust mb-3">Fresh Pressings</p>
+        <h2 class="font-display text-5xl sm:text-6xl text-cocoa leading-none">New Arrivals on the Wall</h2>
+      </div>
+      <a href="#" class="font-mono text-xs uppercase tracking-widest text-cocoa underline decoration-ember decoration-2 underline-offset-4 hover:text-rust">Browse all 240 &rarr;</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Card template -->
+      <article class="reveal flip">
+        <div class="flip-inner aspect-square rounded-xl">
+          <div class="flip-face absolute inset-0 rounded-xl overflow-hidden border-2 border-cocoa/70 grain-card bg-gradient-to-br from-ember to-oxblood">
+            <img src="https://images.unsplash.com/photo-1539375665275-f9de415ef9ac?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Marlow Sands album" class="w-full h-full object-cover" />
+            <div class="absolute top-3 left-3 bg-mustard text-cocoa font-mono text-[10px] uppercase tracking-widest px-2 py-1 rounded">New</div>
+          </div>
+          <div class="flip-back rounded-xl border-2 border-cocoa/70 bg-cocoa text-cream p-5 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-3xl leading-none">Saltwater Hymns</h3>
+              <p class="font-mono text-[11px] text-ember uppercase tracking-widest mt-1">Marlow Sands</p>
+              <p class="font-serif text-xs text-cream/70 mt-3">Desert funk &middot; 180g &middot; Amber splatter</p>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span class="font-display text-2xl text-mustard">$32</span>
+              <button class="font-mono text-[10px] uppercase tracking-widest border border-cream/40 rounded-full px-3 py-2 hover:bg-ember hover:text-cocoa transition">Add to crate</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal flip">
+        <div class="flip-inner aspect-square rounded-xl">
+          <div class="flip-face absolute inset-0 rounded-xl overflow-hidden border-2 border-cocoa/70 grain-card bg-gradient-to-br from-rust to-cocoa">
+            <img src="https://images.unsplash.com/photo-1483412468200-72182dbc2b3a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="The Velvet Cassettes album" class="w-full h-full object-cover" />
+            <div class="absolute top-3 left-3 bg-mustard text-cocoa font-mono text-[10px] uppercase tracking-widest px-2 py-1 rounded">New</div>
+          </div>
+          <div class="flip-back rounded-xl border-2 border-cocoa/70 bg-cocoa text-cream p-5 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-3xl leading-none">Midnight Transistor</h3>
+              <p class="font-mono text-[11px] text-ember uppercase tracking-widest mt-1">The Velvet Cassettes</p>
+              <p class="font-serif text-xs text-cream/70 mt-3">Neon soul &middot; Gatefold &middot; Smoke vinyl</p>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span class="font-display text-2xl text-mustard">$28</span>
+              <button class="font-mono text-[10px] uppercase tracking-widest border border-cream/40 rounded-full px-3 py-2 hover:bg-ember hover:text-cocoa transition">Add to crate</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal flip">
+        <div class="flip-inner aspect-square rounded-xl">
+          <div class="flip-face absolute inset-0 rounded-xl overflow-hidden border-2 border-cocoa/70 grain-card bg-gradient-to-br from-mustard to-olive">
+            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Hollow Pines album" class="w-full h-full object-cover" />
+            <div class="absolute top-3 left-3 bg-cocoa text-cream font-mono text-[10px] uppercase tracking-widest px-2 py-1 rounded">Press</div>
+          </div>
+          <div class="flip-back rounded-xl border-2 border-cocoa/70 bg-cocoa text-cream p-5 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-3xl leading-none">Paper Lantern</h3>
+              <p class="font-mono text-[11px] text-ember uppercase tracking-widest mt-1">Hollow Pines</p>
+              <p class="font-serif text-xs text-cream/70 mt-3">Space jazz &middot; Limited 300 &middot; Clear</p>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span class="font-display text-2xl text-mustard">$36</span>
+              <button class="font-mono text-[10px] uppercase tracking-widest border border-cream/40 rounded-full px-3 py-2 hover:bg-ember hover:text-cocoa transition">Add to crate</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal flip">
+        <div class="flip-inner aspect-square rounded-xl">
+          <div class="flip-face absolute inset-0 rounded-xl overflow-hidden border-2 border-cocoa/70 grain-card bg-gradient-to-br from-oxblood to-espresso">
+            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Coral & Static album" class="w-full h-full object-cover" />
+            <div class="absolute top-3 left-3 bg-mustard text-cocoa font-mono text-[10px] uppercase tracking-widest px-2 py-1 rounded">New</div>
+          </div>
+          <div class="flip-back rounded-xl border-2 border-cocoa/70 bg-cocoa text-cream p-5 flex flex-col justify-between">
+            <div>
+              <h3 class="font-display text-3xl leading-none">Brass & Bracken</h3>
+              <p class="font-mono text-[11px] text-ember uppercase tracking-widest mt-1">Coral &amp; Static</p>
+              <p class="font-serif text-xs text-cream/70 mt-3">Dub echoes &middot; 2&times;LP &middot; Mustard wax</p>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <span class="font-display text-2xl text-mustard">$41</span>
+              <button class="font-mono text-[10px] uppercase tracking-widest border border-cream/40 rounded-full px-3 py-2 hover:bg-ember hover:text-cocoa transition">Add to crate</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <p class="reveal mt-8 font-mono text-xs text-cocoa/50 text-center">Hover a sleeve to flip it &mdash; just like flipping through the crates.</p>
+  </div>
+</section>
+
+<!-- ======================= GENRES ======================= -->
+<section id="genres" class="py-24 bg-cocoa text-cream relative overflow-hidden">
+  <div class="parallax-bg absolute inset-0 -z-0 opacity-30" data-speed="0.12">
+    <div class="absolute top-10 left-10 w-72 h-72 rounded-full bg-rust/40 blur-3xl"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-ember/30 blur-3xl"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <p class="reveal font-mono text-xs uppercase stamp text-ember mb-3">Dig by Sound</p>
+    <h2 class="reveal font-display text-5xl sm:text-6xl mb-12 leading-none">Pick your section.</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">01</div>
+        <h3 class="font-display text-3xl mt-2">Desert Funk</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Greasy basslines and sun-baked horns. 2,140 in stock.</p>
+      </div>
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">02</div>
+        <h3 class="font-display text-3xl mt-2">Neon Soul</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Velvet vocals over slow-burn grooves. 1,880 in stock.</p>
+      </div>
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">03</div>
+        <h3 class="font-display text-3xl mt-2">Space Jazz</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Modal drift and cosmic Rhodes. 1,310 in stock.</p>
+      </div>
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">04</div>
+        <h3 class="font-display text-3xl mt-2">Dub Echoes</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Cavernous reverb and rolling low-end. 970 in stock.</p>
+      </div>
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">05</div>
+        <h3 class="font-display text-3xl mt-2">Psych Rock</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Fuzz, phaser, and long roads home. 1,560 in stock.</p>
+      </div>
+      <div class="reveal tilt group rounded-xl border-2 border-cream/20 p-7 hover:border-ember hover:bg-ember/10 transition">
+        <div class="font-display text-4xl text-mustard">06</div>
+        <h3 class="font-display text-3xl mt-2">Lofi Groove</h3>
+        <p class="font-serif text-sm text-cream/70 mt-2">Dusty loops to study and drift. 2,020 in stock.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= THE SHOP / ABOUT ======================= -->
+<section id="shop" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative">
+      <div class="rounded-2xl overflow-hidden border-2 border-cocoa/70 grain-card bg-gradient-to-br from-ember to-oxblood aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1483412468200-72182dbc2b3a?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Inside the Crate & Coda shop" class="w-full h-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:-right-8 bg-cream border-2 border-cocoa rounded-xl px-6 py-4 grain-card rotate-[-3deg]">
+        <div class="font-display text-4xl text-rust leading-none">Open Daily</div>
+        <div class="font-mono text-[11px] uppercase tracking-widest text-cocoa/70">10am &ndash; 9pm &middot; Ward Street 22</div>
+      </div>
+    </div>
+    <div>
+      <p class="reveal font-mono text-xs uppercase stamp text-rust mb-3">The Shop</p>
+      <h2 class="reveal font-display text-5xl sm:text-6xl text-cocoa leading-[0.9] mb-6">A room that smells<br/>like cardboard<br/>and good taste.</h2>
+      <p class="reveal font-serif text-lg text-cocoa/80 mb-5">We started in a back-alley garage with one milk-crate of 45s and a turntable held together with tape. Fifty years on, the crates run wall to wall and the coffee&rsquo;s still free.</p>
+      <p class="reveal font-serif text-base text-cocoa/70 mb-8">Every record is graded by hand, cleaned on our ultrasonic bath, and sleeved in fresh anti-static. If a needle has touched it, we&rsquo;ve heard it.</p>
+      <div class="reveal grid grid-cols-3 gap-6">
+        <div><div class="font-display text-4xl text-rust">50</div><div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">Years digging</div></div>
+        <div><div class="font-display text-4xl text-rust">9</div><div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">Resident diggers</div></div>
+        <div><div class="font-display text-4xl text-rust">1</div><div class="font-mono text-[10px] uppercase tracking-widest text-cocoa/60">Very good cat</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= LABEL / RELEASES ======================= -->
+<section id="label" class="py-24 bg-sand border-y-2 border-cocoa/70">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="reveal mb-14">
+      <p class="font-mono text-xs uppercase stamp text-rust mb-3">Crate & Coda Recordings</p>
+      <h2 class="font-display text-5xl sm:text-6xl text-cocoa leading-none">We don&rsquo;t just sell wax. We press it.</h2>
+      <p class="font-serif text-lg text-cocoa/80 max-w-2xl mt-4">Our in-house label hand-cuts lacquers for local artists and forgotten legends alike. Small runs, big sound, honest splits.</p>
+    </div>
+
+    <div class="space-y-4">
+      <div class="reveal flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 border-2 border-cocoa/70 rounded-xl bg-cream px-6 py-5 grain-card hover:bg-ember/10 transition">
+        <span class="font-mono text-sm text-rust">DG-001</span>
+        <span class="font-display text-3xl text-cocoa flex-1 leading-none">Saltwater Hymns &mdash; Marlow Sands</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Desert Funk &middot; 2026</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-rust">Sold Out</span>
+      </div>
+      <div class="reveal flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 border-2 border-cocoa/70 rounded-xl bg-cream px-6 py-5 grain-card hover:bg-ember/10 transition">
+        <span class="font-mono text-sm text-rust">DG-002</span>
+        <span class="font-display text-3xl text-cocoa flex-1 leading-none">Paper Lantern &mdash; Hollow Pines</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Space Jazz &middot; 2026</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-olive">Press 2/3</span>
+      </div>
+      <div class="reveal flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 border-2 border-cocoa/70 rounded-xl bg-cream px-6 py-5 grain-card hover:bg-ember/10 transition">
+        <span class="font-mono text-sm text-rust">DG-003</span>
+        <span class="font-display text-3xl text-cocoa flex-1 leading-none">Midnight Transistor &mdash; The Velvet Cassettes</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Neon Soul &middot; 2026</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-rust">Pre-order</span>
+      </div>
+      <div class="reveal flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 border-2 border-cocoa/70 rounded-xl bg-cream px-6 py-5 grain-card hover:bg-ember/10 transition">
+        <span class="font-mono text-sm text-rust">DG-004</span>
+        <span class="font-display text-3xl text-cocoa flex-1 leading-none">Brass &amp; Bracken &mdash; Coral &amp; Static</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Dub Echoes &middot; 2026</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-ember">In Studio</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= EVENTS (IN-STORE) ======================= -->
+<section id="events" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="reveal mb-14 text-center">
+      <p class="font-mono text-xs uppercase stamp text-rust mb-3">In-Store Sessions</p>
+      <h2 class="font-display text-5xl sm:text-6xl text-cocoa leading-none">Come hang in the listening room.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal rounded-xl border-2 border-cocoa/70 bg-cream grain-card overflow-hidden">
+        <div class="bg-cocoa text-cream px-6 py-4 flex items-baseline gap-3">
+          <span class="font-display text-4xl text-mustard">14</span>
+          <span class="font-mono text-[11px] uppercase tracking-widest">Fri &middot; Jun</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-3xl text-cocoa leading-none">Late-Night Listening: Desert Funk</h3>
+          <p class="font-serif text-sm text-cocoa/70 mt-3">Full-album playback on the big rig. BYO ears, we&rsquo;ll pour the coffee.</p>
+          <span class="inline-block mt-4 font-mono text-[10px] uppercase tracking-widest text-rust">Free &middot; 8pm</span>
+        </div>
+      </div>
+      <div class="reveal rounded-xl border-2 border-cocoa/70 bg-cream grain-card overflow-hidden">
+        <div class="bg-cocoa text-cream px-6 py-4 flex items-baseline gap-3">
+          <span class="font-display text-4xl text-mustard">21</span>
+          <span class="font-mono text-[11px] uppercase tracking-widest">Fri &middot; Jun</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-3xl text-cocoa leading-none">Marlow Sands &mdash; Acoustic Set</h3>
+          <p class="font-serif text-sm text-cocoa/70 mt-3">Live in the front window. Signed sleeves while they last.</p>
+          <span class="inline-block mt-4 font-mono text-[10px] uppercase tracking-widest text-rust">$10 &middot; 7pm</span>
+        </div>
+      </div>
+      <div class="reveal rounded-xl border-2 border-cocoa/70 bg-cream grain-card overflow-hidden">
+        <div class="bg-cocoa text-cream px-6 py-4 flex items-baseline gap-3">
+          <span class="font-display text-4xl text-mustard">28</span>
+          <span class="font-mono text-[11px] uppercase tracking-widest">Fri &middot; Jun</span>
+        </div>
+        <div class="p-6">
+          <h3 class="font-display text-3xl text-cocoa leading-none">Crate-Digging Swap Meet</h3>
+          <p class="font-serif text-sm text-cocoa/70 mt-3">Bring a stack, trade a stack. Tables open at noon.</p>
+          <span class="inline-block mt-4 font-mono text-[10px] uppercase tracking-widest text-rust">Free &middot; 12pm</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= ABOUT (the crew) ======================= -->
+<section id="about" class="py-24 bg-cocoa text-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal font-mono text-xs uppercase stamp text-ember mb-3">The Crew</p>
+      <h2 class="reveal font-display text-5xl sm:text-6xl leading-[0.9] mb-6">Run by people who<br/>annoy their friends<br/>about audio.</h2>
+      <p class="reveal font-serif text-lg text-cream/80 mb-5">Nine resident diggers, a shared obsession, and a strict no-skipping policy. We&rsquo;ll happily lose an afternoon helping you find the one record you didn&rsquo;t know you needed.</p>
+      <p class="reveal font-serif text-base text-cream/70">Ask us anything &mdash; pressing weights, mastering quirks, which copy actually sounds better. We keep notes.</p>
+    </div>
+    <div class="reveal grid grid-cols-2 gap-5">
+      <div class="rounded-xl bg-cream/5 border border-cream/15 p-6">
+        <div class="font-display text-4xl text-mustard">No skips.</div>
+        <p class="font-serif text-sm text-cream/70 mt-2">Everything graded ear-on, not just by sight.</p>
+      </div>
+      <div class="rounded-xl bg-cream/5 border border-cream/15 p-6">
+        <div class="font-display text-4xl text-mustard">Honest splits.</div>
+        <p class="font-serif text-sm text-cream/70 mt-2">Our artists keep the lion&rsquo;s share. Always.</p>
+      </div>
+      <div class="rounded-xl bg-cream/5 border border-cream/15 p-6">
+        <div class="font-display text-4xl text-mustard">Free coffee.</div>
+        <p class="font-serif text-sm text-cream/70 mt-2">And a couch built for long stays.</p>
+      </div>
+      <div class="rounded-xl bg-cream/5 border border-cream/15 p-6">
+        <div class="font-display text-4xl text-mustard">Local first.</div>
+        <p class="font-serif text-sm text-cream/70 mt-2">We press neighborhood talent before anyone else.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TESTIMONIALS ======================= -->
+<section class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <p class="reveal font-mono text-xs uppercase stamp text-rust mb-3 text-center">From the Regulars</p>
+    <h2 class="reveal font-display text-5xl sm:text-6xl text-cocoa leading-none text-center mb-14">People say nice things.</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl border-2 border-cocoa/70 bg-cream grain-card p-7">
+        <div class="font-display text-5xl text-ember leading-none">&ldquo;</div>
+        <blockquote class="font-serif text-lg text-cocoa/85 -mt-3">I came in for one record and left three hours and seven records lighter. No regrets.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Priya N. &middot; Resident regular</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border-2 border-cocoa/70 bg-cocoa text-cream grain-card p-7">
+        <div class="font-display text-5xl text-mustard leading-none">&ldquo;</div>
+        <blockquote class="font-serif text-lg text-cream/90 -mt-3">They pressed my band&rsquo;s first record and treated us like legends. Sound is unreal.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] uppercase tracking-widest text-ember">Theo R. &middot; Hollow Pines</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border-2 border-cocoa/70 bg-cream grain-card p-7">
+        <div class="font-display text-5xl text-ember leading-none">&ldquo;</div>
+        <blockquote class="font-serif text-lg text-cocoa/85 -mt-3">Best graded used vinyl in the city. What they call VG+ actually sounds VG+.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] uppercase tracking-widest text-cocoa/60">Marcus D. &middot; Collector</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FAQ ======================= -->
+<section id="faq" class="py-24 bg-sand border-y-2 border-cocoa/70">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <p class="reveal font-mono text-xs uppercase stamp text-rust mb-3 text-center">Good to Know</p>
+    <h2 class="reveal font-display text-5xl sm:text-6xl text-cocoa leading-none text-center mb-12">Questions, answered.</h2>
+
+    <div class="space-y-4">
+      <div class="faq-item reveal border-2 border-cocoa/70 rounded-xl bg-cream grain-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-2xl text-cocoa">Do you grade used records honestly?</span>
+          <span class="faq-plus font-display text-3xl text-rust leading-none">+</span>
+        </button>
+        <div class="faq-panel px-6"><p class="font-serif text-cocoa/75 pb-5">Always. Every used record is play-graded on our reference setup, cleaned ultrasonically, and re-sleeved. Our grade is what you&rsquo;ll actually hear &mdash; no optimistic guesswork.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-cocoa/70 rounded-xl bg-cream grain-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-2xl text-cocoa">Can I sell you my collection?</span>
+          <span class="faq-plus font-display text-3xl text-rust leading-none">+</span>
+        </button>
+        <div class="faq-panel px-6"><p class="font-serif text-cocoa/75 pb-5">Absolutely. Bring it by any afternoon or book a home visit for larger collections. We pay fair cash or generous store credit &mdash; your choice.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-cocoa/70 rounded-xl bg-cream grain-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-2xl text-cocoa">Do you ship internationally?</span>
+          <span class="faq-plus font-display text-3xl text-rust leading-none">+</span>
+        </button>
+        <div class="faq-panel px-6"><p class="font-serif text-cocoa/75 pb-5">We ship worldwide in reinforced mailers with corner protectors. Tracking on everything, and we never bend a sleeve to save postage.</p></div>
+      </div>
+      <div class="faq-item reveal border-2 border-cocoa/70 rounded-xl bg-cream grain-card overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display text-2xl text-cocoa">How do I release on your label?</span>
+          <span class="faq-plus font-display text-3xl text-rust leading-none">+</span>
+        </button>
+        <div class="faq-panel px-6"><p class="font-serif text-cocoa/75 pb-5">Send us a demo through the contact form or drop a USB at the counter. We press small, local-first runs and split fairly. We listen to everything that comes in.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= FINAL CTA ======================= -->
+<section class="py-28 bg-cocoa text-cream relative overflow-hidden">
+  <div class="parallax-bg absolute inset-0 opacity-40" data-speed="0.1">
+    <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-rust/40 blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-ember/30 blur-3xl"></div>
+  </div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center relative">
+    <div class="reveal mx-auto w-24 h-24 rounded-full vinyl vinyl-spin mb-8 grain-card">
+      <span class="vinyl-hole"></span>
+    </div>
+    <h2 class="reveal font-display text-6xl sm:text-7xl md:text-8xl leading-[0.88] mb-6">Drop the needle.<br/>Stay a while.</h2>
+    <p class="reveal font-serif text-lg text-cream/80 max-w-xl mx-auto mb-10">Join the Crate Club for early access to pressings, members-only swap nights, and a record waiting in your name.</p>
+    <form class="reveal flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="return false">
+      <input type="email" required placeholder="you@inbox.com" class="flex-1 rounded-full bg-cream/10 border-2 border-cream/25 px-6 py-4 font-mono text-sm placeholder:text-cream/40 focus:outline-none focus:border-ember" />
+      <button class="magnetic rounded-full bg-ember text-cocoa font-mono text-sm uppercase tracking-widest px-8 py-4 hover:bg-mustard transition">Join the Club</button>
+    </form>
+    <p class="reveal font-mono text-[10px] uppercase tracking-widest text-cream/40 mt-4">No spam. Just wax.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ======================= FOOTER ======================= -->
+<footer class="bg-espresso text-cream/80 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="w-9 h-9 rounded-full vinyl flex-shrink-0"><span class="vinyl-hole"></span></span>
+          <span class="font-display text-3xl tracking-wide text-cream">CRATE & CODA</span>
+        </div>
+        <p class="font-serif text-sm text-cream/60 max-w-sm">An independent vinyl record shop & pressing label. Warm sound, honest grades, free coffee &mdash; since 1974.</p>
+      </div>
+      <div>
+        <h4 class="font-mono text-[11px] uppercase tracking-widest text-ember mb-4">Shop</h4>
+        <ul class="space-y-2 font-serif text-sm">
+          <li><a href="#arrivals" class="hover:text-ember transition">New Arrivals</a></li>
+          <li><a href="#genres" class="hover:text-ember transition">Genres</a></li>
+          <li><a href="#label" class="hover:text-ember transition">Label Releases</a></li>
+          <li><a href="#events" class="hover:text-ember transition">In-Store Events</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-mono text-[11px] uppercase tracking-widest text-ember mb-4">Visit</h4>
+        <ul class="space-y-2 font-serif text-sm text-cream/60">
+          <li>22 Ward Street</li>
+          <li>Old Quarter District</li>
+          <li>Open daily 10am &ndash; 9pm</li>
+          <li><a href="#" class="hover:text-ember transition">hello@dustygroove.fm</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-cream/15 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="font-mono text-[11px] uppercase tracking-widest text-cream/40">&copy; 1974&ndash;2026 Crate & Coda Records. All grooves reserved.</p>
+      <div class="flex gap-5 font-mono text-[11px] uppercase tracking-widest text-cream/40">
+        <a href="#" class="hover:text-ember transition">Instagram</a>
+        <a href="#" class="hover:text-ember transition">Bandcamp</a>
+        <a href="#" class="hover:text-ember transition">Mixcloud</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- Reveals ----------
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.fromTo(el, { y: 40, opacity: 0 }, {
+          y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // Container parallax
+      gsap.utils.toArray('.parallax-bg').forEach((el) => {
+        const speed = parseFloat(el.dataset.speed || '0.15');
+        gsap.to(el, {
+          yPercent: speed * 100, ease: 'none',
+          scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      // ---------- Retro animated headline ----------
+      const headline = document.querySelector('.headline');
+      if (headline) {
+        headline.querySelectorAll('span').forEach((line) => {
+          const text = line.textContent;
+          line.innerHTML = '';
+          [...text].forEach((ch) => {
+            const s = document.createElement('span');
+            s.className = 'char';
+            s.textContent = ch === ' ' ? 'Â ' : ch;
+            line.appendChild(s);
+          });
+        });
+        gsap.from('.headline .char', {
+          yPercent: 120, opacity: 0, rotateZ: 6,
+          duration: 0.8, ease: 'back.out(1.6)', stagger: 0.025, delay: 0.15
+        });
+      }
+    } else {
+      gsap.utils.toArray('.reveal').forEach((el) => gsap.set(el, { opacity: 1 }));
+    }
+  }
+
+  // ---------- Count-ups ----------
+  const counts = document.querySelectorAll('.count');
+  const fmt = (n) => n.toLocaleString('en-US');
+  function runCount(el) {
+    const target = parseInt(el.dataset.target, 10);
+    if (reduce) { el.textContent = fmt(target); return; }
+    const dur = 1600, start = performance.now();
+    function step(now) {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(Math.round(target * eased));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { runCount(e.target); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.5 });
+    counts.forEach((c) => io.observe(c));
+  } else {
+    counts.forEach(runCount);
+  }
+
+  // ---------- FAQ accordion ----------
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach((i) => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  // ---------- Magnetic CTAs ----------
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+
+    // ---------- Tilt cards ----------
+    document.querySelectorAll('.tilt').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `rotateY(${px * 10}deg) rotateX(${-py * 10}deg) translateZ(0)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'rotateY(0) rotateX(0)'; });
+    });
+  }
+})();
+</script>
+</body>
+</html>
+

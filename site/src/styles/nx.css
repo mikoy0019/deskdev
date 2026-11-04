@@ -1,0 +1,910 @@
+/* ═══════════════════════════════════════════════════════════════
+   NIXGEN — Premium design system (site)
+   Dark + light themes on html[data-theme]. Everything here is layered
+   (base / components) so Tailwind utilities can always override it.
+   Tokens are exposed to Tailwind via @theme inline: bg-bg, bg-surface,
+   bg-surface-2, text-fg, text-fg-2, text-fg-3, border-line, border-line-2,
+   bg-accent, text-accent-fg, text-accent-text, bg-accent-soft, text-accent-2,
+   font-heading, font-body, font-serif, font-mono.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* `dark:` / `light:` follow html[data-theme] (set before paint), not the OS. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+/* `pin:` = the pinned horizontal scroll is active (QUERY.pin in components/site/motion/presets.ts
+   — <HorizontalScroll>).
+   Short desktop viewports skip the pin: the panels would not fit their height. */
+@custom-variant pin {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 1024px) and (min-height: 560px) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-2: var(--accent-2);
+  --color-danger: var(--danger);
+
+  --font-heading: var(--nx-font-heading);
+  --font-body: var(--nx-font-body);
+  --font-serif: var(--nx-font-serif);
+  --font-mono: var(--nx-font-mono);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* ─────────────────────────── Tokens ─────────────────────────── */
+
+:root,
+:root[data-theme="dark"] {
+  --bg: #06080d;
+  --bg-2: #0a0d14;
+  --surface: #0d1119;
+  --surface-2: #131926;
+  --line: rgba(226, 232, 255, 0.08);
+  --line-2: rgba(226, 232, 255, 0.15);
+  --fg: #f3f5fa;
+  --fg-2: #b4bccd;
+  --fg-3: #7f899e;
+  /* One accent, one hue (223deg), HSL saturation kept under 80%: a calm
+     cobalt rather than an electric one. White on --accent 5.05:1, on
+     --accent-hover 4.64:1; --accent-text 8.5:1 on --bg. */
+  --accent: #3566e3;
+  --accent-hover: #3e6de5;
+  --accent-fg: #ffffff;
+  --accent-text: #8aa8f0;
+  --accent-soft: rgba(53, 102, 227, 0.13);
+  /* The accent's lighter, airier end (gradients, a status dot), not a second hue family. */
+  --accent-2: #5aa9e2;
+  --danger: #ef4444;
+  --ring: #8aa8f0;
+  --glass: rgba(9, 12, 18, 0.72);
+  --scrim: rgba(6, 8, 13, 0.82);
+  /* Shadows carry the page's blue-black, never pure black. */
+  --shadow-sm: 0 1px 2px rgba(2, 4, 10, 0.4);
+  --shadow-md: 0 12px 32px -12px rgba(2, 4, 10, 0.55);
+  --shadow-lg: 0 40px 90px -30px rgba(2, 4, 10, 0.7);
+  /* Primary button: a hairline top highlight + a tight shadow in the page's
+     blue-black. No coloured glow. */
+  --btn-primary-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(2, 4, 10, 0.5), 0 6px 14px -8px rgba(2, 4, 10, 0.6);
+  --selection: rgba(53, 102, 227, 0.45);
+  /* Hairline stroke for outlined (hollow) display numerals — .nx-numeral-outline */
+  --numeral-stroke: color-mix(in oklab, var(--fg) 32%, transparent);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  /* Cool paper: the same slate temperature as the ink and the dark theme
+     (and DeskDev's light page), so no warm grays sit beside cool ones. */
+  --bg: #f5f6f8;
+  --bg-2: #eceff3;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --line: rgba(12, 16, 28, 0.09);
+  --line-2: rgba(12, 16, 28, 0.17);
+  --fg: #0c0f17;
+  --fg-2: #444c5d;
+  --fg-3: #5f6779; /* ≥4.9:1 on --bg-2 (#eceff3) */
+  /* White on --accent 6.8:1; as text 5.9:1 on --bg-2. */
+  --accent: #1f4ed1;
+  --accent-hover: #1b44b6;
+  --accent-fg: #ffffff;
+  --accent-text: #1f4ed1;
+  --accent-soft: rgba(31, 78, 209, 0.08);
+  --accent-2: #1b6da7;
+  --danger: #b91c1c;
+  --ring: #1f4ed1;
+  --glass: rgba(245, 246, 248, 0.78);
+  --scrim: rgba(245, 246, 248, 0.86);
+  --shadow-sm: 0 1px 2px rgba(12, 16, 28, 0.06);
+  --shadow-md: 0 12px 32px -14px rgba(12, 16, 28, 0.16);
+  --shadow-lg: 0 40px 90px -34px rgba(12, 16, 28, 0.22);
+  --btn-primary-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 1px rgba(12, 16, 28, 0.08), 0 1px 2px rgba(12, 16, 28, 0.18), 0 6px 14px -8px rgba(12, 16, 28, 0.28);
+  --selection: rgba(31, 78, 209, 0.2);
+  /* Thin strokes read lighter on paper: a heavier mix keeps the outline as present as on dark. */
+  --numeral-stroke: color-mix(in oklab, var(--fg) 46%, transparent);
+  color-scheme: light;
+}
+
+:root {
+  --nx-font-heading: var(--font-display-local), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --nx-font-body: var(--font-sans-local), "Geist", ui-sans-serif, system-ui, sans-serif;
+  /* Editorial accent only: one or two italic words in a headline (.nx-serif). */
+  --nx-font-serif: var(--font-serif-local), "Instrument Serif", ui-serif, Georgia, serif;
+  --nx-font-mono: var(--font-mono-local), "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --nx-wrap: 82.5rem;                                   /* 1320px */
+  --nx-gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --nx-section: clamp(5.5rem, 11vw, 10rem);
+  --nx-radius-sm: 0.625rem;
+  --nx-radius: 1rem;
+  --nx-radius-lg: 1.5rem;
+  --nx-radius-xl: 2rem;
+  --nx-nav-h: 4.5rem;
+}
+
+/* ─────────────────────────── Base ─────────────────────────── */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--nx-font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-padding-top: calc(var(--nx-nav-h) + 1.5rem);
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100dvh;
+  }
+  /* No `scroll-behavior: smooth` on html: it also animates Tab focus jumps,
+     find-in-page and hash navigation, which must land at once. */
+  ::selection { background: var(--selection); color: var(--fg); }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
+  img, video { max-width: 100%; }
+  /* Colour changes ease only while the theme is switching (set by ThemeToggle). */
+  html.nx-theme-switching,
+  html.nx-theme-switching *,
+  html.nx-theme-switching *::before,
+  html.nx-theme-switching *::after {
+    transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, fill 0.35s ease, box-shadow 0.35s ease !important;
+  }
+}
+
+/* ─────────────────────────── Components ─────────────────────────── */
+
+@layer components {
+  /* Layout */
+  .nx-wrap {
+    width: 100%;
+    max-width: calc(var(--nx-wrap) + var(--nx-gutter) * 2);
+    margin-inline: auto;
+    padding-inline: var(--nx-gutter);
+  }
+  .nx-wrap-narrow { max-width: calc(52rem + var(--nx-gutter) * 2); }
+  .nx-section { padding-block: var(--nx-section); position: relative; }
+  .nx-section-tight { padding-block: clamp(3.5rem, 7vw, 6rem); position: relative; }
+  /* A section of a long page that starts below the first screen: the browser
+     skips its layout and paint until it comes near the viewport. On the home
+     page (~22,000px tall on a phone) every font or image that arrived during
+     load re-laid out all of it. Paint containment clips what overflows the
+     section, and a fixed-position child would be placed in the section: use
+     it only where neither happens. The estimate is replaced by the real
+     height once the section has rendered. */
+  .nx-cv { content-visibility: auto; contain-intrinsic-block-size: auto 90rem; }
+  .nx-rule { height: 1px; background: var(--line); border: 0; width: 100%; }
+  .nx-band { background: var(--bg-2); }
+
+  /* Type */
+  .nx-display {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    font-size: clamp(3.1rem, 8.6vw, 8.75rem);
+    line-height: 0.92;
+    letter-spacing: -0.048em;
+    color: var(--fg);
+    text-wrap: balance;
+  }
+  .nx-h1 {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    font-size: clamp(2.7rem, 6.4vw, 6.25rem);
+    line-height: 0.95;
+    letter-spacing: -0.042em;
+    color: var(--fg);
+    text-wrap: balance;
+  }
+  .nx-h2 {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    font-size: clamp(2.15rem, 4.6vw, 4.25rem);
+    line-height: 1.0;
+    letter-spacing: -0.036em;
+    color: var(--fg);
+    text-wrap: balance;
+  }
+  .nx-h3 {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    font-size: clamp(1.35rem, 2.1vw, 1.75rem);
+    line-height: 1.15;
+    letter-spacing: -0.022em;
+    color: var(--fg);
+  }
+  .nx-h4 {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    letter-spacing: -0.012em;
+    color: var(--fg);
+  }
+  .nx-lede {
+    font-size: clamp(1.1rem, 1.35vw, 1.3rem);
+    line-height: 1.55;
+    color: var(--fg-2);
+    text-wrap: pretty;
+  }
+  .nx-body { font-size: 1rem; line-height: 1.65; color: var(--fg-2); text-wrap: pretty; }
+  .nx-small { font-size: 0.875rem; line-height: 1.55; color: var(--fg-3); }
+  /* Accent words inside headings: <em className="nx-serif">…</em> */
+  .nx-serif {
+    font-family: var(--nx-font-serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    font-size: 1.06em;
+    line-height: 0;
+  }
+  .nx-accent { color: var(--accent-text); }
+  /* Gradient ink — reserved for ONE word in the home hero. */
+  .nx-gradient {
+    background: linear-gradient(100deg, var(--fg) 0%, var(--accent-text) 48%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+  .nx-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--nx-font-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--fg-3);
+  }
+  .nx-eyebrow-index { color: var(--accent-text); }
+  .nx-eyebrow-line { width: 1.75rem; height: 1px; background: currentColor; opacity: 0.5; }
+  .nx-mono { font-family: var(--nx-font-mono); letter-spacing: 0.02em; }
+  .nx-numeral {
+    font-family: var(--nx-font-heading);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+  }
+  /* Hollow numeral ("01", "04"): decorative, so a hairline stroke instead of fill.
+     Same weight in both themes via --numeral-stroke; override the width with
+     [-webkit-text-stroke-width:…] if a size needs it. */
+  .nx-numeral-outline {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--numeral-stroke);
+  }
+
+  /* Live status dot ("Available Q2 2026") */
+  .nx-beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: var(--nx-font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-2);
+  }
+  .nx-beacon-dot {
+    position: relative;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #22c55e;
+  }
+  /* The ring is a pseudo-element animating transform + opacity (compositor
+     only); a box-shadow spread would repaint every frame. */
+  .nx-beacon-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    opacity: 0;
+    animation: nx-kit-breathe 2.4s var(--ease-out) infinite;
+  }
+
+  /* Buttons */
+  .nx-btn {
+    --btn-h: 3rem;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    height: var(--btn-h);
+    padding-inline: 1.375rem;
+    border-radius: 999px;
+    font-family: var(--nx-font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform var(--dur-press) var(--ease-out);
+  }
+  .nx-btn:active { transform: scale(0.97); }
+  .nx-btn:disabled, .nx-btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+  .nx-btn-lg { --btn-h: 3.5rem; padding-inline: 1.75rem; font-size: 1rem; }
+  .nx-btn-sm { --btn-h: 2.5rem; padding-inline: 1.1rem; font-size: 0.875rem; }
+  .nx-btn-primary { background: var(--accent); color: var(--accent-fg); box-shadow: var(--btn-primary-shadow); }
+  .nx-btn-primary:hover { background: var(--accent-hover); }
+  .nx-btn-secondary { background: transparent; color: var(--fg); box-shadow: inset 0 0 0 1px var(--line-2); }
+  .nx-btn-secondary:hover { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--fg-3); }
+  .nx-btn-ghost { --btn-h: auto; padding-inline: 0; border-radius: 0.25rem; color: var(--fg); }
+  .nx-btn-ghost:hover { color: var(--accent-text); }
+  .nx-btn-invert { background: var(--fg); color: var(--bg); }
+  .nx-btn-invert:hover { background: color-mix(in oklab, var(--fg) 88%, var(--accent)); }
+  /* On the blue CTA band */
+  .nx-btn-white { background: #ffffff; color: #122149; box-shadow: 0 1px 2px rgba(8, 18, 56, 0.3), 0 6px 14px -8px rgba(8, 18, 56, 0.45); }
+  .nx-btn-white:hover { background: #eef2fc; }
+  .nx-btn-outline-white { background: transparent; color: #ffffff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45); }
+  .nx-btn-outline-white:hover { background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px #ffffff; }
+  .nx-btn-arrow { transition: transform var(--dur-dropdown) var(--ease-out); }
+  @media (hover: hover) and (pointer: fine) {
+    .nx-btn:hover .nx-btn-arrow { transform: translateX(3px); }
+  }
+
+  /* Text link with animated underline */
+  .nx-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--fg);
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s var(--ease-out-expo), color 0.2s ease;
+  }
+  .nx-link:hover { background-size: 100% 1px; color: var(--accent-text); }
+
+  /* Surfaces */
+  .nx-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--nx-radius-lg);
+    padding: clamp(1.5rem, 2.6vw, 2.25rem);
+    transition: border-color 0.25s ease, background-color 0.25s ease, transform 0.25s var(--ease-out), box-shadow 0.25s ease;
+  }
+  .nx-card-hover:hover { border-color: var(--line-2); box-shadow: var(--shadow-md); }
+  @media (hover: hover) and (pointer: fine) {
+    .nx-card-lift:hover { transform: translateY(-4px); }
+  }
+  .nx-card-feature {
+    background:
+      radial-gradient(120% 80% at 100% 0%, var(--accent-soft), transparent 60%),
+      var(--surface);
+    border-color: color-mix(in oklab, var(--accent) 35%, var(--line));
+  }
+  .nx-panel { background: var(--bg-2); border: 1px solid var(--line); border-radius: var(--nx-radius-xl); }
+  .nx-glass {
+    background: var(--glass);
+    -webkit-backdrop-filter: saturate(1.6) blur(18px);
+    backdrop-filter: saturate(1.6) blur(18px);
+    border: 1px solid var(--line);
+  }
+
+  /* Media frame (screenshots, photos) */
+  .nx-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--nx-radius);
+    background: var(--surface-2);
+    isolation: isolate;
+  }
+  .nx-media > img, .nx-media > video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.25s var(--ease-out), opacity 0.25s ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .nx-media > img, .nx-media:hover > img { transform: scale(1.04); }
+  }
+
+  /* Tags / pills */
+  .nx-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 1.75rem;
+    padding-inline: 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: color-mix(in oklab, var(--surface) 70%, transparent);
+    font-family: var(--nx-font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-2);
+    white-space: nowrap;
+  }
+  .nx-tag-accent { border-color: color-mix(in oklab, var(--accent) 40%, transparent); background: var(--accent-soft); color: var(--accent-text); }
+
+  /* Form fields */
+  .nx-label { display: block; margin-bottom: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--fg); }
+  .nx-input {
+    width: 100%;
+    height: 3.125rem;
+    padding-inline: 1rem;
+    border-radius: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    color: var(--fg);
+    font: inherit;
+    font-size: 0.975rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  }
+  textarea.nx-input { height: auto; min-height: 9rem; padding-block: 0.875rem; resize: vertical; line-height: 1.55; }
+  .nx-input::placeholder { color: var(--fg-3); opacity: 0.85; }
+  .nx-input:hover { border-color: var(--fg-3); }
+  .nx-input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .nx-choice {
+    display: inline-flex;
+    align-items: center;
+    height: 2.5rem;
+    padding-inline: 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    font-size: 0.875rem;
+    color: var(--fg-2);
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+  .nx-choice:hover { color: var(--fg); border-color: var(--fg-3); }
+  .nx-choice[aria-pressed="true"], .nx-choice[aria-checked="true"] {
+    color: var(--accent-fg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .nx-alert {
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid color-mix(in oklab, var(--danger) 35%, transparent);
+    background: color-mix(in oklab, var(--danger) 10%, transparent);
+    color: var(--danger);
+  }
+
+  /* FAQ (native <details name=…> accordion) */
+  .nx-faq { border-top: 1px solid var(--line); }
+  .nx-faq-item { border-bottom: 1px solid var(--line); }
+  .nx-faq-item > summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-block: 1.5rem;
+    cursor: pointer;
+    font-family: var(--nx-font-heading);
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    color: var(--fg);
+    transition: color 0.2s ease;
+  }
+  .nx-faq-item > summary::-webkit-details-marker { display: none; }
+  .nx-faq-item > summary:hover { color: var(--accent-text); }
+  .nx-faq-icon {
+    position: relative;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-2);
+    transition: transform 0.45s var(--ease-out-expo), background-color 0.3s ease, border-color 0.3s ease;
+  }
+  .nx-faq-icon::before, .nx-faq-icon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 0.75rem;
+    height: 1.5px;
+    background: currentColor;
+    translate: -50% -50%;
+    border-radius: 2px;
+  }
+  .nx-faq-icon::after { rotate: 90deg; transition: rotate 0.45s var(--ease-out-expo); }
+  .nx-faq-item[open] .nx-faq-icon { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .nx-faq-item[open] .nx-faq-icon::after { rotate: 0deg; }
+  .nx-faq-answer { padding-bottom: 1.6rem; max-width: 46rem; }
+  @supports (interpolate-size: allow-keywords) {
+    .nx-faq { interpolate-size: allow-keywords; }
+    .nx-faq-item::details-content {
+      height: 0;
+      overflow: clip;
+      transition: height 0.5s var(--ease-out-expo), content-visibility 0.5s allow-discrete;
+    }
+    .nx-faq-item[open]::details-content { height: auto; }
+  }
+
+  /* Marquee (CSS loop; reduced motion → static wrap) */
+  .nx-marquee {
+    --nx-marquee-gap: 3rem;
+    --nx-marquee-duration: 40s;
+    position: relative;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .nx-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: nx-marquee var(--nx-marquee-duration) linear infinite;
+  }
+  .nx-marquee-group { display: flex; align-items: center; gap: var(--nx-marquee-gap); padding-right: var(--nx-marquee-gap); flex: none; }
+  .nx-marquee[data-reverse] .nx-marquee-track { animation-direction: reverse; }
+  .nx-marquee:hover .nx-marquee-track { animation-play-state: paused; }
+  @keyframes nx-marquee { to { transform: translate3d(-50%, 0, 0); } }
+
+  /* Closing CTA band — brand blue in both themes. A calm plate: one cobalt
+     with a few percent of tonal drift (same hue, no second colour, no light
+     blobs), edged by a hairline ring and a top highlight. White text 6.4:1 at
+     its lightest point; 80% white body copy stays above 4.5:1. */
+  .nx-cta {
+    color: #ffffff;
+    background: linear-gradient(180deg, #2251d0 0%, #1d49c3 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  .nx-cta .nx-eyebrow, .nx-cta .nx-beacon { color: rgba(255, 255, 255, 0.85); }
+  .nx-cta-grid {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 90% at 85% 10%, #000 20%, transparent 70%);
+    mask-image: radial-gradient(ellipse 80% 90% at 85% 10%, #000 20%, transparent 70%);
+  }
+
+  /* Hero/visual helpers */
+  .nx-grid-bg {
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
+  }
+  .nx-aura {
+    background:
+      radial-gradient(40% 50% at 20% 10%, color-mix(in oklab, var(--accent) 22%, transparent), transparent 70%),
+      radial-gradient(35% 45% at 85% 15%, color-mix(in oklab, var(--accent-2) 14%, transparent), transparent 70%);
+    filter: blur(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nx-marquee-track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; }
+  .nx-marquee { -webkit-mask-image: none; mask-image: none; }
+  .nx-marquee-group[aria-hidden="true"] { display: none; }
+  .nx-beacon-dot::after { display: none; }
+  .nx-media > img { transition: none; }
+}
+
+/* Reduced motion: a marquee becomes a static, centred tag cloud instead of one
+   row clipped at both edges. */
+@layer components {
+  @media (prefers-reduced-motion: reduce) {
+    .nx-marquee-group { flex: 1 1 100%; flex-wrap: wrap; justify-content: center; row-gap: 0.75rem; padding-inline: var(--nx-gutter); }
+  }
+}
+
+/* ─────────────────────────── Motion kit ───────────────────────────
+   Tokens and CSS for src/components/site/motion (Framer Motion kit).
+   Curves are Emil Kowalski's; @theme makes them Tailwind utilities too
+   (ease-out / ease-in-out / ease-drawer). Durations mirror DURATION in
+   motion/presets.ts. No ease-in on purpose. */
+@theme {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root {
+  --dur-press: 140ms;
+  --dur-tooltip: 160ms;
+  --dur-dropdown: 200ms;
+  --dur-modal: 280ms;
+  --dur-drawer: 500ms;
+  --dur-reveal: 700ms;
+  --dur-reveal-long: 900ms;
+  --nx-kit-live: #22c55e;
+}
+:root[data-theme="light"] {
+  --nx-kit-live: #16a34a;
+}
+
+@layer components {
+  /* Press feedback: the independent `scale` property, so it composes with transforms. */
+  .nx-press {
+    transition: scale var(--dur-press) var(--ease-out);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .nx-press:active { scale: 0.97; }
+
+  /* SplitWords: each word rises inside its own mask. The padding/negative-margin
+     pair widens the clip box (descenders, italic overhang) without moving layout. */
+  .nx-kit-word-mask {
+    display: inline-block;
+    vertical-align: top;
+    overflow: clip;
+    padding: 0.12em 0.06em 0.16em;
+    margin: -0.12em -0.06em -0.16em;
+  }
+  .nx-kit-word { display: inline-block; }
+
+  /* Page intro (components/site/Intro.tsx): the hero entrance of every inner
+     page, as a fixed CSS sequence that starts on first paint. The copy is in
+     the server HTML and never waits for hydration, so the headline is the
+     first thing painted, not the last. `--d` is each piece's delay. The same
+     sequence as the Home hero (home.module.css). */
+  .nx-intro {
+    animation: nx-intro-rise var(--dur-reveal) var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .nx-intro-word {
+    display: inline-block;
+    animation: nx-intro-word var(--dur-reveal-long) var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+  }
+  .nx-intro-fade {
+    animation: nx-intro-fade var(--dur-reveal-long) var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+  }
+  /* Reduced motion: no travel and no waiting (globals.css also collapses the duration). */
+  @media (prefers-reduced-motion: reduce) {
+    .nx-intro,
+    .nx-intro-word { animation-name: nx-intro-fade; }
+    .nx-intro,
+    .nx-intro-word,
+    .nx-intro-fade { animation-delay: 0ms; }
+  }
+  @media print {
+    .nx-intro,
+    .nx-intro-word,
+    .nx-intro-fade { animation: none; }
+  }
+
+  /* Marquee / InfiniteCarousel */
+  /* min-width: 0 — as a grid/flex item the band must not size to its own
+     max-content track (that widens the page by a whole loop). */
+  .nx-kit-marquee { position: relative; min-width: 0; max-width: 100%; }
+  .nx-kit-marquee-viewport {
+    overflow: clip;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .nx-kit-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: nx-kit-marquee var(--nx-kit-marquee-duration, 40s) linear infinite;
+  }
+  .nx-kit-marquee[data-reverse] .nx-kit-marquee-track { animation-direction: reverse; }
+  .nx-kit-marquee-group {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--nx-kit-marquee-gap, 3rem);
+    padding-right: var(--nx-kit-marquee-gap, 3rem);
+  }
+  .nx-kit-marquee-sep { display: flex; align-items: center; }
+  .nx-kit-marquee[data-paused] .nx-kit-marquee-track,
+  .nx-kit-marquee:focus-within .nx-kit-marquee-track { animation-play-state: paused; }
+  @media (hover: hover) and (pointer: fine) {
+    .nx-kit-marquee:hover .nx-kit-marquee-track { animation-play-state: paused; }
+  }
+  .nx-kit-marquee-toggle {
+    position: absolute;
+    inset-inline-end: 0.25rem;
+    top: 50%;
+    translate: 0 -50%;
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    color: var(--fg);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow-sm);
+    cursor: pointer;
+  }
+  /* "focus" mode: out of sight until a keyboard user tabs to it. */
+  .nx-kit-marquee-toggle[data-mode="focus"]:not(:focus-visible) {
+    clip-path: inset(50%);
+    opacity: 0;
+  }
+  /* Touch has no hover and no Tab to stop the band with (WCAG 2.2.2), so the
+     button is simply there, and the band ends short of it. */
+  @media (pointer: coarse) {
+    .nx-kit-marquee-toggle[data-mode="focus"]:not(:focus-visible) {
+      clip-path: none;
+      opacity: 1;
+    }
+    .nx-kit-marquee:has(> .nx-kit-marquee-toggle) > .nx-kit-marquee-viewport {
+      margin-inline-end: 3.25rem;
+    }
+  }
+
+  /* BreathingDot */
+  .nx-kit-dot {
+    --nx-kit-dot: var(--nx-kit-live);
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--nx-kit-dot);
+  }
+  .nx-kit-dot[data-tone="accent"] { --nx-kit-dot: var(--accent-2); }
+  .nx-kit-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--nx-kit-dot);
+    opacity: 0;
+    animation: nx-kit-breathe 2.4s var(--ease-out) infinite;
+  }
+
+  /* Shimmer */
+  .nx-kit-shimmer {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 0.375rem;
+    background: var(--surface-2);
+  }
+  .nx-kit-shimmer::after,
+  .nx-kit-typewriter-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translate3d(-100%, 0, 0);
+    background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--fg) 10%, transparent), transparent);
+    animation: nx-kit-sweep 1.6s linear infinite;
+  }
+
+  /* Typewriter */
+  .nx-kit-typewriter-line {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    white-space: pre-wrap;
+  }
+  .nx-kit-caret {
+    display: inline-block;
+    flex: none;
+    width: 2px;
+    height: 1.1em;
+    margin-inline-start: 2px;
+    background: currentColor;
+    animation: nx-kit-caret 1.06s steps(1) infinite;
+  }
+  /* Solid while typing/deleting (a real caret doesn't blink mid-word). */
+  .nx-kit-typewriter-line[data-state="typing"] .nx-kit-caret,
+  .nx-kit-typewriter-line[data-state="deleting"] .nx-kit-caret { animation: none; }
+  .nx-kit-typewriter-line[data-state="processing"] .nx-kit-caret { opacity: 0; animation: none; }
+  .nx-kit-typewriter-shimmer {
+    position: absolute;
+    inset: -0.15em -0.3em;
+    overflow: hidden;
+    border-radius: 0.375rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-tooltip) var(--ease-out);
+  }
+  .nx-kit-typewriter-shimmer::after { animation-play-state: paused; }
+  .nx-kit-typewriter-line[data-state="processing"] .nx-kit-typewriter-shimmer { opacity: 1; }
+  .nx-kit-typewriter-line[data-state="processing"] .nx-kit-typewriter-shimmer::after { animation-play-state: running; }
+
+  /* Every kit loop stops while its element is off-screen, and while the reader
+     holds it: mouse hover or keyboard focus on its zone (useOffscreenPause). */
+  [data-nx-offscreen].nx-kit-loop,
+  [data-nx-offscreen].nx-kit-loop::after,
+  [data-nx-offscreen] .nx-kit-loop,
+  [data-nx-offscreen] .nx-kit-loop::after,
+  [data-nx-held].nx-kit-loop,
+  [data-nx-held].nx-kit-loop::after,
+  [data-nx-held] .nx-kit-loop,
+  [data-nx-held] .nx-kit-loop::after { animation-play-state: paused; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nx-kit-loop,
+    .nx-kit-loop::after,
+    .nx-kit-shimmer::after,
+    .nx-kit-typewriter-shimmer::after { animation: none; }
+    .nx-kit-dot::after { display: none; }
+    .nx-kit-caret { opacity: 1; }
+    /* The band becomes a static, wrapped list. */
+    .nx-kit-marquee-viewport { -webkit-mask-image: none; mask-image: none; }
+    .nx-kit-marquee-track { width: auto; flex-wrap: wrap; justify-content: center; }
+    .nx-kit-marquee-group { flex: 1 1 100%; flex-wrap: wrap; justify-content: center; row-gap: 0.75rem; padding-right: 0; }
+    .nx-kit-marquee-group[aria-hidden="true"],
+    .nx-kit-marquee-sep { display: none; }
+  }
+}
+
+@keyframes nx-intro-rise {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nx-intro-word {
+  from { opacity: 0; transform: translate3d(0, 105%, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nx-intro-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes nx-kit-marquee { to { transform: translate3d(-50%, 0, 0); } }
+@keyframes nx-kit-breathe {
+  0% { transform: scale(1); opacity: 0.55; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes nx-kit-sweep { to { transform: translate3d(100%, 0, 0); } }
+@keyframes nx-kit-caret { 50% { opacity: 0; } }
+
+/* Fail-safe: kit-hidden content ([data-nx-reveal], hidden by inline style in
+   the server HTML until it animates) is never stuck invisible.
+   - No JavaScript at all, or printing: shown at once.
+   - JS slow or broken: if MotionProvider hasn't marked html[data-nx-motion="ready"]
+     within 3s (FAILSAFE_MS in motion/presets.ts), a 0s animation shows it.
+     Animations outrank inline styles, so this wins until the provider is ready. */
+@media (scripting: none) {
+  [data-nx-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+}
+@media print {
+  [data-nx-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+}
+html:not([data-nx-motion="ready"]) [data-nx-reveal] { animation: nx-kit-failsafe 0s 3s forwards; }
+
+/* Reduced motion: a kit entrance is a fade and nothing else. The server HTML
+   carries the hidden frame's offset inline (and the first client render cannot
+   know the preference yet), so the offset is cancelled here, where no timing
+   can get ahead of it: !important outranks both the inline style and a running
+   animation. Opacity is left alone, so the fade still plays. */
+@media (prefers-reduced-motion: reduce) {
+  [data-nx-reveal] { transform: none !important; clip-path: none !important; }
+}
+/* Keyboard focus never lands on something invisible: Tab can reach a link in
+   a block that sits on the viewport's bottom edge before its entrance has
+   fired, so a kit-hidden block that holds focus is shown at once. */
+[data-nx-reveal]:focus-within { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+@keyframes nx-kit-failsafe { to { opacity: 1; transform: none; clip-path: none; } }

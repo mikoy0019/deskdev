@@ -1,0 +1,510 @@
+{
+  "name": "[deskdev] log-to-sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-log",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-log",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=id,full_name,email&id=eq.{{ $json.body?.record?.actor_id || $json.body?.record?.author_id || '00000000-0000-0000-0000-000000000000' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "enrich",
+      "name": "Enrich actor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build one flat row per destination tab from the webhook payload.\n// A 'completed' activity is emitted twice: to Activity Log AND Task Completions.\nconst trig = $('Trigger').first().json;\nconst body = trig.body || trig;            // pg_net posts the JSON as the request body\nconst rec = body.record || {};\nconst table = body.table || '';\nconst actorRow = Array.isArray($json) ? $json[0] : $json;\nconst actorName = (actorRow && actorRow.full_name) || '';\n\nconst MNL = 'Asia/Manila';\nconst ts = rec.created_at || new Date().toISOString();\nconst d = new Date(ts);\nconst date = new Intl.DateTimeFormat('en-CA', { timeZone: MNL, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);\nconst time = new Intl.DateTimeFormat('en-GB', { timeZone: MNL, hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(d);\nconst detail = rec.detail || {};\nconst title = detail.title || '';\n\n// Lead events: pipeline milestones only. Notes, submissions (the prospect's\n// message), email bodies and the every-5-minutes SLA rows stay in the database.\nconst SHEET_LEAD_ACTIONS = new Set(['created', 'stage_changed', 'contacted', 'won', 'lost', 'assigned',\n  'proposal_sent', 'converted', 'meeting_booked', 'booking_link_sent', 'call_logged', 'followup_set',\n  'auto_reply_sent', 'spam_marked', 'not_spam']);\nconst LEAD_DETAIL_DROP = new Set(['message', 'body', 'text', 'html', 'snippet', 'notes', 'note', 'email', 'phone', 'attribution', 'ip_hash', 'payload']);\nconst leadDetail = (d) => Object.fromEntries(Object.entries(d || {}).filter(([k]) => !LEAD_DETAIL_DROP.has(k)));\n\nconst out = [];\nif (table === 'task_activity') {\n  out.push({ json: {\n    _tab: 'Activity Log',\n    Timestamp: ts, Date: date, Time: time,\n    Action: rec.action || '', Task: title,\n    Actor: actorName, ActorId: rec.actor_id || '',\n    TaskId: rec.task_id || '', ClientId: rec.client_id || '',\n    Detail: JSON.stringify(detail),\n  } });\n  if (rec.action === 'completed') {\n    out.push({ json: {\n      _tab: 'Task Completions',\n      Timestamp: ts, Date: date, Time: time,\n      Task: title, CompletedBy: actorName,\n      TaskId: rec.task_id || '', ClientId: rec.client_id || '',\n    } });\n  }\n} else if (table === 'notifications') {\n  out.push({ json: {\n    _tab: 'Notifications',\n    Timestamp: ts, Date: date, Time: time,\n    Type: rec.type || '', Title: rec.title || '',\n    Actor: actorName, RecipientId: rec.user_id || '',\n    Entity: rec.entity || '', EntityId: rec.entity_id || '',\n  } });\n} else if (table === 'lead_activity' && SHEET_LEAD_ACTIONS.has(rec.action)) {\n  out.push({ json: {\n    _tab: 'Lead Activity',\n    Timestamp: ts, Date: date, Time: time,\n    Action: rec.action || '', Lead: detail.name || '',\n    Actor: actorName, ActorId: rec.actor_id || '',\n    LeadId: rec.lead_id || '',\n    Detail: JSON.stringify(leadDetail(detail)),\n  } });\n} else if (table === 'eod_reports') {\n  out.push({ json: {\n    _tab: 'EOD Reports',\n    Timestamp: ts, Date: date, Time: time,\n    Client: rec.client_id || '', ReportDate: rec.report_date || '',\n    Author: actorName, Minutes: rec.total_minutes || 0,\n    Content: rec.content || '',\n  } });\n}\nreturn out;\n"
+      },
+      "id": "normalize",
+      "name": "Normalize",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json._tab }}",
+              "rightValue": "Activity Log",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-activity",
+      "name": "Is Activity Log",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json._tab }}",
+              "rightValue": "Task Completions",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-completions",
+      "name": "Is Task Completion",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json._tab }}",
+              "rightValue": "Notifications",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-notifications",
+      "name": "Is Notification",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json._tab }}",
+              "rightValue": "EOD Reports",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "filter-eod",
+      "name": "Is EOD Report",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json._tab }}",
+              "rightValue": "Lead Activity",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "is-lead",
+      "name": "Is Lead Activity",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        660,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Activity Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet-activity",
+      "name": "Append: Activity Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        -160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Task Completions",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet-completions",
+      "name": "Append: Task Completions",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Notifications",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet-notifications",
+      "name": "Append: Notifications",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "EOD Reports",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "sheet-eod",
+      "name": "Append: EOD Reports",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        320
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Lead Activity",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "append-lead",
+      "name": "Append: Lead Activity",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        480
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enrich actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich actor": {
+      "main": [
+        [
+          {
+            "node": "Normalize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize": {
+      "main": [
+        [
+          {
+            "node": "Is Activity Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Task Completion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is EOD Report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is Lead Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Activity Log": {
+      "main": [
+        [
+          {
+            "node": "Append: Activity Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Task Completion": {
+      "main": [
+        [
+          {
+            "node": "Append: Task Completions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Notification": {
+      "main": [
+        [
+          {
+            "node": "Append: Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is EOD Report": {
+      "main": [
+        [
+          {
+            "node": "Append: EOD Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Lead Activity": {
+      "main": [
+        [
+          {
+            "node": "Append: Lead Activity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

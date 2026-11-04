@@ -1,0 +1,673 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SOLENNE&nbsp;â€” Contemporary Art Gallery</title>
+<meta name="description" content="Solenne is a contemporary art gallery presenting rigorous, museum-grade exhibitions, editions, and dialogue across painting, sculpture, and time-based media." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#111110',
+          paper: '#f7f6f2',
+          chalk: '#efeee8',
+          mute: '#6e6c66',
+          accent: '#c8492f', // vermilion
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'Georgia', 'serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #f7f6f2;
+    color: #111110;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    cursor: none;
+  }
+  @media (max-width: 900px), (pointer: coarse) { body { cursor: auto; } }
+
+  ::selection { background: #c8492f; color: #f7f6f2; }
+
+  .display { font-family: 'Fraunces', Georgia, serif; line-height: 0.94; letter-spacing: -0.02em; }
+  .tracker { letter-spacing: 0.28em; text-transform: uppercase; }
+
+  /* Cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; border-radius: 9999px;
+    pointer-events: none; z-index: 9999; mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #f7f6f2; }
+  .cursor-ring {
+    width: 42px; height: 42px; border: 1px solid #f7f6f2;
+    transition: width .3s ease, height .3s ease, opacity .3s ease;
+  }
+  .cursor-ring.is-hot { width: 78px; height: 78px; opacity: .6; }
+
+  /* reveal masks */
+  .mask { overflow: hidden; }
+  .mask > .mask-i { display: block; will-change: transform; }
+
+  .clip-up { clip-path: inset(0 0 100% 0); }
+
+  /* marquee */
+  .marquee-track { display: inline-flex; white-space: nowrap; will-change: transform; }
+
+  /* rail */
+  .rail-track { display: flex; will-change: transform; }
+
+  .line-link { position: relative; }
+  .line-link::after {
+    content: ''; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: right;
+    transition: transform .45s cubic-bezier(.7,0,.2,1);
+  }
+  .line-link:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.6,0,.2,1); }
+  .acc.open .acc-body { max-height: 320px; }
+  .acc.open .acc-plus { transform: rotate(45deg); }
+
+  .img-wrap { background: linear-gradient(135deg,#e7e5dd,#d8d5cc 60%,#cfae9f); overflow: hidden; }
+
+  .grain::before{
+    content:''; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .clip-up { clip-path: none !important; }
+    .mask > .mask-i { transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="grain antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 mix-blend-difference text-paper">
+  <nav class="max-w-[1600px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
+    <a href="#top" class="display text-2xl font-medium tracking-tight">Solenne<span class="text-accent">.</span></a>
+    <ul class="hidden md:flex items-center gap-9 text-[11px] tracker">
+      <li><a href="#exhibition" class="line-link">Now</a></li>
+      <li><a href="#rail" class="line-link">Exhibitions</a></li>
+      <li><a href="#artists" class="line-link">Artists</a></li>
+      <li><a href="#visit" class="line-link">Visit</a></li>
+      <li><a href="#publications" class="line-link">Editions</a></li>
+    </ul>
+    <a href="#visit" id="navCta" class="hidden md:inline-flex items-center gap-2 text-[11px] tracker border border-paper/50 rounded-full px-5 py-2">
+      Plan a Visit
+    </a>
+    <button id="burger" class="md:hidden text-[11px] tracker">Menu</button>
+  </nav>
+</header>
+
+<!-- mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-40 bg-ink text-paper translate-y-[-100%] transition-transform duration-700 ease-[cubic-bezier(.7,0,.2,1)]">
+  <div class="h-full flex flex-col justify-center px-8 gap-6 display text-5xl">
+    <a href="#exhibition" class="mm-link">Now</a>
+    <a href="#rail" class="mm-link">Exhibitions</a>
+    <a href="#artists" class="mm-link">Artists</a>
+    <a href="#visit" class="mm-link">Visit</a>
+    <a href="#publications" class="mm-link">Editions</a>
+  </div>
+</div>
+
+<main id="top">
+
+<!-- ===================== HERO ===================== -->
+<section class="relative min-h-screen flex flex-col justify-end pt-28 pb-10 px-6 md:px-10 max-w-[1600px] mx-auto">
+  <div class="grid lg:grid-cols-12 gap-8 items-end">
+    <!-- left text -->
+    <div class="lg:col-span-7">
+      <p class="tracker text-[11px] text-mute mb-8" data-rise>Contemporary Art Gallery â€” Est. 2014 Â· No. 4 Lantern Court</p>
+      <h1 class="display text-[15vw] lg:text-[10.5vw] font-light text-ink">
+        <span class="mask block"><span class="mask-i">A room</span></span>
+        <span class="mask block"><span class="mask-i">for <span class="italic text-accent">looking</span></span></span>
+        <span class="mask block"><span class="mask-i">slowly.</span></span>
+      </h1>
+      <p class="mt-8 max-w-md text-mute text-[15px] leading-relaxed" data-rise>
+        Solenne is a contemporary gallery devoted to rigorous, quiet exhibitions â€”
+        painting, sculpture, and time-based media held in the clarity of the white cube.
+      </p>
+    </div>
+
+    <!-- right artwork -->
+    <div class="lg:col-span-5">
+      <figure class="img-wrap aspect-[4/5] rounded-[2px]" data-parallax>
+        <img data-parallax-img
+          src="https://images.unsplash.com/photo-1531913764164-f85c52e6e654?auto=format&fit=crop&w=1600&q=80"
+          alt="Featured artwork installation" loading="eager"
+          class="w-full h-[112%] object-cover -mt-[6%]"
+          onerror="this.style.display='none'" />
+      </figure>
+      <figcaption class="mt-4 flex justify-between text-[11px] tracker text-mute">
+        <span>IÅ‚ka Renoir â€” <span class="italic normal-case tracking-normal text-ink">Slow Solenne VII</span></span>
+        <span>2025</span>
+      </figcaption>
+    </div>
+  </div>
+
+  <!-- scroll cue -->
+  <div class="mt-14 flex items-center justify-between border-t border-ink/15 pt-5">
+    <span class="text-[11px] tracker text-mute">Scroll to enter</span>
+    <span class="text-[11px] tracker text-mute" data-clock>â€”</span>
+  </div>
+</section>
+
+<!-- ===================== MARQUEE ===================== -->
+<section class="border-y border-ink/12 py-5 overflow-hidden bg-chalk">
+  <div class="marquee-track display text-3xl md:text-5xl font-light text-ink/85" id="marquee">
+    <span class="mx-8">IÅ‚ka Renoir</span><span class="mx-8 text-accent">âœ¦</span>
+    <span class="mx-8">Senna Voll</span><span class="mx-8 text-accent">âœ¦</span>
+    <span class="mx-8">Mateo Drift</span><span class="mx-8 text-accent">âœ¦</span>
+    <span class="mx-8">Aune Karr</span><span class="mx-8 text-accent">âœ¦</span>
+    <span class="mx-8">Pell Onwuka</span><span class="mx-8 text-accent">âœ¦</span>
+    <span class="mx-8">Vera Sloane</span><span class="mx-8 text-accent">âœ¦</span>
+  </div>
+</section>
+
+<!-- ===================== CURRENT EXHIBITION ===================== -->
+<section id="exhibition" class="py-28 md:py-40 px-6 md:px-10 max-w-[1600px] mx-auto">
+  <div class="flex items-end justify-between mb-14">
+    <p class="tracker text-[11px] text-accent">On View Now</p>
+    <p class="tracker text-[11px] text-mute">01 â€” Current</p>
+  </div>
+
+  <div class="grid lg:grid-cols-12 gap-10 items-center">
+    <div class="lg:col-span-7 order-2 lg:order-1">
+      <figure class="img-wrap aspect-[16/11] rounded-[2px]" data-parallax>
+        <img data-parallax-img
+          src="https://images.unsplash.com/photo-1577720580479-7d839d829c73?auto=format&fit=crop&w=1600&q=80"
+          alt="Current exhibition installation view" loading="lazy"
+          class="w-full h-[112%] object-cover -mt-[6%]"
+          onerror="this.style.display='none'" />
+      </figure>
+    </div>
+
+    <div class="lg:col-span-5 order-1 lg:order-2">
+      <h2 class="display text-5xl md:text-6xl font-light leading-[0.95]">
+        <span class="mask block"><span class="mask-i">The Weight</span></span>
+        <span class="mask block"><span class="mask-i">of <span class="italic">Light</span></span></span>
+      </h2>
+      <div class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[11px] tracker text-mute">
+        <span>Senna Voll</span><span class="text-ink/30">/</span>
+        <span>14 May â€” 02 Aug</span><span class="text-ink/30">/</span>
+        <span>Gallery Floor 1</span>
+      </div>
+      <p class="mt-7 text-[15px] leading-relaxed text-mute max-w-md">
+        A suite of seventeen new paintings in which pigment is treated as something
+        physical and measurable â€” a study of how a surface can hold, refuse, and finally
+        release the daylight it was made under.
+      </p>
+      <a href="#" class="mt-9 inline-flex items-center gap-3 text-[11px] tracker line-link" data-magnetic>
+        View the Exhibition
+        <span class="inline-block w-9 h-px bg-ink"></span>
+      </a>
+    </div>
+  </div>
+
+  <!-- count-ups -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-24 border-t border-ink/12 pt-12">
+    <div><div class="display text-5xl md:text-6xl font-light" data-count="17">0</div><p class="mt-2 text-[11px] tracker text-mute">New Works</p></div>
+    <div><div class="display text-5xl md:text-6xl font-light" data-count="11">0</div><p class="mt-2 text-[11px] tracker text-mute">Years Open</p></div>
+    <div><div class="display text-5xl md:text-6xl font-light" data-count="240">0</div><p class="mt-2 text-[11px] tracker text-mute">Exhibitions</p></div>
+    <div><div class="display text-5xl md:text-6xl font-light" data-count="63">0</div><p class="mt-2 text-[11px] tracker text-mute">Artists Shown</p></div>
+  </div>
+</section>
+
+<!-- ===================== EXHIBITIONS RAIL ===================== -->
+<section id="rail" class="py-24 bg-ink text-paper overflow-hidden">
+  <div class="max-w-[1600px] mx-auto px-6 md:px-10 flex items-end justify-between mb-12">
+    <h2 class="display text-4xl md:text-6xl font-light">Exhibitions</h2>
+    <p class="tracker text-[11px] text-paper/60 hidden md:block">Drag Â· Scroll horizontally</p>
+  </div>
+
+  <div id="railViewport" class="relative">
+    <div id="railTrack" class="rail-track gap-6 px-6 md:px-10 will-change-transform">
+      <!-- card -->
+      <article class="shrink-0 w-[78vw] sm:w-[420px]">
+        <div class="img-wrap aspect-[3/4] rounded-[2px]">
+          <img src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.04]" onerror="this.style.display='none'">
+        </div>
+        <div class="mt-5 flex justify-between items-start">
+          <div><h3 class="display text-2xl">Field Notations</h3><p class="text-[11px] tracker text-paper/55 mt-1">Aune Karr</p></div>
+          <span class="text-[11px] tracker text-accent">Upcoming</span>
+        </div>
+        <p class="text-[11px] tracker text-paper/45 mt-3">15 Aug â€” 30 Sep Â· Floor 2</p>
+      </article>
+
+      <article class="shrink-0 w-[78vw] sm:w-[420px]">
+        <div class="img-wrap aspect-[3/4] rounded-[2px]">
+          <img src="https://images.unsplash.com/photo-1545989253-02cc26577f88?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.04]" onerror="this.style.display='none'">
+        </div>
+        <div class="mt-5 flex justify-between items-start">
+          <div><h3 class="display text-2xl">Quiet Machines</h3><p class="text-[11px] tracker text-paper/55 mt-1">Mateo Drift</p></div>
+          <span class="text-[11px] tracker text-accent">Upcoming</span>
+        </div>
+        <p class="text-[11px] tracker text-paper/45 mt-3">10 Oct â€” 22 Nov Â· Project Room</p>
+      </article>
+
+      <article class="shrink-0 w-[78vw] sm:w-[420px]">
+        <div class="img-wrap aspect-[3/4] rounded-[2px]">
+          <img src="https://images.unsplash.com/photo-1531913764164-f85c52e6e654?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.04]" onerror="this.style.display='none'">
+        </div>
+        <div class="mt-5 flex justify-between items-start">
+          <div><h3 class="display text-2xl">Salt & Cadence</h3><p class="text-[11px] tracker text-paper/55 mt-1">Pell Onwuka</p></div>
+          <span class="text-[11px] tracker text-paper/55">Past</span>
+        </div>
+        <p class="text-[11px] tracker text-paper/45 mt-3">Feb â€” Apr 2025 Â· Floor 1</p>
+      </article>
+
+      <article class="shrink-0 w-[78vw] sm:w-[420px]">
+        <div class="img-wrap aspect-[3/4] rounded-[2px]">
+          <img src="https://images.unsplash.com/photo-1577720580479-7d839d829c73?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.04]" onerror="this.style.display='none'">
+        </div>
+        <div class="mt-5 flex justify-between items-start">
+          <div><h3 class="display text-2xl">Vera, in Parts</h3><p class="text-[11px] tracker text-paper/55 mt-1">Vera Sloane</p></div>
+          <span class="text-[11px] tracker text-paper/55">Past</span>
+        </div>
+        <p class="text-[11px] tracker text-paper/45 mt-3">Nov 2024 â€” Jan 2025 Â· Floor 2</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ARTISTS GRID ===================== -->
+<section id="artists" class="py-28 md:py-40 px-6 md:px-10 max-w-[1600px] mx-auto">
+  <div class="flex items-end justify-between mb-14">
+    <h2 class="display text-4xl md:text-6xl font-light">Represented Artists</h2>
+    <p class="tracker text-[11px] text-mute">02 â€” Roster</p>
+  </div>
+
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-14">
+    <!-- artist -->
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1531913764164-f85c52e6e654?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">IÅ‚ka Renoir</h3><span class="text-[11px] tracker text-mute">b. 1987 Â· PT</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Painting Â· Pigment studies</p>
+    </article>
+
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Senna Voll</h3><span class="text-[11px] tracker text-mute">b. 1991 Â· NL</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Oil Â· Daylight surfaces</p>
+    </article>
+
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1545989253-02cc26577f88?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Mateo Drift</h3><span class="text-[11px] tracker text-mute">b. 1983 Â· MX</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Kinetic sculpture</p>
+    </article>
+
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1577720580479-7d839d829c73?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Aune Karr</h3><span class="text-[11px] tracker text-mute">b. 1979 Â· FI</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Drawing Â· Field notation</p>
+    </article>
+
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1531913764164-f85c52e6e654?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Pell Onwuka</h3><span class="text-[11px] tracker text-mute">b. 1990 Â· NG</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Ceramic Â· Cast salt</p>
+    </article>
+
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[4/5] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-[1.03]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Vera Sloane</h3><span class="text-[11px] tracker text-mute">b. 1985 Â· UK</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Video Â· Time-based media</p>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section id="about" class="py-28 md:py-40 px-6 md:px-10 bg-chalk border-y border-ink/12">
+  <div class="max-w-[1600px] mx-auto grid lg:grid-cols-12 gap-10">
+    <div class="lg:col-span-4">
+      <p class="tracker text-[11px] text-accent">The Gallery</p>
+    </div>
+    <div class="lg:col-span-8">
+      <p class="display text-3xl md:text-[2.7rem] font-light leading-[1.18] text-ink">
+        Solenne keeps a single rule: <span class="italic text-accent">show less, look longer.</span>
+        We mount four to six exhibitions a year inside a converted lantern works,
+        giving each artist the room â€” and the silence â€” a serious work deserves.
+      </p>
+      <div class="grid sm:grid-cols-3 gap-8 mt-14 text-[14px] text-mute leading-relaxed">
+        <div><h4 class="text-ink display text-xl mb-2">Programme</h4>Solo and two-person shows, with an annual commission for an emerging artist.</div>
+        <div><h4 class="text-ink display text-xl mb-2">Approach</h4>White-cube hang, daylight where possible, printed matter for every show.</div>
+        <div><h4 class="text-ink display text-xl mb-2">Dialogue</h4>Monthly talks, readings, and slow-looking sessions open to all visitors.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== VISIT / HOURS ===================== -->
+<section id="visit" class="py-28 md:py-40 px-6 md:px-10 max-w-[1600px] mx-auto">
+  <div class="grid lg:grid-cols-2 gap-16">
+    <div>
+      <h2 class="display text-5xl md:text-7xl font-light leading-[0.95] mb-10">
+        <span class="mask block"><span class="mask-i">Visit</span></span>
+        <span class="mask block"><span class="mask-i text-accent italic">Solenne</span></span>
+      </h2>
+      <div class="img-wrap aspect-[16/10] rounded-[2px]" data-parallax>
+        <img data-parallax-img src="https://images.unsplash.com/photo-1545989253-02cc26577f88?auto=format&fit=crop&w=1600&q=80" alt="Gallery interior" loading="lazy" class="w-full h-[112%] object-cover -mt-[6%]" onerror="this.style.display='none'">
+      </div>
+    </div>
+
+    <div class="flex flex-col justify-center">
+      <dl class="divide-y divide-ink/12 border-y border-ink/12">
+        <div class="flex justify-between py-5"><dt class="tracker text-[11px] text-mute">Tue â€” Fri</dt><dd class="display text-2xl">10:00 â€” 18:00</dd></div>
+        <div class="flex justify-between py-5"><dt class="tracker text-[11px] text-mute">Saturday</dt><dd class="display text-2xl">11:00 â€” 17:00</dd></div>
+        <div class="flex justify-between py-5"><dt class="tracker text-[11px] text-mute">Sun â€” Mon</dt><dd class="display text-2xl text-mute">Closed</dd></div>
+        <div class="flex justify-between py-5"><dt class="tracker text-[11px] text-mute">Admission</dt><dd class="display text-2xl">Free</dd></div>
+      </dl>
+      <div class="mt-10 text-[14px] text-mute leading-relaxed">
+        No. 4 Lantern Court, Wharfside<br>
+        Portharrow Â· PR1 7ME<br>
+        <a href="mailto:hello@solenne.gallery" class="text-ink line-link">hello@solenne.gallery</a>
+      </div>
+      <a href="#" class="mt-10 self-start inline-flex items-center gap-3 bg-ink text-paper rounded-full px-8 py-4 text-[11px] tracker" data-magnetic id="visitCta">
+        Plan Your Visit
+        <span class="inline-block w-2 h-2 rounded-full bg-accent"></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EVENTS ===================== -->
+<section id="events" class="py-24 md:py-32 px-6 md:px-10 bg-ink text-paper">
+  <div class="max-w-[1600px] mx-auto">
+    <div class="flex items-end justify-between mb-12">
+      <h2 class="display text-4xl md:text-6xl font-light">Events & Talks</h2>
+      <p class="tracker text-[11px] text-paper/55">03 â€” Programme</p>
+    </div>
+    <ul class="divide-y divide-paper/15 border-y border-paper/15">
+      <li class="grid md:grid-cols-12 gap-3 py-7 items-center group" data-rise>
+        <span class="md:col-span-2 tracker text-[11px] text-accent">21 Jun</span>
+        <span class="md:col-span-6 display text-2xl group-hover:translate-x-2 transition-transform duration-500">Slow-Looking: One Painting, One Hour</span>
+        <span class="md:col-span-3 text-[13px] text-paper/55">with Senna Voll</span>
+        <span class="md:col-span-1 text-[11px] tracker text-paper/55 md:text-right">18:00</span>
+      </li>
+      <li class="grid md:grid-cols-12 gap-3 py-7 items-center group" data-rise>
+        <span class="md:col-span-2 tracker text-[11px] text-accent">04 Jul</span>
+        <span class="md:col-span-6 display text-2xl group-hover:translate-x-2 transition-transform duration-500">Reading: On Pigment & Permanence</span>
+        <span class="md:col-span-3 text-[13px] text-paper/55">Editions Launch</span>
+        <span class="md:col-span-1 text-[11px] tracker text-paper/55 md:text-right">19:30</span>
+      </li>
+      <li class="grid md:grid-cols-12 gap-3 py-7 items-center group" data-rise>
+        <span class="md:col-span-2 tracker text-[11px] text-accent">12 Jul</span>
+        <span class="md:col-span-6 display text-2xl group-hover:translate-x-2 transition-transform duration-500">In Conversation: Drift & Karr</span>
+        <span class="md:col-span-3 text-[13px] text-paper/55">Artist Talk</span>
+        <span class="md:col-span-1 text-[11px] tracker text-paper/55 md:text-right">17:00</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===================== PUBLICATIONS ===================== -->
+<section id="publications" class="py-28 md:py-40 px-6 md:px-10 max-w-[1600px] mx-auto">
+  <div class="flex items-end justify-between mb-14">
+    <h2 class="display text-4xl md:text-6xl font-light">Editions & Publications</h2>
+    <p class="tracker text-[11px] text-mute">04 â€” Print</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[3/4] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1577720580479-7d839d829c73?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">The Weight of Light</h3><span class="text-[11px] tracker text-accent">Â£38</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Exhibition catalogue Â· 96pp Â· Ed. of 500</p>
+    </article>
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[3/4] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Field Notations</h3><span class="text-[11px] tracker text-accent">Â£24</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Artist book Â· Aune Karr Â· Ed. of 200</p>
+    </article>
+    <article class="group" data-rise>
+      <div class="img-wrap aspect-[3/4] rounded-[2px]">
+        <img src="https://images.unsplash.com/photo-1545989253-02cc26577f88?auto=format&fit=crop&w=1600&q=80" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" onerror="this.style.display='none'">
+      </div>
+      <div class="mt-4 flex justify-between items-baseline">
+        <h3 class="display text-2xl">Quiet Machines</h3><span class="text-[11px] tracker text-accent">Â£52</span>
+      </div>
+      <p class="text-[13px] text-mute mt-1">Signed print Â· Mateo Drift Â· Ed. of 30</p>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-24 md:py-32 px-6 md:px-10 bg-chalk border-y border-ink/12">
+  <div class="max-w-[1100px] mx-auto">
+    <h2 class="display text-4xl md:text-6xl font-light mb-12">Good to Know</h2>
+    <div id="faqList" class="divide-y divide-ink/15 border-t border-ink/15">
+      <div class="acc">
+        <button class="acc-head w-full flex justify-between items-center py-7 text-left">
+          <span class="display text-2xl md:text-3xl">Is admission really free?</span>
+          <span class="acc-plus text-accent text-3xl transition-transform duration-300">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-mute max-w-2xl">Yes. Entry to all exhibitions is free. A small number of talks and slow-looking sessions are ticketed to manage room capacity.</p></div>
+      </div>
+      <div class="acc">
+        <button class="acc-head w-full flex justify-between items-center py-7 text-left">
+          <span class="display text-2xl md:text-3xl">Can I photograph the work?</span>
+          <span class="acc-plus text-accent text-3xl transition-transform duration-300">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-mute max-w-2xl">Non-flash photography is welcome for personal use, unless an exhibition is marked otherwise at the door. We ask that you leave space for others to look.</p></div>
+      </div>
+      <div class="acc">
+        <button class="acc-head w-full flex justify-between items-center py-7 text-left">
+          <span class="display text-2xl md:text-3xl">Do you sell the works?</span>
+          <span class="acc-plus text-accent text-3xl transition-transform duration-300">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-mute max-w-2xl">Many works are available through the gallery. Speak with the front desk or email us for a price list and availability for the current show.</p></div>
+      </div>
+      <div class="acc">
+        <button class="acc-head w-full flex justify-between items-center py-7 text-left">
+          <span class="display text-2xl md:text-3xl">Is the gallery accessible?</span>
+          <span class="acc-plus text-accent text-3xl transition-transform duration-300">+</span>
+        </button>
+        <div class="acc-body"><p class="pb-7 text-mute max-w-2xl">Both floors are step-free via lift, with accessible facilities on the ground floor. Assistance dogs are always welcome.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="py-32 md:py-48 px-6 md:px-10 text-center bg-ink text-paper">
+  <p class="tracker text-[11px] text-accent mb-8" data-rise>Come and look slowly</p>
+  <h2 class="display text-[13vw] md:text-[9vw] font-light leading-[0.92]">
+    <span class="mask block"><span class="mask-i">See it in</span></span>
+    <span class="mask block"><span class="mask-i italic text-accent">person.</span></span>
+  </h2>
+  <a href="#visit" class="mt-12 inline-flex items-center gap-3 border border-paper/40 rounded-full px-10 py-5 text-[11px] tracker" data-magnetic>
+    Plan a Visit
+    <span class="inline-block w-9 h-px bg-paper"></span>
+  </a>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="bg-ink text-paper/70 px-6 md:px-10 pb-12 border-t border-paper/12">
+  <div class="max-w-[1600px] mx-auto grid md:grid-cols-12 gap-10 pt-16">
+    <div class="md:col-span-5">
+      <a href="#top" class="display text-3xl text-paper">Solenne<span class="text-accent">.</span></a>
+      <p class="mt-4 max-w-xs text-[14px]">A contemporary art gallery in a converted lantern works. Show less, look longer.</p>
+    </div>
+    <div class="md:col-span-2"><h4 class="tracker text-[11px] text-paper/45 mb-4">Visit</h4>
+      <ul class="space-y-2 text-[14px]"><li><a href="#visit" class="line-link">Hours</a></li><li><a href="#visit" class="line-link">Directions</a></li><li><a href="#about" class="line-link">About</a></li></ul></div>
+    <div class="md:col-span-2"><h4 class="tracker text-[11px] text-paper/45 mb-4">Programme</h4>
+      <ul class="space-y-2 text-[14px]"><li><a href="#rail" class="line-link">Exhibitions</a></li><li><a href="#artists" class="line-link">Artists</a></li><li><a href="#events" class="line-link">Events</a></li></ul></div>
+    <div class="md:col-span-3"><h4 class="tracker text-[11px] text-paper/45 mb-4">Newsletter</h4>
+      <form class="flex border-b border-paper/30 py-2" onsubmit="return false">
+        <input type="email" placeholder="Email address" class="bg-transparent flex-1 text-[14px] outline-none placeholder:text-paper/40 text-paper">
+        <button class="text-accent text-[11px] tracker">Join</button>
+      </form>
+      <p class="mt-4 text-[12px] text-paper/40">One quiet note before each new exhibition.</p>
+    </div>
+  </div>
+  <div class="max-w-[1600px] mx-auto mt-16 pt-6 border-t border-paper/12 flex flex-col md:flex-row justify-between gap-3 text-[11px] tracker text-paper/40">
+    <span>Â© 2026 Solenne Gallery â€” Invented for demonstration</span>
+    <span>Portharrow Â· Wharfside</span>
+  </div>
+</footer>
+
+<script>
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Clock ---------- */
+const clockEl = document.querySelector('[data-clock]');
+function tick(){ if(clockEl){ const d=new Date(); clockEl.textContent='Portharrow Â· '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); } }
+tick(); setInterval(tick, 1000*30);
+
+/* ---------- Cursor ---------- */
+const dot=document.getElementById('cursorDot'), ring=document.getElementById('cursorRing');
+if(window.matchMedia('(pointer:fine)').matches && !reduce){
+  let rx=0,ry=0,tx=0,ty=0;
+  window.addEventListener('mousemove',e=>{ tx=e.clientX; ty=e.clientY; dot.style.transform=`translate(${tx}px,${ty}px) translate(-50%,-50%)`; });
+  (function loop(){ rx+=(tx-rx)*0.16; ry+=(ty-ry)*0.16; ring.style.transform=`translate(${rx}px,${ry}px) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,button,[data-magnetic],.group,article').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('is-hot'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('is-hot'));
+  });
+}
+
+/* ---------- Mobile menu ---------- */
+const burger=document.getElementById('burger'), mob=document.getElementById('mobileMenu');
+let open=false;
+burger?.addEventListener('click',()=>{ open=!open; mob.style.transform=open?'translateY(0)':'translateY(-100%)'; burger.textContent=open?'Close':'Menu'; });
+document.querySelectorAll('.mm-link').forEach(l=>l.addEventListener('click',()=>{ open=false; mob.style.transform='translateY(-100%)'; burger.textContent='Menu'; }));
+
+/* ---------- Magnetic ---------- */
+if(!reduce && window.matchMedia('(pointer:fine)').matches){
+  document.querySelectorAll('[data-magnetic]').forEach(el=>{
+    el.addEventListener('mousemove',e=>{
+      const r=el.getBoundingClientRect();
+      const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+      el.style.transform=`translate(${x*0.3}px,${y*0.4}px)`;
+    });
+    el.addEventListener('mouseleave',()=>{ el.style.transform='translate(0,0)'; el.style.transition='transform .5s cubic-bezier(.7,0,.2,1)'; setTimeout(()=>el.style.transition='',500); });
+  });
+}
+
+/* ---------- GSAP ---------- */
+if(window.gsap){
+  gsap.registerPlugin(ScrollTrigger);
+
+  if(!reduce){
+    /* hero mask reveals */
+    gsap.set('.mask-i',{yPercent:115});
+    document.querySelectorAll('section').forEach(sec=>{
+      const items=sec.querySelectorAll('.mask-i');
+      if(!items.length) return;
+      gsap.to(items,{ yPercent:0, duration:1.1, ease:'power4.out', stagger:0.08,
+        scrollTrigger:{ trigger:sec, start:'top 82%' } });
+    });
+
+    /* rise items */
+    gsap.utils.toArray('[data-rise]').forEach(el=>{
+      gsap.from(el,{ y:38, opacity:0, duration:0.9, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%' } });
+    });
+
+    /* parallax images */
+    gsap.utils.toArray('[data-parallax-img]').forEach(img=>{
+      gsap.to(img,{ yPercent:8, ease:'none',
+        scrollTrigger:{ trigger:img.closest('[data-parallax]'), start:'top bottom', end:'bottom top', scrub:true } });
+    });
+
+    /* marquee */
+    const mq=document.getElementById('marquee');
+    if(mq){ mq.innerHTML+=mq.innerHTML;
+      gsap.to(mq,{ xPercent:-50, duration:24, ease:'none', repeat:-1 }); }
+
+    /* horizontal rail */
+    const track=document.getElementById('railTrack');
+    const vp=document.getElementById('railViewport');
+    if(track && vp){
+      const getDist=()=> track.scrollWidth - vp.clientWidth + 40;
+      gsap.to(track,{ x:()=>-getDist(), ease:'none',
+        scrollTrigger:{ trigger:'#rail', start:'top top', end:()=> '+='+getDist(),
+          scrub:1, pin:true, anticipatePin:1, invalidateOnRefresh:true } });
+    }
+
+    /* count ups */
+    gsap.utils.toArray('[data-count]').forEach(el=>{
+      const end=+el.dataset.count;
+      ScrollTrigger.create({ trigger:el, start:'top 90%', once:true, onEnter:()=>{
+        const o={v:0}; gsap.to(o,{ v:end, duration:1.8, ease:'power2.out',
+          onUpdate:()=> el.textContent=Math.round(o.v) }); } });
+    });
+  }
+}
+
+/* ---------- FAQ ---------- */
+document.querySelectorAll('#faqList .acc').forEach(acc=>{
+  acc.querySelector('.acc-head').addEventListener('click',()=>{
+    const isOpen=acc.classList.contains('open');
+    document.querySelectorAll('#faqList .acc').forEach(a=>a.classList.remove('open'));
+    if(!isOpen) acc.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ironwake Tattoo — Custom Ink Studio</title>
+<meta name="description" content="Ironwake — a custom tattoo studio carving permanent stories into skin. Fine-line, blackwork, neo-traditional and bespoke design by hand." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0a0807',
+          coal:   '#121010',
+          ash:    '#1c1917',
+          bone:   '#ece4d8',
+          smoke:  '#9a8f82',
+          blood:  '#b2122a',
+          ember:  '#e23b46',
+          gold:   '#c9a558',
+        },
+        fontFamily: {
+          display: ['"Cinzel Decorative"', 'serif'],
+          gothic:  ['"UnifrakturCook"', 'cursive'],
+          body:    ['"Barlow Condensed"', 'sans-serif'],
+          serif:   ['"Cormorant Garamond"', 'serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=UnifrakturCook:wght@700&family=Barlow+Condensed:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --cursor: 18px; }
+  * { -webkit-font-smoothing: antialiased; }
+  body { background:#0a0807; color:#ece4d8; font-family:'Barlow Condensed',sans-serif; cursor:none; }
+
+  @media (hover: none), (pointer: coarse) {
+    body { cursor:auto; }
+    .cursor-dot, .cursor-ring { display:none !important; }
+  }
+
+  /* Gritty texture overlay */
+  .grit::before {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.07; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Vignette */
+  .vignette::after {
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:55;
+    box-shadow: inset 0 0 220px 60px rgba(0,0,0,.85);
+  }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring { position:fixed; top:0; left:0; z-index:90; pointer-events:none; border-radius:9999px; mix-blend-mode:difference; }
+  .cursor-dot  { width:7px; height:7px; background:#ece4d8; transform:translate(-50%,-50%); }
+  .cursor-ring { width:42px; height:42px; border:1px solid #b2122a; transform:translate(-50%,-50%); transition:width .25s, height .25s, border-color .25s; }
+  .cursor-ring.grow { width:74px; height:74px; border-color:#e23b46; }
+
+  .mask-line { display:block; overflow:hidden; }
+  .mask-line > span { display:block; will-change:transform; }
+
+  .marquee-track { display:flex; width:max-content; animation:marq 28s linear infinite; }
+  @keyframes marq { to { transform:translateX(-50%); } }
+
+  .grain-frame { position:relative; overflow:hidden; }
+  .grain-frame::after {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 0%, transparent 40%, rgba(10,8,7,.7) 100%);
+  }
+
+  .stitch { border:1px dashed rgba(154,143,130,.4); }
+  .red-glow { text-shadow:0 0 24px rgba(178,18,42,.55); }
+
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.16,1,.3,1); }
+
+  ::selection { background:#b2122a; color:#ece4d8; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track { animation:none; }
+    * { scroll-behavior:auto !important; }
+  }
+
+  .hatch {
+    background-image:repeating-linear-gradient(45deg, rgba(201,165,88,.08) 0 2px, transparent 2px 9px);
+  }
+</style>
+</head>
+
+<body class="grit vignette overflow-x-hidden antialiased selection:bg-blood">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <nav class="max-w-7xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3 group" data-cursor>
+      <span class="w-9 h-9 grid place-items-center border border-blood rotate-45 group-hover:bg-blood transition-colors">
+        <span class="-rotate-45 font-display font-black text-blood group-hover:text-bone text-lg leading-none">I</span>
+      </span>
+      <span class="font-display font-black tracking-[.25em] text-bone text-sm md:text-base">IRONWAKE</span>
+    </a>
+
+    <ul class="hidden lg:flex items-center gap-9 text-smoke text-sm uppercase tracking-[.2em] font-body font-medium">
+      <li><a href="#gallery"  class="hover:text-bone transition-colors" data-cursor>Work</a></li>
+      <li><a href="#artists"  class="hover:text-bone transition-colors" data-cursor>Artists</a></li>
+      <li><a href="#styles"   class="hover:text-bone transition-colors" data-cursor>Styles</a></li>
+      <li><a href="#process"  class="hover:text-bone transition-colors" data-cursor>Process</a></li>
+      <li><a href="#faq"      class="hover:text-bone transition-colors" data-cursor>FAQ</a></li>
+    </ul>
+
+    <a href="#book" id="navBook" data-cursor data-magnetic
+       class="relative inline-flex items-center gap-2 px-5 py-2.5 bg-blood text-bone font-body font-semibold uppercase tracking-[.2em] text-xs hover:bg-ember transition-colors">
+      <span class="w-1.5 h-1.5 rounded-full bg-bone animate-pulse"></span> Book
+    </a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+  <!-- parallax artwork -->
+  <div class="absolute inset-0 -z-10" data-parallax="hero">
+    <img src="https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         class="w-full h-[120%] object-cover opacity-40 grayscale" alt="Tattoo artist at work" />
+  </div>
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-ink/85 to-ink"></div>
+  <div class="absolute inset-0 -z-10 hatch opacity-40"></div>
+
+  <div class="max-w-7xl mx-auto px-5 md:px-8 w-full grid lg:grid-cols-12 gap-10 items-center">
+    <div class="lg:col-span-7">
+      <p class="flex items-center gap-3 text-blood font-body uppercase tracking-[.35em] text-xs md:text-sm mb-6" data-hero="tag">
+        <span class="w-10 h-px bg-blood"></span> Est. 2014 · Downtown Atelier
+      </p>
+
+      <h1 class="font-display font-black leading-[0.92] text-bone text-[15vw] sm:text-[12vw] lg:text-[8.5rem]">
+        <span class="mask-line"><span data-hero="h1">PERMANENT</span></span>
+        <span class="mask-line"><span data-hero="h2" class="text-blood red-glow italic font-serif font-600">stories</span></span>
+        <span class="mask-line"><span data-hero="h3">CARVED BY HAND</span></span>
+      </h1>
+
+      <p class="mt-8 max-w-md text-smoke text-lg md:text-xl font-body font-light leading-relaxed" data-hero="lead">
+        Ironwake is a custom-only tattoo studio. No flash walls, no copy-paste — every piece is drawn for one body and one story.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-5" data-hero="cta">
+        <a href="#book" data-cursor data-magnetic
+           class="group inline-flex items-center gap-3 px-8 py-4 bg-blood text-bone font-body font-semibold uppercase tracking-[.22em] text-sm hover:bg-ember transition-colors">
+          Book a Consult
+          <span class="group-hover:translate-x-1 transition-transform">→</span>
+        </a>
+        <a href="#gallery" data-cursor
+           class="inline-flex items-center gap-3 px-8 py-4 stitch text-bone font-body font-semibold uppercase tracking-[.22em] text-sm hover:border-bone hover:text-gold transition-colors">
+          View the Book
+        </a>
+      </div>
+    </div>
+
+    <!-- framed feature artwork -->
+    <div class="lg:col-span-5 hidden lg:block" data-hero="frame">
+      <div class="grain-frame stitch p-2 -rotate-2">
+        <img src="https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-[30rem] object-cover grayscale contrast-125" alt="Detailed blackwork sleeve" />
+      </div>
+      <div class="flex justify-between mt-4 text-smoke text-xs uppercase tracking-[.25em] font-body">
+        <span>Plate I</span><span class="text-gold">Blackwork · 9 hrs</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-smoke text-[10px] uppercase tracking-[.4em] font-body flex flex-col items-center gap-2">
+    Scroll <span class="w-px h-8 bg-gradient-to-b from-blood to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="border-y border-ash bg-coal py-5 overflow-hidden" aria-hidden="true">
+  <div class="marquee-track text-bone/90">
+    <div class="flex items-center gap-10 pr-10 font-display font-black text-2xl md:text-4xl uppercase tracking-tight">
+      <span>Fine Line</span><span class="text-blood text-3xl">✦</span>
+      <span>Blackwork</span><span class="text-gold text-3xl">✦</span>
+      <span>Neo-Traditional</span><span class="text-blood text-3xl">✦</span>
+      <span>Dotwork</span><span class="text-gold text-3xl">✦</span>
+      <span>Custom Lettering</span><span class="text-blood text-3xl">✦</span>
+      <span>Realism</span><span class="text-gold text-3xl">✦</span>
+    </div>
+    <div class="flex items-center gap-10 pr-10 font-display font-black text-2xl md:text-4xl uppercase tracking-tight">
+      <span>Fine Line</span><span class="text-blood text-3xl">✦</span>
+      <span>Blackwork</span><span class="text-gold text-3xl">✦</span>
+      <span>Neo-Traditional</span><span class="text-blood text-3xl">✦</span>
+      <span>Dotwork</span><span class="text-gold text-3xl">✦</span>
+      <span>Custom Lettering</span><span class="text-blood text-3xl">✦</span>
+      <span>Realism</span><span class="text-gold text-3xl">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COUNTERS ============ -->
+<section class="bg-ink py-16 border-b border-ash">
+  <div class="max-w-7xl mx-auto px-5 md:px-8 grid grid-cols-3 gap-6 text-center">
+    <div data-reveal>
+      <div class="font-display font-black text-blood text-4xl md:text-6xl" data-count="11">0</div>
+      <p class="mt-2 text-smoke uppercase tracking-[.25em] text-[11px] md:text-sm font-body">Years Open</p>
+    </div>
+    <div data-reveal class="border-x border-ash">
+      <div class="font-display font-black text-gold text-4xl md:text-6xl"><span data-count="6">0</span></div>
+      <p class="mt-2 text-smoke uppercase tracking-[.25em] text-[11px] md:text-sm font-body">Resident Artists</p>
+    </div>
+    <div data-reveal>
+      <div class="font-display font-black text-bone text-4xl md:text-6xl"><span data-count="8400">0</span>+</div>
+      <p class="mt-2 text-smoke uppercase tracking-[.25em] text-[11px] md:text-sm font-body">Pieces Inked</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section id="gallery" class="bg-coal py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-4" data-reveal>The Book</p>
+        <h2 class="font-display font-black text-bone text-5xl md:text-7xl leading-none" data-reveal>SELECTED<br/><span class="text-gold italic font-serif">work</span></h2>
+      </div>
+      <p class="max-w-sm text-smoke font-body text-lg font-light" data-reveal>
+        A living gallery of healed and fresh pieces. Hover to look closer — every line was committed once, with intent.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <!-- tall -->
+      <figure class="grain-frame stitch relative group row-span-2 lg:col-span-2 lg:row-span-2 overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-full min-h-[20rem] lg:min-h-[42rem] object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="Neo-traditional chest piece" />
+        <figcaption class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink to-transparent">
+          <span class="font-display font-bold text-bone text-lg">The Mourning Crow</span>
+          <span class="block text-gold text-xs uppercase tracking-[.25em] font-body mt-1">Neo-Traditional</span>
+        </figcaption>
+      </figure>
+
+      <figure class="grain-frame stitch relative group overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-full min-h-[14rem] lg:min-h-[20rem] object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="Fine line forearm" />
+        <figcaption class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-ink to-transparent">
+          <span class="font-display font-bold text-bone">Thornlight</span>
+          <span class="block text-gold text-[10px] uppercase tracking-[.25em] font-body">Fine Line</span>
+        </figcaption>
+      </figure>
+
+      <figure class="grain-frame stitch relative group overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-full min-h-[14rem] lg:min-h-[20rem] object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="Blackwork detail" />
+        <figcaption class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-ink to-transparent">
+          <span class="font-display font-bold text-bone">Iron Bloom</span>
+          <span class="block text-gold text-[10px] uppercase tracking-[.25em] font-body">Blackwork</span>
+        </figcaption>
+      </figure>
+
+      <figure class="grain-frame stitch relative group lg:col-span-2 overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-full min-h-[14rem] lg:min-h-[20rem] object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="Full sleeve dotwork" />
+        <figcaption class="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink to-transparent">
+          <span class="font-display font-bold text-bone text-lg">Wake of Embers</span>
+          <span class="block text-gold text-xs uppercase tracking-[.25em] font-body mt-1">Dotwork Sleeve</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ARTISTS ============ -->
+<section id="artists" class="bg-ink py-24 md:py-32 border-y border-ash">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-16">
+      <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-4" data-reveal>The Hands</p>
+      <h2 class="font-display font-black text-bone text-5xl md:text-7xl" data-reveal>RESIDENT <span class="text-gold italic font-serif">artists</span></h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- artist card template -->
+      <article class="grain-frame stitch group relative overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1542856391-010fb87dcfed?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-80 object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt="Artist Vesna Cole" />
+        <div class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-ink via-ink/70 to-transparent">
+          <h3 class="font-display font-black text-bone text-2xl">Vesna Cole</h3>
+          <p class="text-blood text-xs uppercase tracking-[.25em] font-body mt-1">Fine Line · Botanical</p>
+          <p class="text-smoke text-sm font-body font-light mt-3 leading-snug">Delicate single-needle linework and ghost-grey shading. Booking 6 weeks out.</p>
+        </div>
+      </article>
+
+      <article class="grain-frame stitch group relative overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1611501275019-9b5cda994e8d?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-80 object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt="Artist Dorian Vale" />
+        <div class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-ink via-ink/70 to-transparent">
+          <h3 class="font-display font-black text-bone text-2xl">Dorian Vale</h3>
+          <p class="text-blood text-xs uppercase tracking-[.25em] font-body mt-1">Blackwork · Ornamental</p>
+          <p class="text-smoke text-sm font-body font-light mt-3 leading-snug">Heavy black, sacred geometry, and bold negative space. Walk-in friendly Thursdays.</p>
+        </div>
+      </article>
+
+      <article class="grain-frame stitch group relative overflow-hidden" data-reveal data-cursor data-zoom>
+        <img src="https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             class="w-full h-80 object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt="Artist Mara Quist" />
+        <div class="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-ink via-ink/70 to-transparent">
+          <h3 class="font-display font-black text-bone text-2xl">Mara Quist</h3>
+          <p class="text-blood text-xs uppercase tracking-[.25em] font-body mt-1">Neo-Trad · Color</p>
+          <p class="text-smoke text-sm font-body font-light mt-3 leading-snug">Saturated palettes and storybook beasts. Large-scale custom only.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STYLES / SERVICES ============ -->
+<section id="styles" class="bg-coal py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid lg:grid-cols-12 gap-10 mb-14">
+      <h2 class="lg:col-span-7 font-display font-black text-bone text-5xl md:text-7xl leading-none" data-reveal>
+        WHAT WE <span class="text-blood italic font-serif red-glow">ink</span>
+      </h2>
+      <p class="lg:col-span-5 text-smoke font-body text-lg font-light self-end" data-reveal>
+        Custom-only across six disciplines. Pick a direction below — we design the rest with you in the consult.
+      </p>
+    </div>
+
+    <div class="border-t border-ash">
+      <!-- row -->
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">01</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Fine Line &amp; Micro</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Whisper-thin single-needle work — script, florals, and minimal symbols.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">from $180</span>
+      </div>
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">02</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Blackwork</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Solid black, ornamental patterns, and bold negative-space composition.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">from $240</span>
+      </div>
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">03</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Neo-Traditional</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Bold outlines, rich color, and a storybook sense of character.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">from $260</span>
+      </div>
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">04</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Dotwork &amp; Stipple</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Hand-stippled gradients and sacred geometry built dot by dot.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">from $220</span>
+      </div>
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">05</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Cover-Ups</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Reworking old ink into something you'll wear with pride. Consult required.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">quoted</span>
+      </div>
+      <div class="group grid md:grid-cols-12 gap-4 items-center py-7 border-b border-ash hover:bg-ash/40 transition-colors px-2" data-reveal data-cursor>
+        <span class="md:col-span-1 font-display font-black text-blood/70 text-xl group-hover:text-blood transition-colors">06</span>
+        <h3 class="md:col-span-4 font-display font-bold text-bone text-2xl md:text-3xl group-hover:translate-x-2 transition-transform">Large-Scale Custom</h3>
+        <p class="md:col-span-5 text-smoke font-body font-light">Full sleeves, backs, and multi-session bodysuits planned end to end.</p>
+        <span class="md:col-span-2 md:text-right text-gold font-body uppercase tracking-[.2em] text-sm">day rate</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STORY ============ -->
+<section id="about" class="relative bg-ink py-24 md:py-36 overflow-hidden border-y border-ash">
+  <div class="absolute inset-0 -z-10" data-parallax="about">
+    <img src="https://images.unsplash.com/photo-1562962230-16e4623d36e6?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         class="w-full h-[120%] object-cover opacity-20 grayscale" alt="Studio interior" />
+  </div>
+  <div class="absolute inset-0 -z-10 bg-ink/80"></div>
+
+  <div class="max-w-5xl mx-auto px-5 md:px-8 text-center">
+    <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-8" data-reveal>The Story</p>
+    <p class="font-serif text-bone text-3xl md:text-5xl leading-snug italic" data-reveal>
+      “We opened Ironwake in a back-alley basement with one machine and a hand-drawn rule:
+      <span class="text-gold not-italic font-display"> never repeat a design.</span>
+      Eleven years on, that rule still runs the shop.”
+    </p>
+    <div class="mt-10 flex items-center justify-center gap-4" data-reveal>
+      <span class="w-12 h-px bg-blood"></span>
+      <span class="font-display font-bold text-bone tracking-[.2em] uppercase text-sm">Soren Hale, Founder</span>
+      <span class="w-12 h-px bg-blood"></span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="bg-coal py-24 md:py-32">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-16">
+      <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-4" data-reveal>How It Goes</p>
+      <h2 class="font-display font-black text-bone text-5xl md:text-7xl" data-reveal>CONSULT <span class="text-smoke">→</span> DESIGN <span class="text-smoke">→</span> <span class="text-blood italic font-serif">ink</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="stitch p-8 hover:border-blood transition-colors" data-reveal data-cursor>
+        <span class="font-display font-black text-blood/40 text-6xl block">01</span>
+        <h3 class="font-display font-bold text-bone text-2xl mt-4">Consult</h3>
+        <p class="text-smoke font-body font-light mt-3 leading-relaxed">We sit down — in person or over a call — to map your idea, placement, and budget. Bring references, scars, stories. Deposit secures your slot.</p>
+      </div>
+      <div class="stitch p-8 hover:border-blood transition-colors md:mt-10" data-reveal data-cursor>
+        <span class="font-display font-black text-gold/40 text-6xl block">02</span>
+        <h3 class="font-display font-bold text-bone text-2xl mt-4">Design</h3>
+        <p class="text-smoke font-body font-light mt-3 leading-relaxed">Your artist draws a one-off piece sized to your body. One round of refinements is included before we ever pick up a machine.</p>
+      </div>
+      <div class="stitch p-8 hover:border-blood transition-colors md:mt-20" data-reveal data-cursor>
+        <span class="font-display font-black text-blood/40 text-6xl block">03</span>
+        <h3 class="font-display font-bold text-bone text-2xl mt-4">Ink</h3>
+        <p class="text-smoke font-body font-light mt-3 leading-relaxed">Single-use needles, hospital-grade station, and as many sessions as the piece needs. You leave with aftercare and a healed-photo invite.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="bg-ink py-24 md:py-32 border-y border-ash">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <h2 class="font-display font-black text-bone text-5xl md:text-7xl mb-14" data-reveal>WORN WITH <span class="text-gold italic font-serif">pride</span></h2>
+    <div class="grid md:grid-cols-3 gap-5">
+      <blockquote class="stitch p-8 bg-coal/40" data-reveal data-cursor>
+        <div class="text-blood text-2xl mb-4">★★★★★</div>
+        <p class="font-serif text-bone text-xl italic leading-snug">“Vesna turned a messy idea into the most delicate piece on my arm. The line confidence is unreal.”</p>
+        <footer class="mt-6 font-body uppercase tracking-[.2em] text-smoke text-xs">— Imogen R. · Fine Line</footer>
+      </blockquote>
+      <blockquote class="stitch p-8 bg-coal/40" data-reveal data-cursor>
+        <div class="text-blood text-2xl mb-4">★★★★★</div>
+        <p class="font-serif text-bone text-xl italic leading-snug">“Eight-hour sleeve session and it never felt rushed. Studio is spotless and the playlist slaps.”</p>
+        <footer class="mt-6 font-body uppercase tracking-[.2em] text-smoke text-xs">— Theo M. · Dotwork Sleeve</footer>
+      </blockquote>
+      <blockquote class="stitch p-8 bg-coal/40" data-reveal data-cursor>
+        <div class="text-blood text-2xl mb-4">★★★★★</div>
+        <p class="font-serif text-bone text-xl italic leading-snug">“Dorian covered a 12-year-old mistake so cleanly you'd never know. Genuine artist, zero ego.”</p>
+        <footer class="mt-6 font-body uppercase tracking-[.2em] text-smoke text-xs">— Priya S. · Cover-Up</footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="bg-coal py-24 md:py-32">
+  <div class="max-w-4xl mx-auto px-5 md:px-8">
+    <div class="text-center mb-14">
+      <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-4" data-reveal>Before You Book</p>
+      <h2 class="font-display font-black text-bone text-5xl md:text-7xl" data-reveal>COMMON <span class="text-gold italic font-serif">questions</span></h2>
+    </div>
+
+    <div class="divide-y divide-ash border-y border-ash">
+      <!-- item -->
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left group" data-cursor>
+          <span class="font-display font-bold text-bone text-xl md:text-2xl group-hover:text-gold transition-colors">Do you take walk-ins?</span>
+          <span class="faq-icon font-display text-blood text-3xl shrink-0 transition-transform duration-500">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-smoke font-body font-light text-lg leading-relaxed">Limited walk-ins on Thursdays with whichever artist has space. Everything else is custom and booked through a consult.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left group" data-cursor>
+          <span class="font-display font-bold text-bone text-xl md:text-2xl group-hover:text-gold transition-colors">How much is the deposit?</span>
+          <span class="faq-icon font-display text-blood text-3xl shrink-0 transition-transform duration-500">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-smoke font-body font-light text-lg leading-relaxed">A non-refundable $80 deposit holds your design slot and is applied to your final session total. Reschedule once with 48 hours' notice.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left group" data-cursor>
+          <span class="font-display font-bold text-bone text-xl md:text-2xl group-hover:text-gold transition-colors">Can I see the design beforehand?</span>
+          <span class="faq-icon font-display text-blood text-3xl shrink-0 transition-transform duration-500">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-smoke font-body font-light text-lg leading-relaxed">Always. We share the drawing before your appointment and include one round of refinements. Bigger changes are re-quoted.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left group" data-cursor>
+          <span class="font-display font-bold text-bone text-xl md:text-2xl group-hover:text-gold transition-colors">What's your age &amp; ID policy?</span>
+          <span class="faq-icon font-display text-blood text-3xl shrink-0 transition-transform duration-500">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-smoke font-body font-light text-lg leading-relaxed">18+ with a valid government photo ID, no exceptions. We can't tattoo anyone intoxicated or unwell — for your safety and the art.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-6 py-6 text-left group" data-cursor>
+          <span class="font-display font-bold text-bone text-xl md:text-2xl group-hover:text-gold transition-colors">How should I prep for my session?</span>
+          <span class="faq-icon font-display text-blood text-3xl shrink-0 transition-transform duration-500">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-smoke font-body font-light text-lg leading-relaxed">Sleep well, eat beforehand, hydrate, and skip alcohol for 24 hours. Wear comfortable clothes that expose the area. Snacks welcome.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="book" class="relative bg-ink py-28 md:py-40 overflow-hidden">
+  <div class="absolute inset-0 -z-10 hatch opacity-30"></div>
+  <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-blood/20 rounded-full blur-[120px] -z-10"></div>
+
+  <div class="max-w-4xl mx-auto px-5 md:px-8 text-center">
+    <p class="text-blood font-body uppercase tracking-[.35em] text-xs mb-6" data-reveal>Ready When You Are</p>
+    <h2 class="font-display font-black text-bone leading-[0.95] text-6xl md:text-8xl" data-reveal>
+      LET'S MAKE IT<br/><span class="text-blood italic font-serif red-glow">permanent.</span>
+    </h2>
+    <p class="mt-8 max-w-md mx-auto text-smoke font-body text-lg font-light" data-reveal>
+      Tell us your idea. We'll match you with the right artist and send a consult invite within 24 hours.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-5" data-reveal>
+      <a href="mailto:book@ironwake.studio" data-cursor data-magnetic
+         class="group inline-flex items-center gap-3 px-10 py-5 bg-blood text-bone font-body font-semibold uppercase tracking-[.22em] text-sm hover:bg-ember transition-colors">
+        Book a Consult <span class="group-hover:translate-x-1 transition-transform">→</span>
+      </a>
+      <a href="tel:+15550114414" data-cursor
+         class="inline-flex items-center gap-3 px-10 py-5 stitch text-bone font-body font-semibold uppercase tracking-[.22em] text-sm hover:text-gold hover:border-bone transition-colors">
+        Call the Studio
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-coal border-t border-ash pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 md:px-8">
+    <div class="grid md:grid-cols-12 gap-10 pb-12 border-b border-ash">
+      <div class="md:col-span-5">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-9 h-9 grid place-items-center border border-blood rotate-45">
+            <span class="-rotate-45 font-display font-black text-blood text-lg">I</span>
+          </span>
+          <span class="font-display font-black tracking-[.25em] text-bone">IRONWAKE</span>
+        </div>
+        <p class="text-smoke font-body font-light max-w-xs leading-relaxed">A custom-only tattoo atelier carving permanent stories into skin since 2014.</p>
+      </div>
+      <div class="md:col-span-3">
+        <h4 class="font-body uppercase tracking-[.25em] text-blood text-xs mb-4">Visit</h4>
+        <p class="text-smoke font-body font-light leading-relaxed">114 Cinder Lane, Unit 2<br/>Downtown · Studio hours<br/>Tue–Sat · 11am – 9pm</p>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-body uppercase tracking-[.25em] text-blood text-xs mb-4">Studio</h4>
+        <ul class="space-y-2 text-smoke font-body font-light">
+          <li><a href="#gallery" class="hover:text-bone transition-colors" data-cursor>Work</a></li>
+          <li><a href="#artists" class="hover:text-bone transition-colors" data-cursor>Artists</a></li>
+          <li><a href="#styles" class="hover:text-bone transition-colors" data-cursor>Styles</a></li>
+          <li><a href="#faq" class="hover:text-bone transition-colors" data-cursor>FAQ</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="font-body uppercase tracking-[.25em] text-blood text-xs mb-4">Follow</h4>
+        <ul class="space-y-2 text-smoke font-body font-light">
+          <li><a href="#" class="hover:text-bone transition-colors" data-cursor>Instagram</a></li>
+          <li><a href="#" class="hover:text-bone transition-colors" data-cursor>TikTok</a></li>
+          <li><a href="#" class="hover:text-bone transition-colors" data-cursor>Pinterest</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 text-smoke/70 font-body text-xs uppercase tracking-[.2em]">
+      <span>© 2014–2026 Ironwake Tattoo. All ink original.</span>
+      <span>Designed in the dark · Built to last</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine   = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  if (fine) {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    });
+    (function loop(){
+      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (fine && !reduce) {
+    document.querySelectorAll('[data-magnetic]').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        el.style.transform = `translate(${x*0.3}px, ${y*0.3}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => {
+    if (scrollY > 40) nav.classList.add('bg-ink/90','backdrop-blur-md','border-b','border-ash','shadow-lg','shadow-black/40');
+    else nav.classList.remove('bg-ink/90','backdrop-blur-md','border-b','border-ash','shadow-lg','shadow-black/40');
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; i.textContent = '+'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(135deg)';
+      }
+    });
+  });
+
+  /* ---------- GSAP ---------- */
+  if (typeof gsap === 'undefined') return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  if (reduce) {
+    document.querySelectorAll('[data-hero] , [data-reveal]').forEach(el => gsap.set(el, {opacity:1, y:0}));
+    document.querySelectorAll('.mask-line > span').forEach(el => gsap.set(el, {yPercent:0}));
+    document.querySelectorAll('[data-count]').forEach(el => el.textContent = (+el.dataset.count).toLocaleString());
+    return;
+  }
+
+  /* Hero masked reveal */
+  const tl = gsap.timeline({ defaults:{ ease:'power4.out' } });
+  tl.set('.mask-line > span', { yPercent: 110 })
+    .from('[data-hero="tag"]', { opacity:0, x:-30, duration:.8 })
+    .to('.mask-line > span', { yPercent:0, duration:1.1, stagger:.12 }, '-=.4')
+    .from('[data-hero="lead"]', { opacity:0, y:30, duration:.9 }, '-=.6')
+    .from('[data-hero="cta"]', { opacity:0, y:30, duration:.8 }, '-=.6')
+    .from('[data-hero="frame"]', { opacity:0, scale:.92, rotate:-6, duration:1.1 }, '-=.9');
+
+  /* Section reveals */
+  gsap.utils.toArray('[data-reveal]').forEach(el => {
+    gsap.from(el, {
+      opacity:0, y:50, duration:1, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 88%' }
+    });
+  });
+
+  /* Container parallax */
+  gsap.utils.toArray('[data-parallax]').forEach(el => {
+    gsap.fromTo(el, { yPercent:-8 }, {
+      yPercent:8, ease:'none',
+      scrollTrigger:{ trigger:el.parentElement, start:'top bottom', end:'bottom top', scrub:true }
+    });
+  });
+
+  /* Count-ups */
+  gsap.utils.toArray('[data-count]').forEach(el => {
+    const target = +el.dataset.count;
+    const obj = { v:0 };
+    ScrollTrigger.create({
+      trigger:el, start:'top 90%', once:true,
+      onEnter:() => gsap.to(obj, {
+        v:target, duration:2, ease:'power2.out',
+        onUpdate:() => el.textContent = Math.floor(obj.v).toLocaleString()
+      })
+    });
+  });
+})();
+</script>
+</body>
+</html>

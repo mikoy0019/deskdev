@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Maison Plume — Neighborhood Artisan Bakery & Patisserie</title>
+<meta name="description" content="Maison Plume is a small-batch neighborhood bakery baking sourdough, viennoiserie, and made-to-order patisserie fresh every dawn." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Dancing+Script:wght@500;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream: '#FBF3E4',
+          butter: '#F6E2B3',
+          crust: '#C98A4B',
+          cocoa: '#5A3825',
+          espresso: '#2E1B10',
+          berry: '#9C2E54',
+          berrylt: '#D86F8E',
+          sage: '#8A9A6B',
+          flour: '#FFFCF6',
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          script: ['"Dancing Script"', 'cursive'],
+          sans: ['Jost', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  :root { color-scheme: light; }
+  * { -webkit-font-smoothing: antialiased; }
+  body { background: #FBF3E4; color: #2E1B10; overflow-x: hidden; cursor: none; }
+  ::selection { background: #D86F8E; color: #FFFCF6; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; border-radius: 9999px; pointer-events: none;
+    z-index: 9999; transform: translate(-50%, -50%); mix-blend-mode: multiply;
+  }
+  .cursor-dot { width: 8px; height: 8px; background: #9C2E54; }
+  .cursor-ring {
+    width: 42px; height: 42px; border: 1.5px solid #C98A4B;
+    transition: width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .cursor-ring.hovering { width: 70px; height: 70px; background: rgba(216,111,142,.16); border-color: #9C2E54; }
+  @media (hover: none) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  /* Clip reveal containers */
+  .clip-reveal { clip-path: inset(0 0 100% 0); }
+  .parallax-img { will-change: transform; }
+
+  /* Masked text reveal */
+  .reveal-mask { overflow: hidden; display: block; }
+  .reveal-line { display: block; transform: translateY(110%); }
+
+  /* Marquee */
+  .marquee { display: flex; white-space: nowrap; will-change: transform; }
+  .marquee-track { animation: marquee 32s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  /* Floating crumbs / wheat */
+  .crumb { position: absolute; border-radius: 9999px; opacity: .5; will-change: transform; pointer-events: none; }
+
+  /* Accordion */
+  .faq-panel { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-panel { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  /* Magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* Grain overlay */
+  .grain::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .045;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .deco-underline { background-image: linear-gradient(transparent 60%, #D86F8E55 60%); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-line { transform: none !important; }
+    .clip-reveal { clip-path: none !important; }
+    .marquee-track { animation: none; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body class="grain font-sans antialiased">
+
+<!-- Cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- NAV -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-baseline gap-2 group" data-cursor>
+      <span class="font-serif text-2xl tracking-tight text-espresso">Maison</span>
+      <span class="font-script text-3xl text-berry -ml-1 leading-none">Plume</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-9 text-sm font-medium tracking-wide text-cocoa">
+      <a href="#story" class="hover:text-berry transition-colors" data-cursor>Story</a>
+      <a href="#menu" class="hover:text-berry transition-colors" data-cursor>Bakes</a>
+      <a href="#baker" class="hover:text-berry transition-colors" data-cursor>The Baker</a>
+      <a href="#cakes" class="hover:text-berry transition-colors" data-cursor>Custom Cakes</a>
+      <a href="#visit" class="hover:text-berry transition-colors" data-cursor>Visit</a>
+    </nav>
+    <a href="#order" id="orderCta" class="magnetic relative inline-flex items-center gap-2 rounded-full bg-berry text-flour px-6 py-2.5 text-sm font-medium tracking-wide shadow-lg shadow-berry/20 hover:bg-cocoa transition-colors" data-cursor>
+      <span>Order Fresh</span>
+      <span class="inline-block w-1.5 h-1.5 rounded-full bg-butter"></span>
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative min-h-screen flex items-center pt-28 pb-16 overflow-hidden">
+  <!-- floating crumbs -->
+  <div class="crumb bg-crust" style="width:14px;height:14px;top:22%;left:8%"></div>
+  <div class="crumb bg-berrylt" style="width:9px;height:9px;top:64%;left:14%"></div>
+  <div class="crumb bg-butter" style="width:20px;height:20px;top:36%;left:90%"></div>
+  <div class="crumb bg-crust" style="width:8px;height:8px;top:78%;left:82%"></div>
+  <div class="crumb bg-sage" style="width:11px;height:11px;top:14%;left:54%"></div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-10 items-center w-full">
+    <div class="lg:col-span-6 relative z-10">
+      <p class="reveal-mask mb-5"><span class="reveal-line font-script text-3xl sm:text-4xl text-berry">freshly baked since dawn</span></p>
+      <h1 class="font-serif font-500 leading-[0.95] text-espresso text-[3.4rem] sm:text-7xl xl:text-8xl tracking-tight">
+        <span class="reveal-mask"><span class="reveal-line">Warm bread,</span></span>
+        <span class="reveal-mask"><span class="reveal-line italic">honest</span></span>
+        <span class="reveal-mask"><span class="reveal-line">sweetness.</span></span>
+      </h1>
+      <p class="reveal-mask mt-7 max-w-md"><span class="reveal-line text-cocoa/80 text-lg leading-relaxed">A tiny neighborhood bakery on Linden Row, kneading slow sourdough and folding butter into golden viennoiserie every single morning.</span></p>
+      <div class="mt-9 flex flex-wrap items-center gap-4" data-fade>
+        <a href="#order" class="magnetic inline-flex items-center gap-2 rounded-full bg-cocoa text-flour px-7 py-3.5 text-sm font-medium tracking-wide hover:bg-berry transition-colors" data-cursor>
+          Order for pickup
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#menu" class="inline-flex items-center gap-2 text-sm font-medium text-cocoa border-b border-crust/50 pb-1 hover:text-berry hover:border-berry transition-colors" data-cursor>See today's bakes</a>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 relative">
+      <div class="relative rounded-[2rem] overflow-hidden clip-reveal shadow-2xl shadow-cocoa/20" data-clip>
+        <div class="aspect-[4/5] bg-gradient-to-br from-butter via-crust/40 to-berrylt/40 parallax-img" data-parallax>
+          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1600&q=80" alt="Golden croissants and pastries" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        </div>
+      </div>
+      <!-- floating badge -->
+      <div class="absolute -bottom-6 -left-4 sm:left-6 bg-flour rounded-2xl shadow-xl px-5 py-4 border border-butter/60" data-fade>
+        <p class="font-script text-2xl text-berry leading-none">Baked at 5am</p>
+        <p class="text-xs tracking-wide text-cocoa/70 mt-1">Sold out by noon, usually.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="bg-cocoa text-cream py-4 overflow-hidden border-y border-cocoa">
+  <div class="marquee">
+    <div class="marquee-track flex items-center gap-10 text-2xl font-serif italic pr-10">
+      <span>Sourdough</span><span class="text-berrylt">✿</span><span>Almond Croissants</span><span class="text-berrylt">✿</span><span>Cardamom Buns</span><span class="text-berrylt">✿</span><span>Berry Galette</span><span class="text-berrylt">✿</span><span>Cinnamon Knots</span><span class="text-berrylt">✿</span>
+      <span>Sourdough</span><span class="text-berrylt">✿</span><span>Almond Croissants</span><span class="text-berrylt">✿</span><span>Cardamom Buns</span><span class="text-berrylt">✿</span><span>Berry Galette</span><span class="text-berrylt">✿</span><span>Cinnamon Knots</span><span class="text-berrylt">✿</span>
+    </div>
+  </div>
+</div>
+
+<!-- STORY / INTRO -->
+<section id="story" class="py-24 sm:py-32 relative">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="reveal-mask mb-4"><span class="reveal-line font-script text-3xl text-crust">our little story</span></p>
+    <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl text-espresso leading-tight max-w-3xl mx-auto" data-fade>
+      We believe a loaf should take time, and a morning should taste like <span class="italic text-berry deco-underline">something kind</span>.
+    </h2>
+    <p class="mt-8 text-lg text-cocoa/75 leading-relaxed max-w-2xl mx-auto" data-fade>
+      Maison Plume began with one cast-iron oven, a stubborn sourdough starter named Olive, and a belief that the best things rise slowly. Today we're still small on purpose — flour-dusted hands, real butter, and recipes we know by heart.
+    </p>
+    <div class="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto">
+      <div data-fade>
+        <p class="font-serif text-4xl sm:text-5xl text-berry"><span class="count" data-to="11">0</span></p>
+        <p class="text-xs uppercase tracking-widest text-cocoa/60 mt-2">Years on Linden Row</p>
+      </div>
+      <div data-fade>
+        <p class="font-serif text-4xl sm:text-5xl text-berry"><span class="count" data-to="240">0</span></p>
+        <p class="text-xs uppercase tracking-widest text-cocoa/60 mt-2">Bakes each dawn</p>
+      </div>
+      <div data-fade>
+        <p class="font-serif text-4xl sm:text-5xl text-berry"><span class="count" data-to="3">0</span></p>
+        <p class="text-xs uppercase tracking-widest text-cocoa/60 mt-2">Day starter, fed daily</p>
+      </div>
+      <div data-fade>
+        <p class="font-serif text-4xl sm:text-5xl text-berry"><span class="count" data-to="100">0</span><span class="text-3xl">%</span></p>
+        <p class="text-xs uppercase tracking-widest text-cocoa/60 mt-2">Hand shaped</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU / SIGNATURE BAKES -->
+<section id="menu" class="py-24 sm:py-28 bg-flour relative border-y border-butter/50">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="reveal-mask mb-2"><span class="reveal-line font-script text-3xl text-crust">from the case</span></p>
+        <h2 class="font-serif text-4xl sm:text-5xl text-espresso" data-fade>Signature bakes</h2>
+      </div>
+      <p class="max-w-xs text-cocoa/70 text-sm leading-relaxed" data-fade>A rotating little menu. Everything is mixed, proofed and finished here — never frozen, never rushed.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="menu-card group bg-cream rounded-2xl overflow-hidden border border-butter/60 hover:shadow-xl hover:shadow-cocoa/10 transition-all duration-500" data-fade data-cursor>
+        <div class="aspect-[4/3] overflow-hidden bg-gradient-to-br from-butter to-crust/40">
+          <img src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?auto=format&fit=crop&w=1600&q=80" alt="Butter croissant" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.display='none'" />
+        </div>
+        <div class="p-6">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-serif text-2xl text-espresso group-hover:text-berry transition-colors">Plume Croissant</h3>
+            <span class="font-sans text-crust font-medium">$4.5</span>
+          </div>
+          <p class="text-sm text-cocoa/70 mt-2 leading-relaxed">Three days of lamination, French butter, a shatter-then-melt crumb. The reason people queue.</p>
+        </div>
+      </article>
+
+      <article class="menu-card group bg-cream rounded-2xl overflow-hidden border border-butter/60 hover:shadow-xl hover:shadow-cocoa/10 transition-all duration-500" data-fade data-cursor>
+        <div class="aspect-[4/3] overflow-hidden bg-gradient-to-br from-crust/30 to-cocoa/30">
+          <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1600&q=80" alt="Crusty sourdough loaf" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.display='none'" />
+        </div>
+        <div class="p-6">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-serif text-2xl text-espresso group-hover:text-berry transition-colors">Olive Sourdough</h3>
+            <span class="font-sans text-crust font-medium">$9</span>
+          </div>
+          <p class="text-sm text-cocoa/70 mt-2 leading-relaxed">36-hour cold ferment, blistered crust, an open custardy crumb. Named after our starter.</p>
+        </div>
+      </article>
+
+      <article class="menu-card group bg-cream rounded-2xl overflow-hidden border border-butter/60 hover:shadow-xl hover:shadow-cocoa/10 transition-all duration-500" data-fade data-cursor>
+        <div class="aspect-[4/3] overflow-hidden bg-gradient-to-br from-berrylt/30 to-berry/30">
+          <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1600&q=80" alt="Berry tart" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" onerror="this.style.display='none'" />
+        </div>
+        <div class="p-6">
+          <div class="flex items-baseline justify-between gap-3">
+            <h3 class="font-serif text-2xl text-espresso group-hover:text-berry transition-colors">Wild Berry Galette</h3>
+            <span class="font-sans text-crust font-medium">$6</span>
+          </div>
+          <p class="text-sm text-cocoa/70 mt-2 leading-relaxed">Rye crust folded around whatever's ripe at the market — today, blackberry and thyme.</p>
+        </div>
+      </article>
+
+      <!-- text-only menu rows -->
+      <article class="menu-card group bg-cream rounded-2xl p-6 border border-butter/60 hover:shadow-xl hover:shadow-cocoa/10 transition-all duration-500 flex flex-col justify-center" data-fade data-cursor>
+        <div class="flex items-baseline justify-between gap-3">
+          <h3 class="font-serif text-2xl text-espresso group-hover:text-berry transition-colors">Cardamom Bun</h3>
+          <span class="font-sans text-crust font-medium">$4</span>
+        </div>
+        <p class="text-sm text-cocoa/70 mt-2 leading-relaxed">Knotted, pearl-sugared, warm with toasted cardamom and a whisper of orange zest.</p>
+      </article>
+
+      <article class="menu-card group bg-cream rounded-2xl p-6 border border-butter/60 hover:shadow-xl hover:shadow-cocoa/10 transition-all duration-500 flex flex-col justify-center" data-fade data-cursor>
+        <div class="flex items-baseline justify-between gap-3">
+          <h3 class="font-serif text-2xl text-espresso group-hover:text-berry transition-colors">Almond Frangipane</h3>
+          <span class="font-sans text-crust font-medium">$5</span>
+        </div>
+        <p class="text-sm text-cocoa/70 mt-2 leading-relaxed">Yesterday's croissants reborn — soaked, filled, double-baked, dusted in snow.</p>
+      </article>
+
+      <article class="menu-card group bg-cocoa text-cream rounded-2xl p-6 hover:shadow-xl transition-all duration-500 flex flex-col justify-center" data-fade data-cursor>
+        <h3 class="font-script text-3xl text-butter">Daily specials</h3>
+        <p class="text-sm text-cream/80 mt-2 leading-relaxed">Cinnamon knots, kouign-amann, focaccia squares & a soup of the day. Follow the chalkboard.</p>
+        <a href="#order" class="mt-4 inline-flex items-center gap-2 text-butter text-sm font-medium border-b border-butter/40 w-fit pb-0.5 hover:gap-3 transition-all">Pre-order the lot →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / THE BAKER -->
+<section id="baker" class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="crumb bg-butter" style="width:16px;height:16px;top:18%;left:6%"></div>
+  <div class="crumb bg-berrylt" style="width:10px;height:10px;top:72%;left:92%"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative order-2 lg:order-1">
+      <div class="rounded-[2rem] overflow-hidden clip-reveal shadow-2xl shadow-cocoa/20" data-clip>
+        <div class="aspect-[5/6] bg-gradient-to-br from-cocoa/30 via-crust/40 to-butter parallax-img" data-parallax>
+          <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1600&q=80" alt="Baker shaping dough" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        </div>
+      </div>
+      <div class="absolute -top-5 -right-3 sm:right-8 bg-berry text-flour rounded-full w-28 h-28 flex flex-col items-center justify-center text-center rotate-6 shadow-xl" data-fade>
+        <span class="font-script text-2xl leading-none">made by</span>
+        <span class="font-serif text-lg">hand</span>
+      </div>
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-crust">meet the baker</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-espresso leading-tight" data-fade>Elodie keeps the oven warm.</h2>
+      <p class="mt-6 text-lg text-cocoa/75 leading-relaxed" data-fade>
+        Twelve years ago Elodie traded a city desk for a flour-dusted apron. She trained in a tiny Lyon boulangerie, came home, and built Maison Plume one loaf at a time. She still mixes the first batch before sunrise, because she swears the dough behaves better in the quiet.
+      </p>
+      <ul class="mt-8 space-y-4">
+        <li class="flex items-start gap-3" data-fade>
+          <span class="mt-1.5 w-2 h-2 rounded-full bg-berry shrink-0"></span>
+          <p class="text-cocoa/80"><span class="font-medium text-espresso">Stone-milled, local grain.</span> We work with two family farms an hour east.</p>
+        </li>
+        <li class="flex items-start gap-3" data-fade>
+          <span class="mt-1.5 w-2 h-2 rounded-full bg-berry shrink-0"></span>
+          <p class="text-cocoa/80"><span class="font-medium text-espresso">No shortcuts, no improvers.</span> Just flour, water, salt, butter and patience.</p>
+        </li>
+        <li class="flex items-start gap-3" data-fade>
+          <span class="mt-1.5 w-2 h-2 rounded-full bg-berry shrink-0"></span>
+          <p class="text-cocoa/80"><span class="font-medium text-espresso">Yesterday's bread becomes tomorrow's good.</span> Donated to the Linden food pantry, never wasted.</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- DAILY FRESH / HOW WE BAKE -->
+<section class="py-24 sm:py-28 bg-espresso text-cream relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-16">
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-butter">from starter to shelf</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-cream" data-fade>How a Plume morning unfolds</h2>
+    </div>
+    <div class="grid md:grid-cols-4 gap-8">
+      <div class="relative" data-fade>
+        <span class="font-serif text-6xl text-butter/30">01</span>
+        <h3 class="font-serif text-2xl mt-2 text-butter">Feed Olive</h3>
+        <p class="text-cream/70 text-sm mt-2 leading-relaxed">9pm the night before, the starter gets fed and tucked in to bubble overnight.</p>
+      </div>
+      <div class="relative" data-fade>
+        <span class="font-serif text-6xl text-butter/30">02</span>
+        <h3 class="font-serif text-2xl mt-2 text-butter">Mix & fold</h3>
+        <p class="text-cream/70 text-sm mt-2 leading-relaxed">4am. Doughs are mixed by hand, then stretched and folded through the dark.</p>
+      </div>
+      <div class="relative" data-fade>
+        <span class="font-serif text-6xl text-butter/30">03</span>
+        <h3 class="font-serif text-2xl mt-2 text-butter">Shape & score</h3>
+        <p class="text-cream/70 text-sm mt-2 leading-relaxed">Each loaf is shaped, scored with a little wheat sheaf, and slid onto the stone.</p>
+      </div>
+      <div class="relative" data-fade>
+        <span class="font-serif text-6xl text-butter/30">04</span>
+        <h3 class="font-serif text-2xl mt-2 text-butter">Open at 7</h3>
+        <p class="text-cream/70 text-sm mt-2 leading-relaxed">Doors open, bells ring, the smell does the rest. Best to come early.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATERING / CUSTOM CAKES -->
+<section id="cakes" class="py-24 sm:py-32 relative overflow-hidden">
+  <div class="crumb bg-crust" style="width:13px;height:13px;top:24%;left:88%"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-crust">celebrations</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-espresso leading-tight" data-fade>Custom cakes & catering for the days that matter.</h2>
+      <p class="mt-6 text-lg text-cocoa/75 leading-relaxed" data-fade>
+        Birthdays, weddings, a Tuesday that needs cheering up. Tell us the occasion and we'll build something with real cream, seasonal fruit and a little hand-piped joy.
+      </p>
+      <div class="mt-8 grid sm:grid-cols-2 gap-4">
+        <div class="bg-flour rounded-2xl p-5 border border-butter/60" data-fade>
+          <h3 class="font-serif text-xl text-berry">Celebration cakes</h3>
+          <p class="text-sm text-cocoa/70 mt-1">From 6" to towering tiers. 72 hours' notice, please.</p>
+        </div>
+        <div class="bg-flour rounded-2xl p-5 border border-butter/60" data-fade>
+          <h3 class="font-serif text-xl text-berry">Pastry platters</h3>
+          <p class="text-sm text-cocoa/70 mt-1">Office mornings & brunches. Mini everything.</p>
+        </div>
+        <div class="bg-flour rounded-2xl p-5 border border-butter/60" data-fade>
+          <h3 class="font-serif text-xl text-berry">Wedding tables</h3>
+          <p class="text-sm text-cocoa/70 mt-1">Croquembouche, grazing breads, tasting included.</p>
+        </div>
+        <div class="bg-flour rounded-2xl p-5 border border-butter/60" data-fade>
+          <h3 class="font-serif text-xl text-berry">Bread subscriptions</h3>
+          <p class="text-sm text-cocoa/70 mt-1">A weekly loaf reserved with your name on it.</p>
+        </div>
+      </div>
+      <a href="#order" class="magnetic mt-9 inline-flex items-center gap-2 rounded-full bg-berry text-flour px-7 py-3.5 text-sm font-medium hover:bg-cocoa transition-colors" data-cursor>Start a custom order
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+    <div class="relative">
+      <div class="rounded-[2rem] overflow-hidden clip-reveal shadow-2xl shadow-cocoa/20" data-clip>
+        <div class="aspect-[4/5] bg-gradient-to-br from-berrylt/40 via-butter to-crust/40 parallax-img" data-parallax>
+          <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1600&q=80" alt="Decorated custom cake" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-24 sm:py-28 bg-flour border-y border-butter/50">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-crust">kind words</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-espresso" data-fade>Loved by the neighborhood</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="bg-cream rounded-2xl p-7 border border-butter/60" data-fade>
+        <div class="text-berry text-lg">★★★★★</div>
+        <blockquote class="font-serif text-lg text-espresso leading-relaxed mt-4">"I've tried to make their croissant at home. I've failed beautifully. Now I just walk over."</blockquote>
+        <figcaption class="mt-5 text-sm text-cocoa/70"><span class="font-medium text-espresso">Marisol T.</span> — Saturday regular</figcaption>
+      </figure>
+      <figure class="bg-cream rounded-2xl p-7 border border-butter/60" data-fade>
+        <div class="text-berry text-lg">★★★★★</div>
+        <blockquote class="font-serif text-lg text-espresso leading-relaxed mt-4">"Our wedding bread table made people cry. The good kind. Elodie remembered every detail."</blockquote>
+        <figcaption class="mt-5 text-sm text-cocoa/70"><span class="font-medium text-espresso">Dev & Priya</span> — June wedding</figcaption>
+      </figure>
+      <figure class="bg-cream rounded-2xl p-7 border border-butter/60" data-fade>
+        <div class="text-berry text-lg">★★★★★</div>
+        <blockquote class="font-serif text-lg text-espresso leading-relaxed mt-4">"The sourdough has ruined supermarket bread for me forever. Worth the early alarm."</blockquote>
+        <figcaption class="mt-5 text-sm text-cocoa/70"><span class="font-medium text-espresso">Theo R.</span> — bread subscriber</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- HOURS / VISIT -->
+<section id="visit" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12">
+    <div>
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-crust">come say hello</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-espresso leading-tight" data-fade>Find us on Linden Row.</h2>
+      <p class="mt-6 text-lg text-cocoa/75 leading-relaxed max-w-md" data-fade>The little shop with the blue door and the chalkboard out front. Pull up a stool, the kettle's always on.</p>
+      <div class="mt-8 space-y-1 text-cocoa/80" data-fade>
+        <p class="font-medium text-espresso">14 Linden Row</p>
+        <p>Greenfield Quarter, 4021</p>
+        <p class="mt-3"><a href="tel:+10000000000" class="text-berry hover:underline" data-cursor>(555) 014-8820</a></p>
+        <p><a href="mailto:hello@maisonplume.co" class="text-berry hover:underline" data-cursor>hello@maisonplume.co</a></p>
+      </div>
+    </div>
+    <div class="bg-cocoa text-cream rounded-[2rem] p-8 sm:p-10">
+      <h3 class="font-serif text-2xl text-butter mb-6">Opening hours</h3>
+      <ul class="divide-y divide-cream/10">
+        <li class="flex justify-between py-3"><span>Tuesday – Friday</span><span class="text-butter">7:00 – 15:00</span></li>
+        <li class="flex justify-between py-3"><span>Saturday</span><span class="text-butter">7:00 – 16:00</span></li>
+        <li class="flex justify-between py-3"><span>Sunday</span><span class="text-butter">8:00 – 13:00</span></li>
+        <li class="flex justify-between py-3"><span>Monday</span><span class="text-cream/50">Resting the starter</span></li>
+      </ul>
+      <p class="text-cream/60 text-sm mt-6 leading-relaxed">Fresh bakes land at 7am sharp. Croissants tend to sell out before 10 — pre-order to be safe.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-24 sm:py-28 bg-flour border-y border-butter/50">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <p class="reveal-mask mb-3"><span class="reveal-line font-script text-3xl text-crust">good to know</span></p>
+      <h2 class="font-serif text-4xl sm:text-5xl text-espresso" data-fade>Questions, kneaded out</h2>
+    </div>
+    <div class="space-y-4" id="faq">
+      <div class="faq-item bg-cream rounded-2xl border border-butter/60 overflow-hidden" data-fade>
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-lg text-espresso">Can I pre-order ahead of time?</span>
+          <span class="faq-plus text-2xl text-berry transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-panel"><p class="px-6 pb-5 text-cocoa/75 leading-relaxed">Yes please — order online up to 24 hours ahead for everyday bakes, or 72 hours for custom cakes. We'll hold it behind the counter with your name on it.</p></div>
+      </div>
+      <div class="faq-item bg-cream rounded-2xl border border-butter/60 overflow-hidden" data-fade>
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-lg text-espresso">Do you have vegan or gluten-free options?</span>
+          <span class="faq-plus text-2xl text-berry transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-panel"><p class="px-6 pb-5 text-cocoa/75 leading-relaxed">We bake a daily vegan focaccia and a gluten-free seed loaf. They're small batches, so they go quickly — call ahead to reserve.</p></div>
+      </div>
+      <div class="faq-item bg-cream rounded-2xl border border-butter/60 overflow-hidden" data-fade>
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-lg text-espresso">How far in advance for a wedding cake?</span>
+          <span class="faq-plus text-2xl text-berry transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-panel"><p class="px-6 pb-5 text-cocoa/75 leading-relaxed">Four to six weeks is ideal so we can book a tasting and design your tiers. Peak season fills fast — reach out early and we'll do our best.</p></div>
+      </div>
+      <div class="faq-item bg-cream rounded-2xl border border-butter/60 overflow-hidden" data-fade>
+        <button class="faq-toggle w-full flex items-center justify-between gap-4 px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-lg text-espresso">Do you deliver?</span>
+          <span class="faq-plus text-2xl text-berry transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-panel"><p class="px-6 pb-5 text-cocoa/75 leading-relaxed">For catering and large orders within the Greenfield Quarter, yes. Everyday bakes are pickup only — half the fun is the walk over.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="order" class="py-28 sm:py-36 relative overflow-hidden bg-gradient-to-br from-berry via-berry to-cocoa text-flour">
+  <div class="crumb bg-butter" style="width:18px;height:18px;top:20%;left:10%;opacity:.35"></div>
+  <div class="crumb bg-flour" style="width:10px;height:10px;top:70%;left:86%;opacity:.35"></div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center relative z-10">
+    <p class="reveal-mask mb-4"><span class="reveal-line font-script text-4xl text-butter">smells like morning</span></p>
+    <h2 class="font-serif text-4xl sm:text-6xl lg:text-7xl leading-[0.98]" data-fade>Reserve your warm bread<br/><span class="italic">before it's gone.</span></h2>
+    <p class="mt-7 text-flour/85 text-lg max-w-xl mx-auto" data-fade>Order online tonight, pick it up tomorrow still warm. Or just follow your nose to the blue door.</p>
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-4" data-fade>
+      <a href="#top" class="magnetic inline-flex items-center gap-2 rounded-full bg-flour text-berry px-8 py-4 text-sm font-semibold tracking-wide hover:bg-butter transition-colors" data-cursor>Order fresh now</a>
+      <a href="#visit" class="inline-flex items-center gap-2 rounded-full border border-flour/40 px-8 py-4 text-sm font-medium hover:bg-flour/10 transition-colors" data-cursor>Plan a visit</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-espresso text-cream/80 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <div>
+        <div class="flex items-baseline gap-2">
+          <span class="font-serif text-2xl text-cream">Maison</span>
+          <span class="font-script text-3xl text-berrylt -ml-1">Plume</span>
+        </div>
+        <p class="text-sm text-cream/60 mt-4 leading-relaxed max-w-xs">A small neighborhood bakery baking slow bread and honest sweetness on Linden Row since 2015.</p>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm tracking-wide uppercase">Explore</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#menu" class="hover:text-butter transition-colors" data-cursor>Signature bakes</a></li>
+          <li><a href="#cakes" class="hover:text-butter transition-colors" data-cursor>Custom cakes</a></li>
+          <li><a href="#baker" class="hover:text-butter transition-colors" data-cursor>The baker</a></li>
+          <li><a href="#visit" class="hover:text-butter transition-colors" data-cursor>Visit us</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm tracking-wide uppercase">Visit</h4>
+        <ul class="space-y-2 text-sm text-cream/60">
+          <li>14 Linden Row</li>
+          <li>Greenfield Quarter, 4021</li>
+          <li>Tue–Sat from 7am</li>
+          <li><a href="mailto:hello@maisonplume.co" class="hover:text-butter transition-colors" data-cursor>hello@maisonplume.co</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-cream font-medium mb-4 text-sm tracking-wide uppercase">Stay warm</h4>
+        <p class="text-sm text-cream/60 mb-3">A weekly note on what's baking.</p>
+        <form class="flex gap-2" onsubmit="return false">
+          <input type="email" placeholder="you@email.com" class="flex-1 min-w-0 bg-cocoa/60 border border-cream/15 rounded-full px-4 py-2.5 text-sm text-cream placeholder-cream/40 focus:outline-none focus:border-berrylt" />
+          <button class="bg-berry text-flour rounded-full px-4 py-2.5 text-sm font-medium hover:bg-berrylt transition-colors" data-cursor>Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="border-t border-cream/10 mt-12 pt-7 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-cream/50">
+      <p>© 2026 Maison Plume Bakery. Baked with butter & patience.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-butter transition-colors" data-cursor>Instagram</a>
+        <a href="#" class="hover:text-butter transition-colors" data-cursor>Privacy</a>
+        <a href="#" class="hover:text-butter transition-colors" data-cursor>Terms</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---- Custom cursor ----
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (window.matchMedia('(hover: hover)').matches && dot && ring) {
+    let mx = window.innerWidth/2, my = window.innerHeight/2, rx = mx, ry = my;
+    window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; dot.style.left = mx+'px'; dot.style.top = my+'px'; });
+    (function loop(){ rx += (mx-rx)*0.18; ry += (my-ry)*0.18; ring.style.left = rx+'px'; ring.style.top = ry+'px'; requestAnimationFrame(loop); })();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('hovering'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('hovering'));
+    });
+  }
+
+  // ---- Nav scroll state ----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) { nav.classList.add('bg-cream/85','backdrop-blur-md','shadow-sm','shadow-cocoa/5'); }
+    else { nav.classList.remove('bg-cream/85','backdrop-blur-md','shadow-sm','shadow-cocoa/5'); }
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ---- Magnetic buttons ----
+  if (window.matchMedia('(hover: hover)').matches && !reduce) {
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width/2;
+        const y = e.clientY - r.top - r.height/2;
+        btn.style.transform = `translate(${x*0.3}px, ${y*0.3}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; btn.style.transition='transform .4s cubic-bezier(.16,1,.3,1)'; setTimeout(()=>btn.style.transition='',400); });
+    });
+  }
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll('.faq-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  if (reduce || !window.gsap) {
+    // reveal everything statically
+    document.querySelectorAll('.reveal-line').forEach(el => el.style.transform = 'none');
+    document.querySelectorAll('.clip-reveal').forEach(el => el.style.clipPath = 'none');
+    document.querySelectorAll('[data-fade]').forEach(el => { el.style.opacity = 1; });
+    document.querySelectorAll('.count').forEach(el => el.textContent = el.dataset.to);
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ---- Masked line reveals (serif + script text) ----
+  gsap.set('.reveal-line', { yPercent: 110 });
+  gsap.utils.toArray('.reveal-mask').forEach(mask => {
+    const line = mask.querySelector('.reveal-line');
+    if (!line) return;
+    gsap.to(line, {
+      yPercent: 0, ease: 'power3.out', duration: 1.05,
+      scrollTrigger: { trigger: mask, start: 'top 90%' }
+    });
+  });
+
+  // ---- Fade/slide up ----
+  gsap.utils.toArray('[data-fade]').forEach(el => {
+    gsap.fromTo(el, { autoAlpha: 0, y: 34 }, {
+      autoAlpha: 1, y: 0, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 90%' }
+    });
+  });
+
+  // ---- Clip-path image reveals ----
+  gsap.utils.toArray('[data-clip]').forEach(el => {
+    gsap.to(el, {
+      clipPath: 'inset(0 0 0% 0)', duration: 1.4, ease: 'power4.inOut',
+      scrollTrigger: { trigger: el, start: 'top 82%' }
+    });
+  });
+
+  // ---- Container parallax on imagery ----
+  gsap.utils.toArray('[data-parallax]').forEach(el => {
+    gsap.fromTo(el, { yPercent: -8, scale: 1.08 }, {
+      yPercent: 8, scale: 1.08, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // ---- Floating crumbs ----
+  gsap.utils.toArray('.crumb').forEach((c, i) => {
+    gsap.to(c, { y: (i % 2 ? -22 : 22), x: (i % 3 ? 14 : -14), duration: 4 + i*0.6, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  });
+
+  // ---- Count-ups ----
+  gsap.utils.toArray('.count').forEach(el => {
+    const to = parseInt(el.dataset.to, 10);
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 92%', once: true,
+      onEnter: () => gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out', onUpdate: () => { el.textContent = Math.round(obj.v); } })
+    });
+  });
+
+  // ---- Hero load-in for first reveal lines ----
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+})();
+</script>
+</body>
+</html>

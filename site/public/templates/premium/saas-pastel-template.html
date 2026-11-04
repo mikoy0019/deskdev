@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Plumora — the calm workspace where teams plan, sync, and ship together. Productivity that feels like a fresh breath." />
+<title>Plumora — Calm Workspace for Teams</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Fraunces"', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          cloud:   '#fbfaff',
+          ink:     '#2c2a3e',
+          mist:    '#6b6880',
+          blush:   '#ffd9e8',
+          lilac:   '#e4d6ff',
+          sky:     '#cfe9ff',
+          mint:    '#d2f4e4',
+          butter:  '#fff1c9',
+          peach:   '#ffe0cc',
+          grape:   '#8b6ff0',
+          grapeink:'#6a4fd6',
+        },
+        borderRadius: {
+          '4xl': '2rem',
+          '5xl': '2.75rem',
+        },
+        boxShadow: {
+          soft:  '0 18px 50px -18px rgba(120,100,200,0.30)',
+          puffy: '0 24px 70px -24px rgba(120,100,200,0.40)',
+          glow:  '0 0 0 1px rgba(255,255,255,0.7), 0 18px 50px -18px rgba(139,111,240,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --grape: #8b6ff0; }
+  html, body { overflow-x: hidden; }
+  body {
+    background:
+      radial-gradient(1100px 600px at 12% -8%, #f4ecff 0%, transparent 55%),
+      radial-gradient(1000px 560px at 96% 4%, #ffeef4 0%, transparent 50%),
+      radial-gradient(900px 600px at 50% 120%, #e7f7ff 0%, transparent 55%),
+      #fbfaff;
+    color: #2c2a3e;
+  }
+  .font-display { font-optical-sizing: auto; }
+  ::selection { background: #e4d6ff; color: #2c2a3e; }
+
+  /* soft animated blobs */
+  .blob { filter: blur(46px); opacity: .65; will-change: transform; }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .pill {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(139,111,240,0.16);
+  }
+  .glasscard {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.9);
+  }
+
+  .reveal { opacity: 0; transform: translateY(26px); }
+
+  /* tilt mockup */
+  .tilt-wrap { perspective: 1400px; }
+  .tilt { transform-style: preserve-3d; transition: transform .15s ease-out; will-change: transform; }
+
+  .magnetic { will-change: transform; }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #8b6ff0 0%, #f78fb3 50%, #6cc6f0 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .marquee { display: flex; gap: 4rem; width: max-content; animation: slide 30s linear infinite; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+  .acc.open .acc-body { max-height: 360px; }
+  .acc.open .acc-icon { transform: rotate(45deg); }
+
+  .float { animation: float 6s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+
+  .dot-grid {
+    background-image: radial-gradient(rgba(139,111,240,0.22) 1.2px, transparent 1.2px);
+    background-size: 22px 22px;
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0;
+    background: var(--grape); border-radius: 4px; transition: width .3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee, .float { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased relative">
+<div class="grain"></div>
+
+<!-- floating blobs -->
+<div class="fixed -z-10 inset-0 pointer-events-none">
+  <div class="blob absolute top-[8%] left-[6%] w-72 h-72 rounded-full bg-blush"></div>
+  <div class="blob absolute top-[30%] right-[4%] w-80 h-80 rounded-full bg-lilac"></div>
+  <div class="blob absolute bottom-[12%] left-[18%] w-72 h-72 rounded-full bg-sky"></div>
+  <div class="blob absolute bottom-[28%] right-[22%] w-64 h-64 rounded-full bg-mint"></div>
+</div>
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 px-4 pt-4">
+  <nav class="max-w-6xl mx-auto pill rounded-full px-4 sm:px-6 py-3 flex items-center justify-between shadow-soft">
+    <a href="#home" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-9 h-9 rounded-2xl bg-gradient-to-br from-grape to-blush text-white shadow-soft transition-transform group-hover:rotate-12">
+        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 2 5 4 5 8a5 5 0 0 1-10 0c0-2 1-3 1-3"/><path d="M12 21v-4"/></svg>
+      </span>
+      <span class="font-display text-xl font-600 text-ink">Plumora</span>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm font-500 text-mist">
+      <a href="#features" class="nav-link hover:text-ink transition">Features</a>
+      <a href="#how" class="nav-link hover:text-ink transition">How it works</a>
+      <a href="#pricing" class="nav-link hover:text-ink transition">Pricing</a>
+      <a href="#faq" class="nav-link hover:text-ink transition">FAQ</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="#" class="hidden sm:inline-block text-sm font-600 text-ink px-4 py-2 rounded-full hover:bg-white/70 transition">Log in</a>
+      <a href="#pricing" data-magnetic class="magnetic text-sm font-700 text-white px-5 py-2.5 rounded-full bg-grape hover:bg-grapeink shadow-soft transition">Get started</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="home" class="relative pt-36 sm:pt-44 pb-20 px-5">
+  <div class="max-w-6xl mx-auto text-center">
+    <div class="reveal inline-flex items-center gap-2 pill rounded-full px-4 py-1.5 text-xs font-600 text-grapeink mb-7">
+      <span class="w-2 h-2 rounded-full bg-grape animate-pulse"></span>
+      New · Async standups + AI summaries
+    </div>
+
+    <h1 class="font-display font-500 text-ink leading-[0.98] text-[2.7rem] sm:text-6xl lg:text-7xl tracking-tight">
+      <span class="hero-line block">The calm workspace</span>
+      <span class="hero-line block">where teams <span class="gradient-text font-600">actually</span></span>
+      <span class="hero-line block">ship together.</span>
+    </h1>
+
+    <p class="reveal mt-6 max-w-xl mx-auto text-base sm:text-lg text-mist leading-relaxed">
+      Plumora blends planning, chat, docs, and standups into one soft, focused home for your team. Less tab-chaos. More flow.
+    </p>
+
+    <div class="reveal mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="#pricing" data-magnetic class="magnetic w-full sm:w-auto text-center font-700 text-white px-7 py-3.5 rounded-full bg-grape hover:bg-grapeink shadow-puffy transition">Start free — no card</a>
+      <a href="#how" class="w-full sm:w-auto text-center font-600 text-ink px-7 py-3.5 rounded-full bg-white/70 border border-white shadow-soft hover:shadow-puffy transition">Watch the tour</a>
+    </div>
+
+    <p class="reveal mt-5 text-xs text-mist">Loved by 14,000+ teams · 4.9★ average · Free 14-day trial</p>
+  </div>
+
+  <!-- DASHBOARD MOCKUP -->
+  <div class="reveal max-w-5xl mx-auto mt-14 tilt-wrap">
+    <div id="mockup" class="tilt relative rounded-5xl glasscard shadow-puffy p-3 sm:p-4">
+      <!-- window bar -->
+      <div class="flex items-center gap-2 px-3 py-2.5">
+        <span class="w-3 h-3 rounded-full bg-peach"></span>
+        <span class="w-3 h-3 rounded-full bg-butter"></span>
+        <span class="w-3 h-3 rounded-full bg-mint"></span>
+        <div class="ml-3 hidden sm:flex items-center gap-1.5 text-[11px] text-mist pill rounded-full px-3 py-1">
+          <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          app.plumora.io/workspace
+        </div>
+      </div>
+
+      <div class="rounded-4xl bg-white/80 p-3 sm:p-5 grid grid-cols-12 gap-3 sm:gap-4">
+        <!-- sidebar -->
+        <aside class="hidden sm:flex col-span-3 flex-col gap-2 rounded-3xl bg-cloud/80 p-3">
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-2xl bg-lilac/60 text-grapeink text-xs font-700">
+            <span class="w-6 h-6 rounded-xl bg-grape/20 grid place-items-center">◎</span> Today
+          </div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-2xl text-mist text-xs font-500"><span class="w-6 h-6 rounded-xl bg-sky/60 grid place-items-center">▣</span> Boards</div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-2xl text-mist text-xs font-500"><span class="w-6 h-6 rounded-xl bg-mint/70 grid place-items-center">◆</span> Docs</div>
+          <div class="flex items-center gap-2 px-2 py-1.5 rounded-2xl text-mist text-xs font-500"><span class="w-6 h-6 rounded-xl bg-peach/70 grid place-items-center">◷</span> Standups</div>
+          <div class="mt-auto rounded-2xl bg-gradient-to-br from-grape to-blush text-white p-3 text-[11px] font-600 float">
+            <p class="opacity-80">Focus streak</p>
+            <p class="text-lg font-700 count" data-target="12">0</p>
+            <p class="opacity-80">days in a row 🌿</p>
+          </div>
+        </aside>
+
+        <!-- main panel -->
+        <div class="col-span-12 sm:col-span-9 flex flex-col gap-3 sm:gap-4">
+          <!-- stat row -->
+          <div class="grid grid-cols-3 gap-2 sm:gap-3">
+            <div class="rounded-3xl bg-sky/50 p-3">
+              <p class="text-[10px] text-mist font-600">Tasks done</p>
+              <p class="text-xl sm:text-2xl font-700 text-ink count" data-target="248">0</p>
+            </div>
+            <div class="rounded-3xl bg-mint/60 p-3">
+              <p class="text-[10px] text-mist font-600">On track</p>
+              <p class="text-xl sm:text-2xl font-700 text-ink"><span class="count" data-target="96">0</span>%</p>
+            </div>
+            <div class="rounded-3xl bg-butter/70 p-3">
+              <p class="text-[10px] text-mist font-600">Hours saved</p>
+              <p class="text-xl sm:text-2xl font-700 text-ink count" data-target="31">0</p>
+            </div>
+          </div>
+
+          <!-- kanban -->
+          <div class="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
+            <div class="rounded-3xl bg-cloud/80 p-2.5 space-y-2">
+              <p class="text-[10px] font-700 text-mist px-1">To do</p>
+              <div class="rounded-2xl bg-white p-2.5 shadow-soft text-[11px] font-600 text-ink">Design pastel icons <span class="block mt-1.5 text-[9px] text-grapeink font-700 bg-lilac/60 rounded-full px-2 py-0.5 w-fit">Design</span></div>
+              <div class="rounded-2xl bg-white p-2.5 shadow-soft text-[11px] font-600 text-ink">Q3 roadmap <span class="block mt-1.5 text-[9px] text-grapeink font-700 bg-sky/70 rounded-full px-2 py-0.5 w-fit">Planning</span></div>
+            </div>
+            <div class="rounded-3xl bg-cloud/80 p-2.5 space-y-2">
+              <p class="text-[10px] font-700 text-mist px-1">Doing</p>
+              <div class="rounded-2xl bg-white p-2.5 shadow-soft text-[11px] font-600 text-ink">Onboarding flow <span class="block mt-1.5 text-[9px] text-grapeink font-700 bg-mint/70 rounded-full px-2 py-0.5 w-fit">Build</span></div>
+              <div class="rounded-2xl bg-gradient-to-br from-blush to-lilac p-2.5 shadow-soft text-[11px] font-700 text-ink">AI summary draft ✨</div>
+            </div>
+            <div class="rounded-3xl bg-cloud/80 p-2.5 space-y-2">
+              <p class="text-[10px] font-700 text-mist px-1">Done</p>
+              <div class="rounded-2xl bg-white p-2.5 shadow-soft text-[11px] font-600 text-ink line-through text-mist">Launch landing</div>
+              <div class="rounded-2xl bg-white p-2.5 shadow-soft text-[11px] font-600 text-ink line-through text-mist">Invite team</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- floating avatar chip -->
+      <div class="float absolute -right-3 -top-3 sm:-right-6 sm:-top-6 pill rounded-2xl px-3 py-2 shadow-puffy flex items-center gap-2">
+        <div class="flex -space-x-2">
+          <span class="w-7 h-7 rounded-full bg-blush border-2 border-white"></span>
+          <span class="w-7 h-7 rounded-full bg-sky border-2 border-white"></span>
+          <span class="w-7 h-7 rounded-full bg-mint border-2 border-white"></span>
+        </div>
+        <span class="text-[11px] font-700 text-ink">3 online</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TRUST / LOGOS ===================== -->
+<section class="py-10 overflow-hidden">
+  <p class="reveal text-center text-xs font-700 uppercase tracking-[0.25em] text-mist mb-7">Trusted by calm teams everywhere</p>
+  <div class="relative">
+    <div class="marquee items-center text-mist/70 font-display text-2xl font-500">
+      <span>Driftly</span><span>Maple&Co</span><span>Nimbus</span><span>Petalworks</span><span>Hush</span><span>Cloudpine</span><span>Lumen</span>
+      <span>Driftly</span><span>Maple&Co</span><span>Nimbus</span><span>Petalworks</span><span>Hush</span><span>Cloudpine</span><span>Lumen</span>
+    </div>
+    <div class="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-cloud to-transparent"></div>
+    <div class="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-cloud to-transparent"></div>
+  </div>
+</section>
+
+<!-- ===================== BENTO FEATURES ===================== -->
+<section id="features" class="py-20 px-5">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">Features</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Everything your team needs, <span class="gradient-text font-600">nothing it doesn't</span>.</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-4 sm:gap-5 auto-rows-[minmax(180px,auto)]">
+      <!-- big tile -->
+      <article class="reveal md:col-span-4 md:row-span-2 rounded-4xl bg-gradient-to-br from-lilac/70 to-sky/60 p-7 shadow-soft relative overflow-hidden">
+        <div class="dot-grid absolute inset-0 opacity-40"></div>
+        <div class="relative">
+          <span class="grid place-items-center w-12 h-12 rounded-2xl bg-white/80 shadow-soft text-grape">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+          </span>
+          <h3 class="font-display text-2xl font-600 text-ink mt-5">Flexible boards & lists</h3>
+          <p class="text-mist mt-2 max-w-md leading-relaxed">Switch between kanban, timeline, and calendar without losing a single card. Drag, drop, breathe.</p>
+          <div class="mt-6 grid grid-cols-3 gap-2 max-w-sm">
+            <div class="h-16 rounded-2xl bg-white/80 shadow-soft"></div>
+            <div class="h-16 rounded-2xl bg-blush/70 shadow-soft"></div>
+            <div class="h-16 rounded-2xl bg-mint/70 shadow-soft"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal md:col-span-2 rounded-4xl bg-mint/60 p-6 shadow-soft">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/80 shadow-soft text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600 text-ink">Async standups</h3>
+        <p class="text-mist text-sm mt-1.5">Daily check-ins on your team's time zone, summarized by AI.</p>
+      </article>
+
+      <article class="reveal md:col-span-2 rounded-4xl bg-butter/70 p-6 shadow-soft">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/80 shadow-soft text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600 text-ink">Threaded chat</h3>
+        <p class="text-mist text-sm mt-1.5">Conversations that live next to the work, not in another app.</p>
+      </article>
+
+      <article class="reveal md:col-span-3 rounded-4xl bg-peach/70 p-6 shadow-soft">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/80 shadow-soft text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600 text-ink">Living docs</h3>
+        <p class="text-mist text-sm mt-1.5">Real-time docs with embeds, tasks, and a soft writing mode that keeps you in flow.</p>
+      </article>
+
+      <article class="reveal md:col-span-3 rounded-4xl bg-sky/60 p-6 shadow-soft">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/80 shadow-soft text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600 text-ink">Gentle insights</h3>
+        <p class="text-mist text-sm mt-1.5">Capacity, velocity, and focus trends — surfaced softly, never as pressure.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section id="how" class="py-20 px-5">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">How it works</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Calm in three soft steps.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="reveal glasscard rounded-4xl p-7 shadow-soft text-center">
+        <div class="mx-auto w-16 h-16 rounded-3xl bg-blush/80 grid place-items-center text-2xl font-display font-700 text-grapeink shadow-soft float">1</div>
+        <h3 class="font-display text-xl font-600 text-ink mt-5">Bring your team in</h3>
+        <p class="text-mist text-sm mt-2">Invite by link, import boards from anywhere, and watch it all land in seconds.</p>
+      </div>
+      <div class="reveal glasscard rounded-4xl p-7 shadow-soft text-center md:-translate-y-4">
+        <div class="mx-auto w-16 h-16 rounded-3xl bg-lilac/80 grid place-items-center text-2xl font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.5s">2</div>
+        <h3 class="font-display text-xl font-600 text-ink mt-5">Shape your flow</h3>
+        <p class="text-mist text-sm mt-2">Pick a template or start blank. Plumora adapts to how your team already thinks.</p>
+      </div>
+      <div class="reveal glasscard rounded-4xl p-7 shadow-soft text-center">
+        <div class="mx-auto w-16 h-16 rounded-3xl bg-mint/80 grid place-items-center text-2xl font-display font-700 text-grapeink shadow-soft float" style="animation-delay:1s">3</div>
+        <h3 class="font-display text-xl font-600 text-ink mt-5">Ship, calmly</h3>
+        <p class="text-mist text-sm mt-2">Async updates and AI summaries keep everyone aligned — without another meeting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== INTEGRATIONS ===================== -->
+<section class="py-20 px-5">
+  <div class="max-w-6xl mx-auto glasscard rounded-5xl shadow-soft p-8 sm:p-12 grid lg:grid-cols-2 gap-10 items-center">
+    <div>
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">Integrations</span>
+      <h2 class="reveal font-display font-500 text-3xl sm:text-4xl text-ink mt-5 tracking-tight">Plays nicely with your whole stack.</h2>
+      <p class="reveal text-mist mt-4 leading-relaxed max-w-md">Connect the tools you already love in two clicks. Plumora keeps everything in sync so context never gets lost between tabs.</p>
+      <a href="#" class="reveal inline-flex items-center gap-2 mt-6 font-700 text-grapeink hover:gap-3 transition-all">Browse 60+ integrations →</a>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+      <!-- pastel integration chips -->
+      <span class="reveal aspect-square rounded-3xl bg-sky/60 grid place-items-center font-display font-700 text-grapeink shadow-soft float">Sl</span>
+      <span class="reveal aspect-square rounded-3xl bg-blush/70 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.3s">Fg</span>
+      <span class="reveal aspect-square rounded-3xl bg-mint/70 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.6s">Gh</span>
+      <span class="reveal aspect-square rounded-3xl bg-butter/80 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.9s">No</span>
+      <span class="reveal aspect-square rounded-3xl bg-lilac/70 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.2s">Zm</span>
+      <span class="reveal aspect-square rounded-3xl bg-peach/80 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.5s">Dr</span>
+      <span class="reveal aspect-square rounded-3xl bg-mint/70 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:.8s">Li</span>
+      <span class="reveal aspect-square rounded-3xl bg-sky/60 grid place-items-center font-display font-700 text-grapeink shadow-soft float" style="animation-delay:1.1s">+60</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="py-20 px-5">
+  <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
+    <div class="reveal relative rounded-5xl overflow-hidden shadow-puffy bg-gradient-to-br from-lilac/80 to-blush/70 aspect-[5/4]">
+      <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           alt="A calm, collaborative team"
+           class="w-full h-full object-cover mix-blend-luminosity opacity-90" />
+      <div class="absolute inset-0 bg-gradient-to-t from-lilac/40 to-transparent"></div>
+      <div class="float absolute bottom-5 left-5 pill rounded-3xl px-5 py-4 shadow-puffy">
+        <p class="font-display text-3xl font-700 text-ink"><span class="count" data-target="14">0</span>k+</p>
+        <p class="text-xs text-mist font-600">happy teams</p>
+      </div>
+    </div>
+    <div>
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">Our story</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Built by people tired of <span class="gradient-text font-600">noisy</span> tools.</h2>
+      <p class="reveal text-mist mt-5 leading-relaxed">We spent years drowning in pings, dashboards, and a dozen open tabs. So we built the opposite: one soft, quiet place where work feels light again. Plumora is our promise that productivity doesn't have to feel like pressure.</p>
+      <div class="reveal grid grid-cols-3 gap-4 mt-8">
+        <div><p class="font-display text-3xl font-700 text-ink"><span class="count" data-target="99">0</span>%</p><p class="text-xs text-mist font-600 mt-1">uptime</p></div>
+        <div><p class="font-display text-3xl font-700 text-ink"><span class="count" data-target="60">0</span>+</p><p class="text-xs text-mist font-600 mt-1">integrations</p></div>
+        <div><p class="font-display text-3xl font-700 text-ink"><span class="count" data-target="4">0</span>.9★</p><p class="text-xs text-mist font-600 mt-1">avg rating</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="py-20 px-5">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">Loved by teams</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Calm reviews from real humans.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal glasscard rounded-4xl p-6 shadow-soft">
+        <div class="text-grape text-lg">★★★★★</div>
+        <blockquote class="text-ink mt-3 leading-relaxed">"It's the first tool my whole team actually opens with a smile. The pastel calm is unreal."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-5">
+          <span class="w-10 h-10 rounded-full bg-blush"></span>
+          <div><p class="font-700 text-sm text-ink">Renée Okafor</p><p class="text-xs text-mist">Head of Ops, Driftly</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glasscard rounded-4xl p-6 shadow-soft md:-translate-y-4">
+        <div class="text-grape text-lg">★★★★★</div>
+        <blockquote class="text-ink mt-3 leading-relaxed">"We cut our standups by 70%. The AI summaries are genuinely good, not gimmicky."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-5">
+          <span class="w-10 h-10 rounded-full bg-sky"></span>
+          <div><p class="font-700 text-sm text-ink">Theo Lindqvist</p><p class="text-xs text-mist">PM, Nimbus</p></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glasscard rounded-4xl p-6 shadow-soft">
+        <div class="text-grape text-lg">★★★★★</div>
+        <blockquote class="text-ink mt-3 leading-relaxed">"Switching from three apps to Plumora paid for itself in a week. And it's pretty."</blockquote>
+        <figcaption class="flex items-center gap-3 mt-5">
+          <span class="w-10 h-10 rounded-full bg-mint"></span>
+          <div><p class="font-700 text-sm text-ink">Priya Nair</p><p class="text-xs text-mist">Founder, Petalworks</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PRICING ===================== -->
+<section id="pricing" class="py-20 px-5">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center max-w-2xl mx-auto mb-12">
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">Pricing</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Soft on your budget.</h2>
+      <p class="reveal text-mist mt-4">Start free forever. Upgrade only when your team grows.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 items-stretch">
+      <!-- Starter -->
+      <div class="reveal glasscard rounded-4xl p-7 shadow-soft flex flex-col">
+        <h3 class="font-display text-xl font-600 text-ink">Sprout</h3>
+        <p class="text-mist text-sm mt-1">For tiny teams finding their flow.</p>
+        <p class="mt-5 font-display text-4xl font-700 text-ink">$0<span class="text-base font-500 text-mist">/mo</span></p>
+        <ul class="mt-6 space-y-2.5 text-sm text-mist flex-1">
+          <li class="flex gap-2"><span class="text-grape">✓</span> Up to 5 members</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> Unlimited boards</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> Basic docs & chat</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> 3 integrations</li>
+        </ul>
+        <a href="#" class="mt-7 text-center font-700 text-ink px-5 py-3 rounded-full bg-white/80 border border-white shadow-soft hover:shadow-puffy transition">Start free</a>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="reveal rounded-4xl p-7 shadow-puffy flex flex-col bg-gradient-to-br from-grape to-blush text-white relative md:-translate-y-4">
+        <span class="absolute top-5 right-5 text-[10px] font-700 uppercase tracking-wider bg-white/30 rounded-full px-3 py-1">Most loved</span>
+        <h3 class="font-display text-xl font-600">Bloom</h3>
+        <p class="text-white/80 text-sm mt-1">For growing teams that ship.</p>
+        <p class="mt-5 font-display text-4xl font-700">$12<span class="text-base font-500 text-white/80">/user/mo</span></p>
+        <ul class="mt-6 space-y-2.5 text-sm text-white/90 flex-1">
+          <li class="flex gap-2"><span>✓</span> Everything in Sprout</li>
+          <li class="flex gap-2"><span>✓</span> Async standups + AI summaries</li>
+          <li class="flex gap-2"><span>✓</span> Unlimited integrations</li>
+          <li class="flex gap-2"><span>✓</span> Gentle insights dashboard</li>
+          <li class="flex gap-2"><span>✓</span> Priority calm support</li>
+        </ul>
+        <a href="#" data-magnetic class="magnetic mt-7 text-center font-700 text-grapeink px-5 py-3 rounded-full bg-white hover:bg-cloud shadow-soft transition">Start 14-day trial</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="reveal glasscard rounded-4xl p-7 shadow-soft flex flex-col">
+        <h3 class="font-display text-xl font-600 text-ink">Orchard</h3>
+        <p class="text-mist text-sm mt-1">For orgs that need scale & control.</p>
+        <p class="mt-5 font-display text-4xl font-700 text-ink">Custom</p>
+        <ul class="mt-6 space-y-2.5 text-sm text-mist flex-1">
+          <li class="flex gap-2"><span class="text-grape">✓</span> Everything in Bloom</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> SSO + SCIM</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> Advanced permissions</li>
+          <li class="flex gap-2"><span class="text-grape">✓</span> Dedicated success guide</li>
+        </ul>
+        <a href="#" class="mt-7 text-center font-700 text-ink px-5 py-3 rounded-full bg-white/80 border border-white shadow-soft hover:shadow-puffy transition">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-20 px-5">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-12">
+      <span class="reveal inline-block text-xs font-700 uppercase tracking-[0.2em] text-grapeink pill rounded-full px-4 py-1.5">FAQ</span>
+      <h2 class="reveal font-display font-500 text-4xl sm:text-5xl text-ink mt-5 tracking-tight">Quietly answered.</h2>
+    </div>
+
+    <div class="space-y-3" id="faqList">
+      <!-- items -->
+      <div class="acc reveal glasscard rounded-3xl shadow-soft overflow-hidden">
+        <button class="acc-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">Is there really a free forever plan?</span>
+          <span class="acc-icon text-grape text-2xl font-300 transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist text-sm leading-relaxed">Yes. Sprout is free forever for up to 5 members with unlimited boards. No card, no countdown, no pressure.</p></div>
+      </div>
+      <div class="acc reveal glasscard rounded-3xl shadow-soft overflow-hidden">
+        <button class="acc-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">Can I import from my current tool?</span>
+          <span class="acc-icon text-grape text-2xl font-300 transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist text-sm leading-relaxed">Absolutely. Import boards, lists, and docs in a couple of clicks — most teams are fully moved over in under ten minutes.</p></div>
+      </div>
+      <div class="acc reveal glasscard rounded-3xl shadow-soft overflow-hidden">
+        <button class="acc-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">How do the AI summaries work?</span>
+          <span class="acc-icon text-grape text-2xl font-300 transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist text-sm leading-relaxed">After each async standup, Plumora distills updates into a short, friendly digest — blockers surfaced, wins celebrated, no meeting required.</p></div>
+      </div>
+      <div class="acc reveal glasscard rounded-3xl shadow-soft overflow-hidden">
+        <button class="acc-head w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-600 text-ink">Is my data safe?</span>
+          <span class="acc-icon text-grape text-2xl font-300 transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-mist text-sm leading-relaxed">Encryption in transit and at rest, SOC 2 Type II, and granular permissions. Your work stays yours, always.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="py-20 px-5">
+  <div class="max-w-5xl mx-auto rounded-5xl bg-gradient-to-br from-grape via-blush to-sky p-[2px] shadow-puffy">
+    <div class="rounded-[2.65rem] bg-cloud/95 px-7 sm:px-14 py-16 text-center relative overflow-hidden">
+      <div class="dot-grid absolute inset-0 opacity-40"></div>
+      <div class="relative">
+        <h2 class="reveal font-display font-500 text-4xl sm:text-6xl text-ink tracking-tight leading-tight">Give your team a <span class="gradient-text font-600">calmer</span> day.</h2>
+        <p class="reveal text-mist mt-5 max-w-md mx-auto">Join 14,000+ teams who traded the chaos for flow. Free to start, lovely to stay.</p>
+        <div class="reveal mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#" data-magnetic class="magnetic font-700 text-white px-8 py-4 rounded-full bg-grape hover:bg-grapeink shadow-puffy transition">Start free today</a>
+          <a href="#features" class="font-600 text-ink px-8 py-4 rounded-full bg-white/80 border border-white shadow-soft hover:shadow-puffy transition">Explore features</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="px-5 pb-10 pt-6">
+  <div class="max-w-6xl mx-auto glasscard rounded-5xl shadow-soft p-8 sm:p-12">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div class="lg:col-span-2">
+        <a href="#home" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-2xl bg-gradient-to-br from-grape to-blush text-white shadow-soft">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 2 5 4 5 8a5 5 0 0 1-10 0c0-2 1-3 1-3"/><path d="M12 21v-4"/></svg>
+          </span>
+          <span class="font-display text-xl font-600 text-ink">Plumora</span>
+        </a>
+        <p class="text-mist text-sm mt-4 max-w-xs leading-relaxed">The calm workspace where teams plan, sync, and ship together. Made with soft intentions.</p>
+        <div class="flex gap-2 mt-5">
+          <a href="#" class="w-9 h-9 rounded-xl bg-white/80 grid place-items-center text-grapeink shadow-soft hover:-translate-y-0.5 transition">𝕏</a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-white/80 grid place-items-center text-grapeink shadow-soft hover:-translate-y-0.5 transition">in</a>
+          <a href="#" class="w-9 h-9 rounded-xl bg-white/80 grid place-items-center text-grapeink shadow-soft hover:-translate-y-0.5 transition">◎</a>
+        </div>
+      </div>
+      <div>
+        <p class="font-700 text-ink text-sm mb-3">Product</p>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a href="#features" class="hover:text-ink transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-ink transition">Pricing</a></li>
+          <li><a href="#how" class="hover:text-ink transition">How it works</a></li>
+          <li><a href="#" class="hover:text-ink transition">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-ink text-sm mb-3">Company</p>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a href="#" class="hover:text-ink transition">About</a></li>
+          <li><a href="#" class="hover:text-ink transition">Careers</a></li>
+          <li><a href="#" class="hover:text-ink transition">Blog</a></li>
+          <li><a href="#" class="hover:text-ink transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-ink text-sm mb-3">Resources</p>
+        <ul class="space-y-2 text-sm text-mist">
+          <li><a href="#faq" class="hover:text-ink transition">Help center</a></li>
+          <li><a href="#" class="hover:text-ink transition">Templates</a></li>
+          <li><a href="#" class="hover:text-ink transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-ink transition">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-grape/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-mist">© 2026 Plumora Labs. All rights reserved.</p>
+      <p class="text-xs text-mist">Crafted calmly · Original template</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Accordion ---------- */
+  document.querySelectorAll('.acc-head').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.acc');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.acc').forEach(a => a.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ---------- Hero headline ---------- */
+    gsap.from('.hero-line', {
+      yPercent: 110, opacity: 0, duration: 1, ease: 'power4.out', stagger: 0.12, delay: 0.15,
+    });
+
+    /* ---------- Generic reveals ---------- */
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
+    });
+
+    /* ---------- Bento stagger by row ---------- */
+    gsap.from('#features article', {
+      scrollTrigger: { trigger: '#features', start: 'top 70%' },
+      y: 40, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.08,
+    });
+
+    /* ---------- Mockup parallax ---------- */
+    gsap.to('#mockup', {
+      yPercent: -8,
+      scrollTrigger: { trigger: '#home', start: 'top top', end: 'bottom top', scrub: 1 },
+    });
+
+    /* ---------- Blob drift ---------- */
+    gsap.utils.toArray('.blob').forEach((b, i) => {
+      gsap.to(b, {
+        x: (i % 2 ? 40 : -40), y: (i % 2 ? -30 : 30),
+        duration: 8 + i * 2, repeat: -1, yoyo: true, ease: 'sine.inOut',
+      });
+    });
+
+    /* ---------- Count-ups ---------- */
+    gsap.utils.toArray('.count').forEach((el) => {
+      const target = +el.dataset.target;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 92%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: target, duration: 1.6, ease: 'power2.out',
+          onUpdate: () => { el.textContent = Math.round(obj.v); },
+        }),
+      });
+    });
+  } else {
+    // reduced motion: reveal everything, set final counts
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach(el => { el.textContent = el.dataset.target; });
+  }
+
+  /* ---------- 3D tilt on mockup (pointer) ---------- */
+  const mockup = document.getElementById('mockup');
+  if (mockup && !reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+    const wrap = mockup.parentElement;
+    wrap.addEventListener('mousemove', (e) => {
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      mockup.style.transform = `rotateY(${px * 9}deg) rotateX(${-py * 9}deg) translateZ(0)`;
+    });
+    wrap.addEventListener('mouseleave', () => {
+      mockup.style.transform = 'rotateY(0) rotateX(0)';
+    });
+  }
+
+  /* ---------- Magnetic CTAs ---------- */
+  if (!reduceMotion && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('[data-magnetic]').forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        el.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+</script>
+</body>
+</html>

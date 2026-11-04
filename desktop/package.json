@@ -1,0 +1,13 @@
+{
+  "name": "deskdev-desktop",
+  "version": "1.1.0",
+  "private": true,
+  "description": "DeskDev for Windows: the app and its installer (README.md).",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "dotnet run --project DeskDev.csproj"
+  },
+  "devDependencies": {
+    "innosetup-compiler": "6.3.1"
+  }
+}

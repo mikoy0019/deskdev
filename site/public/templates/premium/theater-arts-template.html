@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Larkspur Stage — A Season of Living Theatre</title>
+<meta name="description" content="The Larkspur Stage is an independent performing arts venue presenting a bold season of original drama, music, and dance in the heart of the old quarter." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: "#0c0808",
+          char: "#161010",
+          ember: "#1f1614",
+          gold: "#c9a14a",
+          goldlt: "#e6c878",
+          crimson: "#9c1f2e",
+          crimsonlt: "#c8434f",
+          parchment: "#efe6d2",
+          smoke: "#a89a86",
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', "serif"],
+          sans: ['"Inter"', "sans-serif"],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { background-color: #0c0808; cursor: none; }
+  ::selection { background: #c9a14a; color: #0c0808; }
+  .text-shadow-drama { text-shadow: 0 8px 40px rgba(0,0,0,0.7); }
+  .grain::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Masked headline reveal */
+  .reveal-mask { overflow: hidden; display: block; }
+  .reveal-mask > span { display: block; transform: translateY(110%); }
+  /* Spotlight cone */
+  .spotlight {
+    background: radial-gradient(ellipse 60% 80% at 50% 0%, rgba(201,161,74,0.22), rgba(201,161,74,0.06) 40%, transparent 70%);
+  }
+  /* Curtain */
+  .curtain {
+    position: fixed; top: 0; bottom: 0; width: 52%; z-index: 90;
+    background:
+      repeating-linear-gradient(90deg, #6e1320 0px, #8a1a2a 22px, #5a0e1a 44px),
+      linear-gradient(180deg, #7a1624, #4a0c16);
+    box-shadow: inset -30px 0 60px rgba(0,0,0,0.6);
+  }
+  .curtain-l { left: 0; }
+  .curtain-r { right: 0; transform: scaleX(-1); }
+  /* Custom cursor */
+  .cursor-dot { position: fixed; top: 0; left: 0; width: 8px; height: 8px; border-radius: 50%; background: #e6c878; z-index: 100; pointer-events: none; transform: translate(-50%, -50%); }
+  .cursor-ring { position: fixed; top: 0; left: 0; width: 40px; height: 40px; border: 1px solid rgba(201,161,74,0.6); border-radius: 50%; z-index: 100; pointer-events: none; transform: translate(-50%, -50%); transition: width .25s, height .25s, background .25s, border-color .25s; }
+  .cursor-ring.grow { width: 70px; height: 70px; background: rgba(201,161,74,0.08); border-color: rgba(230,200,120,0.9); }
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee-track:hover .marquee { animation-play-state: paused; }
+  /* Show card */
+  .show-card { transition: transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s; }
+  .show-card:hover { transform: translateY(-10px); box-shadow: 0 30px 70px -20px rgba(156,31,46,0.45); }
+  .show-card:hover .show-img { transform: scale(1.08); filter: grayscale(0) brightness(1); }
+  .show-img { transition: transform .8s cubic-bezier(.2,.7,.2,1), filter .6s; filter: grayscale(0.4) brightness(0.85); }
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s ease; }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+  .gold-rule { background: linear-gradient(90deg, transparent, #c9a14a, transparent); }
+  .gold-line { background: linear-gradient(180deg, transparent, #c9a14a, transparent); }
+  a, button { cursor: none; }
+  @media (max-width: 768px) { a, button { cursor: pointer; } }
+</style>
+</head>
+<body class="bg-ink text-parchment font-sans antialiased overflow-x-hidden grain">
+
+<!-- Curtain reveal -->
+<div class="curtain curtain-l" id="curtainL"></div>
+<div class="curtain curtain-r" id="curtainR"></div>
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- NAV -->
+<nav class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#top" class="flex items-center gap-3 group" data-cursor>
+      <span class="w-9 h-9 rounded-full border border-gold/60 flex items-center justify-center text-gold font-serif text-xl group-hover:bg-gold group-hover:text-ink transition-colors">L</span>
+      <span class="font-serif text-2xl tracking-wide leading-none">The Larkspur Stage</span>
+    </a>
+    <div class="hidden lg:flex items-center gap-9 text-sm tracking-wide text-smoke">
+      <a href="#season" class="hover:text-parchment transition-colors" data-cursor>Season</a>
+      <a href="#featured" class="hover:text-parchment transition-colors" data-cursor>Featured</a>
+      <a href="#about" class="hover:text-parchment transition-colors" data-cursor>The Venue</a>
+      <a href="#membership" class="hover:text-parchment transition-colors" data-cursor>Membership</a>
+      <a href="#visit" class="hover:text-parchment transition-colors" data-cursor>Visit</a>
+    </div>
+    <a href="#tickets" id="ticketsCta" class="relative inline-flex items-center gap-2 px-6 py-3 rounded-full bg-crimson text-parchment text-sm tracking-widest uppercase font-medium overflow-hidden" data-cursor data-magnetic>
+      <span class="relative z-10">Tickets</span>
+      <span class="absolute inset-0 bg-gradient-to-r from-crimson to-crimsonlt opacity-0 hover:opacity-100 transition-opacity"></span>
+    </a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="top" class="relative min-h-screen flex items-end overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-ink via-char to-ink">
+    <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1600&q=80" alt="Empty theatre stage under warm light" class="w-full h-full object-cover opacity-50" onerror="this.style.display='none'" data-parallax="0.2" />
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent"></div>
+  <div class="absolute inset-0 spotlight"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 pb-20 lg:pb-28 w-full">
+    <p class="reveal-mask mb-6 text-gold text-xs sm:text-sm tracking-[0.4em] uppercase"><span>Independent · Established 1948 · The Old Quarter</span></p>
+    <h1 class="font-serif font-medium leading-[0.92] text-shadow-drama text-6xl sm:text-7xl lg:text-[8.5rem]">
+      <span class="reveal-mask"><span>A season of</span></span>
+      <span class="reveal-mask"><span class="italic text-goldlt">living theatre</span></span>
+    </h1>
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-12 max-w-3xl">
+      <p class="text-smoke text-lg leading-relaxed font-light max-w-md" data-fade>
+        Twelve original productions. One intimate room. Where the lights dim and the ordinary falls away — drama, music, and dance staged the way it was meant to be felt.
+      </p>
+      <div class="flex flex-col gap-3" data-fade>
+        <a href="#season" class="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-gold text-ink font-medium tracking-wide hover:bg-goldlt transition-colors" data-cursor data-magnetic>
+          Explore the Season <span aria-hidden="true">→</span>
+        </a>
+        <a href="#tickets" class="text-sm text-smoke hover:text-parchment text-center tracking-wide" data-cursor>Single tickets from $34</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Count-ups strip -->
+  <div class="absolute bottom-0 inset-x-0 z-10 border-t border-white/10 bg-ink/60 backdrop-blur-sm">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 grid grid-cols-3 divide-x divide-white/10">
+      <div class="py-5 text-center">
+        <div class="font-serif text-3xl sm:text-4xl text-goldlt"><span class="count" data-target="77">0</span></div>
+        <div class="text-[0.65rem] sm:text-xs uppercase tracking-[0.3em] text-smoke mt-1">Seasons Staged</div>
+      </div>
+      <div class="py-5 text-center">
+        <div class="font-serif text-3xl sm:text-4xl text-goldlt"><span class="count" data-target="412">0</span></div>
+        <div class="text-[0.65rem] sm:text-xs uppercase tracking-[0.3em] text-smoke mt-1">Original Shows</div>
+      </div>
+      <div class="py-5 text-center">
+        <div class="font-serif text-3xl sm:text-4xl text-goldlt"><span class="count" data-target="486">0</span></div>
+        <div class="text-[0.65rem] sm:text-xs uppercase tracking-[0.3em] text-smoke mt-1">Seats Per House</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MARQUEE of show names -->
+<section class="py-6 bg-crimson/90 overflow-hidden marquee-track border-y border-gold/30">
+  <div class="marquee text-ink font-serif text-2xl sm:text-3xl italic">
+    <span class="flex shrink-0">
+      <span class="mx-8">The Glasswright's Hour</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Cinders & Salt</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">A Lantern for the Drowned</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">The Velvet Inquest</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Nightjar</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Songs My Mother Couldn't Sing</span><span class="mx-8 text-ember">✦</span>
+    </span>
+    <span class="flex shrink-0" aria-hidden="true">
+      <span class="mx-8">The Glasswright's Hour</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Cinders & Salt</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">A Lantern for the Drowned</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">The Velvet Inquest</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Nightjar</span><span class="mx-8 text-ember">✦</span>
+      <span class="mx-8">Songs My Mother Couldn't Sing</span><span class="mx-8 text-ember">✦</span>
+    </span>
+  </div>
+</section>
+
+<!-- CURRENT SEASON / SHOWS GRID -->
+<section id="season" class="relative py-24 lg:py-32" data-parallax-container>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-16 gap-6">
+      <div>
+        <p class="text-gold text-xs tracking-[0.4em] uppercase mb-4" data-reveal>The 2026 / 2027 Season</p>
+        <h2 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[0.95]">
+          <span class="reveal-mask"><span>Six on the mainstage</span></span>
+        </h2>
+      </div>
+      <p class="text-smoke max-w-sm font-light leading-relaxed" data-reveal>Each production runs four to six weeks. Subscribers see them all and hold the same seat all year.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+      <!-- card -->
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-crimson/40 to-ink">
+          <img src="https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=1600&q=80" alt="Stage lights" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Drama</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Sep 12 — Oct 19</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">The Glasswright's Hour</h3>
+          <p class="text-smoke text-sm font-light mb-4">A new play by Orla Vandermeer · Directed by Tomas Reyes</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">A widowed glassblower bargains with the man who buys her silence. A taut chamber drama about debt, art, and what we owe the dead.</p>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-gold/30 to-ink">
+          <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=80" alt="Audience in theatre" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Musical</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Nov 7 — Dec 21</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">Cinders & Salt</h3>
+          <p class="text-smoke text-sm font-light mb-4">Book & lyrics by Pearl Achebe · Music by The Hollow Quartet</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">A salt-mining town sings its way through one impossible winter. Folk-musical theatre with a live string band on stage.</p>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-crimson/40 to-ink">
+          <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1600&q=80" alt="Performer on stage" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Dance</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Jan 16 — Feb 8</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">Nightjar</h3>
+          <p class="text-smoke text-sm font-light mb-4">Choreographed by Sefa Lindqvist · Larkspur Dance Collective</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">A wordless evening of contemporary dance set to a commissioned score — feathered, restless, and luminous in the dark.</p>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-gold/30 to-ink">
+          <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1600&q=80" alt="Stage" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Drama</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Feb 27 — Apr 5</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">The Velvet Inquest</h3>
+          <p class="text-smoke text-sm font-light mb-4">A new play by Marcus Donnelley · Directed by Imara Okonkwo</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">A courtroom thriller staged in the round. The audience becomes the jury — and the verdict changes nightly.</p>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-crimson/40 to-ink">
+          <img src="https://images.unsplash.com/photo-1507924538820-ede94a04019d?auto=format&fit=crop&w=1600&q=80" alt="Lights" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Music</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Apr 24 — May 17</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">Songs My Mother Couldn't Sing</h3>
+          <p class="text-smoke text-sm font-light mb-4">Devised & performed by Lyle Marchetti</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">A solo cabaret of borrowed lullabies and confessed truths, performed at a single piano beneath a single lamp.</p>
+        </div>
+      </article>
+
+      <article class="show-card group relative rounded-2xl overflow-hidden bg-ember border border-white/5" data-reveal data-cursor>
+        <div class="relative h-72 overflow-hidden bg-gradient-to-br from-gold/30 to-ink">
+          <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=80" alt="Audience" class="show-img w-full h-full object-cover" onerror="this.style.display='none'" />
+          <span class="absolute top-4 left-4 px-3 py-1 rounded-full bg-ink/70 text-gold text-[0.65rem] tracking-widest uppercase">Drama</span>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-smoke tracking-widest uppercase mb-2">Jun 5 — Jul 12</p>
+          <h3 class="font-serif text-3xl mb-2 group-hover:text-goldlt transition-colors">A Lantern for the Drowned</h3>
+          <p class="text-smoke text-sm font-light mb-4">A new play by Orla Vandermeer · Directed by Tomas Reyes</p>
+          <p class="text-sm text-parchment/80 font-light leading-relaxed">Three generations of a fishing family keep a vigil for those the sea took. Epic, tidal, and quietly devastating.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTION -->
+<section id="featured" class="relative py-24 lg:py-32 bg-char overflow-hidden">
+  <div class="absolute -right-40 top-0 w-[40rem] h-[40rem] rounded-full bg-crimson/10 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <div class="relative" data-reveal>
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-crimson/40 to-ink aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1600&q=80" alt="Featured performance" class="w-full h-full object-cover" onerror="this.style.display='none'" data-parallax="0.12" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"></div>
+      </div>
+      <div class="absolute -bottom-6 -left-6 bg-gold text-ink px-6 py-4 rounded-xl shadow-2xl">
+        <div class="font-serif text-2xl leading-none">Opening Night</div>
+        <div class="text-xs tracking-widest uppercase mt-1">Sep 12 · 7:30 PM</div>
+      </div>
+    </div>
+    <div>
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-5" data-reveal>Featured Production</p>
+      <h2 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[0.95] mb-6">
+        <span class="reveal-mask"><span>The Glasswright's</span></span>
+        <span class="reveal-mask"><span class="italic text-goldlt">Hour</span></span>
+      </h2>
+      <p class="text-smoke text-lg font-light leading-relaxed mb-8" data-reveal>
+        Our season opens with a world premiere from playwright-in-residence Orla Vandermeer. Staged in our 486-seat house with a hand-built glass furnace at its center, <em class="text-parchment not-italic">The Glasswright's Hour</em> asks what we are willing to melt down — and what we will let cool into something permanent.
+      </p>
+      <div class="grid grid-cols-2 gap-6 mb-10" data-reveal>
+        <div class="border-l border-gold/40 pl-4">
+          <div class="text-xs text-smoke uppercase tracking-widest mb-1">Run Time</div>
+          <div class="font-serif text-xl">2h 10m · one interval</div>
+        </div>
+        <div class="border-l border-gold/40 pl-4">
+          <div class="text-xs text-smoke uppercase tracking-widest mb-1">Recommended</div>
+          <div class="font-serif text-xl">Ages 14+</div>
+        </div>
+      </div>
+      <a href="#tickets" class="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-crimson text-parchment font-medium tracking-wide hover:bg-crimsonlt transition-colors" data-cursor data-magnetic>
+        Book Opening Night <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT THE VENUE -->
+<section id="about" class="relative py-24 lg:py-32">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-gold text-xs tracking-[0.4em] uppercase mb-6" data-reveal>The Venue</p>
+    <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-tight mb-10">
+      <span class="reveal-mask"><span>A small room with</span></span>
+      <span class="reveal-mask"><span class="italic text-goldlt">an enormous heart.</span></span>
+    </h2>
+    <p class="text-smoke text-lg sm:text-xl font-light leading-relaxed max-w-3xl mx-auto" data-reveal>
+      Built in 1948 inside a former glassworks, The Larkspur Stage was never meant to be grand — it was meant to be close. No seat sits more than fourteen rows from the stage. We commission new work, pay our artists fairly, and keep a third of every house priced under forty dollars. For seventy-seven seasons we have believed that the most radical thing a theatre can do is let strangers sit together in the dark and feel something true.
+    </p>
+    <div class="mt-16 grid sm:grid-cols-3 gap-8" data-reveal>
+      <div class="p-8 rounded-2xl bg-ember border border-white/5">
+        <div class="font-serif text-2xl text-goldlt mb-3">In the round</div>
+        <p class="text-sm text-smoke font-light">A reconfigurable house — proscenium, thrust, or full surround for every production.</p>
+      </div>
+      <div class="p-8 rounded-2xl bg-ember border border-white/5">
+        <div class="font-serif text-2xl text-goldlt mb-3">New work first</div>
+        <p class="text-sm text-smoke font-light">Nine of ten productions are world or regional premieres written for our stage.</p>
+      </div>
+      <div class="p-8 rounded-2xl bg-ember border border-white/5">
+        <div class="font-serif text-2xl text-goldlt mb-3">Open doors</div>
+        <p class="text-sm text-smoke font-light">Pay-what-you-can previews and relaxed performances every run, no questions asked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION / COMMUNITY -->
+<section class="relative py-24 lg:py-32 bg-char overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <div>
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-5" data-reveal>Education & Community</p>
+      <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-tight mb-8">
+        <span class="reveal-mask"><span>The stage</span></span>
+        <span class="reveal-mask"><span class="italic text-goldlt">belongs to everyone.</span></span>
+      </h2>
+      <div class="space-y-6">
+        <div class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-12 h-12 rounded-full border border-gold/50 flex items-center justify-center font-serif text-gold text-xl">01</span>
+          <div>
+            <h3 class="font-serif text-2xl mb-1">Larkspur Young Company</h3>
+            <p class="text-smoke font-light text-sm">A free after-school conservatory for 14–18 year-olds, culminating in a full studio production each spring.</p>
+          </div>
+        </div>
+        <div class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-12 h-12 rounded-full border border-gold/50 flex items-center justify-center font-serif text-gold text-xl">02</span>
+          <div>
+            <h3 class="font-serif text-2xl mb-1">Open Stage Saturdays</h3>
+            <p class="text-smoke font-light text-sm">Monthly storytelling, poetry, and devising workshops open to the whole neighbourhood.</p>
+          </div>
+        </div>
+        <div class="flex gap-5" data-reveal>
+          <span class="shrink-0 w-12 h-12 rounded-full border border-gold/50 flex items-center justify-center font-serif text-gold text-xl">03</span>
+          <div>
+            <h3 class="font-serif text-2xl mb-1">Schools on Stage</h3>
+            <p class="text-smoke font-light text-sm">Subsidised matinees and teaching packs that bring 6,000 students through our doors each season.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="relative" data-reveal>
+      <div class="rounded-2xl overflow-hidden bg-gradient-to-br from-gold/30 to-ink aspect-square">
+        <img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=1600&q=80" alt="Community workshop" class="w-full h-full object-cover" onerror="this.style.display='none'" data-parallax="0.1" />
+      </div>
+      <div class="absolute -top-6 -right-6 bg-crimson text-parchment px-6 py-4 rounded-xl shadow-2xl">
+        <div class="font-serif text-3xl leading-none"><span class="count" data-target="6000">0</span>+</div>
+        <div class="text-xs tracking-widest uppercase mt-1">Students / Season</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP / SUBSCRIBE -->
+<section id="membership" class="relative py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-4" data-reveal>Membership</p>
+      <h2 class="font-serif text-5xl sm:text-6xl lg:text-7xl leading-[0.95]">
+        <span class="reveal-mask"><span>Keep your seat</span></span>
+      </h2>
+      <p class="text-smoke max-w-xl mx-auto mt-5 font-light" data-reveal>Subscribers see every show, save up to 30%, and hold the same seat all season long.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+      <div class="rounded-2xl p-8 bg-ember border border-white/5 flex flex-col" data-reveal data-cursor>
+        <div class="text-gold text-xs tracking-widest uppercase mb-4">Friend</div>
+        <div class="font-serif text-5xl mb-1">$180<span class="text-lg text-smoke">/yr</span></div>
+        <p class="text-smoke text-sm font-light mb-6">Four shows of your choosing.</p>
+        <ul class="space-y-3 text-sm text-parchment/80 font-light mb-8 flex-1">
+          <li class="flex gap-3"><span class="text-gold">✦</span> Any 4 mainstage productions</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> 15% off additional tickets</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Free ticket exchanges</li>
+        </ul>
+        <a href="#tickets" class="text-center px-6 py-3 rounded-full border border-gold/50 text-gold hover:bg-gold hover:text-ink transition-colors" data-cursor>Choose Friend</a>
+      </div>
+      <div class="rounded-2xl p-8 bg-gradient-to-b from-crimson/30 to-ember border border-gold/40 flex flex-col relative scale-[1.03] shadow-2xl" data-reveal data-cursor>
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gold text-ink text-[0.65rem] tracking-widest uppercase">Most Loved</span>
+        <div class="text-goldlt text-xs tracking-widest uppercase mb-4">Patron</div>
+        <div class="font-serif text-5xl mb-1">$320<span class="text-lg text-smoke">/yr</span></div>
+        <p class="text-smoke text-sm font-light mb-6">The full season, your seat reserved.</p>
+        <ul class="space-y-3 text-sm text-parchment font-light mb-8 flex-1">
+          <li class="flex gap-3"><span class="text-goldlt">✦</span> All 6 mainstage productions</li>
+          <li class="flex gap-3"><span class="text-goldlt">✦</span> Same seat held all year</li>
+          <li class="flex gap-3"><span class="text-goldlt">✦</span> 30% off guest tickets</li>
+          <li class="flex gap-3"><span class="text-goldlt">✦</span> Invitations to open rehearsals</li>
+        </ul>
+        <a href="#tickets" class="text-center px-6 py-3 rounded-full bg-gold text-ink font-medium hover:bg-goldlt transition-colors" data-cursor data-magnetic>Become a Patron</a>
+      </div>
+      <div class="rounded-2xl p-8 bg-ember border border-white/5 flex flex-col" data-reveal data-cursor>
+        <div class="text-gold text-xs tracking-widest uppercase mb-4">Benefactor</div>
+        <div class="font-serif text-5xl mb-1">$900<span class="text-lg text-smoke">/yr</span></div>
+        <p class="text-smoke text-sm font-light mb-6">For those who keep the lights on.</p>
+        <ul class="space-y-3 text-sm text-parchment/80 font-light mb-8 flex-1">
+          <li class="flex gap-3"><span class="text-gold">✦</span> Everything in Patron</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Two seats, premium centre</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Named in every programme</li>
+          <li class="flex gap-3"><span class="text-gold">✦</span> Annual director's supper</li>
+        </ul>
+        <a href="#tickets" class="text-center px-6 py-3 rounded-full border border-gold/50 text-gold hover:bg-gold hover:text-ink transition-colors" data-cursor>Choose Benefactor</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS / PRESS -->
+<section class="relative py-24 lg:py-32 bg-char overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-4" data-reveal>Press & Audience</p>
+      <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl" data-reveal>What the dark holds.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 lg:gap-8">
+      <figure class="rounded-2xl p-8 bg-ember border border-white/5" data-reveal>
+        <div class="text-gold text-3xl font-serif mb-4">"</div>
+        <blockquote class="font-serif text-2xl leading-snug mb-6 text-parchment">A theatre that still believes in goosebumps. The Larkspur's season is the bravest in the city.</blockquote>
+        <figcaption class="text-sm text-smoke">— The Meridian Review <span class="text-gold">★★★★★</span></figcaption>
+      </figure>
+      <figure class="rounded-2xl p-8 bg-ember border border-white/5" data-reveal>
+        <div class="text-gold text-3xl font-serif mb-4">"</div>
+        <blockquote class="font-serif text-2xl leading-snug mb-6 text-parchment">I have never sat so close to a story and felt it reach right into my chest. I'll be back every season.</blockquote>
+        <figcaption class="text-sm text-smoke">— Daniela Cruz, Patron since 2019</figcaption>
+      </figure>
+      <figure class="rounded-2xl p-8 bg-ember border border-white/5" data-reveal>
+        <div class="text-gold text-3xl font-serif mb-4">"</div>
+        <blockquote class="font-serif text-2xl leading-snug mb-6 text-parchment">Small enough to whisper, bold enough to roar. The Glasswright's Hour is unmissable.</blockquote>
+        <figcaption class="text-sm text-smoke">— Stagewright Quarterly <span class="text-gold">★★★★★</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- VISIT / PLAN -->
+<section id="visit" class="relative py-24 lg:py-32">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-12 lg:gap-20">
+    <div>
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-5" data-reveal>Plan Your Visit</p>
+      <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl leading-tight mb-8">
+        <span class="reveal-mask"><span>Before the</span></span>
+        <span class="reveal-mask"><span class="italic text-goldlt">lights go down.</span></span>
+      </h2>
+      <div class="space-y-6 text-parchment/85 font-light">
+        <div class="flex justify-between border-b border-white/10 pb-4" data-reveal><span class="text-smoke">Address</span><span class="text-right">9 Furnace Lane, The Old Quarter</span></div>
+        <div class="flex justify-between border-b border-white/10 pb-4" data-reveal><span class="text-smoke">Box Office</span><span class="text-right">Tue–Sat · 12–8 PM</span></div>
+        <div class="flex justify-between border-b border-white/10 pb-4" data-reveal><span class="text-smoke">Doors</span><span class="text-right">45 minutes before curtain</span></div>
+        <div class="flex justify-between border-b border-white/10 pb-4" data-reveal><span class="text-smoke">Access</span><span class="text-right">Step-free · hearing loop · captioned nights</span></div>
+        <div class="flex justify-between border-b border-white/10 pb-4" data-reveal><span class="text-smoke">Bar & Café</span><span class="text-right">The Furnace Room · opens 2h prior</span></div>
+      </div>
+    </div>
+    <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-crimson/30 to-ink min-h-[24rem]" data-reveal>
+      <img src="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1600&q=80" alt="The venue exterior" class="w-full h-full object-cover" onerror="this.style.display='none'" data-parallax="0.1" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/85 to-transparent"></div>
+      <div class="absolute bottom-6 left-6 right-6">
+        <div class="font-serif text-3xl mb-1">Getting here</div>
+        <p class="text-smoke text-sm font-light">Three minutes from Quayside Station. Limited evening parking on Furnace Lane; bike racks at the stage door.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ ACCORDION -->
+<section class="relative py-24 lg:py-32 bg-char">
+  <div class="max-w-3xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-14">
+      <p class="text-gold text-xs tracking-[0.4em] uppercase mb-4" data-reveal>Questions</p>
+      <h2 class="font-serif text-4xl sm:text-5xl lg:text-6xl" data-reveal>Good to know.</h2>
+    </div>
+    <div class="space-y-4" id="faq">
+      <div class="faq-item rounded-xl bg-ember border border-white/5 overflow-hidden" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-xl">What if I'm running late?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke font-light">Latecomers are seated at a suitable break, usually within the first ten minutes. Our front-of-house team will hold you in the Furnace Room with a screen so you don't miss a beat.</p></div>
+      </div>
+      <div class="faq-item rounded-xl bg-ember border border-white/5 overflow-hidden" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-xl">Can I exchange my tickets?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke font-light">Members exchange for free up to 24 hours before curtain. Single-ticket holders can exchange for a small fee, subject to availability for the same production.</p></div>
+      </div>
+      <div class="faq-item rounded-xl bg-ember border border-white/5 overflow-hidden" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-xl">Are pay-what-you-can previews real?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke font-light">Completely. The first preview of every production is pay-what-you-can at the door, starting from one dollar. No booking fee, no questions — just turn up early, seats are first-come.</p></div>
+      </div>
+      <div class="faq-item rounded-xl bg-ember border border-white/5 overflow-hidden" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between px-6 py-5 text-left" data-cursor>
+          <span class="font-serif text-xl">Is the venue accessible?</span>
+          <span class="faq-icon text-gold text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-smoke font-light">Yes — step-free throughout, a hearing loop in every section, and at least one captioned, audio-described, and relaxed performance per run. Contact the box office and we'll arrange anything you need.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA / TICKETS -->
+<section id="tickets" class="relative py-28 lg:py-40 overflow-hidden">
+  <div class="absolute inset-0 spotlight"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-ink via-ember/40 to-ink"></div>
+  <div class="relative z-10 max-w-4xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-gold text-xs tracking-[0.4em] uppercase mb-6" data-reveal>The Curtain Rises September 12</p>
+    <h2 class="font-serif text-5xl sm:text-6xl lg:text-8xl leading-[0.92] mb-8 text-shadow-drama">
+      <span class="reveal-mask"><span>Take your seat</span></span>
+      <span class="reveal-mask"><span class="italic text-goldlt">in the dark.</span></span>
+    </h2>
+    <p class="text-smoke text-lg font-light max-w-xl mx-auto mb-10" data-reveal>Single tickets and full-season subscriptions are on sale now. Hold your seat for seventy-eight years of stories yet to be told.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center" data-reveal>
+      <a href="#season" class="px-10 py-4 rounded-full bg-gold text-ink font-medium tracking-wide hover:bg-goldlt transition-colors" data-cursor data-magnetic>Book Single Tickets</a>
+      <a href="#membership" class="px-10 py-4 rounded-full border border-gold/50 text-gold hover:bg-gold hover:text-ink transition-colors tracking-wide" data-cursor>Subscribe for the Season</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="relative border-t border-white/10 bg-ink py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="w-9 h-9 rounded-full border border-gold/60 flex items-center justify-center text-gold font-serif text-xl">L</span>
+          <span class="font-serif text-2xl">The Larkspur Stage</span>
+        </div>
+        <p class="text-smoke font-light max-w-sm text-sm leading-relaxed">An independent, not-for-profit performing arts venue staging new drama, music, and dance since 1948. 9 Furnace Lane, The Old Quarter.</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-gold mb-4">Explore</div>
+        <ul class="space-y-2 text-sm text-smoke font-light">
+          <li><a href="#season" class="hover:text-parchment" data-cursor>The Season</a></li>
+          <li><a href="#featured" class="hover:text-parchment" data-cursor>Featured</a></li>
+          <li><a href="#membership" class="hover:text-parchment" data-cursor>Membership</a></li>
+          <li><a href="#visit" class="hover:text-parchment" data-cursor>Plan a Visit</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-widest text-gold mb-4">Box Office</div>
+        <ul class="space-y-2 text-sm text-smoke font-light">
+          <li>boxoffice@larkspurstage.example</li>
+          <li>+1 (555) 014-7790</li>
+          <li>Tue–Sat · 12–8 PM</li>
+        </ul>
+        <div class="flex gap-4 mt-5 text-smoke">
+          <a href="#" class="hover:text-gold" data-cursor>Instagram</a>
+          <a href="#" class="hover:text-gold" data-cursor>Threads</a>
+        </div>
+      </div>
+    </div>
+    <div class="gold-rule h-px w-full mb-6"></div>
+    <div class="flex flex-col sm:flex-row justify-between gap-4 text-xs text-smoke">
+      <span>© 2026 The Larkspur Stage. A fictional venue. All shows imagined.</span>
+      <span class="flex gap-6"><a href="#" class="hover:text-parchment" data-cursor>Privacy</a><a href="#" class="hover:text-parchment" data-cursor>Accessibility</a><a href="#" class="hover:text-parchment" data-cursor>Terms</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- Curtain reveal ----
+  const cL = document.getElementById("curtainL");
+  const cR = document.getElementById("curtainR");
+  function openCurtains() {
+    if (reduce) { cL.style.display = "none"; cR.style.display = "none"; return; }
+    gsap.to([cL, cR], { xPercent: (i) => (i === 0 ? -102 : 102), duration: 1.5, ease: "power3.inOut", delay: 0.2,
+      onComplete: () => { cL.style.display = "none"; cR.style.display = "none"; } });
+  }
+
+  // ---- Custom cursor + magnetic ----
+  const dot = document.getElementById("cursorDot");
+  const ring = document.getElementById("cursorRing");
+  if (!reduce && window.matchMedia("(min-width: 769px)").matches) {
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener("mousemove", (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    });
+    function loop() { rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`; requestAnimationFrame(loop); }
+    loop();
+    document.querySelectorAll("[data-cursor]").forEach((el) => {
+      el.addEventListener("mouseenter", () => ring.classList.add("grow"));
+      el.addEventListener("mouseleave", () => ring.classList.remove("grow"));
+    });
+    document.querySelectorAll("[data-magnetic]").forEach((el) => {
+      el.addEventListener("mousemove", (e) => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        gsap.to(el, { x: x * 0.35, y: y * 0.35, duration: 0.4 });
+      });
+      el.addEventListener("mouseleave", () => gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1,0.4)" }));
+    });
+  } else { dot.style.display = "none"; ring.style.display = "none"; }
+
+  // ---- Nav scroll state ----
+  const nav = document.getElementById("nav");
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 40) nav.classList.add("bg-ink/80", "backdrop-blur-md", "border-b", "border-white/10");
+    else nav.classList.remove("bg-ink/80", "backdrop-blur-md", "border-b", "border-white/10");
+  });
+
+  // ---- FAQ accordion ----
+  document.querySelectorAll(".faq-item").forEach((item) => {
+    item.querySelector(".faq-trigger").addEventListener("click", () => {
+      const isOpen = item.classList.contains("open");
+      document.querySelectorAll(".faq-item").forEach((i) => i.classList.remove("open"));
+      if (!isOpen) item.classList.add("open");
+    });
+  });
+
+  if (reduce) {
+    openCurtains();
+    document.querySelectorAll(".reveal-mask > span, [data-reveal], [data-fade]").forEach((el) => { el.style.transform = "none"; el.style.opacity = 1; });
+    document.querySelectorAll(".count").forEach((el) => (el.textContent = (+el.dataset.target).toLocaleString()));
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  window.addEventListener("load", openCurtains);
+
+  // ---- Hero masked headline reveal ----
+  gsap.set(".reveal-mask > span", { yPercent: 110 });
+  gsap.to("header .reveal-mask > span", { yPercent: 0, duration: 1.1, ease: "power4.out", stagger: 0.12, delay: 1.4 });
+  gsap.from("header [data-fade]", { y: 30, opacity: 0, duration: 1, ease: "power3.out", stagger: 0.15, delay: 2.0 });
+
+  // ---- Section masked headlines on scroll ----
+  gsap.utils.toArray("section .reveal-mask").forEach((mask) => {
+    const span = mask.querySelector("span");
+    gsap.to(span, { yPercent: 0, duration: 1, ease: "power4.out",
+      scrollTrigger: { trigger: mask, start: "top 88%" } });
+  });
+
+  // ---- Generic reveals ----
+  gsap.utils.toArray("[data-reveal]").forEach((el) => {
+    gsap.from(el, { y: 40, opacity: 0, duration: 0.9, ease: "power3.out",
+      scrollTrigger: { trigger: el, start: "top 90%" } });
+  });
+
+  // ---- Container parallax ----
+  gsap.utils.toArray("[data-parallax]").forEach((el) => {
+    const depth = parseFloat(el.dataset.parallax) || 0.15;
+    gsap.to(el, { yPercent: depth * 100, ease: "none",
+      scrollTrigger: { trigger: el.closest("section, header") || el, start: "top bottom", end: "bottom top", scrub: true } });
+  });
+
+  // ---- Count-ups ----
+  document.querySelectorAll(".count").forEach((el) => {
+    const target = +el.dataset.target;
+    ScrollTrigger.create({ trigger: el, start: "top 92%", once: true,
+      onEnter: () => {
+        const obj = { v: 0 };
+        gsap.to(obj, { v: target, duration: 1.8, ease: "power2.out",
+          onUpdate: () => (el.textContent = Math.floor(obj.v).toLocaleString()) });
+      } });
+  });
+})();
+</script>
+</body>
+</html>

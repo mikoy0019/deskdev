@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AquaCrest Pool Care — Crystal-Clear Pools, Effortlessly</title>
+<meta name="description" content="AquaCrest delivers premium residential pool cleaning, maintenance & repair. Sparkling water, healthy chemistry, zero hassle — backed by a crystal-clear guarantee." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Poppins', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+        },
+        colors: {
+          ink: '#0a2540',
+          deep: '#063b5c',
+          aqua: '#19b4d8',
+          sky: '#5fd3ef',
+          mist: '#e8f8fc',
+          foam: '#f4fbfd',
+          sunny: '#ffc940',
+          coral: '#ff8a5b',
+        },
+        boxShadow: {
+          glass: '0 20px 50px -20px rgba(6,59,92,0.35)',
+          float: '0 30px 80px -30px rgba(25,180,216,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #f4fbfd; color: #0a2540; font-family: 'Inter', sans-serif; }
+
+  ::selection { background: #ffc940; color: #063b5c; }
+
+  /* Animated water wave divider */
+  .wave-band {
+    position: absolute; left: 0; width: 100%; line-height: 0;
+  }
+  .wave-band svg { width: 200%; height: 100%; }
+  .wave-anim { animation: waveSlide 14s linear infinite; }
+  @keyframes waveSlide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Caustic shimmer on hero */
+  .caustics::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.35), transparent 40%),
+      radial-gradient(circle at 70% 60%, rgba(95,211,239,0.4), transparent 45%),
+      radial-gradient(circle at 40% 80%, rgba(255,255,255,0.25), transparent 40%);
+    mix-blend-mode: screen; animation: caustic 9s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes caustic {
+    0% { transform: scale(1) translate(0,0); opacity: .8; }
+    100% { transform: scale(1.15) translate(2%, -2%); opacity: 1; }
+  }
+
+  /* Ripple ring on quote button */
+  .ripple-host { position: relative; overflow: hidden; }
+  .ripple { position: absolute; border-radius: 9999px; transform: scale(0);
+    background: rgba(255,255,255,0.6); animation: rippleGo .7s ease-out; pointer-events: none; }
+  @keyframes rippleGo { to { transform: scale(4); opacity: 0; } }
+
+  .marquee-track { display: flex; width: max-content; animation: marquee 28s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-host:hover .marquee-track { animation-play-state: paused; }
+
+  .grad-text {
+    background: linear-gradient(120deg, #19b4d8, #5fd3ef 55%, #ffc940);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .reveal { opacity: 0; transform: translateY(36px); }
+
+  .glass-card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(95,211,239,0.35);
+  }
+
+  .tilt { transition: transform .25s ease, box-shadow .25s ease; transform-style: preserve-3d; will-change: transform; }
+
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+
+  .water-fill {
+    background: linear-gradient(180deg, #5fd3ef 0%, #19b4d8 100%);
+    position: relative; overflow: hidden;
+  }
+  .water-fill::after {
+    content: ''; position: absolute; top: -8px; left: 0; width: 200%; height: 16px;
+    background: radial-gradient(circle, rgba(255,255,255,.7) 2px, transparent 3px) repeat-x;
+    background-size: 18px 16px; animation: waveSlide 4s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wave-anim, .caustics::before, .marquee-track, .water-fill::after { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- NAV -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-[72px]">
+    <a href="#home" class="flex items-center gap-2.5 group">
+      <span class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-aqua to-sky grid place-items-center shadow-float">
+        <svg viewBox="0 0 24 24" class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/>
+          <path d="M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/>
+          <circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="font-display font-extrabold text-xl tracking-tight text-ink">Aqua<span class="text-aqua">Crest</span></span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-8 text-sm font-medium text-deep/80">
+      <a href="#services" class="hover:text-aqua transition">Services</a>
+      <a href="#plans" class="hover:text-aqua transition">Plans</a>
+      <a href="#how" class="hover:text-aqua transition">How It Works</a>
+      <a href="#areas" class="hover:text-aqua transition">Areas</a>
+      <a href="#faq" class="hover:text-aqua transition">FAQ</a>
+    </div>
+
+    <a href="#quote" id="magnetic" class="ripple-host magnetic relative inline-flex items-center gap-2 bg-ink text-white font-semibold text-sm px-5 py-2.5 rounded-full shadow-glass hover:bg-deep transition">
+      <span class="w-2 h-2 rounded-full bg-sunny animate-pulse"></span>
+      Free Quote
+    </a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section id="home" class="relative min-h-screen flex items-center pt-24 pb-32 overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-mist via-foam to-white"></div>
+  <!-- blurred aqua blobs -->
+  <div class="absolute -top-20 -left-24 w-[34rem] h-[34rem] rounded-full bg-sky/30 blur-3xl -z-10"></div>
+  <div class="absolute top-40 -right-24 w-[30rem] h-[30rem] rounded-full bg-aqua/20 blur-3xl -z-10"></div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center w-full">
+    <!-- copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white shadow-glass text-sm font-semibold text-deep mb-6">
+        <span class="w-2 h-2 rounded-full bg-sunny"></span> Now serving the Sunbelt Coast
+      </span>
+      <h1 class="font-display font-extrabold text-4xl sm:text-6xl leading-[1.05] tracking-tight text-ink">
+        <span id="hl1" class="reveal block">Crystal-clear pools,</span>
+        <span id="hl2" class="reveal block grad-text">effortlessly yours.</span>
+      </h1>
+      <p class="reveal mt-6 text-lg text-deep/70 max-w-md">
+        Weekly cleaning, balanced chemistry, and on-call repairs handled by certified techs — so you swim more and skim never.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#quote" class="ripple-host inline-flex items-center gap-2 bg-gradient-to-r from-aqua to-sky text-white font-semibold px-7 py-3.5 rounded-full shadow-float hover:brightness-105 transition">
+          Get my free quote
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#services" class="inline-flex items-center gap-2 font-semibold text-deep px-5 py-3.5 rounded-full hover:bg-mist transition">
+          Explore services
+        </a>
+      </div>
+
+      <div class="reveal mt-10 flex items-center gap-6 text-sm">
+        <div class="flex -space-x-3">
+          <span class="w-9 h-9 rounded-full bg-aqua border-2 border-white"></span>
+          <span class="w-9 h-9 rounded-full bg-sky border-2 border-white"></span>
+          <span class="w-9 h-9 rounded-full bg-sunny border-2 border-white"></span>
+          <span class="w-9 h-9 rounded-full bg-deep border-2 border-white grid place-items-center text-white text-xs font-bold">2k+</span>
+        </div>
+        <div class="text-deep/70">
+          <div class="flex items-center gap-1 text-sunny">★★★★★ <span class="text-deep font-semibold ml-1" id="navRating">4.9</span></div>
+          <span class="text-xs">Rated by 2,000+ pool owners</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- hero image + parallax -->
+    <div class="relative">
+      <div id="heroParallax" class="caustics relative rounded-[2rem] overflow-hidden shadow-float bg-gradient-to-br from-aqua to-deep aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Sparkling clean residential swimming pool"
+             class="w-full h-full object-cover" />
+      </div>
+      <!-- floating instant-quote card -->
+      <div class="absolute -bottom-8 -left-4 sm:left-8 glass-card rounded-2xl p-4 shadow-float w-60">
+        <p class="text-xs font-semibold text-deep/60 uppercase tracking-wide">Instant estimate</p>
+        <div class="mt-2 flex items-end gap-1">
+          <span class="font-display font-extrabold text-3xl text-ink">$<span id="instantPrice">89</span></span>
+          <span class="text-deep/60 text-sm mb-1">/visit</span>
+        </div>
+        <input id="poolSize" type="range" min="0" max="100" value="40"
+               class="w-full mt-2 accent-aqua cursor-pointer" />
+        <p class="text-xs text-deep/60 mt-1" id="poolLabel">Medium pool · ~18,000 gal</p>
+      </div>
+      <!-- floating chip -->
+      <div class="absolute -top-5 right-2 sm:right-6 glass-card rounded-2xl px-4 py-3 shadow-float flex items-center gap-2">
+        <span class="w-9 h-9 rounded-full bg-sunny/20 grid place-items-center">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-sunny" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6L5.7 21l2.3-7.2-6-4.4h7.6z"/></svg>
+        </span>
+        <div class="text-xs">
+          <p class="font-bold text-ink">Same-week start</p>
+          <p class="text-deep/60">No contracts</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- animated wave divider -->
+  <div class="wave-band bottom-0 h-24 text-white">
+    <svg class="wave-anim" viewBox="0 0 2880 100" preserveAspectRatio="none" fill="currentColor">
+      <path d="M0,40 C360,90 720,0 1440,40 C2160,80 2520,10 2880,40 L2880,100 L0,100 Z"/>
+    </svg>
+  </div>
+</section>
+
+<!-- TRUST / STATS STRIP -->
+<section class="bg-white py-14 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    <div class="reveal">
+      <p class="font-display font-extrabold text-4xl text-ink"><span class="count" data-target="52000">0</span><span class="text-aqua">+</span></p>
+      <p class="text-deep/60 text-sm mt-1">Pools serviced</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-4xl text-ink"><span class="count" data-target="49" data-decimal="1">0</span></p>
+      <p class="text-deep/60 text-sm mt-1">Avg. star rating</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-4xl text-ink"><span class="count" data-target="14">0</span></p>
+      <p class="text-deep/60 text-sm mt-1">Years in service</p>
+    </div>
+    <div class="reveal">
+      <p class="font-display font-extrabold text-4xl text-ink"><span class="count" data-target="100">0</span><span class="text-aqua">%</span></p>
+      <p class="text-deep/60 text-sm mt-1">Clear-water guarantee</p>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES MARQUEE -->
+<div class="marquee-host bg-ink text-white py-4 overflow-hidden">
+  <div class="marquee-track gap-10 text-sm font-semibold uppercase tracking-widest text-sky/90">
+    <span class="flex gap-10 pr-10">
+      <span>● Weekly Cleaning</span><span>● Chemical Balancing</span><span>● Filter Service</span>
+      <span>● Green-to-Clean</span><span>● Equipment Repair</span><span>● Tile & Acid Wash</span>
+      <span>● Salt Systems</span><span>● Leak Detection</span>
+    </span>
+    <span class="flex gap-10 pr-10" aria-hidden="true">
+      <span>● Weekly Cleaning</span><span>● Chemical Balancing</span><span>● Filter Service</span>
+      <span>● Green-to-Clean</span><span>● Equipment Repair</span><span>● Tile & Acid Wash</span>
+      <span>● Salt Systems</span><span>● Leak Detection</span>
+    </span>
+  </div>
+</div>
+
+<!-- SERVICES GRID -->
+<section id="services" class="py-24 bg-foam relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">What we do</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Everything your pool needs to stay swim-ready</h2>
+      <p class="reveal text-deep/70 mt-4">From routine skimming to full equipment overhauls — one trusted crew, every season.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-aqua/15 grid place-items-center text-aqua group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M5 18l2-9 10 0 2 9"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Weekly Cleaning</h3>
+        <p class="text-deep/70 text-sm mt-2">Skimming, brushing, vacuuming, basket emptying and a full water test on every visit.</p>
+      </article>
+
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-sky/20 grid place-items-center text-deep group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6M12 3v6M7 9h10l-1.5 9a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2z"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Chemistry Balancing</h3>
+        <p class="text-deep/70 text-sm mt-2">Precision pH, chlorine, alkalinity and stabilizer dosing for safe, soft, sparkling water.</p>
+      </article>
+
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-sunny/20 grid place-items-center text-coral group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zM9 9h6"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Green-to-Clean</h3>
+        <p class="text-deep/70 text-sm mt-2">Algae-choked pool? We reclaim it to swimmable in days with a guided shock + filter program.</p>
+      </article>
+
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-aqua/15 grid place-items-center text-aqua group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4 12H2M22 12h-2M6 6L4 4M20 20l-2-2M6 18l-2 2M20 4l-2 2"/><circle cx="12" cy="12" r="4"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Equipment Repair</h3>
+        <p class="text-deep/70 text-sm mt-2">Pumps, heaters, filters and automation — diagnosed and fixed by licensed technicians.</p>
+      </article>
+
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-sky/20 grid place-items-center text-deep group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Filter & Salt Service</h3>
+        <p class="text-deep/70 text-sm mt-2">Cartridge cleans, DE backwashes and salt-cell maintenance to keep flow strong year-round.</p>
+      </article>
+
+      <article class="reveal tilt glass-card rounded-2xl p-7 shadow-glass group cursor-default">
+        <span class="w-12 h-12 rounded-xl bg-sunny/20 grid place-items-center text-coral group-hover:scale-110 transition">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        </span>
+        <h3 class="font-display font-bold text-xl text-ink mt-5">Leak Detection</h3>
+        <p class="text-deep/70 text-sm mt-2">Pressure testing and dye tracing to find and seal hidden leaks before they drain your wallet.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- MAINTENANCE PLANS -->
+<section id="plans" class="py-24 bg-gradient-to-b from-white to-mist relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Maintenance plans</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Pick a plan, then forget your pool exists</h2>
+      <p class="reveal text-deep/70 mt-4">No contracts. Pause anytime. Cancel anytime. Just clear water.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 items-stretch">
+      <!-- Splash -->
+      <div class="reveal glass-card rounded-3xl p-8 shadow-glass flex flex-col">
+        <h3 class="font-display font-bold text-xl text-ink">Splash</h3>
+        <p class="text-deep/60 text-sm mt-1">Hands-on owners who want backup.</p>
+        <p class="font-display font-extrabold text-4xl text-ink mt-6">$119<span class="text-base font-medium text-deep/50">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-deep/80 flex-1">
+          <li class="flex gap-2"><span class="text-aqua">✓</span> 2 cleaning visits / month</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Full chemistry test & dose</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Basket & skimmer service</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Digital visit report</li>
+        </ul>
+        <a href="#quote" class="ripple-host mt-8 text-center font-semibold text-deep border border-aqua/40 rounded-full py-3 hover:bg-mist transition">Choose Splash</a>
+      </div>
+
+      <!-- Crystal (popular) -->
+      <div class="reveal rounded-3xl p-8 shadow-float flex flex-col bg-gradient-to-br from-ink to-deep text-white relative overflow-hidden scale-[1.02]">
+        <span class="absolute top-5 right-5 bg-sunny text-ink text-xs font-bold px-3 py-1 rounded-full">Most popular</span>
+        <div class="caustics absolute inset-0 opacity-40"></div>
+        <div class="relative">
+          <h3 class="font-display font-bold text-xl">Crystal</h3>
+          <p class="text-sky/80 text-sm mt-1">Total hands-off care, weekly.</p>
+          <p class="font-display font-extrabold text-4xl mt-6">$199<span class="text-base font-medium text-sky/70">/mo</span></p>
+          <ul class="mt-6 space-y-3 text-sm text-white/90 flex-1">
+            <li class="flex gap-2"><span class="text-sunny">✓</span> Weekly cleaning visits</li>
+            <li class="flex gap-2"><span class="text-sunny">✓</span> All chemicals included</li>
+            <li class="flex gap-2"><span class="text-sunny">✓</span> Filter cleans each quarter</li>
+            <li class="flex gap-2"><span class="text-sunny">✓</span> Priority repair scheduling</li>
+            <li class="flex gap-2"><span class="text-sunny">✓</span> Clear-water guarantee</li>
+          </ul>
+          <a href="#quote" class="ripple-host mt-8 block text-center font-semibold text-ink bg-sunny rounded-full py-3 hover:brightness-105 transition">Choose Crystal</a>
+        </div>
+      </div>
+
+      <!-- Sapphire -->
+      <div class="reveal glass-card rounded-3xl p-8 shadow-glass flex flex-col">
+        <h3 class="font-display font-bold text-xl text-ink">Sapphire</h3>
+        <p class="text-deep/60 text-sm mt-1">Premium pools & spas, white-glove.</p>
+        <p class="font-display font-extrabold text-4xl text-ink mt-6">$329<span class="text-base font-medium text-deep/50">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-deep/80 flex-1">
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Everything in Crystal</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Twice-weekly in peak season</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Spa & water-feature care</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Annual equipment tune-up</li>
+          <li class="flex gap-2"><span class="text-aqua">✓</span> Dedicated account tech</li>
+        </ul>
+        <a href="#quote" class="ripple-host mt-8 text-center font-semibold text-deep border border-aqua/40 rounded-full py-3 hover:bg-mist transition">Choose Sapphire</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="py-24 bg-white relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative">
+      <div id="whyParallax" class="rounded-[2rem] overflow-hidden shadow-float bg-gradient-to-br from-sky to-deep aspect-[5/4]">
+        <img src="https://images.unsplash.com/photo-1572331165267-854da2b10ccc?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Pool technician servicing water"
+             class="w-full h-full object-cover" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 glass-card rounded-2xl px-5 py-4 shadow-float">
+        <p class="font-display font-extrabold text-2xl text-ink">48-hr</p>
+        <p class="text-xs text-deep/60">repair response</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Why AquaCrest</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Trusted hands, transparent care</h2>
+      <p class="reveal text-deep/70 mt-4 max-w-md">We treat every backyard like our own — certified techs, honest pricing, and photo-proof you'll actually want to see.</p>
+
+      <div class="mt-8 space-y-5">
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-aqua/15 grid place-items-center text-aqua">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M12 3l7 4v5c0 5-3 7-7 9-4-2-7-4-7-9V7z"/></svg>
+          </span>
+          <div><h4 class="font-display font-bold text-ink">Licensed & insured techs</h4><p class="text-sm text-deep/70">Every visit is logged with before/after photos in your app.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-sunny/20 grid place-items-center text-coral">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          <div><h4 class="font-display font-bold text-ink">Same crew, every week</h4><p class="text-sm text-deep/70">No revolving door — your tech learns your pool inside-out.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="shrink-0 w-11 h-11 rounded-xl bg-sky/20 grid place-items-center text-deep">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+          </span>
+          <div><h4 class="font-display font-bold text-ink">Eco-smart chemistry</h4><p class="text-sm text-deep/70">Optimized dosing that protects your liner, gear and the water table.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="py-24 bg-ink text-white relative overflow-hidden">
+  <div class="absolute inset-0 caustics opacity-30"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-sky font-semibold tracking-widest text-sm uppercase">How it works</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl mt-3">From green to gleaming in 3 steps</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="reveal relative">
+        <span class="font-display font-extrabold text-6xl text-sky/30">01</span>
+        <h3 class="font-display font-bold text-xl mt-2">Get your quote</h3>
+        <p class="text-white/70 text-sm mt-2">Tell us your pool size and zip. We send a flat, all-in price in minutes — no surprises.</p>
+      </div>
+      <div class="reveal relative">
+        <span class="font-display font-extrabold text-6xl text-sky/30">02</span>
+        <h3 class="font-display font-bold text-xl mt-2">Meet your tech</h3>
+        <p class="text-white/70 text-sm mt-2">Your dedicated technician does a full first-visit assessment and tunes your water.</p>
+      </div>
+      <div class="reveal relative">
+        <span class="font-display font-extrabold text-6xl text-sky/30">03</span>
+        <h3 class="font-display font-bold text-xl mt-2">Just swim</h3>
+        <p class="text-white/70 text-sm mt-2">We show up like clockwork. You get photo reports and a pool that's always ready.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICE AREAS -->
+<section id="areas" class="py-24 bg-foam relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Where we serve</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Proudly local to the Sunbelt Coast</h2>
+      <p class="reveal text-deep/70 mt-4 max-w-md">Routed weekly across these neighborhoods. Don't see yours? Ask — we're expanding every season.</p>
+
+      <div class="reveal mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Harborview</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Palm Heights</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Coral Bay</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Lakeshore</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Sun Ridge</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Marina Park</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Bayside</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">Crestwood</span>
+        <span class="glass-card rounded-xl px-4 py-3 text-sm font-medium text-deep">+ 12 more</span>
+      </div>
+    </div>
+
+    <div class="relative">
+      <div id="areaParallax" class="rounded-[2rem] overflow-hidden shadow-float bg-gradient-to-br from-aqua to-sky aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Coastal sunbelt neighborhood"
+             class="w-full h-full object-cover" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="py-24 bg-white relative overflow-hidden">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Our story</span>
+    <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Founded by a family that lives by the water</h2>
+    <p class="reveal text-lg text-deep/70 mt-6 max-w-3xl mx-auto">
+      AquaCrest started in 2010 with one truck, one test kit, and a simple promise: never leave a pool worse than we found it. Fourteen seasons later we're a crew of certified technicians caring for thousands of backyards — and we still treat every pool like it's the only one on our route.
+    </p>
+    <div class="reveal mt-10 grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+      <div class="glass-card rounded-2xl p-6"><p class="font-display font-extrabold text-2xl text-ink">CPO® certified</p><p class="text-sm text-deep/60 mt-1">Every technician</p></div>
+      <div class="glass-card rounded-2xl p-6"><p class="font-display font-extrabold text-2xl text-ink">Family-run</p><p class="text-sm text-deep/60 mt-1">Since day one</p></div>
+      <div class="glass-card rounded-2xl p-6"><p class="font-display font-extrabold text-2xl text-ink">Carbon-aware</p><p class="text-sm text-deep/60 mt-1">EV service fleet</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="py-24 bg-gradient-to-b from-mist to-white relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Happy owners</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Clear water, clearer conscience</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal glass-card rounded-2xl p-7 shadow-glass">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="text-deep/80 mt-4">"Switched to the Crystal plan and haven't touched a skimmer since. The photo reports are weirdly satisfying."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-aqua"></span><div><p class="font-semibold text-ink text-sm">Marisol D.</p><p class="text-xs text-deep/60">Coral Bay</p></div></figcaption>
+      </figure>
+      <figure class="reveal glass-card rounded-2xl p-7 shadow-glass">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="text-deep/80 mt-4">"Our pool went full swamp after a storm. AquaCrest had it crystal clear in four days. Lifesavers."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-sky"></span><div><p class="font-semibold text-ink text-sm">Trent K.</p><p class="text-xs text-deep/60">Lakeshore</p></div></figcaption>
+      </figure>
+      <figure class="reveal glass-card rounded-2xl p-7 shadow-glass">
+        <div class="text-sunny text-lg">★★★★★</div>
+        <blockquote class="text-deep/80 mt-4">"Same friendly tech every week who actually knows our setup. Pricing is flat and honest. Can't ask for more."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-sunny"></span><div><p class="font-semibold text-ink text-sm">Priya N.</p><p class="text-xs text-deep/60">Sun Ridge</p></div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-24 bg-white">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal text-aqua font-semibold tracking-widest text-sm uppercase">Questions</span>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl text-ink mt-3">Everything, answered</h2>
+    </div>
+
+    <div class="space-y-4" id="faqList">
+      <div class="reveal glass-card rounded-2xl overflow-hidden">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 font-display font-semibold text-ink">
+          Do I need a contract?
+          <span class="faq-icon text-aqua text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-deep/70 text-sm">Never. All plans are month-to-month. Pause for winter, cancel anytime — no fees, no fine print.</p></div>
+      </div>
+      <div class="reveal glass-card rounded-2xl overflow-hidden">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 font-display font-semibold text-ink">
+          Are chemicals included in the price?
+          <span class="faq-icon text-aqua text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-deep/70 text-sm">On Crystal and Sapphire plans, yes — all standard balancing chemicals are included. Specialty treatments are quoted upfront.</p></div>
+      </div>
+      <div class="reveal glass-card rounded-2xl overflow-hidden">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 font-display font-semibold text-ink">
+          How fast can you start?
+          <span class="faq-icon text-aqua text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-deep/70 text-sm">Most new pools get a first visit within the same week you sign up. Green-to-clean rescues can often start within 48 hours.</p></div>
+      </div>
+      <div class="reveal glass-card rounded-2xl overflow-hidden">
+        <button class="faq-q w-full flex justify-between items-center text-left px-6 py-5 font-display font-semibold text-ink">
+          What if something breaks between visits?
+          <span class="faq-icon text-aqua text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-body px-6"><p class="pb-5 text-deep/70 text-sm">Plan members get priority repair scheduling and a 48-hour response target. You'll always get a clear diagnosis and flat quote before any work begins.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA / QUOTE -->
+<section id="quote" class="py-24 relative overflow-hidden bg-gradient-to-br from-aqua via-sky to-deep">
+  <div class="absolute inset-0 caustics opacity-50"></div>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 relative text-center text-white">
+    <h2 class="reveal font-display font-extrabold text-3xl sm:text-5xl">Ready for a pool you never think about?</h2>
+    <p class="reveal text-white/85 mt-4 max-w-xl mx-auto">Get a flat, all-in quote in under a minute. No pushy calls — just clear water.</p>
+
+    <form class="reveal mt-10 glass-card rounded-3xl p-6 sm:p-8 text-left max-w-2xl mx-auto" onsubmit="return false;">
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-semibold text-deep/70 uppercase tracking-wide">Name</label>
+          <input type="text" placeholder="Jordan Rivers" class="mt-1 w-full rounded-xl border border-aqua/30 bg-white/80 px-4 py-3 text-ink outline-none focus:ring-2 focus:ring-aqua" />
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-deep/70 uppercase tracking-wide">Zip code</label>
+          <input type="text" placeholder="33139" class="mt-1 w-full rounded-xl border border-aqua/30 bg-white/80 px-4 py-3 text-ink outline-none focus:ring-2 focus:ring-aqua" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="text-xs font-semibold text-deep/70 uppercase tracking-wide">Pool type</label>
+          <select class="mt-1 w-full rounded-xl border border-aqua/30 bg-white/80 px-4 py-3 text-ink outline-none focus:ring-2 focus:ring-aqua">
+            <option>In-ground · chlorine</option>
+            <option>In-ground · salt</option>
+            <option>Above-ground</option>
+            <option>Pool + spa</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" id="quoteBtn" class="ripple-host mt-6 w-full bg-ink text-white font-semibold py-4 rounded-full hover:bg-deep transition flex items-center justify-center gap-2">
+        <span id="quoteBtnText">Get my instant quote</span>
+      </button>
+      <p class="text-center text-xs text-deep/60 mt-3">No spam. No contracts. 100% free.</p>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-ink text-white pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div>
+      <a href="#home" class="flex items-center gap-2.5 mb-4">
+        <span class="w-9 h-9 rounded-xl bg-gradient-to-br from-aqua to-sky grid place-items-center">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/></svg>
+        </span>
+        <span class="font-display font-extrabold text-lg">AquaCrest</span>
+      </a>
+      <p class="text-white/60 text-sm">Crystal-clear pools, effortlessly. Serving the Sunbelt Coast since 2010.</p>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4">Services</h4>
+      <ul class="space-y-2 text-sm text-white/60">
+        <li><a href="#services" class="hover:text-sky">Weekly Cleaning</a></li>
+        <li><a href="#services" class="hover:text-sky">Green-to-Clean</a></li>
+        <li><a href="#services" class="hover:text-sky">Equipment Repair</a></li>
+        <li><a href="#services" class="hover:text-sky">Leak Detection</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4">Company</h4>
+      <ul class="space-y-2 text-sm text-white/60">
+        <li><a href="#plans" class="hover:text-sky">Plans</a></li>
+        <li><a href="#areas" class="hover:text-sky">Service Areas</a></li>
+        <li><a href="#faq" class="hover:text-sky">FAQ</a></li>
+        <li><a href="#quote" class="hover:text-sky">Get a Quote</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display font-semibold mb-4">Get in touch</h4>
+      <ul class="space-y-2 text-sm text-white/60">
+        <li>hello@aquacrest.example</li>
+        <li>(555) 014-7720</li>
+        <li>Mon–Sat · 7am–6pm</li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-white/50">
+    <p>© 2026 AquaCrest Pool Care. All rights reserved. A fictional brand for demonstration.</p>
+    <p>Built with care · <span class="text-sky">Privacy</span> · <span class="text-sky">Terms</span></p>
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* NAV scroll state */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) {
+      nav.classList.add('bg-white/80','backdrop-blur-md','shadow-glass');
+    } else {
+      nav.classList.remove('bg-white/80','backdrop-blur-md','shadow-glass');
+    }
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* Ripple on buttons */
+  document.querySelectorAll('.ripple-host').forEach(host => {
+    host.addEventListener('click', e => {
+      const r = document.createElement('span');
+      const rect = host.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      r.className = 'ripple';
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      r.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      host.appendChild(r);
+      setTimeout(() => r.remove(), 700);
+    });
+  });
+
+  /* Instant-quote slider */
+  const slider = document.getElementById('poolSize');
+  const price = document.getElementById('instantPrice');
+  const label = document.getElementById('poolLabel');
+  if (slider) {
+    const update = () => {
+      const v = +slider.value;
+      const p = Math.round(69 + v * 1.4);
+      price.textContent = p;
+      let size = 'Small pool · ~10,000 gal';
+      if (v > 33) size = 'Medium pool · ~18,000 gal';
+      if (v > 66) size = 'Large pool · ~28,000 gal';
+      label.textContent = size;
+    };
+    slider.addEventListener('input', update); update();
+  }
+
+  /* Quote button micro-interaction */
+  const qBtn = document.getElementById('quoteBtn');
+  const qTxt = document.getElementById('quoteBtnText');
+  if (qBtn) {
+    qBtn.addEventListener('click', () => {
+      qTxt.textContent = 'Calculating…';
+      qBtn.disabled = true;
+      setTimeout(() => { qTxt.textContent = '✓ Quote sent to your inbox!'; }, 900);
+      setTimeout(() => { qTxt.textContent = 'Get my instant quote'; qBtn.disabled = false; }, 3200);
+    });
+  }
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.faq-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+
+  /* Magnetic CTA + card tilt (pointer-fine only) */
+  const fine = window.matchMedia('(pointer:fine)').matches;
+  if (fine && !reduce) {
+    const mag = document.getElementById('magnetic');
+    if (mag) {
+      mag.addEventListener('mousemove', e => {
+        const r = mag.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        mag.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      mag.addEventListener('mouseleave', () => { mag.style.transform = 'translate(0,0)'; });
+      mag.style.transition = 'transform .2s ease';
+    }
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - 0.5) * -8;
+        const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
+        card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-4px)`;
+        card.style.boxShadow = '0 30px 80px -30px rgba(25,180,216,0.45)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = ''; card.style.boxShadow = '';
+      });
+    });
+  }
+
+  /* GSAP reveals, parallax, count-ups */
+  if (window.gsap && window.ScrollTrigger && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* headline */
+    gsap.timeline()
+      .to('#hl1', { opacity: 1, y: 0, duration: .8, ease: 'power3.out' })
+      .to('#hl2', { opacity: 1, y: 0, duration: .8, ease: 'power3.out' }, '-=.5');
+
+    /* generic reveals */
+    gsap.utils.toArray('.reveal').forEach(el => {
+      if (el.id === 'hl1' || el.id === 'hl2') return;
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: .8, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    /* parallax on pool imagery */
+    [['#heroParallax', -40], ['#whyParallax', -30], ['#areaParallax', -34]].forEach(([sel, amt]) => {
+      const el = document.querySelector(sel);
+      if (!el) return;
+      const img = el.querySelector('img');
+      gsap.to(img || el, {
+        yPercent: amt < -35 ? 12 : 10, ease: 'none',
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* count-ups */
+    gsap.utils.toArray('.count').forEach(el => {
+      const target = +el.dataset.target;
+      const dec = el.dataset.decimal ? +el.dataset.decimal : 0;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: target, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => {
+            const val = dec ? (obj.v / 10).toFixed(dec) : Math.round(obj.v).toLocaleString();
+            el.textContent = val;
+          }
+        })
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.count').forEach(el => {
+      const t = +el.dataset.target; const d = el.dataset.decimal ? +el.dataset.decimal : 0;
+      el.textContent = d ? (t / 10).toFixed(d) : t.toLocaleString();
+    });
+  }
+})();
+</script>
+</body>
+</html>

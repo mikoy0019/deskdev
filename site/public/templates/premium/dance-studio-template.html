@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kinētic — Contemporary Dance Studio &amp; Academy</title>
+<meta name="description" content="Kinētic is a contemporary dance studio &amp; academy. Move boldly. Train fiercely. Perform freely." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,400;0,600;0,800;1,500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0a0a0f',
+          coal: '#12121a',
+          smoke: '#1b1b26',
+          bone: '#f4f1ea',
+          chalk: '#efece4',
+          flare: '#ff2e63',      // vivid pink-red accent
+          ember: '#ff6a3d',      // warm secondary
+          volt: '#c6ff4f',       // electric lime pop
+        },
+        fontFamily: {
+          display: ['Anton', 'sans-serif'],
+          body: ['Archivo', 'sans-serif'],
+          mono: ['Space Grotesk', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { background:#0a0a0f; color:#efece4; overflow-x:hidden; }
+  body { font-family:'Archivo', sans-serif; }
+  ::selection { background:#ff2e63; color:#0a0a0f; }
+  .font-display { letter-spacing:-0.01em; }
+  .kinetic-line { display:block; overflow:hidden; }
+  .marquee-track { display:inline-flex; white-space:nowrap; will-change:transform; }
+  .grain:before{
+    content:""; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .cursor-dot{ position:fixed; top:0; left:0; width:14px; height:14px; border-radius:9999px; background:#ff2e63; pointer-events:none; z-index:90; transform:translate(-50%,-50%); mix-blend-mode:difference; transition:width .25s, height .25s, background .25s; }
+  .cursor-dot.grow{ width:60px; height:60px; background:#c6ff4f; }
+  @media (hover:none){ .cursor-dot{ display:none; } }
+  .card-tilt{ transition:transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s; }
+  .card-tilt:hover{ transform:translateY(-10px); box-shadow:0 30px 80px -30px rgba(255,46,99,.5); }
+  .accordion-body{ max-height:0; overflow:hidden; transition:max-height .5s cubic-bezier(.4,0,.2,1); }
+  .magnetic{ will-change:transform; }
+  .reveal{ opacity:0; transform:translateY(40px); }
+  .stroke-text{ -webkit-text-stroke:1.5px #efece4; color:transparent; }
+  .stroke-flare{ -webkit-text-stroke:1.5px #ff2e63; color:transparent; }
+  .gradient-mask{ -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent); }
+  a, button { cursor:none; }
+  @media (hover:none){ a,button{ cursor:pointer; } }
+</style>
+</head>
+<body class="grain antialiased">
+
+<!-- cursor -->
+<div class="cursor-dot" id="cursor"></div>
+
+<!-- ======== NAV ======== -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-500" id="nav">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="font-display text-2xl tracking-tight flex items-center gap-2">
+      <span class="inline-block w-3 h-3 rounded-full bg-flare animate-pulse"></span>
+      KINĒTIC
+    </a>
+    <nav class="hidden lg:flex items-center gap-8 font-mono text-sm uppercase tracking-widest">
+      <a href="#classes" class="hover:text-flare transition">Classes</a>
+      <a href="#crew" class="hover:text-flare transition">Crew</a>
+      <a href="#schedule" class="hover:text-flare transition">Schedule</a>
+      <a href="#pricing" class="hover:text-flare transition">Membership</a>
+      <a href="#events" class="hover:text-flare transition">Events</a>
+    </nav>
+    <a href="#pricing" class="magnetic relative inline-flex items-center gap-2 bg-flare text-ink font-mono uppercase text-xs tracking-widest font-bold px-5 py-3 rounded-full hover:bg-volt transition-colors">
+      Book a class
+      <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</header>
+
+<!-- ======== HERO ======== -->
+<section id="top" class="relative min-h-screen flex flex-col justify-end overflow-hidden pt-28 pb-16">
+  <!-- bg dancer -->
+  <div class="absolute inset-0 z-0" id="heroParallax">
+    <div class="absolute inset-0 bg-gradient-to-b from-ink via-coal to-ink"></div>
+    <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Contemporary dancer mid-motion"
+         class="w-full h-full object-cover object-center opacity-60 mix-blend-luminosity" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-transparent"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full">
+    <div class="flex items-center gap-3 mb-6 font-mono text-xs uppercase tracking-[0.3em] text-flare">
+      <span class="w-10 h-px bg-flare"></span> Est. 2014 · Contemporary Dance Academy
+    </div>
+    <h1 class="font-display leading-[0.82] text-[16vw] sm:text-[13vw] lg:text-[11rem] uppercase">
+      <span class="kinetic-line"><span class="hero-word inline-block">Move</span></span>
+      <span class="kinetic-line"><span class="hero-word inline-block stroke-flare">Boldly.</span></span>
+      <span class="kinetic-line"><span class="hero-word inline-block">Perform</span> <span class="hero-word inline-block text-flare">Freely.</span></span>
+    </h1>
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-12">
+      <p class="max-w-md text-chalk/70 text-lg leading-relaxed">
+        A contemporary dance studio where raw movement meets discipline. Train with working artists, find your line, and own every stage you step on.
+      </p>
+      <div class="flex items-center gap-4">
+        <a href="#classes" class="magnetic bg-volt text-ink font-mono uppercase text-xs tracking-widest font-bold px-7 py-4 rounded-full hover:bg-flare transition-colors">Explore styles</a>
+        <a href="#crew" class="font-mono uppercase text-xs tracking-widest border border-chalk/30 px-7 py-4 rounded-full hover:border-flare hover:text-flare transition">Meet the crew</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- scroll hint -->
+  <div class="relative z-10 max-w-7xl mx-auto px-5 sm:px-8 w-full mt-12 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-chalk/40">
+    <span class="w-px h-8 bg-chalk/30 animate-pulse"></span> Scroll to feel the rhythm
+  </div>
+</section>
+
+<!-- ======== MARQUEE 1 ======== -->
+<section class="py-6 border-y border-chalk/10 bg-flare text-ink overflow-hidden select-none">
+  <div class="marquee-track" data-marquee="1" data-speed="-0.6">
+    <span class="font-display uppercase text-4xl sm:text-6xl px-6">Ballet ✦ Contemporary ✦ Hip-Hop ✦ Jazz ✦ Heels ✦ Breaking ✦ Floorwork ✦ Improv ✦</span>
+    <span class="font-display uppercase text-4xl sm:text-6xl px-6">Ballet ✦ Contemporary ✦ Hip-Hop ✦ Jazz ✦ Heels ✦ Breaking ✦ Floorwork ✦ Improv ✦</span>
+  </div>
+</section>
+
+<!-- ======== STATS / COUNTUP ======== -->
+<section class="py-20 sm:py-28 bg-coal">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6">
+    <div class="reveal">
+      <div class="font-display text-6xl sm:text-7xl text-flare"><span class="count" data-target="2400">0</span>+</div>
+      <div class="font-mono uppercase text-xs tracking-widest text-chalk/50 mt-2">Students trained</div>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-6xl sm:text-7xl"><span class="count" data-target="42">0</span></div>
+      <div class="font-mono uppercase text-xs tracking-widest text-chalk/50 mt-2">Weekly classes</div>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-6xl sm:text-7xl text-volt"><span class="count" data-target="12">0</span></div>
+      <div class="font-mono uppercase text-xs tracking-widest text-chalk/50 mt-2">Years on stage</div>
+    </div>
+    <div class="reveal">
+      <div class="font-display text-6xl sm:text-7xl"><span class="count" data-target="18">0</span></div>
+      <div class="font-mono uppercase text-xs tracking-widest text-chalk/50 mt-2">Resident artists</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== KINETIC SCROLL TYPE ======== -->
+<section class="py-24 overflow-hidden">
+  <div class="max-w-[120rem] mx-auto px-5">
+    <p class="kinetic-scroll font-display uppercase text-[14vw] leading-[0.85] stroke-text" data-x="-12">Find your line</p>
+    <p class="kinetic-scroll font-display uppercase text-[14vw] leading-[0.85] text-right text-flare" data-x="12">Break the grid</p>
+  </div>
+</section>
+
+<!-- ======== CLASSES / STYLES ======== -->
+<section id="classes" class="py-20 sm:py-28 bg-ink">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.3em] text-flare mb-3">01 — Disciplines</div>
+        <h2 class="font-display uppercase text-5xl sm:text-7xl leading-[0.9]">Styles we<br/>live in.</h2>
+      </div>
+      <p class="max-w-sm text-chalk/60">Eight core disciplines, infinite ways to move. Beginners welcome, professionals sharpened. Every class is open-level on the first Sunday of the month.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- card -->
+      <article class="card-tilt group relative rounded-3xl overflow-hidden bg-gradient-to-br from-smoke to-coal border border-chalk/10 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 01</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-volt">All levels</span>
+        </div>
+        <div>
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Contemporary</h3>
+          <p class="text-chalk/60 text-sm">Floorwork, release technique, breath &amp; weight. The core of the Kinētic language.</p>
+        </div>
+      </article>
+
+      <article class="card-tilt group relative rounded-3xl overflow-hidden border border-chalk/10 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="absolute inset-0 -z-0">
+          <img src="https://images.unsplash.com/photo-1545959570-a94084071b5d?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Hip hop dancer" class="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition mix-blend-luminosity" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink to-ink/30"></div>
+        </div>
+        <div class="relative flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 02</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-volt">Beginner+</span>
+        </div>
+        <div class="relative">
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Hip-Hop</h3>
+          <p class="text-chalk/70 text-sm">Groove, isolations &amp; freestyle. Raw street energy, studio precision.</p>
+        </div>
+      </article>
+
+      <article class="card-tilt group relative rounded-3xl overflow-hidden bg-gradient-to-br from-flare/20 to-coal border border-flare/20 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 03</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-volt">Intermediate</span>
+        </div>
+        <div>
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Heels</h3>
+          <p class="text-chalk/60 text-sm">Power, attitude &amp; performance. Command the floor in stilettos.</p>
+        </div>
+      </article>
+
+      <article class="card-tilt group relative rounded-3xl overflow-hidden bg-gradient-to-br from-smoke to-coal border border-chalk/10 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 04</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-volt">All levels</span>
+        </div>
+        <div>
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Ballet</h3>
+          <p class="text-chalk/60 text-sm">Classical foundation, modern application. Build the line that carries everything.</p>
+        </div>
+      </article>
+
+      <article class="card-tilt group relative rounded-3xl overflow-hidden bg-gradient-to-br from-volt/15 to-coal border border-volt/20 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 05</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-ember">Advanced</span>
+        </div>
+        <div>
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Breaking</h3>
+          <p class="text-chalk/60 text-sm">Toprock, footwork, power moves &amp; freezes. Cypher-ready conditioning.</p>
+        </div>
+      </article>
+
+      <article class="card-tilt group relative rounded-3xl overflow-hidden bg-gradient-to-br from-smoke to-coal border border-chalk/10 p-7 min-h-[280px] flex flex-col justify-between">
+        <div class="flex items-start justify-between">
+          <span class="font-mono text-xs text-chalk/40">/ 06</span>
+          <span class="font-mono text-xs uppercase tracking-widest text-volt">Open</span>
+        </div>
+        <div>
+          <h3 class="font-display uppercase text-4xl mb-2 group-hover:text-flare transition">Improv Lab</h3>
+          <p class="text-chalk/60 text-sm">Structured improvisation &amp; composition. Where choreography is born.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== MARQUEE 2 (reverse) ======== -->
+<section class="py-5 border-y border-chalk/10 overflow-hidden select-none bg-ink">
+  <div class="marquee-track" data-marquee="2" data-speed="0.5">
+    <span class="font-display uppercase text-3xl sm:text-5xl px-6 stroke-text">Sweat ✦ Rhythm ✦ Discipline ✦ Expression ✦ Stage ✦ Repeat ✦</span>
+    <span class="font-display uppercase text-3xl sm:text-5xl px-6 stroke-text">Sweat ✦ Rhythm ✦ Discipline ✦ Expression ✦ Stage ✦ Repeat ✦</span>
+  </div>
+</section>
+
+<!-- ======== INSTRUCTORS / CREW ======== -->
+<section id="crew" class="py-20 sm:py-28 bg-coal">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <h2 class="font-display uppercase text-5xl sm:text-7xl leading-[0.9]"><span class="text-flare">02 —</span><br/>The Crew</h2>
+      <p class="max-w-sm text-chalk/60">Working choreographers, festival headliners and stage veterans. They don't just teach the steps — they live them.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="reveal group relative rounded-3xl overflow-hidden border border-chalk/10 aspect-[3/4] bg-gradient-to-b from-smoke to-ink">
+        <img src="https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dancer Mara Voss" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-0 p-5">
+          <h3 class="font-display uppercase text-2xl">Mara Voss</h3>
+          <p class="font-mono text-xs uppercase tracking-widest text-flare">Contemporary · Director</p>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-3xl overflow-hidden border border-chalk/10 aspect-[3/4] bg-gradient-to-b from-smoke to-ink">
+        <img src="https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dancer Devon Ka" class="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+        <div class="absolute bottom-0 p-5">
+          <h3 class="font-display uppercase text-2xl">Devon Ká</h3>
+          <p class="font-mono text-xs uppercase tracking-widest text-flare">Hip-Hop · Breaking</p>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-3xl overflow-hidden border border-chalk/10 aspect-[3/4] bg-gradient-to-b from-flare/20 to-ink flex items-end">
+        <div class="absolute inset-0 flex items-center justify-center font-display text-9xl text-flare/20">K</div>
+        <div class="relative p-5">
+          <h3 class="font-display uppercase text-2xl">Lila Soto</h3>
+          <p class="font-mono text-xs uppercase tracking-widest text-flare">Heels · Jazz Funk</p>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-3xl overflow-hidden border border-chalk/10 aspect-[3/4] bg-gradient-to-b from-volt/15 to-ink flex items-end">
+        <div class="absolute inset-0 flex items-center justify-center font-display text-9xl text-volt/20">B</div>
+        <div class="relative p-5">
+          <h3 class="font-display uppercase text-2xl">Theo Marais</h3>
+          <p class="font-mono text-xs uppercase tracking-widest text-volt">Ballet · Conditioning</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== SCHEDULE ======== -->
+<section id="schedule" class="py-20 sm:py-28 bg-ink">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <h2 class="font-display uppercase text-5xl sm:text-7xl leading-[0.9]"><span class="text-flare">03 —</span><br/>This week</h2>
+      <p class="max-w-sm text-chalk/60">Drop in or commit. Booking opens Mondays at 9:00. Studios A &amp; B, downtown floor.</p>
+    </div>
+
+    <div class="divide-y divide-chalk/10 border-t border-chalk/10">
+      <div class="schedule-row grid grid-cols-12 items-center gap-2 py-5 hover:bg-coal/60 transition group px-2 -mx-2 rounded-xl">
+        <div class="col-span-3 sm:col-span-2 font-mono text-sm text-chalk/50">MON 18:00</div>
+        <div class="col-span-6 sm:col-span-5 font-display uppercase text-2xl sm:text-3xl group-hover:text-flare transition">Contemporary</div>
+        <div class="hidden sm:block col-span-3 font-mono text-xs uppercase tracking-widest text-chalk/40">Mara Voss · Studio A</div>
+        <div class="col-span-3 sm:col-span-2 text-right font-mono text-xs uppercase text-volt">Open</div>
+      </div>
+      <div class="schedule-row grid grid-cols-12 items-center gap-2 py-5 hover:bg-coal/60 transition group px-2 -mx-2 rounded-xl">
+        <div class="col-span-3 sm:col-span-2 font-mono text-sm text-chalk/50">TUE 19:30</div>
+        <div class="col-span-6 sm:col-span-5 font-display uppercase text-2xl sm:text-3xl group-hover:text-flare transition">Hip-Hop</div>
+        <div class="hidden sm:block col-span-3 font-mono text-xs uppercase tracking-widest text-chalk/40">Devon Ká · Studio B</div>
+        <div class="col-span-3 sm:col-span-2 text-right font-mono text-xs uppercase text-volt">Open</div>
+      </div>
+      <div class="schedule-row grid grid-cols-12 items-center gap-2 py-5 hover:bg-coal/60 transition group px-2 -mx-2 rounded-xl">
+        <div class="col-span-3 sm:col-span-2 font-mono text-sm text-chalk/50">WED 18:30</div>
+        <div class="col-span-6 sm:col-span-5 font-display uppercase text-2xl sm:text-3xl group-hover:text-flare transition">Heels</div>
+        <div class="hidden sm:block col-span-3 font-mono text-xs uppercase tracking-widest text-chalk/40">Lila Soto · Studio A</div>
+        <div class="col-span-3 sm:col-span-2 text-right font-mono text-xs uppercase text-ember">3 left</div>
+      </div>
+      <div class="schedule-row grid grid-cols-12 items-center gap-2 py-5 hover:bg-coal/60 transition group px-2 -mx-2 rounded-xl">
+        <div class="col-span-3 sm:col-span-2 font-mono text-sm text-chalk/50">THU 20:00</div>
+        <div class="col-span-6 sm:col-span-5 font-display uppercase text-2xl sm:text-3xl group-hover:text-flare transition">Breaking</div>
+        <div class="hidden sm:block col-span-3 font-mono text-xs uppercase tracking-widest text-chalk/40">Devon Ká · Studio B</div>
+        <div class="col-span-3 sm:col-span-2 text-right font-mono text-xs uppercase text-volt">Open</div>
+      </div>
+      <div class="schedule-row grid grid-cols-12 items-center gap-2 py-5 hover:bg-coal/60 transition group px-2 -mx-2 rounded-xl">
+        <div class="col-span-3 sm:col-span-2 font-mono text-sm text-chalk/50">SAT 11:00</div>
+        <div class="col-span-6 sm:col-span-5 font-display uppercase text-2xl sm:text-3xl group-hover:text-flare transition">Improv Lab</div>
+        <div class="hidden sm:block col-span-3 font-mono text-xs uppercase tracking-widest text-chalk/40">Mara Voss · Studio A</div>
+        <div class="col-span-3 sm:col-span-2 text-right font-mono text-xs uppercase text-flare">Waitlist</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== ABOUT ======== -->
+<section id="about" class="py-20 sm:py-28 bg-coal overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal relative rounded-3xl overflow-hidden aspect-[4/5] border border-chalk/10" id="aboutParallax">
+      <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dancers in studio" class="w-full h-[120%] object-cover opacity-80" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/60 to-transparent"></div>
+    </div>
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-flare mb-4">04 — The Studio</div>
+      <h2 class="font-display uppercase text-5xl sm:text-6xl leading-[0.9] mb-6">Where motion<br/>becomes <span class="text-flare">voice.</span></h2>
+      <p class="text-chalk/70 leading-relaxed mb-5">Kinētic started in a borrowed warehouse with a sprung floor and a single mirror. Twelve years later we're a full academy — but the ethos hasn't moved: dance is a language, and everyone deserves to speak it loudly.</p>
+      <p class="text-chalk/60 leading-relaxed mb-8">Two studios, a recovery room, and a performance black-box. No egos on the floor, no minimum talent — just a room that demands your full presence and gives it right back.</p>
+      <div class="flex flex-wrap gap-3 font-mono text-xs uppercase tracking-widest">
+        <span class="px-4 py-2 rounded-full border border-chalk/20">Sprung floors</span>
+        <span class="px-4 py-2 rounded-full border border-chalk/20">Black-box stage</span>
+        <span class="px-4 py-2 rounded-full border border-chalk/20">Recovery room</span>
+        <span class="px-4 py-2 rounded-full border border-chalk/20">Showcase nights</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== TESTIMONIALS ======== -->
+<section class="py-20 sm:py-28 bg-ink">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="font-mono text-xs uppercase tracking-[0.3em] text-flare mb-10">05 — From the floor</div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <blockquote class="reveal rounded-3xl border border-chalk/10 bg-coal p-7">
+        <p class="text-xl leading-snug mb-6">"I walked in stiff and terrified. Six months later I performed a solo at the showcase. Kinētic doesn't just teach steps — it rebuilds your relationship with your body."</p>
+        <footer class="font-mono text-xs uppercase tracking-widest text-chalk/50">Priya N. · Contemporary</footer>
+      </blockquote>
+      <blockquote class="reveal rounded-3xl border border-flare/20 bg-gradient-to-br from-flare/10 to-coal p-7">
+        <p class="text-xl leading-snug mb-6">"The crew here are working artists, not just instructors. You feel the difference the second class starts. Hardest, best decision I made."</p>
+        <footer class="font-mono text-xs uppercase tracking-widest text-flare">Marcus T. · Breaking</footer>
+      </blockquote>
+      <blockquote class="reveal rounded-3xl border border-chalk/10 bg-coal p-7">
+        <p class="text-xl leading-snug mb-6">"Heels class changed how I carry myself off the floor too. Pure confidence. The energy in that room is unmatched anywhere in the city."</p>
+        <footer class="font-mono text-xs uppercase tracking-widest text-chalk/50">Joelle R. · Heels</footer>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ======== PRICING / MEMBERSHIP ======== -->
+<section id="pricing" class="py-20 sm:py-28 bg-coal">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-flare mb-3">06 — Membership</div>
+      <h2 class="font-display uppercase text-5xl sm:text-7xl leading-[0.9]">Pick your tempo</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="reveal rounded-3xl border border-chalk/10 bg-ink p-8 flex flex-col">
+        <h3 class="font-display uppercase text-3xl mb-1">Drop-In</h3>
+        <p class="font-mono text-xs uppercase tracking-widest text-chalk/50 mb-6">Move when you can</p>
+        <div class="font-display text-6xl mb-1">$22<span class="text-xl text-chalk/40">/class</span></div>
+        <ul class="mt-6 space-y-3 text-chalk/70 text-sm flex-1">
+          <li class="flex gap-3"><span class="text-volt">→</span> Any single open class</li>
+          <li class="flex gap-3"><span class="text-volt">→</span> No commitment</li>
+          <li class="flex gap-3"><span class="text-volt">→</span> Book up to 7 days ahead</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 text-center border border-chalk/30 rounded-full py-3 font-mono uppercase text-xs tracking-widest hover:border-flare hover:text-flare transition">Choose drop-in</a>
+      </div>
+
+      <div class="reveal rounded-3xl border-2 border-flare bg-gradient-to-b from-flare/15 to-ink p-8 flex flex-col relative scale-[1.03]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-flare text-ink font-mono uppercase text-[10px] tracking-widest font-bold px-4 py-1 rounded-full">Most popular</span>
+        <h3 class="font-display uppercase text-3xl mb-1">Unlimited</h3>
+        <p class="font-mono text-xs uppercase tracking-widest text-flare mb-6">Live on the floor</p>
+        <div class="font-display text-6xl mb-1">$149<span class="text-xl text-chalk/40">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-chalk/80 text-sm flex-1">
+          <li class="flex gap-3"><span class="text-flare">→</span> Unlimited classes, all styles</li>
+          <li class="flex gap-3"><span class="text-flare">→</span> Priority booking + waitlist skip</li>
+          <li class="flex gap-3"><span class="text-flare">→</span> 2 guest passes / month</li>
+          <li class="flex gap-3"><span class="text-flare">→</span> Free showcase entry</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 text-center bg-flare text-ink rounded-full py-3 font-mono uppercase text-xs tracking-widest font-bold hover:bg-volt transition">Go unlimited</a>
+      </div>
+
+      <div class="reveal rounded-3xl border border-chalk/10 bg-ink p-8 flex flex-col">
+        <h3 class="font-display uppercase text-3xl mb-1">10-Pack</h3>
+        <p class="font-mono text-xs uppercase tracking-widest text-chalk/50 mb-6">Flexible &amp; saved</p>
+        <div class="font-display text-6xl mb-1">$190<span class="text-xl text-chalk/40">/10</span></div>
+        <ul class="mt-6 space-y-3 text-chalk/70 text-sm flex-1">
+          <li class="flex gap-3"><span class="text-volt">→</span> 10 classes, your schedule</li>
+          <li class="flex gap-3"><span class="text-volt">→</span> Valid 4 months</li>
+          <li class="flex gap-3"><span class="text-volt">→</span> Shareable with a partner</li>
+        </ul>
+        <a href="#" class="magnetic mt-8 text-center border border-chalk/30 rounded-full py-3 font-mono uppercase text-xs tracking-widest hover:border-flare hover:text-flare transition">Get the pack</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== EVENTS ======== -->
+<section id="events" class="py-20 sm:py-28 bg-ink">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <h2 class="font-display uppercase text-5xl sm:text-7xl leading-[0.9]"><span class="text-flare">07 —</span><br/>On stage</h2>
+      <p class="max-w-sm text-chalk/60">Showcases, jams and open cyphers. Doors are open — bring friends, bring nerves, bring it all.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <article class="reveal group rounded-3xl border border-chalk/10 bg-coal p-7 hover:border-flare transition">
+        <div class="font-mono text-xs uppercase tracking-widest text-volt mb-6">Jun 21 · 19:00</div>
+        <h3 class="font-display uppercase text-3xl mb-2 group-hover:text-flare transition">Summer Showcase</h3>
+        <p class="text-chalk/60 text-sm mb-6">A full-company performance across every discipline. Black-box stage, limited seats.</p>
+        <span class="font-mono text-xs uppercase tracking-widest text-chalk/40">Tickets from $18 →</span>
+      </article>
+      <article class="reveal group rounded-3xl border border-chalk/10 bg-coal p-7 hover:border-flare transition">
+        <div class="font-mono text-xs uppercase tracking-widest text-volt mb-6">Jul 05 · 14:00</div>
+        <h3 class="font-display uppercase text-3xl mb-2 group-hover:text-flare transition">Open Cypher Jam</h3>
+        <p class="text-chalk/60 text-sm mb-6">Free-entry breaking &amp; freestyle session. All cities, all levels, all welcome.</p>
+        <span class="font-mono text-xs uppercase tracking-widest text-chalk/40">Free entry →</span>
+      </article>
+      <article class="reveal group rounded-3xl border border-flare/20 bg-gradient-to-br from-flare/10 to-coal p-7 hover:border-flare transition">
+        <div class="font-mono text-xs uppercase tracking-widest text-flare mb-6">Jul 19 · 10:00</div>
+        <h3 class="font-display uppercase text-3xl mb-2 group-hover:text-flare transition">Guest Masterclass</h3>
+        <p class="text-chalk/60 text-sm mb-6">International choreographer takeover. Two-hour intensive, contemporary focus.</p>
+        <span class="font-mono text-xs uppercase tracking-widest text-flare">$45 · limited →</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======== FAQ ======== -->
+<section class="py-20 sm:py-28 bg-coal">
+  <div class="max-w-4xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-flare mb-3">08 — Questions</div>
+      <h2 class="font-display uppercase text-5xl sm:text-6xl">Before you move</h2>
+    </div>
+
+    <div class="space-y-3" id="faq">
+      <div class="faq-item rounded-2xl border border-chalk/10 bg-ink overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display uppercase text-xl sm:text-2xl">Do I need experience?</span>
+          <span class="faq-icon font-display text-2xl text-flare transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-chalk/60">Zero. Most of our students started with none. Every style has open-level and beginner classes, and the crew adapts each session to who's in the room.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-chalk/10 bg-ink overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display uppercase text-xl sm:text-2xl">What should I wear?</span>
+          <span class="faq-icon font-display text-2xl text-flare transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-chalk/60">Anything you can move and sweat in. Bare feet or socks for contemporary, clean trainers for hip-hop &amp; breaking, heels (we have loaners) for heels class.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-chalk/10 bg-ink overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display uppercase text-xl sm:text-2xl">Can I freeze my membership?</span>
+          <span class="faq-icon font-display text-2xl text-flare transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-chalk/60">Yes — unlimited members can pause once per quarter for up to four weeks, no fee. Just message the front desk 48 hours ahead.</p></div>
+      </div>
+      <div class="faq-item rounded-2xl border border-chalk/10 bg-ink overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 p-6 text-left">
+          <span class="font-display uppercase text-xl sm:text-2xl">Is there an age limit?</span>
+          <span class="faq-icon font-display text-2xl text-flare transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-6 text-chalk/60">Adult classes are 16+. We also run a youth academy (ages 6–15) on weekend mornings — ask about the junior track.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== FINAL CTA ======== -->
+<section class="relative py-28 sm:py-40 overflow-hidden bg-ink">
+  <div class="absolute inset-0 z-0">
+    <img src="https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dancer silhouette" class="w-full h-full object-cover opacity-30 mix-blend-luminosity" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink"></div>
+  </div>
+  <div class="relative z-10 max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <h2 class="font-display uppercase leading-[0.85] text-[15vw] sm:text-[10rem]">
+      <span class="kinetic-line"><span class="cta-word inline-block">Your first</span></span>
+      <span class="kinetic-line"><span class="cta-word inline-block text-flare">class is free.</span></span>
+    </h2>
+    <p class="max-w-md mx-auto mt-8 text-chalk/70 text-lg">No pressure, no contract. Step on the floor once and feel why two thousand dancers stayed.</p>
+    <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="#pricing" class="magnetic bg-flare text-ink font-mono uppercase text-xs tracking-widest font-bold px-8 py-4 rounded-full hover:bg-volt transition">Claim free class</a>
+      <a href="#schedule" class="font-mono uppercase text-xs tracking-widest border border-chalk/30 px-8 py-4 rounded-full hover:border-flare hover:text-flare transition">See the schedule</a>
+    </div>
+  </div>
+</section>
+
+<!-- ======== FOOTER ======== -->
+<footer class="bg-coal border-t border-chalk/10 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-14">
+      <div class="md:col-span-2">
+        <a href="#top" class="font-display text-3xl flex items-center gap-2 mb-4"><span class="w-3 h-3 rounded-full bg-flare"></span>KINĒTIC</a>
+        <p class="text-chalk/50 max-w-xs">Contemporary dance studio &amp; academy. Move boldly, perform freely. Downtown floor, two studios, one room that demands all of you.</p>
+      </div>
+      <div>
+        <h4 class="font-mono text-xs uppercase tracking-widest text-chalk/40 mb-4">Studio</h4>
+        <ul class="space-y-2 text-chalk/70">
+          <li><a href="#classes" class="hover:text-flare transition">Classes</a></li>
+          <li><a href="#crew" class="hover:text-flare transition">The Crew</a></li>
+          <li><a href="#schedule" class="hover:text-flare transition">Schedule</a></li>
+          <li><a href="#pricing" class="hover:text-flare transition">Membership</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-mono text-xs uppercase tracking-widest text-chalk/40 mb-4">Visit</h4>
+        <ul class="space-y-2 text-chalk/70">
+          <li>148 Warehouse Row</li>
+          <li>Downtown Floor</li>
+          <li>hello@kinetic.studio</li>
+          <li class="flex gap-3 pt-2 font-mono text-xs uppercase tracking-widest">
+            <a href="#" class="hover:text-flare transition">IG</a>
+            <a href="#" class="hover:text-flare transition">TT</a>
+            <a href="#" class="hover:text-flare transition">YT</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-chalk/10 font-mono text-xs uppercase tracking-widest text-chalk/40">
+      <span>© 2026 Kinētic Dance Studio</span>
+      <span>Crafted in motion ✦ Built original</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ======== SCRIPTS ======== -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- FAQ accordion (always works) ---- */
+  document.querySelectorAll('.faq-trigger').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b=>{ b.style.maxHeight='0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i=>{ i.style.transform='rotate(0deg)'; });
+      if(!open){ body.style.maxHeight = body.scrollHeight + 'px'; icon.style.transform='rotate(45deg)'; }
+    });
+  });
+
+  /* ---- Nav scrolled state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = ()=>{
+    if(window.scrollY > 40){ nav.classList.add('bg-ink/80','backdrop-blur-md','shadow-[0_10px_40px_-20px_rgba(0,0,0,.8)]'); }
+    else { nav.classList.remove('bg-ink/80','backdrop-blur-md','shadow-[0_10px_40px_-20px_rgba(0,0,0,.8)]'); }
+  };
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  if(reduce){
+    document.querySelectorAll('.reveal').forEach(el=>{ el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('.count').forEach(c=> c.textContent = c.dataset.target + '');
+    return;
+  }
+
+  /* ---- Cursor follow + magnetic ---- */
+  const cursor = document.getElementById('cursor');
+  let cx=window.innerWidth/2, cy=window.innerHeight/2, tx=cx, ty=cy;
+  window.addEventListener('pointermove', e=>{ tx=e.clientX; ty=e.clientY; });
+  (function loop(){ cx+=(tx-cx)*.18; cy+=(ty-cy)*.18; cursor.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,button,.card-tilt').forEach(el=>{
+    el.addEventListener('mouseenter',()=>cursor.classList.add('grow'));
+    el.addEventListener('mouseleave',()=>cursor.classList.remove('grow'));
+  });
+
+  /* ---- Magnetic buttons ---- */
+  document.querySelectorAll('.magnetic').forEach(el=>{
+    el.addEventListener('pointermove', e=>{
+      const r = el.getBoundingClientRect();
+      const mx = e.clientX - (r.left + r.width/2);
+      const my = e.clientY - (r.top + r.height/2);
+      el.style.transform = `translate(${mx*0.3}px, ${my*0.4}px)`;
+    });
+    el.addEventListener('pointerleave', ()=>{ el.style.transform=''; });
+  });
+
+  /* ---- GSAP ---- */
+  gsap.registerPlugin(ScrollTrigger);
+
+  // hero words
+  gsap.from('.hero-word', { yPercent:115, duration:1, ease:'power4.out', stagger:0.08, delay:0.15 });
+
+  // hero parallax
+  gsap.to('#heroParallax img', { yPercent:18, ease:'none', scrollTrigger:{ trigger:'#top', start:'top top', end:'bottom top', scrub:true } });
+
+  // about parallax
+  gsap.to('#aboutParallax img', { yPercent:-12, ease:'none', scrollTrigger:{ trigger:'#aboutParallax', start:'top bottom', end:'bottom top', scrub:true } });
+
+  // reveals
+  gsap.utils.toArray('.reveal').forEach(el=>{
+    gsap.to(el,{ opacity:1, y:0, duration:.9, ease:'power3.out', scrollTrigger:{ trigger:el, start:'top 85%' } });
+  });
+
+  // kinetic scroll type
+  gsap.utils.toArray('.kinetic-scroll').forEach(el=>{
+    gsap.fromTo(el, { xPercent: parseFloat(el.dataset.x)>0? -8: 8 }, {
+      xPercent: parseFloat(el.dataset.x), ease:'none',
+      scrollTrigger:{ trigger:el, start:'top bottom', end:'bottom top', scrub:true }
+    });
+  });
+
+  // cta words
+  gsap.from('.cta-word', { yPercent:115, duration:1, ease:'power4.out', stagger:0.1,
+    scrollTrigger:{ trigger:'.cta-word', start:'top 90%' } });
+
+  // schedule rows
+  gsap.from('.schedule-row', { x:-30, opacity:0, duration:.6, stagger:.08, ease:'power2.out',
+    scrollTrigger:{ trigger:'#schedule', start:'top 70%' } });
+
+  // count-ups
+  gsap.utils.toArray('.count').forEach(c=>{
+    const target = +c.dataset.target;
+    const obj = { v:0 };
+    ScrollTrigger.create({ trigger:c, start:'top 90%', once:true, onEnter:()=>{
+      gsap.to(obj,{ v:target, duration:2, ease:'power2.out', onUpdate:()=>{ c.textContent = Math.round(obj.v).toLocaleString(); } });
+    }});
+  });
+
+  // marquees
+  document.querySelectorAll('.marquee-track').forEach(track=>{
+    const speed = parseFloat(track.dataset.speed) || 0.5;
+    let offset = 0; const w = track.scrollWidth/2;
+    function move(){ offset += speed; if(offset > w) offset=0; if(offset<0) offset=w; track.style.transform=`translateX(${-offset}px)`; requestAnimationFrame(move); }
+    move();
+  });
+})();
+</script>
+</body>
+</html>

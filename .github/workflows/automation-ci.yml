@@ -1,0 +1,86 @@
+name: Automation CI
+
+# The n8n workflows (automation/n8n), their tooling, the run-log migration,
+# the watchdog Worker (workers/n8n-keepalive, deployed as nixgen-watchdog;
+# it also keeps n8n awake) and the Supabase Edge Functions
+# (supabase/functions). `n8n.mjs check` is the gate that keeps the automation
+# rules true: no $env, every webhook signed, placeholder-only credentials,
+# every schedule logging its runs.
+
+on:
+  push:
+    paths:
+      - 'automation/**'
+      - 'scripts/n8n.mjs'
+      - 'supabase/migrations/026_automation_runs.sql'
+      - 'supabase/functions/**'
+      - 'workers/n8n-keepalive/**'
+      - '.github/workflows/automation-ci.yml'
+  pull_request:
+    paths:
+      - 'automation/**'
+      - 'scripts/n8n.mjs'
+      - 'supabase/migrations/026_automation_runs.sql'
+      - 'supabase/functions/**'
+      - 'workers/n8n-keepalive/**'
+      - '.github/workflows/automation-ci.yml'
+
+jobs:
+  n8n-check:
+    name: n8n workflows (offline lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Check workflows against the rules
+        run: node scripts/n8n.mjs check
+
+  keepalive-worker:
+    name: Watchdog Worker (typecheck + tests + bundle)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: workers/n8n-keepalive
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: workers/n8n-keepalive/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
+      # Bundles only; --dry-run never contacts Cloudflare.
+      - run: npx wrangler deploy --dry-run --outdir dist
+
+  edge-functions:
+    name: Edge functions (deno check + lint, node tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      # All five: admin-users, vault-reset, send-push, google, google-calendar.
+      # The check follows imports, so each function's own modules and
+      # ../_shared are covered, and the glob takes in a new function without an
+      # edit here.
+      - name: Typecheck every function
+        run: deno check supabase/functions/*/index.ts
+      # The whole folder, not only the entry files. The two files left out fail
+      # require-await today (worker.ts: `insert`; worker.test.ts: its in-memory
+      # stubs). Take each off this list once it is fixed.
+      - name: Lint
+        run: |
+          deno lint supabase/functions \
+            --ignore=supabase/functions/google-calendar/worker.ts,supabase/functions/google-calendar/worker.test.ts
+      # The functions' pure modules are tested under Node, because Deno is not
+      # installed on the dev machines (AGENTS.md). Node strips the types.
+      - name: Unit tests
+        run: node --test 'supabase/functions/**/*.test.ts'

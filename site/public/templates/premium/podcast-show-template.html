@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FREQUENCY // The Signal &amp; The Noise — Tech Interviews That Cut Through</title>
+<meta name="description" content="FREQUENCY is the long-form tech interview show where builders, dreamers and contrarians get unfiltered. New episodes every Tuesday." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Archivo:ital,wght@0,400;0,600;0,800;0,900;1,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0a0a0f',
+          panel:  '#12121b',
+          surf:   '#1a1a26',
+          line:   '#2a2a3a',
+          mute:   '#8a8aa3',
+          haze:   '#c8c8de',
+          volt:   '#c6f04a',   // accent — electric lime
+          voltdk: '#9ec425',
+          magenta:'#ff4d8d',
+          cyan:   '#3ce0ff',
+        },
+        fontFamily: {
+          display: ['Archivo', 'system-ui', 'sans-serif'],
+          body:    ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+          mono:    ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+        keyframes: {
+          spinslow: { to: { transform: 'rotate(360deg)' } },
+          floaty:   { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-12px)' } },
+        },
+        animation: {
+          spinslow: 'spinslow 22s linear infinite',
+          floaty:   'floaty 6s ease-in-out infinite',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { color-scheme: dark; }
+  html, body { overflow-x: hidden; max-width: 100%; }
+  body { background: #0a0a0f; }
+
+  ::selection { background: #c6f04a; color: #0a0a0f; }
+
+  /* ---- grain / noise overlay ---- */
+  .grain::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 60; opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---- live waveform bars ---- */
+  .wave { display: flex; align-items: center; gap: 4px; height: 120px; }
+  .wave .bar {
+    width: 7px; border-radius: 99px;
+    background: linear-gradient(180deg, #c6f04a, #9ec425);
+    height: 18%;
+    transform-origin: center;
+    animation: wavepulse 1.1s ease-in-out infinite;
+  }
+  @keyframes wavepulse {
+    0%, 100% { transform: scaleY(0.25); opacity: .55; }
+    50%      { transform: scaleY(1);    opacity: 1; }
+  }
+
+  /* mini bars used in episode cards */
+  .minibar { width: 3px; border-radius: 99px; background: #c6f04a; opacity:.7; animation: wavepulse 1s ease-in-out infinite; }
+
+  /* ---- marquee ---- */
+  .marquee { display: flex; width: max-content; animation: scrollx 28s linear infinite; }
+  .marquee:hover { animation-play-state: paused; }
+  @keyframes scrollx { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ---- gradient text ---- */
+  .grad {
+    background: linear-gradient(92deg, #c6f04a 0%, #3ce0ff 55%, #ff4d8d 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* magnetic play button glow */
+  .playglow { box-shadow: 0 0 0 0 rgba(198,240,74,.55); }
+  .playglow:hover { box-shadow: 0 0 48px 4px rgba(198,240,74,.45); }
+
+  /* episode card hover */
+  .epcard { transition: transform .45s cubic-bezier(.2,.7,.2,1), border-color .35s; }
+  .epcard:hover { transform: translateY(-8px); border-color: #c6f04a; }
+
+  /* faq */
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.2,.7,.2,1); }
+  .faq-item.open .faq-a { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .35s; }
+
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  .ring-grid {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 0);
+    background-size: 26px 26px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="grain font-body text-haze antialiased selection:bg-volt overflow-x-hidden">
+
+<!-- ===================== NAV ===================== -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-2xl border border-line bg-ink/70 backdrop-blur-xl px-5 py-3">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative grid place-items-center h-9 w-9 rounded-xl bg-volt text-ink">
+          <span class="absolute inset-0 rounded-xl bg-volt blur-md opacity-50 group-hover:opacity-90 transition"></span>
+          <svg class="relative h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M4 12v0M8 8v8M12 4v16M16 8v8M20 12v0"/>
+          </svg>
+        </span>
+        <span class="font-display font-900 tracking-tight text-white text-lg leading-none">FREQUENCY</span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-8 text-sm text-mute font-medium">
+        <a href="#episodes" class="hover:text-white transition">Episodes</a>
+        <a href="#about" class="hover:text-white transition">The Show</a>
+        <a href="#guests" class="hover:text-white transition">Guests</a>
+        <a href="#reviews" class="hover:text-white transition">Reviews</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </nav>
+
+      <a href="#subscribe" class="group inline-flex items-center gap-2 rounded-xl bg-volt px-4 py-2 text-sm font-semibold text-ink hover:bg-white transition">
+        <span class="relative flex h-2 w-2">
+          <span class="absolute inline-flex h-full w-full rounded-full bg-magenta opacity-75 animate-ping"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-magenta"></span>
+        </span>
+        Subscribe
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section id="top" class="relative min-h-screen flex items-center pt-32 pb-20 ring-grid overflow-hidden">
+  <!-- ambient blobs -->
+  <div class="pointer-events-none absolute -top-32 -left-24 h-[28rem] w-[28rem] rounded-full bg-volt/20 blur-[120px]"></div>
+  <div class="pointer-events-none absolute top-40 -right-24 h-[26rem] w-[26rem] rounded-full bg-magenta/20 blur-[130px]"></div>
+  <div class="pointer-events-none absolute bottom-0 left-1/3 h-[22rem] w-[22rem] rounded-full bg-cyan/10 blur-[120px]"></div>
+
+  <div class="relative mx-auto max-w-7xl px-5 sm:px-8 w-full">
+    <div class="grid lg:grid-cols-12 gap-12 items-center">
+
+      <!-- LEFT -->
+      <div class="lg:col-span-7">
+        <div class="inline-flex items-center gap-2 rounded-full border border-line bg-panel/60 px-3.5 py-1.5 text-xs font-mono uppercase tracking-[0.2em] text-volt mb-7" data-hero>
+          <span class="h-1.5 w-1.5 rounded-full bg-volt animate-pulse"></span>
+          Season 06 · New every Tuesday
+        </div>
+
+        <h1 class="font-display font-900 text-white leading-[0.9] tracking-tight text-[clamp(2.8rem,9vw,6.6rem)]">
+          <span class="block overflow-hidden"><span class="block" data-line>THE SIGNAL</span></span>
+          <span class="block overflow-hidden"><span class="block grad" data-line>&amp; THE NOISE</span></span>
+        </h1>
+
+        <p class="mt-7 max-w-xl text-lg text-haze/80" data-hero>
+          Long-form, unfiltered conversations with the builders, contrarians and dreamers
+          shaping technology. No PR scripts. No softball questions. Just two hours of
+          honest signal — every single week.
+        </p>
+
+        <div class="mt-9 flex flex-wrap items-center gap-5" data-hero>
+          <button id="playBtn" class="playglow group relative inline-flex items-center gap-3 rounded-full bg-volt pl-2 pr-6 py-2 text-ink font-semibold transition-all">
+            <span class="grid place-items-center h-11 w-11 rounded-full bg-ink text-volt">
+              <svg id="playIcon" class="h-5 w-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            </span>
+            <span class="text-base">Play latest episode</span>
+          </button>
+          <a href="#episodes" class="inline-flex items-center gap-2 text-sm font-medium text-haze hover:text-white transition">
+            Browse all episodes
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+        <!-- live waveform -->
+        <div class="mt-12 max-w-md" data-hero>
+          <div class="flex items-center justify-between text-xs font-mono text-mute mb-3">
+            <span class="text-volt">● NOW PLAYING — EP.142</span>
+            <span id="heroTime">00:00 / 01:58:24</span>
+          </div>
+          <div id="heroWave" class="wave"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT — host portrait / cover -->
+      <div class="lg:col-span-5 relative">
+        <div class="relative mx-auto max-w-sm">
+          <div class="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-volt/40 via-magenta/30 to-cyan/30 blur-xl"></div>
+          <div class="relative rounded-[2rem] border border-line bg-panel overflow-hidden animate-floaty">
+            <div class="aspect-[4/5] bg-gradient-to-br from-surf via-panel to-ink relative">
+              <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1600&q=80"
+                   onerror="this.style.display='none'"
+                   alt="Studio microphone" class="absolute inset-0 h-full w-full object-cover opacity-90" />
+              <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-transparent"></div>
+              <div class="absolute bottom-5 left-5 right-5">
+                <div class="font-mono text-[11px] uppercase tracking-widest text-volt mb-1">Hosted by</div>
+                <div class="font-display font-800 text-white text-2xl leading-tight">Renn Okafor<br/>&amp; Vesper Lyle</div>
+              </div>
+            </div>
+          </div>
+          <!-- floating stat chip -->
+          <div class="absolute -left-6 top-10 rounded-2xl border border-line bg-ink/80 backdrop-blur px-4 py-3 shadow-2xl animate-floaty" style="animation-delay:.6s">
+            <div class="font-display font-900 text-volt text-2xl leading-none"><span data-count="4">0</span>.<span data-count="9">0</span>M</div>
+            <div class="text-[11px] text-mute mt-1">monthly listeners</div>
+          </div>
+          <div class="absolute -right-4 bottom-12 rounded-2xl border border-line bg-ink/80 backdrop-blur px-4 py-3 shadow-2xl animate-floaty" style="animation-delay:1.2s">
+            <div class="font-display font-900 text-magenta text-2xl leading-none">#<span data-count="1">0</span></div>
+            <div class="text-[11px] text-mute mt-1">Tech · Apple Charts</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PLATFORMS MARQUEE ===================== -->
+<section class="border-y border-line bg-panel/40 py-5 overflow-hidden" aria-label="Listen on">
+  <div class="marquee">
+    <div class="flex items-center gap-12 pr-12 text-mute font-display font-700 text-xl uppercase tracking-wide">
+      <span class="text-haze">Spotify</span><span class="text-volt">✦</span>
+      <span class="text-haze">Apple Podcasts</span><span class="text-magenta">✦</span>
+      <span class="text-haze">YouTube</span><span class="text-cyan">✦</span>
+      <span class="text-haze">Overcast</span><span class="text-volt">✦</span>
+      <span class="text-haze">Pocket Casts</span><span class="text-magenta">✦</span>
+      <span class="text-haze">Amazon Music</span><span class="text-cyan">✦</span>
+      <span class="text-haze">iHeartRadio</span><span class="text-volt">✦</span>
+      <span class="text-haze">Castbox</span><span class="text-magenta">✦</span>
+    </div>
+    <div class="flex items-center gap-12 pr-12 text-mute font-display font-700 text-xl uppercase tracking-wide" aria-hidden="true">
+      <span class="text-haze">Spotify</span><span class="text-volt">✦</span>
+      <span class="text-haze">Apple Podcasts</span><span class="text-magenta">✦</span>
+      <span class="text-haze">YouTube</span><span class="text-cyan">✦</span>
+      <span class="text-haze">Overcast</span><span class="text-volt">✦</span>
+      <span class="text-haze">Pocket Casts</span><span class="text-magenta">✦</span>
+      <span class="text-haze">Amazon Music</span><span class="text-cyan">✦</span>
+      <span class="text-haze">iHeartRadio</span><span class="text-volt">✦</span>
+      <span class="text-haze">Castbox</span><span class="text-magenta">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== STATS COUNTUP ===================== -->
+<section class="py-16 sm:py-20">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal rounded-2xl border border-line bg-panel/40 p-7">
+        <div class="font-display font-900 text-white text-4xl sm:text-5xl"><span data-count="142">0</span></div>
+        <div class="mt-2 text-sm text-mute font-mono uppercase tracking-wider">Episodes shipped</div>
+      </div>
+      <div class="reveal rounded-2xl border border-line bg-panel/40 p-7">
+        <div class="font-display font-900 text-volt text-4xl sm:text-5xl"><span data-count="38">0</span>M+</div>
+        <div class="mt-2 text-sm text-mute font-mono uppercase tracking-wider">Total downloads</div>
+      </div>
+      <div class="reveal rounded-2xl border border-line bg-panel/40 p-7">
+        <div class="font-display font-900 text-magenta text-4xl sm:text-5xl"><span data-count="96">0</span>%</div>
+        <div class="mt-2 text-sm text-mute font-mono uppercase tracking-wider">Finish-the-episode rate</div>
+      </div>
+      <div class="reveal rounded-2xl border border-line bg-panel/40 p-7">
+        <div class="font-display font-900 text-cyan text-4xl sm:text-5xl"><span data-count="71">0</span></div>
+        <div class="mt-2 text-sm text-mute font-mono uppercase tracking-wider">Countries listening</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== LATEST EPISODES ===================== -->
+<section id="episodes" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.25em] text-volt mb-3 reveal">/ Fresh drops</div>
+        <h2 class="reveal font-display font-900 text-white text-[clamp(2rem,5vw,3.6rem)] leading-[0.95] tracking-tight">Latest episodes</h2>
+      </div>
+      <a href="#" class="reveal inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm font-medium text-haze hover:border-volt hover:text-white transition">
+        Full archive (142)
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="epGrid">
+      <!-- cards injected + static markup below -->
+      <!-- CARD -->
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-volt px-2.5 py-1 text-[11px] font-bold text-ink font-mono">EP.142</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>01:58:24</span><span class="text-line">·</span><span>Jun 02</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">Scaling a company without losing the plot</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Dr. Imani Voss</span> — founder of Hollowpoint Labs</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:40%"></span><span class="minibar" style="height:80%;animation-delay:.1s"></span><span class="minibar" style="height:55%;animation-delay:.2s"></span><span class="minibar" style="height:95%;animation-delay:.15s"></span><span class="minibar" style="height:30%;animation-delay:.25s"></span><span class="minibar" style="height:70%;animation-delay:.05s"></span><span class="minibar" style="height:50%;animation-delay:.3s"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-magenta px-2.5 py-1 text-[11px] font-bold text-white font-mono">EP.141</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>02:11:09</span><span class="text-line">·</span><span>May 27</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">The quiet death of the social feed</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Kestrel Andrade</span> — ex-VP, Driftwave</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:60%"></span><span class="minibar" style="height:35%;animation-delay:.2s"></span><span class="minibar" style="height:85%;animation-delay:.1s"></span><span class="minibar" style="height:45%;animation-delay:.3s"></span><span class="minibar" style="height:75%;animation-delay:.05s"></span><span class="minibar" style="height:25%;animation-delay:.25s"></span><span class="minibar" style="height:65%;animation-delay:.15s"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-cyan px-2.5 py-1 text-[11px] font-bold text-ink font-mono">EP.140</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>01:42:55</span><span class="text-line">·</span><span>May 20</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">Why your favourite app feels worse every year</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Soren Adeyemi</span> — design critic &amp; author</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:50%"></span><span class="minibar" style="height:90%;animation-delay:.15s"></span><span class="minibar" style="height:40%;animation-delay:.25s"></span><span class="minibar" style="height:70%;animation-delay:.1s"></span><span class="minibar" style="height:30%;animation-delay:.3s"></span><span class="minibar" style="height:80%;animation-delay:.05s"></span><span class="minibar" style="height:55%;animation-delay:.2s"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-volt/20 via-panel to-magenta/20"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-volt px-2.5 py-1 text-[11px] font-bold text-ink font-mono">EP.139</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>02:33:41</span><span class="text-line">·</span><span>May 13</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">Building hardware in a software world</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Mira Tennant</span> — robotics, Nine Volt</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:70%"></span><span class="minibar" style="height:45%;animation-delay:.2s"></span><span class="minibar" style="height:95%;animation-delay:.05s"></span><span class="minibar" style="height:35%;animation-delay:.3s"></span><span class="minibar" style="height:60%;animation-delay:.15s"></span><span class="minibar" style="height:80%;animation-delay:.1s"></span><span class="minibar" style="height:40%;animation-delay:.25s"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-cyan/20 via-panel to-volt/20"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-magenta px-2.5 py-1 text-[11px] font-bold text-white font-mono">EP.138</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>01:50:12</span><span class="text-line">·</span><span>May 06</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">The economics of an open-source life</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Júlia Castellanos</span> — maintainer, Tideglass</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:55%"></span><span class="minibar" style="height:75%;animation-delay:.1s"></span><span class="minibar" style="height:35%;animation-delay:.25s"></span><span class="minibar" style="height:90%;animation-delay:.05s"></span><span class="minibar" style="height:45%;animation-delay:.2s"></span><span class="minibar" style="height:65%;animation-delay:.15s"></span><span class="minibar" style="height:30%;animation-delay:.3s"></span>
+          </div>
+        </div>
+      </article>
+
+      <article class="epcard reveal group rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="relative aspect-video bg-gradient-to-br from-surf to-ink overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-magenta/20 via-panel to-cyan/20"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+          <span class="absolute top-3 left-3 rounded-full bg-cyan px-2.5 py-1 text-[11px] font-bold text-ink font-mono">EP.137</span>
+          <button class="ep-play absolute bottom-3 right-3 grid place-items-center h-11 w-11 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white hover:bg-volt hover:text-ink transition">
+            <svg class="h-4 w-4 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 text-xs font-mono text-mute mb-3">
+            <span>02:04:38</span><span class="text-line">·</span><span>Apr 29</span>
+          </div>
+          <h3 class="font-display font-800 text-white text-lg leading-snug group-hover:text-volt transition">Quitting a $400k job to make weird things</h3>
+          <p class="mt-2 text-sm text-mute">with <span class="text-haze">Theo Marchetti</span> — indie game dev</p>
+          <div class="mt-4 flex items-center gap-0.5 h-6 opacity-60 group-hover:opacity-100 transition">
+            <span class="minibar" style="height:65%"></span><span class="minibar" style="height:40%;animation-delay:.2s"></span><span class="minibar" style="height:80%;animation-delay:.1s"></span><span class="minibar" style="height:50%;animation-delay:.25s"></span><span class="minibar" style="height:95%;animation-delay:.05s"></span><span class="minibar" style="height:35%;animation-delay:.3s"></span><span class="minibar" style="height:70%;animation-delay:.15s"></span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ABOUT / HOSTS ===================== -->
+<section id="about" class="py-16 sm:py-24 border-y border-line bg-panel/30">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.25em] text-volt mb-3 reveal">/ About the show</div>
+        <h2 class="reveal font-display font-900 text-white text-[clamp(2rem,5vw,3.6rem)] leading-[0.95] tracking-tight">
+          We make the<br/><span class="grad">two-hour</span> conversation<br/>worth your week.
+        </h2>
+        <p class="reveal mt-6 text-haze/80 text-lg max-w-lg">
+          FREQUENCY started in a converted garage with a single mic and a bad idea: that
+          people are smarter than the soundbites they get reduced to. Six seasons later,
+          it's a fully independent studio — no network, no algorithm, no script. Just two
+          curious humans and a guest who finally gets to think out loud.
+        </p>
+        <div class="reveal mt-8 flex flex-wrap gap-x-8 gap-y-4 font-mono text-sm text-mute">
+          <span class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-volt"></span>100% independent</span>
+          <span class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-magenta"></span>Zero ad-reads in the first 5 min</span>
+          <span class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>Full transcripts, always</span>
+        </div>
+      </div>
+
+      <!-- host cards -->
+      <div class="grid sm:grid-cols-2 gap-6">
+        <div class="reveal rounded-2xl border border-line bg-ink/60 overflow-hidden group">
+          <div class="aspect-[4/5] bg-gradient-to-br from-surf to-ink relative">
+            <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Host Renn Okafor" class="absolute inset-0 h-full w-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink to-transparent"></div>
+          </div>
+          <div class="p-5">
+            <div class="font-display font-800 text-white text-xl">Renn Okafor</div>
+            <div class="text-sm text-volt font-mono mt-0.5">Co-host · interviews</div>
+            <p class="mt-3 text-sm text-mute">Former newsroom engineer. Asks the question everyone's thinking but nobody books.</p>
+          </div>
+        </div>
+        <div class="reveal rounded-2xl border border-line bg-ink/60 overflow-hidden group sm:mt-10">
+          <div class="aspect-[4/5] bg-gradient-to-br from-surf to-ink relative">
+            <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80"
+                 onerror="this.style.display='none'" alt="Host Vesper Lyle" class="absolute inset-0 h-full w-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink to-transparent"></div>
+          </div>
+          <div class="p-5">
+            <div class="font-display font-800 text-white text-xl">Vesper Lyle</div>
+            <div class="text-sm text-magenta font-mono mt-0.5">Co-host · research</div>
+            <p class="mt-3 text-sm text-mute">Reads the whole paper so you don't have to. Keeps the show honest and the hosts humbled.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEATURED GUESTS ===================== -->
+<section id="guests" class="py-16 sm:py-24 overflow-hidden">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <div class="font-mono text-xs uppercase tracking-[0.25em] text-volt mb-3 reveal">/ On the mic</div>
+      <h2 class="reveal font-display font-900 text-white text-[clamp(2rem,5vw,3.6rem)] leading-[0.95] tracking-tight">Past guests who said too much</h2>
+      <p class="reveal mt-4 text-mute">Founders, defectors, researchers and one very honest billionaire.</p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <!-- guest portrait -->
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-surf to-ink relative">
+          <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Dr. Imani Voss</div>
+          <div class="text-xs text-volt font-mono">Founder · Hollowpoint</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-volt/15 to-ink relative">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Kestrel Andrade</div>
+          <div class="text-xs text-magenta font-mono">ex-VP · Driftwave</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-surf to-ink relative">
+          <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Soren Adeyemi</div>
+          <div class="text-xs text-cyan font-mono">Design critic</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-magenta/15 to-ink relative">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Mira Tennant</div>
+          <div class="text-xs text-volt font-mono">Robotics · Nine Volt</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-surf to-ink relative">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Júlia Castellanos</div>
+          <div class="text-xs text-magenta font-mono">OSS · Tideglass</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-cyan/15 to-ink relative">
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Theo Marchetti</div>
+          <div class="text-xs text-cyan font-mono">Indie game dev</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-panel/50 overflow-hidden">
+        <div class="aspect-square bg-gradient-to-br from-surf to-ink relative">
+          <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500" />
+          <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent"></div>
+        </div>
+        <div class="absolute bottom-0 inset-x-0 p-4">
+          <div class="font-display font-700 text-white">Anaïs Rourke</div>
+          <div class="text-xs text-volt font-mono">Climate fintech</div>
+        </div>
+      </div>
+      <div class="reveal group relative rounded-2xl border border-line bg-volt/90 overflow-hidden grid place-items-center">
+        <div class="aspect-square w-full grid place-items-center p-5 text-center">
+          <div>
+            <div class="font-display font-900 text-ink text-3xl">+128</div>
+            <div class="text-xs text-ink/70 font-mono mt-1 uppercase tracking-wider">more guests</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SUBSCRIBE BAND ===================== -->
+<section id="subscribe" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="reveal relative overflow-hidden rounded-[2rem] border border-line bg-gradient-to-br from-panel to-ink p-8 sm:p-14">
+      <div class="pointer-events-none absolute -top-20 -right-10 h-72 w-72 rounded-full bg-volt/20 blur-[100px]"></div>
+      <div class="pointer-events-none absolute -bottom-24 -left-10 h-72 w-72 rounded-full bg-magenta/20 blur-[110px]"></div>
+      <div class="relative grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <h2 class="font-display font-900 text-white text-[clamp(1.8rem,4vw,3rem)] leading-[0.95] tracking-tight">
+            Never miss a<br/><span class="grad">Tuesday drop.</span>
+          </h2>
+          <p class="mt-4 text-haze/80 max-w-md">Hit follow on your platform of choice, or get the show notes, full transcript and bonus clips in your inbox every week.</p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a href="#" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-line px-4 py-2.5 text-sm font-medium text-haze hover:border-volt hover:text-white transition">Spotify</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-line px-4 py-2.5 text-sm font-medium text-haze hover:border-volt hover:text-white transition">Apple Podcasts</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-line px-4 py-2.5 text-sm font-medium text-haze hover:border-volt hover:text-white transition">YouTube</a>
+            <a href="#" class="inline-flex items-center gap-2 rounded-xl bg-white/5 border border-line px-4 py-2.5 text-sm font-medium text-haze hover:border-volt hover:text-white transition">RSS</a>
+          </div>
+        </div>
+        <form class="rounded-2xl border border-line bg-ink/60 p-6" onsubmit="return false;">
+          <label class="block text-sm font-medium text-haze mb-2">Get the weekly drop</label>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input type="email" required placeholder="you@frequency.fm"
+              class="flex-1 rounded-xl bg-panel border border-line px-4 py-3 text-white placeholder-mute focus:outline-none focus:border-volt transition" />
+            <button class="rounded-xl bg-volt px-6 py-3 font-semibold text-ink hover:bg-white transition whitespace-nowrap">Subscribe</button>
+          </div>
+          <p class="mt-3 text-xs text-mute font-mono">No spam. One email a week. Unsubscribe in one tap.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== REVIEWS ===================== -->
+<section id="reviews" class="py-16 sm:py-24 border-y border-line bg-panel/30">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.25em] text-volt mb-3 reveal">/ From the listeners</div>
+        <h2 class="reveal font-display font-900 text-white text-[clamp(2rem,5vw,3.6rem)] leading-[0.95] tracking-tight">★★★★★ &nbsp;9,400 reviews</h2>
+      </div>
+      <p class="reveal max-w-xs text-sm text-mute">Averaging 4.9 across Apple &amp; Spotify. We read every one (and screenshot the mean ones).</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"The only show where I actually want the episode to be longer. I've started taking the long way home just to finish the conversation."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— hollowtide_92</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"Renn and Vesper get guests to drop the corporate mask within ten minutes. It's almost uncomfortable how honest it gets."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— d.fernsby</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"I've learned more about how tech actually works from FREQUENCY than four years of a CS degree. Not even exaggerating."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— quietcartographer</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"No ads for the first five minutes. Full transcripts. Smart questions. This is how a podcast should respect its audience."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— mara.builds</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"Episode 137 made me quit my job. Episode 140 made me question that decision. I love it here."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— t_okonkwo</figcaption>
+      </figure>
+      <figure class="reveal rounded-2xl border border-line bg-ink/50 p-6">
+        <div class="text-volt text-sm mb-3">★★★★★</div>
+        <blockquote class="text-haze">"Independent, unbought, unbothered. The last honest interview show on the internet. Please never sell out."</blockquote>
+        <figcaption class="mt-4 text-sm text-mute font-mono">— signal_seeker</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SPONSORS ===================== -->
+<section class="py-14">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <p class="text-center text-xs font-mono uppercase tracking-[0.3em] text-mute mb-8 reveal">Powered by partners who don't write our questions</p>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Nodewell</div>
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Brightseed</div>
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Cortex&amp;Co</div>
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Loomstack</div>
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Paperplane</div>
+      <div class="reveal grid place-items-center rounded-xl border border-line bg-panel/40 py-6 text-haze font-display font-700 hover:text-volt transition">Vaultline</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section id="faq" class="py-16 sm:py-24">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <div class="font-mono text-xs uppercase tracking-[0.25em] text-volt mb-3 reveal">/ Questions</div>
+      <h2 class="reveal font-display font-900 text-white text-[clamp(2rem,5vw,3.6rem)] leading-[0.95] tracking-tight">Before you hit subscribe</h2>
+    </div>
+
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item reveal rounded-2xl border border-line bg-panel/40 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-white text-lg">How often do new episodes drop?</span>
+          <svg class="faq-plus h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-6 text-mute">A full-length interview every Tuesday at 6am ET, with occasional bonus "Static" mini-episodes on Fridays for subscribers.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-line bg-panel/40 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-white text-lg">Are transcripts available?</span>
+          <svg class="faq-plus h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-6 text-mute">Every episode ships with a full, human-reviewed transcript and timestamped chapters. We believe audio shouldn't lock people out.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-line bg-panel/40 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-white text-lg">How do I pitch a guest (or myself)?</span>
+          <svg class="faq-plus h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-6 text-mute">Send a two-line pitch to guests@frequency.fm — what you'd talk about and why now. We read all of them; we're allergic to press releases.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-line bg-panel/40 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-white text-lg">Can I sponsor the show?</span>
+          <svg class="faq-plus h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-6 text-mute">We take a small number of partners per season. One firm rule: sponsors never see or shape the questions. Reach out at partners@frequency.fm.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl border border-line bg-panel/40 overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-700 text-white text-lg">Is there a video version?</span>
+          <svg class="faq-plus h-5 w-5 text-volt shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <div class="faq-a"><p class="px-6 pb-6 text-mute">Yes — every episode is filmed in 4K and posted to YouTube, plus short clips on the socials. Audio-first, but we know some of you like to watch.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL CTA ===================== -->
+<section class="py-20 sm:py-28 relative overflow-hidden ring-grid">
+  <div class="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-volt/5 to-transparent"></div>
+  <div class="relative mx-auto max-w-4xl px-5 sm:px-8 text-center">
+    <div class="reveal flex justify-center mb-8">
+      <div id="ctaWave" class="wave" style="height:64px"></div>
+    </div>
+    <h2 class="reveal font-display font-900 text-white text-[clamp(2.4rem,7vw,5.5rem)] leading-[0.9] tracking-tight">
+      Cut through<br/>the <span class="grad">noise.</span>
+    </h2>
+    <p class="reveal mt-6 text-lg text-haze/80 max-w-xl mx-auto">Four-and-a-half million people start their week here. Two hours, one honest conversation, every Tuesday.</p>
+    <div class="reveal mt-9 flex flex-wrap justify-center gap-4">
+      <a href="#subscribe" class="playglow inline-flex items-center gap-3 rounded-full bg-volt pl-2 pr-6 py-2 text-ink font-semibold transition">
+        <span class="grid place-items-center h-11 w-11 rounded-full bg-ink text-volt"><svg class="h-5 w-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+        Subscribe free
+      </a>
+      <a href="#episodes" class="inline-flex items-center rounded-full border border-line px-7 py-4 font-semibold text-haze hover:border-volt hover:text-white transition">Start with EP.142</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="border-t border-line bg-panel/40">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-14">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center h-9 w-9 rounded-xl bg-volt text-ink">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12v0M8 8v8M12 4v16M16 8v8M20 12v0"/></svg>
+          </span>
+          <span class="font-display font-900 text-white text-xl">FREQUENCY</span>
+        </a>
+        <p class="max-w-sm text-sm text-mute">The Signal &amp; The Noise — an independent long-form tech interview show. Recorded in a converted garage, heard in 71 countries.</p>
+        <div class="mt-6 flex gap-3">
+          <a href="#" aria-label="X" class="grid place-items-center h-10 w-10 rounded-xl border border-line text-mute hover:text-volt hover:border-volt transition font-mono text-sm">X</a>
+          <a href="#" aria-label="YouTube" class="grid place-items-center h-10 w-10 rounded-xl border border-line text-mute hover:text-volt hover:border-volt transition font-mono text-sm">YT</a>
+          <a href="#" aria-label="Instagram" class="grid place-items-center h-10 w-10 rounded-xl border border-line text-mute hover:text-volt hover:border-volt transition font-mono text-sm">IG</a>
+          <a href="#" aria-label="RSS" class="grid place-items-center h-10 w-10 rounded-xl border border-line text-mute hover:text-volt hover:border-volt transition font-mono text-sm">RSS</a>
+        </div>
+      </div>
+      <div>
+        <div class="font-display font-700 text-white mb-4">Show</div>
+        <ul class="space-y-2.5 text-sm text-mute">
+          <li><a href="#episodes" class="hover:text-volt transition">Episodes</a></li>
+          <li><a href="#about" class="hover:text-volt transition">About</a></li>
+          <li><a href="#guests" class="hover:text-volt transition">Guests</a></li>
+          <li><a href="#reviews" class="hover:text-volt transition">Reviews</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="font-display font-700 text-white mb-4">Connect</div>
+        <ul class="space-y-2.5 text-sm text-mute">
+          <li><a href="#subscribe" class="hover:text-volt transition">Subscribe</a></li>
+          <li><a href="#" class="hover:text-volt transition">Pitch a guest</a></li>
+          <li><a href="#" class="hover:text-volt transition">Sponsor us</a></li>
+          <li><a href="#faq" class="hover:text-volt transition">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-line flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-mute font-mono">
+      <span>© 2026 FREQUENCY Media Co. All rights reserved.</span>
+      <span class="flex gap-6"><a href="#" class="hover:text-haze transition">Privacy</a><a href="#" class="hover:text-haze transition">Terms</a><a href="#" class="hover:text-haze transition">Press</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- build waveform bars ---------- */
+  function buildWave(el, count) {
+    if (!el) return;
+    for (var i = 0; i < count; i++) {
+      var b = document.createElement('span');
+      b.className = 'bar';
+      // pseudo-random base height + staggered delay so it looks like real audio
+      var h = 25 + Math.round(Math.abs(Math.sin(i * 1.7)) * 70);
+      b.style.height = h + '%';
+      b.style.animationDelay = (i * 0.045).toFixed(2) + 's';
+      b.style.animationDuration = (0.8 + (i % 5) * 0.12).toFixed(2) + 's';
+      el.appendChild(b);
+    }
+  }
+  buildWave(document.getElementById('heroWave'), 48);
+  buildWave(document.getElementById('ctaWave'), 60);
+
+  /* ---------- play button toggle (visual) ---------- */
+  var playBtn = document.getElementById('playBtn');
+  var playIcon = document.getElementById('playIcon');
+  var heroTime = document.getElementById('heroTime');
+  var playing = false, t = 0, timer = null;
+  function fmt(s){var m=Math.floor(s/60),ss=s%60;return ('0'+m).slice(-2)+':'+('0'+ss).slice(-2);}
+  if (playBtn) {
+    playBtn.addEventListener('click', function () {
+      playing = !playing;
+      if (playing) {
+        playIcon.innerHTML = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+        if (!reduce) timer = setInterval(function(){ t++; if(heroTime) heroTime.textContent = fmt(t) + ' / 01:58:24'; }, 1000);
+      } else {
+        playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        clearInterval(timer);
+      }
+    });
+  }
+
+  /* ---------- magnetic play button ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.playglow').forEach(function (btn) {
+      btn.addEventListener('mousemove', function (e) {
+        var r = btn.getBoundingClientRect();
+        var x = e.clientX - r.left - r.width / 2;
+        var y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = 'translate(' + x * 0.18 + 'px,' + y * 0.25 + 'px)';
+      });
+      btn.addEventListener('mouseleave', function () { btn.style.transform = ''; });
+    });
+  }
+
+  /* ---------- episode card pointer tilt ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.epcard').forEach(function (card) {
+      card.addEventListener('mousemove', function (e) {
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = 'translateY(-8px) rotateX(' + (-py * 5) + 'deg) rotateY(' + (px * 6) + 'deg)';
+      });
+      card.addEventListener('mouseleave', function () { card.style.transform = ''; });
+    });
+  }
+
+  /* episode play buttons – quick visual ping */
+  document.querySelectorAll('.ep-play').forEach(function (b) {
+    b.addEventListener('click', function (e) { e.preventDefault(); b.classList.toggle('bg-volt'); b.classList.toggle('text-ink'); });
+  });
+
+  /* ---------- nav shadow on scroll ---------- */
+  var nav = document.getElementById('nav');
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 30) nav.classList.add('shadow-2xl'); else nav.classList.remove('shadow-2xl');
+  }, { passive: true });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-q').forEach(function (q) {
+    q.addEventListener('click', function () {
+      var item = q.closest('.faq-item');
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function (i) { i.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- count-ups ---------- */
+  function runCount(el) {
+    var target = parseFloat(el.getAttribute('data-count'));
+    var dur = 1400, start = null;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- GSAP reveals + hero ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // hero kinetic lines
+    gsap.set('[data-line]', { yPercent: 110 });
+    var tl = gsap.timeline({ delay: 0.15 });
+    tl.to('[data-line]', { yPercent: 0, duration: 1, ease: 'expo.out', stagger: 0.12 })
+      .from('[data-hero]', { y: 26, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.12 }, '-=0.6');
+
+    // generic reveals
+    gsap.utils.toArray('.reveal').forEach(function (el) {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+      });
+    });
+
+    // count-ups trigger
+    document.querySelectorAll('[data-count]').forEach(function (el) {
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: function () { runCount(el); } });
+    });
+  } else {
+    // reduced motion / no gsap fallback
+    document.querySelectorAll('.reveal').forEach(function (el) { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('[data-line]').forEach(function (el) { el.style.transform = 'none'; });
+    document.querySelectorAll('[data-hero]').forEach(function (el) { el.style.opacity = 1; });
+    document.querySelectorAll('[data-count]').forEach(function (el) { el.textContent = el.getAttribute('data-count'); });
+  }
+})();
+</script>
+</body>
+</html>

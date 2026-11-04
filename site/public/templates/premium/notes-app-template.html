@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loomwell — Your second brain, beautifully calm</title>
+<meta name="description" content="Loomwell is a calm, connected notes & knowledge app. Capture thoughts, link ideas, and grow a personal knowledge graph — without the noise." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          serif: ['Fraunces', 'Georgia', 'serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          paper:   '#FBFAF7',
+          parchment:'#F4F1EA',
+          ink:     '#2B2A27',
+          smoke:   '#6F6B63',
+          mist:    '#A8A39A',
+          line:    '#E7E2D8',
+          card:    '#FFFFFF',
+          accent:  '#C2663F',   // warm terracotta
+          accentSoft:'#E9C9B6',
+          sage:    '#7C8B72',
+        },
+        boxShadow: {
+          soft: '0 1px 2px rgba(43,42,39,0.04), 0 8px 28px rgba(43,42,39,0.06)',
+          lift: '0 18px 50px rgba(43,42,39,0.12)',
+          ring: '0 0 0 1px rgba(231,226,216,0.9)',
+        },
+        borderRadius: { xl2: '1.4rem' },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#FBFAF7; color:#2B2A27; -webkit-font-smoothing:antialiased; }
+
+  ::selection { background:#E9C9B6; color:#2B2A27; }
+
+  .grain:before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .reveal { opacity:0; transform:translateY(26px); }
+
+  .marquee-track { display:flex; width:max-content; animation:marquee 32s linear infinite; }
+  @keyframes marquee { to { transform:translateX(-50%); } }
+  .marquee:hover .marquee-track { animation-play-state:paused; }
+
+  .blink { animation:blink 1.05s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  .graph-line { stroke-dasharray:1; stroke-dashoffset:1; }
+
+  .gridlines{
+    background-image:
+      linear-gradient(to right, rgba(231,226,216,.6) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(231,226,216,.6) 1px, transparent 1px);
+    background-size:34px 34px;
+  }
+
+  .tilt { transform-style:preserve-3d; transition:transform .15s ease-out; will-change:transform; }
+
+  .float-slow { animation:floaty 7s ease-in-out infinite; }
+  @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track, .blink, .float-slow { animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    html { scroll-behavior:auto; }
+  }
+</style>
+</head>
+
+<body class="grain font-sans antialiased relative">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div id="nav-inner" class="mt-4 flex items-center justify-between rounded-full px-5 py-3 transition-all duration-300">
+      <a href="#" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-xl bg-accent text-paper font-serif text-lg leading-none">L</span>
+        <span class="font-serif text-xl tracking-tight">Loomwell</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-smoke">
+        <a href="#features" class="hover:text-ink transition">Features</a>
+        <a href="#how" class="hover:text-ink transition">How it works</a>
+        <a href="#graph" class="hover:text-ink transition">Graph</a>
+        <a href="#pricing" class="hover:text-ink transition">Pricing</a>
+        <a href="#faq" class="hover:text-ink transition">FAQ</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="#" class="hidden sm:inline text-sm text-smoke hover:text-ink transition">Sign in</a>
+        <a href="#cta" id="nav-cta" class="text-sm font-medium bg-ink text-paper px-4 py-2 rounded-full hover:bg-accent transition-colors">Get started</a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-36 sm:pt-44 pb-20 overflow-hidden">
+  <div class="absolute inset-0 -z-10">
+    <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-accentSoft/30 blur-[120px]"></div>
+    <div class="absolute top-40 -right-20 w-[420px] h-[420px] rounded-full bg-sage/10 blur-[100px]"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- Copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 text-xs font-medium tracking-wide uppercase text-smoke bg-card border border-line rounded-full px-3 py-1.5 shadow-soft">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span> A quieter way to think
+      </span>
+
+      <h1 class="reveal mt-6 font-serif text-[2.7rem] sm:text-6xl leading-[1.04] tracking-tight">
+        Your second brain,<br />
+        <span class="text-accent" id="type-line"></span><span class="blink text-accent font-light" id="type-caret">|</span>
+      </h1>
+
+      <p class="reveal mt-6 text-lg text-smoke max-w-md leading-relaxed">
+        Loomwell is a calm place to capture thoughts, connect ideas, and grow a personal knowledge graph — without the noise, the clutter, or the friction.
+      </p>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-4">
+        <a href="#cta" id="magnetic" class="group relative inline-flex items-center gap-2 bg-accent text-paper font-medium px-6 py-3.5 rounded-full shadow-soft overflow-hidden">
+          <span class="relative z-10">Start writing free</span>
+          <span class="relative z-10 transition-transform group-hover:translate-x-1">→</span>
+        </a>
+        <a href="#how" class="inline-flex items-center gap-2 text-ink font-medium px-2 py-3.5 group">
+          <span class="grid place-items-center w-9 h-9 rounded-full border border-line group-hover:border-accent transition">▶</span>
+          Watch the tour
+        </a>
+      </div>
+
+      <div class="reveal mt-9 flex items-center gap-6 text-sm text-smoke">
+        <div><span class="font-serif text-2xl text-ink" data-count="74000">0</span><span class="text-ink">+</span><div class="text-xs mt-0.5">thinkers writing</div></div>
+        <div class="w-px h-9 bg-line"></div>
+        <div><span class="font-serif text-2xl text-ink" data-count="12">0</span><span class="text-ink">M</span><div class="text-xs mt-0.5">notes linked</div></div>
+        <div class="w-px h-9 bg-line"></div>
+        <div><span class="font-serif text-2xl text-ink" data-count="99">0</span><span class="text-ink">.9%</span><div class="text-xs mt-0.5">sync uptime</div></div>
+      </div>
+    </div>
+
+    <!-- Editor mockup -->
+    <div class="reveal relative" id="hero-app-wrap">
+      <div class="float-slow absolute -top-6 -left-6 w-24 h-24 rounded-2xl bg-card shadow-soft border border-line rotate-[-8deg] hidden sm:flex items-center justify-center text-2xl">🧠</div>
+      <div class="float-slow absolute -bottom-7 -right-4 w-20 h-20 rounded-2xl bg-card shadow-soft border border-line rotate-[10deg] hidden sm:flex items-center justify-center text-xl" style="animation-delay:1.3s">🔗</div>
+
+      <div id="tilt-app" class="tilt rounded-xl2 bg-card border border-line shadow-lift overflow-hidden">
+        <!-- window bar -->
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-line bg-parchment/60">
+          <span class="w-3 h-3 rounded-full bg-[#e7837a]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#e7c27a]"></span>
+          <span class="w-3 h-3 rounded-full bg-[#9bc27a]"></span>
+          <span class="ml-3 text-xs text-mist font-mono">loomwell — workspace</span>
+        </div>
+        <div class="grid grid-cols-[120px_1fr]">
+          <!-- sidebar -->
+          <aside class="border-r border-line p-3 bg-parchment/30 hidden sm:block">
+            <div class="text-[10px] uppercase tracking-wider text-mist mb-2 px-1">Notebooks</div>
+            <div class="space-y-1 text-sm">
+              <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-accentSoft/40 text-ink">📔 Ideas</div>
+              <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-smoke">📓 Daily</div>
+              <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-smoke">📚 Reading</div>
+              <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg text-smoke">🌱 Seeds</div>
+            </div>
+            <div class="mt-4 text-[10px] uppercase tracking-wider text-mist mb-2 px-1">Tags</div>
+            <div class="flex flex-wrap gap-1 px-1">
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-sage/15 text-sage">#focus</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-accentSoft/40 text-accent">#essay</span>
+            </div>
+          </aside>
+          <!-- editor -->
+          <div class="p-5 sm:p-6 min-h-[330px]">
+            <div class="flex items-center gap-2 text-xs text-mist font-mono mb-3">
+              <span>Ideas</span><span>/</span><span class="text-smoke">on attention</span>
+            </div>
+            <h3 class="font-serif text-2xl mb-3" id="mock-title"></h3>
+            <p class="text-[15px] leading-7 text-smoke" id="mock-body"></p>
+            <div class="mt-4 flex flex-wrap gap-2" id="mock-links"></div>
+            <div class="mt-5 pt-4 border-t border-line flex items-center justify-between text-xs text-mist">
+              <span class="font-mono">⌘K to search</span>
+              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sage"></span>synced</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOGO STRIP / MARQUEE ============ -->
+<section class="py-10 border-y border-line bg-parchment/40 overflow-hidden">
+  <p class="text-center text-xs uppercase tracking-[0.2em] text-mist mb-6">Trusted in the workflows of curious people at</p>
+  <div class="marquee relative">
+    <div class="marquee-track gap-14 items-center text-smoke">
+      <!-- duplicated set for seamless loop -->
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Northwind Studio</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Cedar &amp; Co.</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Lumen Labs</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Field Notes</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Quiet House</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Atlas Research</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Marrow Press</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Northwind Studio</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Cedar &amp; Co.</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Lumen Labs</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Field Notes</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Quiet House</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Atlas Research</span>
+      <span class="font-serif text-xl whitespace-nowrap opacity-70">Marrow Press</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">Features</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight leading-[1.08]">Everything you need to think clearly — and nothing you don't.</h2>
+    </div>
+
+    <div class="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card -->
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-accentSoft/40 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">✍️</div>
+        <h3 class="font-serif text-xl mb-2">Frictionless capture</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">Open, type, done. A keystroke gets you to a blank page. Markdown, slash-commands, and clean defaults stay out of your way.</p>
+      </article>
+
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-sage/15 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">🔗</div>
+        <h3 class="font-serif text-xl mb-2">Bi-directional links</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">Mention any note with <span class="font-mono text-accent">[[brackets]]</span> and Loomwell wires the connection both ways — automatically.</p>
+      </article>
+
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-accentSoft/40 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">🕸️</div>
+        <h3 class="font-serif text-xl mb-2">Living knowledge graph</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">Watch ideas cluster as you write. The graph reveals connections you'd never have noticed on your own.</p>
+      </article>
+
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-sage/15 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">🔍</div>
+        <h3 class="font-serif text-xl mb-2">Instant recall</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">Full-text, fuzzy, and semantic search find the half-remembered thought in milliseconds. Nothing gets lost.</p>
+      </article>
+
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-accentSoft/40 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">🔒</div>
+        <h3 class="font-serif text-xl mb-2">Private by design</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">End-to-end encryption and local-first storage. Your thinking is yours — we genuinely can't read it.</p>
+      </article>
+
+      <article class="feature reveal group bg-card border border-line rounded-xl2 p-7 shadow-soft hover:shadow-lift transition-shadow duration-300">
+        <div class="w-12 h-12 rounded-2xl bg-sage/15 grid place-items-center text-2xl mb-5 group-hover:scale-110 transition-transform">🌙</div>
+        <h3 class="font-serif text-xl mb-2">Calm by default</h3>
+        <p class="text-smoke text-[15px] leading-relaxed">No streaks, no badges, no dopamine traps. Typographic focus mode and warm tones designed to lower the noise.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-24 sm:py-32 bg-parchment/40 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">How it works</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight">Three habits. One clear mind.</h2>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <div class="reveal relative bg-card border border-line rounded-xl2 p-8 shadow-soft">
+        <span class="font-serif text-6xl text-accentSoft">01</span>
+        <h3 class="font-serif text-2xl mt-2 mb-2">Capture</h3>
+        <p class="text-smoke leading-relaxed">Drop in fleeting thoughts, quotes, and links the instant they arrive. No folders to pick, no decisions to make.</p>
+      </div>
+      <div class="reveal relative bg-card border border-line rounded-xl2 p-8 shadow-soft">
+        <span class="font-serif text-6xl text-accentSoft">02</span>
+        <h3 class="font-serif text-2xl mt-2 mb-2">Connect</h3>
+        <p class="text-smoke leading-relaxed">Link related notes as you write. Loomwell surfaces neighbours and forgotten threads while you type.</p>
+      </div>
+      <div class="reveal relative bg-card border border-line rounded-xl2 p-8 shadow-soft">
+        <span class="font-serif text-6xl text-accentSoft">03</span>
+        <h3 class="font-serif text-2xl mt-2 mb-2">Cultivate</h3>
+        <p class="text-smoke leading-relaxed">Revisit clusters, grow seeds into essays, and watch your knowledge compound over months and years.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KNOWLEDGE GRAPH FEATURE ============ -->
+<section id="graph" class="py-24 sm:py-32 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">Knowledge graph</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight leading-[1.08]">See how your ideas hold together.</h2>
+      <p class="reveal mt-5 text-lg text-smoke leading-relaxed max-w-md">
+        Every note becomes a node. Every link becomes a thread. The graph is alive — it grows, clusters, and rearranges itself as your thinking deepens.
+      </p>
+      <ul class="reveal mt-7 space-y-3 text-smoke">
+        <li class="flex items-start gap-3"><span class="mt-1 text-accent">◆</span> Spot orphaned ideas waiting to be connected.</li>
+        <li class="flex items-start gap-3"><span class="mt-1 text-accent">◆</span> Trace a concept across years of notes.</li>
+        <li class="flex items-start gap-3"><span class="mt-1 text-accent">◆</span> Filter by tag, notebook, or recency.</li>
+      </ul>
+    </div>
+
+    <!-- SVG graph -->
+    <div class="reveal relative">
+      <div class="rounded-xl2 border border-line bg-card shadow-lift p-6 gridlines">
+        <svg id="graph-svg" viewBox="0 0 420 360" class="w-full h-auto">
+          <g stroke="#C2663F" stroke-width="1.4" opacity="0.5" fill="none">
+            <path class="graph-line" d="M210,180 L110,90"/>
+            <path class="graph-line" d="M210,180 L320,100"/>
+            <path class="graph-line" d="M210,180 L90,250"/>
+            <path class="graph-line" d="M210,180 L330,260"/>
+            <path class="graph-line" d="M210,180 L210,60"/>
+            <path class="graph-line" d="M110,90 L210,60"/>
+            <path class="graph-line" d="M320,100 L330,260"/>
+            <path class="graph-line" d="M90,250 L330,260"/>
+          </g>
+          <g>
+            <circle class="g-node" cx="210" cy="180" r="16" fill="#C2663F"/>
+            <circle class="g-node" cx="110" cy="90" r="9" fill="#7C8B72"/>
+            <circle class="g-node" cx="320" cy="100" r="11" fill="#E9C9B6"/>
+            <circle class="g-node" cx="90" cy="250" r="8" fill="#7C8B72"/>
+            <circle class="g-node" cx="330" cy="260" r="12" fill="#C2663F"/>
+            <circle class="g-node" cx="210" cy="60" r="7" fill="#A8A39A"/>
+          </g>
+          <g font-family="Inter" font-size="10" fill="#6F6B63">
+            <text x="210" y="208" text-anchor="middle">attention</text>
+            <text x="110" y="76" text-anchor="middle">focus</text>
+            <text x="320" y="86" text-anchor="middle">flow</text>
+            <text x="90" y="274" text-anchor="middle">habits</text>
+            <text x="330" y="284" text-anchor="middle">essays</text>
+            <text x="210" y="46" text-anchor="middle">memory</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TEMPLATES ============ -->
+<section class="py-24 sm:py-32 bg-parchment/40 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-12">
+      <div class="max-w-xl">
+        <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">Templates</p>
+        <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight">Start from a thoughtful blank page.</h2>
+      </div>
+      <a href="#" class="reveal text-sm font-medium text-ink hover:text-accent transition flex items-center gap-2">Browse all 40+ →</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="feature reveal bg-card border border-line rounded-xl2 p-6 shadow-soft hover:-translate-y-1 transition-transform">
+        <div class="aspect-[4/3] rounded-lg bg-gradient-to-br from-accentSoft/40 to-parchment border border-line mb-4 grid place-items-center text-3xl">📅</div>
+        <h3 class="font-serif text-lg">Daily note</h3>
+        <p class="text-sm text-smoke mt-1">A gentle ritual for journaling and planning.</p>
+      </div>
+      <div class="feature reveal bg-card border border-line rounded-xl2 p-6 shadow-soft hover:-translate-y-1 transition-transform">
+        <div class="aspect-[4/3] rounded-lg bg-gradient-to-br from-sage/15 to-parchment border border-line mb-4 grid place-items-center text-3xl">📖</div>
+        <h3 class="font-serif text-lg">Book notes</h3>
+        <p class="text-sm text-smoke mt-1">Capture highlights and weave them into ideas.</p>
+      </div>
+      <div class="feature reveal bg-card border border-line rounded-xl2 p-6 shadow-soft hover:-translate-y-1 transition-transform">
+        <div class="aspect-[4/3] rounded-lg bg-gradient-to-br from-accentSoft/40 to-parchment border border-line mb-4 grid place-items-center text-3xl">🧭</div>
+        <h3 class="font-serif text-lg">Project map</h3>
+        <p class="text-sm text-smoke mt-1">Outline, link, and track work in one canvas.</p>
+      </div>
+      <div class="feature reveal bg-card border border-line rounded-xl2 p-6 shadow-soft hover:-translate-y-1 transition-transform">
+        <div class="aspect-[4/3] rounded-lg bg-gradient-to-br from-sage/15 to-parchment border border-line mb-4 grid place-items-center text-3xl">🌱</div>
+        <h3 class="font-serif text-lg">Idea seed</h3>
+        <p class="text-sm text-smoke mt-1">A small prompt to grow into an essay later.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">Pricing</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight">Calm pricing. No surprises.</h2>
+      <p class="reveal mt-4 text-smoke">Start free forever. Upgrade only when your second brain outgrows the basics.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Free -->
+      <div class="reveal bg-card border border-line rounded-xl2 p-8 shadow-soft flex flex-col">
+        <h3 class="font-serif text-2xl">Seedling</h3>
+        <p class="text-sm text-smoke mt-1">For getting started.</p>
+        <div class="mt-5 font-serif text-5xl">$0<span class="text-base text-mist font-sans">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-smoke flex-1">
+          <li class="flex gap-2"><span class="text-sage">✓</span> Unlimited notes</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> Bi-directional links</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> Local-first storage</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> 2-device sync</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center border border-ink text-ink rounded-full py-3 font-medium hover:bg-ink hover:text-paper transition">Start free</a>
+      </div>
+
+      <!-- Pro (featured) -->
+      <div class="reveal relative bg-ink text-paper rounded-xl2 p-8 shadow-lift flex flex-col scale-[1.03]">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-medium bg-accent text-paper px-3 py-1 rounded-full">Most loved</span>
+        <h3 class="font-serif text-2xl">Grove</h3>
+        <p class="text-sm text-paper/60 mt-1">For serious thinkers.</p>
+        <div class="mt-5 font-serif text-5xl">$8<span class="text-base text-paper/50 font-sans">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-paper/80 flex-1">
+          <li class="flex gap-2"><span class="text-accentSoft">✓</span> Everything in Seedling</li>
+          <li class="flex gap-2"><span class="text-accentSoft">✓</span> Unlimited devices &amp; sync</li>
+          <li class="flex gap-2"><span class="text-accentSoft">✓</span> Knowledge graph &amp; clusters</li>
+          <li class="flex gap-2"><span class="text-accentSoft">✓</span> Semantic search</li>
+          <li class="flex gap-2"><span class="text-accentSoft">✓</span> Version history</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center bg-accent text-paper rounded-full py-3 font-medium hover:bg-accentSoft hover:text-ink transition">Get Grove</a>
+      </div>
+
+      <!-- Team -->
+      <div class="reveal bg-card border border-line rounded-xl2 p-8 shadow-soft flex flex-col">
+        <h3 class="font-serif text-2xl">Forest</h3>
+        <p class="text-sm text-smoke mt-1">For teams &amp; studios.</p>
+        <div class="mt-5 font-serif text-5xl">$18<span class="text-base text-mist font-sans">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-smoke flex-1">
+          <li class="flex gap-2"><span class="text-sage">✓</span> Everything in Grove</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> Shared notebooks</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> Roles &amp; permissions</li>
+          <li class="flex gap-2"><span class="text-sage">✓</span> Admin &amp; SSO</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center border border-ink text-ink rounded-full py-3 font-medium hover:bg-ink hover:text-paper transition">Talk to us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 sm:py-32 bg-parchment/40 border-y border-line">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">Loved quietly</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight">What people whisper about Loomwell.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal bg-card border border-line rounded-xl2 p-7 shadow-soft">
+        <blockquote class="text-ink leading-relaxed">"I've tried every notes app on earth. Loomwell is the first one that feels like a place I actually want to think in."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-accentSoft/60 grid place-items-center font-serif text-accent">M</span>
+          <span><span class="block text-sm font-medium">Mara Ellison</span><span class="block text-xs text-smoke">Essayist</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal bg-card border border-line rounded-xl2 p-7 shadow-soft md:mt-8">
+        <blockquote class="text-ink leading-relaxed">"The graph view changed how I write. Connections I'd forgotten resurface exactly when I need them."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-sage/20 grid place-items-center font-serif text-sage">J</span>
+          <span><span class="block text-sm font-medium">Jonas Reyes</span><span class="block text-xs text-smoke">PhD researcher</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal bg-card border border-line rounded-xl2 p-7 shadow-soft">
+        <blockquote class="text-ink leading-relaxed">"No gamification, no clutter. Just a warm, quiet space. My note-taking finally feels sustainable."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-accentSoft/60 grid place-items-center font-serif text-accent">A</span>
+          <span><span class="block text-sm font-medium">Aiko Tanaka</span><span class="block text-xs text-smoke">Product designer</span></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-32">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <p class="reveal text-sm font-medium text-accent uppercase tracking-wider">FAQ</p>
+      <h2 class="reveal mt-3 font-serif text-4xl sm:text-5xl tracking-tight">Questions, quietly answered.</h2>
+    </div>
+
+    <div class="space-y-3" id="faq-list">
+      <div class="reveal acc bg-card border border-line rounded-xl2 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-medium text-ink">Is my data really private?</span>
+          <span class="acc-icon text-accent text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-smoke leading-relaxed">Yes. Loomwell is local-first and end-to-end encrypted. Notes live on your device and sync encrypted — even we cannot read them.</p></div>
+      </div>
+      <div class="reveal acc bg-card border border-line rounded-xl2 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-medium text-ink">Can I import from other apps?</span>
+          <span class="acc-icon text-accent text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-smoke leading-relaxed">Import Markdown, plain text, and exports from most major note apps. Links and tags are preserved wherever possible.</p></div>
+      </div>
+      <div class="reveal acc bg-card border border-line rounded-xl2 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-medium text-ink">Does it work offline?</span>
+          <span class="acc-icon text-accent text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-smoke leading-relaxed">Completely. Everything works offline and syncs automatically the next time you're connected — no internet required to think.</p></div>
+      </div>
+      <div class="reveal acc bg-card border border-line rounded-xl2 overflow-hidden">
+        <button class="acc-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-medium text-ink">What happens if I cancel?</span>
+          <span class="acc-icon text-accent text-xl transition-transform">+</span>
+        </button>
+        <div class="acc-body"><p class="px-6 pb-5 text-smoke leading-relaxed">Your notes are always yours. Export everything as open Markdown at any time. Cancelling simply drops you back to the free plan.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="py-12">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="relative overflow-hidden rounded-[2rem] bg-ink text-paper px-8 py-16 sm:py-24 text-center shadow-lift">
+      <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-accent/20 blur-[120px]"></div>
+      <div class="absolute inset-0 opacity-[0.06]" style="background-image:url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;" onerror="this.style.display='none'"></div>
+      <div class="relative">
+        <h2 class="reveal font-serif text-4xl sm:text-6xl tracking-tight leading-[1.05]">Give your thoughts<br />a calmer home.</h2>
+        <p class="reveal mt-5 text-paper/70 max-w-md mx-auto text-lg">Join 74,000 people building a second brain that actually feels good to use.</p>
+        <div class="reveal mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a href="#" class="bg-accent text-paper font-medium px-7 py-3.5 rounded-full hover:bg-accentSoft hover:text-ink transition">Start writing free</a>
+          <a href="#" class="border border-paper/30 text-paper px-7 py-3.5 rounded-full hover:bg-paper/10 transition">Book a demo</a>
+        </div>
+        <p class="reveal mt-5 text-xs text-paper/40">No credit card · Free forever plan · Cancel anytime</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="py-16 mt-12">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-line">
+      <div class="lg:col-span-2">
+        <a href="#" class="flex items-center gap-2.5">
+          <span class="grid place-items-center w-9 h-9 rounded-xl bg-accent text-paper font-serif text-lg leading-none">L</span>
+          <span class="font-serif text-xl">Loomwell</span>
+        </a>
+        <p class="mt-4 text-smoke text-sm max-w-xs leading-relaxed">A calm, connected place to capture thoughts and grow a personal knowledge graph.</p>
+      </div>
+      <div>
+        <h4 class="text-sm font-medium text-ink mb-4">Product</h4>
+        <ul class="space-y-2.5 text-sm text-smoke">
+          <li><a href="#features" class="hover:text-ink transition">Features</a></li>
+          <li><a href="#graph" class="hover:text-ink transition">Knowledge graph</a></li>
+          <li><a href="#pricing" class="hover:text-ink transition">Pricing</a></li>
+          <li><a href="#" class="hover:text-ink transition">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-medium text-ink mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm text-smoke">
+          <li><a href="#" class="hover:text-ink transition">About</a></li>
+          <li><a href="#" class="hover:text-ink transition">Manifesto</a></li>
+          <li><a href="#" class="hover:text-ink transition">Careers</a></li>
+          <li><a href="#" class="hover:text-ink transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-medium text-ink mb-4">Resources</h4>
+        <ul class="space-y-2.5 text-sm text-smoke">
+          <li><a href="#" class="hover:text-ink transition">Help center</a></li>
+          <li><a href="#" class="hover:text-ink transition">Templates</a></li>
+          <li><a href="#" class="hover:text-ink transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-ink transition">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-mist">
+      <p>© 2026 Loomwell Labs. Made calmly.</p>
+      <div class="flex items-center gap-5">
+        <a href="#" class="hover:text-ink transition">Twitter</a>
+        <a href="#" class="hover:text-ink transition">Mastodon</a>
+        <a href="#" class="hover:text-ink transition">RSS</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const navInner = document.getElementById('nav-inner');
+  const onScroll = () => {
+    if (window.scrollY > 24) {
+      navInner.classList.add('bg-card/80','backdrop-blur-md','border','border-line','shadow-soft');
+    } else {
+      navInner.classList.remove('bg-card/80','backdrop-blur-md','border','border-line','shadow-soft');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Typewriter helpers ---------- */
+  function typeText(el, text, speed, done) {
+    if (!el) return;
+    if (reduce) { el.textContent = text; done && done(); return; }
+    let i = 0;
+    (function tick() {
+      el.textContent = text.slice(0, i++);
+      if (i <= text.length) setTimeout(tick, speed);
+      else done && done();
+    })();
+  }
+
+  /* hero headline rotating typewriter */
+  const typeLine = document.getElementById('type-line');
+  const phrases = ['organized.', 'connected.', 'finally calm.', 'yours alone.'];
+  let pIndex = 0;
+  function rotate() {
+    if (reduce) { typeLine.textContent = 'finally calm.'; return; }
+    const word = phrases[pIndex % phrases.length];
+    let i = 0;
+    (function typing() {
+      typeLine.textContent = word.slice(0, i++);
+      if (i <= word.length) setTimeout(typing, 70);
+      else setTimeout(erasing, 1500);
+    })();
+    function erasing() {
+      let j = word.length;
+      (function erase() {
+        typeLine.textContent = word.slice(0, j--);
+        if (j >= 0) setTimeout(erase, 35);
+        else { pIndex++; setTimeout(rotate, 200); }
+      })();
+    }
+  }
+  rotate();
+
+  /* mock editor typing */
+  typeText(document.getElementById('mock-title'), 'On the economy of attention', 38, function () {
+    typeText(document.getElementById('mock-body'),
+      'Attention is the rarest currency we hold. Where it flows, a life is shaped. The notes that endure are the ones we return to — not the ones we merely collect.',
+      14, function () {
+        const wrap = document.getElementById('mock-links');
+        if (!wrap) return;
+        const tags = ['[[focus]]', '[[flow state]]', '[[deep work]]'];
+        tags.forEach((t, k) => {
+          setTimeout(() => {
+            const s = document.createElement('span');
+            s.className = 'font-mono text-xs px-2 py-1 rounded-md bg-accentSoft/40 text-accent opacity-0 transition-opacity duration-500';
+            s.textContent = t;
+            wrap.appendChild(s);
+            requestAnimationFrame(() => s.style.opacity = '1');
+          }, k * 260);
+        });
+      });
+  });
+
+  /* ---------- GSAP reveals + parallax ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+      });
+    });
+
+    /* container parallax on hero app */
+    gsap.to('#hero-app-wrap', {
+      yPercent: -8, ease: 'none',
+      scrollTrigger: { trigger: '#hero-app-wrap', start: 'top bottom', end: 'bottom top', scrub: true },
+    });
+
+    /* count-ups */
+    document.querySelectorAll('[data-count]').forEach((el) => {
+      const end = parseFloat(el.getAttribute('data-count'));
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: end, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => {
+              el.textContent = end >= 1000
+                ? Math.round(obj.v).toLocaleString()
+                : (Number.isInteger(end) ? Math.round(obj.v) : obj.v.toFixed(1));
+            },
+          });
+        },
+      });
+    });
+
+    /* graph animation */
+    ScrollTrigger.create({
+      trigger: '#graph-svg', start: 'top 80%', once: true,
+      onEnter: () => {
+        gsap.set('.graph-line', { strokeDasharray: 400, strokeDashoffset: 400, opacity: 0.5 });
+        gsap.to('.graph-line', { strokeDashoffset: 0, duration: 1.2, stagger: 0.12, ease: 'power2.inOut' });
+        gsap.from('.g-node', { scale: 0, transformOrigin: 'center', duration: 0.6, stagger: 0.1, ease: 'back.out(2)', delay: 0.2 });
+      },
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+  }
+
+  /* ---------- Magnetic CTA ---------- */
+  const mag = document.getElementById('magnetic');
+  if (mag && !reduce) {
+    mag.addEventListener('mousemove', (e) => {
+      const r = mag.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      mag.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+    });
+    mag.addEventListener('mouseleave', () => { mag.style.transform = 'translate(0,0)'; });
+    mag.style.transition = 'transform .25s ease-out';
+  }
+
+  /* ---------- Tilt 3D on app mockup ---------- */
+  const tilt = document.getElementById('tilt-app');
+  if (tilt && !reduce && window.matchMedia('(pointer:fine)').matches) {
+    const wrap = document.getElementById('hero-app-wrap');
+    wrap.addEventListener('mousemove', (e) => {
+      const r = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      tilt.style.transform = `perspective(1100px) rotateY(${px * 7}deg) rotateX(${-py * 7}deg)`;
+    });
+    wrap.addEventListener('mouseleave', () => {
+      tilt.style.transform = 'perspective(1100px) rotateY(0) rotateX(0)';
+    });
+  }
+
+  /* ---------- Feature card hover tilt ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.feature').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateY(${px * 4}deg) rotateX(${-py * 4}deg) translateY(-2px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+      card.style.transition = 'transform .2s ease-out, box-shadow .3s ease';
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.acc').forEach((acc) => {
+    const trigger = acc.querySelector('.acc-trigger');
+    const body = acc.querySelector('.acc-body');
+    const icon = acc.querySelector('.acc-icon');
+    trigger.addEventListener('click', () => {
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.acc-body').forEach(b => b.style.maxHeight = '0px');
+      document.querySelectorAll('.acc-icon').forEach(i => { i.style.transform = 'rotate(0)'; i.textContent = '+'; });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

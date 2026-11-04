@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plinth — The Collaborative Canvas for Bold Teams</title>
+<meta name="description" content="Plinth is the infinite collaborative whiteboard where design, ideas, and people move together in real time. Sketch, build, and ship — on one living canvas." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: '#16111f',
+          night: '#0d0a14',
+          haze: '#f7f4ff',
+          grape: '#7b2ff7',
+          fuchsia2: '#f230c7',
+          tang: '#ff7a45',
+          sky2: '#2bd6ff',
+          lime2: '#9bf03c',
+          gold: '#ffd23f',
+        },
+        boxShadow: {
+          glow: '0 20px 60px -20px rgba(123,47,247,0.55)',
+          card: '0 18px 50px -22px rgba(22,17,31,0.35)',
+          float: '0 30px 80px -30px rgba(242,48,199,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root { --cursor-ease: cubic-bezier(.22,1,.36,1); }
+  * { -webkit-font-smoothing: antialiased; }
+  body { background: #f7f4ff; color: #16111f; overflow-x: hidden; }
+
+  /* Animated gradient text */
+  .grad-text {
+    background: linear-gradient(110deg, #7b2ff7, #f230c7, #ff7a45, #2bd6ff, #7b2ff7);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: hueflow 9s linear infinite;
+  }
+  @keyframes hueflow { to { background-position: 300% 0; } }
+
+  /* Mesh blobs */
+  .mesh { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; pointer-events: none; }
+  .float-a { animation: floatA 14s ease-in-out infinite; }
+  .float-b { animation: floatB 18s ease-in-out infinite; }
+  @keyframes floatA { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(40px,-30px) scale(1.1);} }
+  @keyframes floatB { 0%,100%{ transform: translate(0,0) scale(1);} 50%{ transform: translate(-50px,40px) scale(1.08);} }
+
+  /* Marquee */
+  .marquee { display: flex; width: max-content; animation: scrollx 28s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+  .marquee-rev { animation-direction: reverse; }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* Multiplayer cursors */
+  .mp-cursor { position: absolute; z-index: 30; pointer-events: none; will-change: transform; transition: transform .9s var(--cursor-ease); }
+  .mp-label { transform: translate(14px,14px); white-space: nowrap; font-weight: 600; font-size: 11px; padding: 2px 8px; border-radius: 9px; color: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+
+  /* Sticker hover */
+  .sticker { transition: transform .35s var(--cursor-ease); }
+  .sticker:hover { transform: rotate(-6deg) scale(1.08); }
+
+  /* Magnetic button base */
+  .magnetic { will-change: transform; transition: transform .25s var(--cursor-ease); }
+
+  /* Tilt mockup */
+  .tilt-wrap { perspective: 1400px; }
+  .tilt { transform-style: preserve-3d; transition: transform .3s ease; }
+
+  /* Reveal */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* Accordion */
+  .acc-body { max-height: 0; overflow: hidden; transition: max-height .45s var(--cursor-ease); }
+  .acc.open .acc-body { max-height: 240px; }
+  .acc.open .acc-icon { transform: rotate(45deg); }
+
+  /* Toolbar dot grid */
+  .dotgrid {
+    background-image: radial-gradient(rgba(123,47,247,.22) 1.4px, transparent 1.4px);
+    background-size: 22px 22px;
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; width:0; height:2px; border-radius:2px;
+    background: linear-gradient(90deg,#7b2ff7,#f230c7); transition: width .3s var(--cursor-ease); }
+  .nav-link:hover::after { width:100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .grad-text, .marquee, .float-a, .float-b, .mp-cursor { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased selection:bg-fuchsia2/30">
+
+  <!-- ===================== NAV ===================== -->
+  <header class="fixed top-0 inset-x-0 z-50">
+    <nav class="mx-auto max-w-7xl mt-4 px-4">
+      <div class="flex items-center justify-between rounded-2xl border border-white/60 bg-white/70 px-4 py-3 backdrop-blur-xl shadow-card">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-grape via-fuchsia2 to-tang shadow-glow">
+            <span class="h-3.5 w-3.5 rounded-[5px] bg-white rotate-12"></span>
+          </span>
+          <span class="font-display text-xl font-extrabold tracking-tight">Plinth</span>
+        </a>
+
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-ink/70">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#usecases" class="nav-link">Use cases</a>
+          <a href="#templates" class="nav-link">Templates</a>
+          <a href="#pricing" class="nav-link">Pricing</a>
+          <a href="#faq" class="nav-link">FAQ</a>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <a href="#" class="hidden sm:inline-flex text-sm font-semibold text-ink/80 px-3 py-2 rounded-lg hover:bg-grape/10 transition">Sign in</a>
+          <a href="#cta" data-magnetic class="magnetic inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-grape to-fuchsia2 px-4 py-2.5 text-sm font-semibold text-white shadow-glow">
+            Start free
+          </a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===================== HERO ===================== -->
+  <section id="top" class="relative pt-36 pb-20 md:pt-44 md:pb-28 overflow-hidden">
+    <!-- mesh background -->
+    <div class="mesh float-a bg-grape" style="width:420px;height:420px;top:-60px;left:-80px;"></div>
+    <div class="mesh float-b bg-fuchsia2" style="width:360px;height:360px;top:120px;right:-60px;"></div>
+    <div class="mesh float-a bg-sky2" style="width:300px;height:300px;bottom:-80px;left:40%;opacity:.4;"></div>
+
+    <div class="relative mx-auto max-w-7xl px-4 grid lg:grid-cols-2 gap-12 items-center">
+      <!-- Left copy -->
+      <div class="relative z-20">
+        <span class="reveal inline-flex items-center gap-2 rounded-full border border-grape/25 bg-white/70 px-3.5 py-1.5 text-xs font-semibold text-grape backdrop-blur">
+          <span class="h-2 w-2 rounded-full bg-lime2 animate-pulse"></span>
+          New · Live multiplayer 2.0
+        </span>
+
+        <h1 class="reveal mt-6 font-display text-5xl md:text-6xl xl:text-7xl font-extrabold leading-[0.95] tracking-tight">
+          One canvas where<br />
+          <span class="grad-text">ideas move together.</span>
+        </h1>
+
+        <p class="reveal mt-6 max-w-md text-lg text-ink/65">
+          Plinth is the infinite collaborative whiteboard for design teams who think out loud. Sketch, prototype, and ship — with everyone on the same living surface.
+        </p>
+
+        <div class="reveal mt-8 flex flex-wrap items-center gap-3">
+          <a href="#cta" data-magnetic class="magnetic group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-grape via-fuchsia2 to-tang px-6 py-3.5 text-base font-semibold text-white shadow-float">
+            Open a canvas
+            <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#how" class="inline-flex items-center gap-2 rounded-2xl border border-ink/15 bg-white/60 px-6 py-3.5 text-base font-semibold text-ink/80 backdrop-blur hover:border-grape/40 transition">
+            <span class="grid h-6 w-6 place-items-center rounded-full bg-grape/15 text-grape">▶</span>
+            Watch it flow
+          </a>
+        </div>
+
+        <div class="reveal mt-9 flex items-center gap-6">
+          <div><div class="font-display text-2xl font-extrabold" data-count="120">0</div><div class="text-xs text-ink/55">k+ teams</div></div>
+          <div class="h-8 w-px bg-ink/10"></div>
+          <div><div class="font-display text-2xl font-extrabold"><span data-count="98">0</span>%</div><div class="text-xs text-ink/55">stay after trial</div></div>
+          <div class="h-8 w-px bg-ink/10"></div>
+          <div><div class="font-display text-2xl font-extrabold"><span data-count="40">0</span>M</div><div class="text-xs text-ink/55">canvases made</div></div>
+        </div>
+      </div>
+
+      <!-- Right: tilt canvas mockup + cursors -->
+      <div class="relative tilt-wrap z-10">
+        <!-- multiplayer cursors -->
+        <div class="mp-cursor" id="cur1" style="top:6%;left:12%;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#7b2ff7"><path d="M4 2l16 8-7 2-2 7z"/></svg>
+          <span class="mp-label" style="background:#7b2ff7">Maya</span>
+        </div>
+        <div class="mp-cursor" id="cur2" style="top:30%;left:78%;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#f230c7"><path d="M4 2l16 8-7 2-2 7z"/></svg>
+          <span class="mp-label" style="background:#f230c7">Devon</span>
+        </div>
+        <div class="mp-cursor" id="cur3" style="top:72%;left:20%;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#2bd6ff"><path d="M4 2l16 8-7 2-2 7z"/></svg>
+          <span class="mp-label" style="background:#2bd6ff;color:#0d0a14">Rin</span>
+        </div>
+        <div class="mp-cursor" id="cur4" style="top:54%;left:64%;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff7a45"><path d="M4 2l16 8-7 2-2 7z"/></svg>
+          <span class="mp-label" style="background:#ff7a45">Cole</span>
+        </div>
+
+        <div class="tilt" id="heroTilt">
+          <div class="rounded-[26px] border border-white/70 bg-white shadow-float overflow-hidden">
+            <!-- mock toolbar -->
+            <div class="flex items-center justify-between gap-2 border-b border-ink/5 bg-haze/70 px-4 py-3">
+              <div class="flex items-center gap-1.5">
+                <span class="h-3 w-3 rounded-full bg-tang"></span>
+                <span class="h-3 w-3 rounded-full bg-gold"></span>
+                <span class="h-3 w-3 rounded-full bg-lime2"></span>
+              </div>
+              <div class="flex items-center gap-1 rounded-xl bg-white px-1.5 py-1 shadow-card">
+                <span class="grid h-7 w-7 place-items-center rounded-lg bg-grape/10 text-grape text-sm">✏️</span>
+                <span class="grid h-7 w-7 place-items-center rounded-lg hover:bg-ink/5 text-sm">▢</span>
+                <span class="grid h-7 w-7 place-items-center rounded-lg hover:bg-ink/5 text-sm">◯</span>
+                <span class="grid h-7 w-7 place-items-center rounded-lg hover:bg-ink/5 text-sm">🖋️</span>
+                <span class="grid h-7 w-7 place-items-center rounded-lg hover:bg-ink/5 text-sm">T</span>
+              </div>
+              <div class="flex -space-x-2">
+                <span class="h-7 w-7 rounded-full ring-2 ring-white bg-grape"></span>
+                <span class="h-7 w-7 rounded-full ring-2 ring-white bg-fuchsia2"></span>
+                <span class="h-7 w-7 rounded-full ring-2 ring-white bg-sky2"></span>
+                <span class="grid h-7 w-7 place-items-center rounded-full ring-2 ring-white bg-ink text-[10px] font-bold text-white">+9</span>
+              </div>
+            </div>
+            <!-- canvas -->
+            <div class="dotgrid relative h-[360px] bg-haze/40">
+              <div class="sticker absolute left-8 top-10 w-36 rounded-xl bg-gold/90 p-3 text-xs font-semibold shadow-card -rotate-3">Kickoff: rebrand sprint 🚀</div>
+              <div class="sticker absolute right-10 top-16 w-32 rounded-xl bg-sky2/90 p-3 text-xs font-semibold shadow-card rotate-3">User flows v3</div>
+              <div class="sticker absolute left-16 bottom-12 w-40 rounded-xl bg-fuchsia2/90 p-3 text-xs font-semibold text-white shadow-card rotate-2">Ship Friday ✅</div>
+              <!-- connector lines -->
+              <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 360" fill="none" preserveAspectRatio="none">
+                <path d="M120 70 C200 90 230 140 280 110" stroke="#7b2ff7" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round"/>
+                <path d="M150 250 C220 220 250 180 280 130" stroke="#ff7a45" stroke-width="2.5" stroke-dasharray="6 6" stroke-linecap="round"/>
+              </svg>
+              <div class="absolute right-8 bottom-10 h-20 w-28 rounded-xl border-2 border-grape/40 bg-white/60 shadow-card"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- floating glass chips -->
+        <div class="absolute -left-5 top-1/3 hidden md:flex items-center gap-2 rounded-2xl bg-white/80 px-3 py-2 shadow-card backdrop-blur">
+          <span class="grid h-7 w-7 place-items-center rounded-full bg-lime2/30 text-sm">⚡</span>
+          <span class="text-xs font-semibold">Synced in 12ms</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LOGO STRIP ===================== -->
+  <section class="border-y border-ink/5 bg-white/60 py-6">
+    <div class="mx-auto max-w-7xl px-4">
+      <p class="text-center text-xs font-semibold uppercase tracking-[0.2em] text-ink/40">Trusted by design crews at</p>
+      <div class="marquee-wrap mt-5 overflow-hidden">
+        <div class="marquee gap-12 text-ink/35 font-display text-xl font-bold">
+          <span>Nimbus</span><span>Vectorly</span><span>PixelForge</span><span>Hueband</span><span>Studio Orbit</span><span>Foldco</span><span>Brightline</span><span>Mosaic Labs</span>
+          <span>Nimbus</span><span>Vectorly</span><span>PixelForge</span><span>Hueband</span><span>Studio Orbit</span><span>Foldco</span><span>Brightline</span><span>Mosaic Labs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section id="features" class="relative py-24">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="max-w-2xl">
+        <span class="reveal text-sm font-semibold uppercase tracking-widest text-grape">Built to flow</span>
+        <h2 class="reveal mt-3 font-display text-4xl md:text-5xl font-extrabold tracking-tight">Everything your team needs<br/>on <span class="grad-text">one surface.</span></h2>
+        <p class="reveal mt-4 text-lg text-ink/60">No more tab-switching chaos. Plinth folds whiteboarding, design, and decisions into a single playful canvas.</p>
+      </div>
+
+      <div class="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <!-- card -->
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-grape/15 blur-2xl transition group-hover:bg-grape/25"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-grape to-fuchsia2 text-white text-xl shadow-glow">⚡</div>
+          <h3 class="mt-5 font-display text-xl font-bold">Real-time multiplayer</h3>
+          <p class="mt-2 text-sm text-ink/60">See every cursor, comment, and edit the instant it happens. 60fps presence, zero lag, infinite participants.</p>
+        </div>
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-tang/15 blur-2xl transition group-hover:bg-tang/25"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-tang to-gold text-white text-xl shadow-card">🎨</div>
+          <h3 class="mt-5 font-display text-xl font-bold">Vector + freehand</h3>
+          <p class="mt-2 text-sm text-ink/60">Pixel-perfect shapes and buttery pen strokes share the same canvas. Snap, align, and morph without leaving flow.</p>
+        </div>
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-sky2/15 blur-2xl transition group-hover:bg-sky2/25"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky2 to-grape text-white text-xl shadow-card">🧩</div>
+          <h3 class="mt-5 font-display text-xl font-bold">Smart components</h3>
+          <p class="mt-2 text-sm text-ink/60">Build a piece once, reuse it everywhere. Variants, auto-layout, and tokens keep your system tidy.</p>
+        </div>
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-lime2/20 blur-2xl transition group-hover:bg-lime2/35"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-lime2 to-sky2 text-ink text-xl shadow-card">💬</div>
+          <h3 class="mt-5 font-display text-xl font-bold">Threaded comments</h3>
+          <p class="mt-2 text-sm text-ink/60">Drop feedback anywhere, resolve in a tap. Mentions ping the right person without a meeting.</p>
+        </div>
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-fuchsia2/15 blur-2xl transition group-hover:bg-fuchsia2/25"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-fuchsia2 to-grape text-white text-xl shadow-card">✨</div>
+          <h3 class="mt-5 font-display text-xl font-bold">AI co-pilot</h3>
+          <p class="mt-2 text-sm text-ink/60">Turn a scribble into a wireframe, summarize a board, or generate variants — your canvas thinks with you.</p>
+        </div>
+        <div class="reveal group relative overflow-hidden rounded-3xl border border-ink/5 bg-white p-7 shadow-card transition hover:-translate-y-1.5">
+          <div class="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gold/20 blur-2xl transition group-hover:bg-gold/35"></div>
+          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-gold to-tang text-ink text-xl shadow-card">🔌</div>
+          <h3 class="mt-5 font-display text-xl font-bold">Plug into anything</h3>
+          <p class="mt-2 text-sm text-ink/60">Slack, Notion, Linear, GitHub, and 60+ tools sync both ways. Your canvas lives where your team lives.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== USE CASES ===================== -->
+  <section id="usecases" class="relative py-24 bg-night text-haze overflow-hidden">
+    <div class="mesh float-a bg-grape" style="width:380px;height:380px;top:-100px;right:5%;opacity:.4;"></div>
+    <div class="mesh float-b bg-fuchsia2" style="width:320px;height:320px;bottom:-120px;left:0;opacity:.3;"></div>
+    <div class="relative mx-auto max-w-7xl px-4">
+      <div class="max-w-2xl">
+        <span class="reveal text-sm font-semibold uppercase tracking-widest text-sky2">For every kind of maker</span>
+        <h2 class="reveal mt-3 font-display text-4xl md:text-5xl font-extrabold tracking-tight">One canvas, <span class="grad-text">infinite plays.</span></h2>
+      </div>
+      <div class="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:bg-white/10">
+          <div class="text-3xl">🗺️</div>
+          <h3 class="mt-4 font-display text-lg font-bold">Product mapping</h3>
+          <p class="mt-2 text-sm text-haze/60">Flows, journeys, and roadmaps that the whole squad can edit live.</p>
+        </div>
+        <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:bg-white/10">
+          <div class="text-3xl">🧠</div>
+          <h3 class="mt-4 font-display text-lg font-bold">Brainstorms</h3>
+          <p class="mt-2 text-sm text-haze/60">Sticky storms with voting, timers, and instant clustering by AI.</p>
+        </div>
+        <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:bg-white/10">
+          <div class="text-3xl">📐</div>
+          <h3 class="mt-4 font-display text-lg font-bold">Wireframing</h3>
+          <p class="mt-2 text-sm text-haze/60">Lo-fi to hi-fi without switching tools or breaking momentum.</p>
+        </div>
+        <div class="reveal rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:bg-white/10">
+          <div class="text-3xl">🎓</div>
+          <h3 class="mt-4 font-display text-lg font-bold">Workshops</h3>
+          <p class="mt-2 text-sm text-haze/60">Run remote sessions with facilitation tools built right in.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HOW IT WORKS ===================== -->
+  <section id="how" class="relative py-24">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="reveal text-sm font-semibold uppercase tracking-widest text-grape">From blank to brilliant</span>
+        <h2 class="reveal mt-3 font-display text-4xl md:text-5xl font-extrabold tracking-tight">Get rolling in <span class="grad-text">three moves.</span></h2>
+      </div>
+      <div class="mt-14 grid gap-8 md:grid-cols-3 relative">
+        <div class="reveal relative rounded-3xl border border-ink/5 bg-white p-8 shadow-card">
+          <div class="font-display text-6xl font-extrabold text-grape/15">01</div>
+          <h3 class="-mt-6 font-display text-xl font-bold">Open a canvas</h3>
+          <p class="mt-2 text-sm text-ink/60">Start blank or pick a template. Drop a link in chat — teammates join in a click, no install.</p>
+        </div>
+        <div class="reveal relative rounded-3xl border border-ink/5 bg-white p-8 shadow-card">
+          <div class="font-display text-6xl font-extrabold text-fuchsia2/15">02</div>
+          <h3 class="-mt-6 font-display text-xl font-bold">Create together</h3>
+          <p class="mt-2 text-sm text-ink/60">Sketch, sticky, shape, and react in real time. Watch ideas snap into structure as you go.</p>
+        </div>
+        <div class="reveal relative rounded-3xl border border-ink/5 bg-white p-8 shadow-card">
+          <div class="font-display text-6xl font-extrabold text-tang/20">03</div>
+          <h3 class="-mt-6 font-display text-xl font-bold">Ship the outcome</h3>
+          <p class="mt-2 text-sm text-ink/60">Export, present, or hand off to dev with specs and tokens already attached. Done.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TEMPLATES SHOWCASE ===================== -->
+  <section id="templates" class="relative py-24 bg-haze">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <span class="reveal text-sm font-semibold uppercase tracking-widest text-grape">Steal these</span>
+          <h2 class="reveal mt-3 font-display text-4xl md:text-5xl font-extrabold tracking-tight">300+ ready-made <span class="grad-text">canvases.</span></h2>
+        </div>
+        <a href="#" class="reveal inline-flex items-center gap-2 text-sm font-semibold text-grape">Browse the gallery →</a>
+      </div>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-3">
+        <!-- template 1 with optional unsplash -->
+        <div class="reveal sticker group rounded-3xl border border-ink/5 bg-white p-3 shadow-card">
+          <div class="relative h-44 overflow-hidden rounded-2xl bg-gradient-to-br from-grape via-fuchsia2 to-tang">
+            <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="h-full w-full object-cover mix-blend-luminosity opacity-70" />
+            <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-grape">Design</span>
+          </div>
+          <div class="p-3">
+            <h3 class="font-display font-bold">Design System Starter</h3>
+            <p class="mt-1 text-xs text-ink/55">Tokens, components, and docs in one tidy board.</p>
+          </div>
+        </div>
+        <div class="reveal sticker group rounded-3xl border border-ink/5 bg-white p-3 shadow-card">
+          <div class="relative h-44 overflow-hidden rounded-2xl bg-gradient-to-br from-sky2 to-grape dotgrid">
+            <div class="absolute left-4 top-6 h-10 w-24 rounded-lg bg-white/80 shadow-card"></div>
+            <div class="absolute left-10 top-20 h-10 w-28 rounded-lg bg-gold/80 shadow-card"></div>
+            <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-sky2">Mapping</span>
+          </div>
+          <div class="p-3">
+            <h3 class="font-display font-bold">User Journey Map</h3>
+            <p class="mt-1 text-xs text-ink/55">Visualize every touchpoint from first click to fan.</p>
+          </div>
+        </div>
+        <div class="reveal sticker group rounded-3xl border border-ink/5 bg-white p-3 shadow-card">
+          <div class="relative h-44 overflow-hidden rounded-2xl bg-gradient-to-br from-tang via-gold to-lime2">
+            <div class="absolute left-5 top-5 h-8 w-20 -rotate-3 rounded-md bg-white/90 shadow-card"></div>
+            <div class="absolute right-6 top-12 h-8 w-20 rotate-3 rounded-md bg-white/90 shadow-card"></div>
+            <div class="absolute left-10 bottom-6 h-8 w-24 rounded-md bg-white/90 shadow-card"></div>
+            <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-tang">Workshop</span>
+          </div>
+          <div class="p-3">
+            <h3 class="font-display font-bold">Sprint Retro Board</h3>
+            <p class="mt-1 text-xs text-ink/55">Run a retro that actually changes things next time.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRICING ===================== -->
+  <section id="pricing" class="relative py-24">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="text-center max-w-2xl mx-auto">
+        <span class="reveal text-sm font-semibold uppercase tracking-widest text-grape">Simple, honest pricing</span>
+        <h2 class="reveal mt-3 font-display text-4xl md:text-5xl font-extrabold tracking-tight">Pick your <span class="grad-text">canvas size.</span></h2>
+        <p class="reveal mt-4 text-ink/60">Free forever for solo makers. Scale up when your crew does.</p>
+      </div>
+
+      <div class="mt-14 grid gap-6 lg:grid-cols-3 items-stretch">
+        <!-- Free -->
+        <div class="reveal flex flex-col rounded-3xl border border-ink/10 bg-white p-8 shadow-card">
+          <h3 class="font-display text-lg font-bold">Sketch</h3>
+          <p class="mt-1 text-sm text-ink/55">For solo creators finding the shape of an idea.</p>
+          <div class="mt-6 font-display text-5xl font-extrabold">$0<span class="text-base font-semibold text-ink/40">/mo</span></div>
+          <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+            <li class="flex gap-2"><span class="text-lime2">✓</span> 3 active canvases</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> Up to 3 collaborators</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> Core shapes & pens</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> 7-day history</li>
+          </ul>
+          <a href="#cta" class="mt-7 rounded-2xl border border-grape/30 px-5 py-3 text-center text-sm font-semibold text-grape hover:bg-grape/5 transition">Start free</a>
+        </div>
+
+        <!-- Pro (highlight) -->
+        <div class="reveal relative flex flex-col rounded-3xl border-2 border-grape bg-gradient-to-b from-white to-grape/5 p-8 shadow-float scale-[1.03]">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-grape to-fuchsia2 px-4 py-1 text-xs font-bold text-white shadow-glow">Most popular</span>
+          <h3 class="font-display text-lg font-bold">Studio</h3>
+          <p class="mt-1 text-sm text-ink/55">For teams shipping together every single day.</p>
+          <div class="mt-6 font-display text-5xl font-extrabold grad-text">$14<span class="text-base font-semibold text-ink/40">/seat</span></div>
+          <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+            <li class="flex gap-2"><span class="text-grape">✓</span> Unlimited canvases</li>
+            <li class="flex gap-2"><span class="text-grape">✓</span> Unlimited collaborators</li>
+            <li class="flex gap-2"><span class="text-grape">✓</span> AI co-pilot included</li>
+            <li class="flex gap-2"><span class="text-grape">✓</span> Components & tokens</li>
+            <li class="flex gap-2"><span class="text-grape">✓</span> Unlimited history</li>
+          </ul>
+          <a href="#cta" data-magnetic class="magnetic mt-7 rounded-2xl bg-gradient-to-r from-grape to-fuchsia2 px-5 py-3 text-center text-sm font-semibold text-white shadow-glow">Start 14-day trial</a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="reveal flex flex-col rounded-3xl border border-ink/10 bg-night text-haze p-8 shadow-card">
+          <h3 class="font-display text-lg font-bold">Atelier</h3>
+          <p class="mt-1 text-sm text-haze/50">For orgs that need control, security, and scale.</p>
+          <div class="mt-6 font-display text-5xl font-extrabold">Custom</div>
+          <ul class="mt-6 space-y-3 text-sm text-haze/70 flex-1">
+            <li class="flex gap-2"><span class="text-lime2">✓</span> SSO + SCIM</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> Advanced permissions</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> Audit logs & DLP</li>
+            <li class="flex gap-2"><span class="text-lime2">✓</span> Dedicated success lead</li>
+          </ul>
+          <a href="#cta" class="mt-7 rounded-2xl border border-white/25 px-5 py-3 text-center text-sm font-semibold text-haze hover:bg-white/10 transition">Talk to sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TESTIMONIALS ===================== -->
+  <section class="relative py-24 bg-haze overflow-hidden">
+    <div class="mx-auto max-w-7xl px-4">
+      <h2 class="reveal text-center font-display text-4xl md:text-5xl font-extrabold tracking-tight">Loved by people who <span class="grad-text">make things.</span></h2>
+    </div>
+    <div class="marquee-wrap mt-12 overflow-hidden">
+      <div class="marquee gap-5">
+        <!-- repeat block x2 for loop -->
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"Plinth replaced four tools overnight. Our kickoffs went from chaos to one beautiful board everyone actually reads."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-grape"></span><div><div class="text-sm font-bold">Ava Tomlin</div><div class="text-xs text-ink/50">Design Lead, Nimbus</div></div></div>
+        </div>
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"The multiplayer is genuinely the smoothest I've used. It feels like we're in the same room sketching on glass."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-fuchsia2"></span><div><div class="text-sm font-bold">Marcus Iwu</div><div class="text-xs text-ink/50">PM, Vectorly</div></div></div>
+        </div>
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"The AI co-pilot turned my napkin sketch into a clickable flow in seconds. My team thinks I'm a wizard now."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-sky2"></span><div><div class="text-sm font-bold">Lin Hara</div><div class="text-xs text-ink/50">Founder, Foldco</div></div></div>
+        </div>
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"We onboarded 40 people without a single support ticket. It just makes sense the moment you open it."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-tang"></span><div><div class="text-sm font-bold">Priya Sen</div><div class="text-xs text-ink/50">Ops, Brightline</div></div></div>
+        </div>
+        <!-- dup -->
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"Plinth replaced four tools overnight. Our kickoffs went from chaos to one beautiful board everyone actually reads."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-grape"></span><div><div class="text-sm font-bold">Ava Tomlin</div><div class="text-xs text-ink/50">Design Lead, Nimbus</div></div></div>
+        </div>
+        <div class="w-80 shrink-0 rounded-3xl border border-ink/5 bg-white p-6 shadow-card">
+          <p class="text-sm text-ink/70">"The multiplayer is genuinely the smoothest I've used. It feels like we're in the same room sketching on glass."</p>
+          <div class="mt-4 flex items-center gap-3"><span class="h-9 w-9 rounded-full bg-fuchsia2"></span><div><div class="text-sm font-bold">Marcus Iwu</div><div class="text-xs text-ink/50">PM, Vectorly</div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq" class="relative py-24">
+    <div class="mx-auto max-w-3xl px-4">
+      <h2 class="reveal text-center font-display text-4xl md:text-5xl font-extrabold tracking-tight">Questions, <span class="grad-text">answered.</span></h2>
+      <div class="mt-12 space-y-3">
+        <div class="acc reveal rounded-2xl border border-ink/10 bg-white shadow-card">
+          <button class="acc-trigger flex w-full items-center justify-between gap-4 p-5 text-left">
+            <span class="font-display font-bold">Is Plinth really free to start?</span>
+            <span class="acc-icon grid h-7 w-7 place-items-center rounded-full bg-grape/10 text-grape transition">+</span>
+          </button>
+          <div class="acc-body"><p class="px-5 pb-5 text-sm text-ink/60">Yes. The Sketch plan is free forever — no card required. You get three active canvases and up to three collaborators, which is plenty to fall in love.</p></div>
+        </div>
+        <div class="acc reveal rounded-2xl border border-ink/10 bg-white shadow-card">
+          <button class="acc-trigger flex w-full items-center justify-between gap-4 p-5 text-left">
+            <span class="font-display font-bold">Can my whole team join without accounts?</span>
+            <span class="acc-icon grid h-7 w-7 place-items-center rounded-full bg-grape/10 text-grape transition">+</span>
+          </button>
+          <div class="acc-body"><p class="px-5 pb-5 text-sm text-ink/60">Guests can join any canvas from a link — no signup needed. They can view, comment, or edit depending on the share settings you choose.</p></div>
+        </div>
+        <div class="acc reveal rounded-2xl border border-ink/10 bg-white shadow-card">
+          <button class="acc-trigger flex w-full items-center justify-between gap-4 p-5 text-left">
+            <span class="font-display font-bold">How does the AI co-pilot work?</span>
+            <span class="acc-icon grid h-7 w-7 place-items-center rounded-full bg-grape/10 text-grape transition">+</span>
+          </button>
+          <div class="acc-body"><p class="px-5 pb-5 text-sm text-ink/60">It lives right on your canvas. Ask it to turn sketches into wireframes, cluster sticky notes, summarize a board, or generate design variants — all without leaving your flow.</p></div>
+        </div>
+        <div class="acc reveal rounded-2xl border border-ink/10 bg-white shadow-card">
+          <button class="acc-trigger flex w-full items-center justify-between gap-4 p-5 text-left">
+            <span class="font-display font-bold">Is my work secure?</span>
+            <span class="acc-icon grid h-7 w-7 place-items-center rounded-full bg-grape/10 text-grape transition">+</span>
+          </button>
+          <div class="acc-body"><p class="px-5 pb-5 text-sm text-ink/60">Everything is encrypted in transit and at rest. Atelier plans add SSO, SCIM, audit logs, and granular permissions for enterprise peace of mind.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL CTA ===================== -->
+  <section id="cta" class="relative py-24">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="relative overflow-hidden rounded-[36px] bg-gradient-to-br from-grape via-fuchsia2 to-tang px-8 py-16 text-center shadow-float">
+        <div class="mesh float-a bg-white" style="width:300px;height:300px;top:-80px;left:-40px;opacity:.18;"></div>
+        <div class="mesh float-b bg-sky2" style="width:280px;height:280px;bottom:-90px;right:-40px;opacity:.25;"></div>
+        <div class="relative">
+          <h2 class="reveal font-display text-4xl md:text-6xl font-extrabold tracking-tight text-white">Your next big idea<br/>starts on a blank canvas.</h2>
+          <p class="reveal mx-auto mt-5 max-w-xl text-white/80">Join 120,000+ teams already making magic on Plinth. Open your first canvas in under ten seconds.</p>
+          <div class="reveal mt-8 flex flex-wrap justify-center gap-3">
+            <a href="#" data-magnetic class="magnetic rounded-2xl bg-white px-7 py-3.5 text-base font-bold text-grape shadow-glow">Open a canvas free</a>
+            <a href="#" class="rounded-2xl border border-white/40 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition">Book a demo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="border-t border-ink/5 bg-white py-14">
+    <div class="mx-auto max-w-7xl px-4">
+      <div class="grid gap-10 md:grid-cols-5">
+        <div class="md:col-span-2">
+          <a href="#top" class="flex items-center gap-2.5">
+            <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-grape via-fuchsia2 to-tang shadow-glow"><span class="h-3.5 w-3.5 rounded-[5px] bg-white rotate-12"></span></span>
+            <span class="font-display text-xl font-extrabold">Plinth</span>
+          </a>
+          <p class="mt-4 max-w-xs text-sm text-ink/55">The infinite collaborative canvas for bold teams. Made for makers, everywhere.</p>
+          <div class="mt-5 flex gap-2">
+            <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-haze hover:bg-grape/10 transition">𝕏</a>
+            <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-haze hover:bg-grape/10 transition">in</a>
+            <a href="#" class="grid h-9 w-9 place-items-center rounded-lg bg-haze hover:bg-grape/10 transition">▶</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-sm">Product</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li><a href="#features" class="hover:text-grape transition">Features</a></li>
+            <li><a href="#templates" class="hover:text-grape transition">Templates</a></li>
+            <li><a href="#pricing" class="hover:text-grape transition">Pricing</a></li>
+            <li><a href="#" class="hover:text-grape transition">Changelog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-sm">Company</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li><a href="#" class="hover:text-grape transition">About</a></li>
+            <li><a href="#" class="hover:text-grape transition">Careers</a></li>
+            <li><a href="#" class="hover:text-grape transition">Blog</a></li>
+            <li><a href="#" class="hover:text-grape transition">Press</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-display font-bold text-sm">Resources</h4>
+          <ul class="mt-4 space-y-2.5 text-sm text-ink/55">
+            <li><a href="#" class="hover:text-grape transition">Help center</a></li>
+            <li><a href="#faq" class="hover:text-grape transition">FAQ</a></li>
+            <li><a href="#" class="hover:text-grape transition">Community</a></li>
+            <li><a href="#" class="hover:text-grape transition">Security</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-ink/5 pt-6 sm:flex-row">
+        <p class="text-xs text-ink/40">© 2026 Plinth Labs. All rights reserved.</p>
+        <div class="flex gap-5 text-xs text-ink/40">
+          <a href="#" class="hover:text-grape transition">Privacy</a>
+          <a href="#" class="hover:text-grape transition">Terms</a>
+          <a href="#" class="hover:text-grape transition">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script>
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ---- Accordion ---- */
+    document.querySelectorAll('.acc-trigger').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const acc = btn.closest('.acc');
+        const open = acc.classList.contains('open');
+        document.querySelectorAll('.acc').forEach(a => a.classList.remove('open'));
+        if (!open) acc.classList.add('open');
+      });
+    });
+
+    if (!reduce && window.gsap) {
+      gsap.registerPlugin(ScrollTrigger);
+
+      /* ---- Section reveals ---- */
+      gsap.utils.toArray('.reveal').forEach((el) => {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' },
+        });
+      });
+
+      /* ---- Count-ups ---- */
+      document.querySelectorAll('[data-count]').forEach((el) => {
+        const end = +el.getAttribute('data-count');
+        const obj = { v: 0 };
+        ScrollTrigger.create({
+          trigger: el, start: 'top 90%', once: true,
+          onEnter: () => gsap.to(obj, { v: end, duration: 1.6, ease: 'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v); } }),
+        });
+      });
+
+      /* ---- Hero container parallax ---- */
+      gsap.to('#heroTilt', {
+        yPercent: -8, ease: 'none',
+        scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true },
+      });
+
+      /* ---- Multiplayer cursor drift ---- */
+      const cursors = [
+        { el: '#cur1', path: [[12,6],[40,24],[20,55],[55,12]] },
+        { el: '#cur2', path: [[78,30],[50,60],[80,18],[45,48]] },
+        { el: '#cur3', path: [[20,72],[55,40],[18,60],[42,80]] },
+        { el: '#cur4', path: [[64,54],[30,30],[70,66],[38,22]] },
+      ];
+      cursors.forEach((c) => {
+        const el = document.querySelector(c.el);
+        let i = 0;
+        const move = () => {
+          const [x, y] = c.path[i % c.path.length];
+          el.style.left = x + '%';
+          el.style.top = y + '%';
+          i++;
+          setTimeout(move, 1400 + Math.random() * 1200);
+        };
+        setTimeout(move, 600 + Math.random() * 1000);
+      });
+    }
+
+    /* ---- 3D tilt on hero mockup (pointer) ---- */
+    const tilt = document.getElementById('heroTilt');
+    const tiltZone = tilt ? tilt.closest('.tilt-wrap') : null;
+    if (tilt && tiltZone && !reduce) {
+      tiltZone.addEventListener('mousemove', (e) => {
+        const r = tiltZone.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        tilt.style.transform = `rotateY(${px * 10}deg) rotateX(${-py * 10}deg)`;
+      });
+      tiltZone.addEventListener('mouseleave', () => {
+        tilt.style.transform = 'rotateY(0) rotateX(0)';
+      });
+    }
+
+    /* ---- Magnetic buttons (pointer) ---- */
+    if (!reduce) {
+      document.querySelectorAll('[data-magnetic]').forEach((btn) => {
+        btn.addEventListener('mousemove', (e) => {
+          const r = btn.getBoundingClientRect();
+          const x = e.clientX - r.left - r.width / 2;
+          const y = e.clientY - r.top - r.height / 2;
+          btn.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+        });
+        btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+      });
+    }
+  </script>
+</body>
+</html>

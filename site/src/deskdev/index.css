@@ -1,0 +1,876 @@
+/* DeskDev's own design system, loaded only by app/workspace/layout.tsx. Scanned
+   for classes on its own — the site's globals.css excludes this folder. */
+@import 'tailwindcss' source(none);
+@source './';
+
+@custom-variant dark (&:is(.dark *));
+/* The installed app (home-screen / desktop window). iOS can report 'fullscreen'
+   instead (WebKit bug 264218), so anything that must be right there also
+   checks pwa/platform isStandalone() in JS. */
+@custom-variant standalone (@media (display-mode: standalone));
+/* Hover that MOVES something (lift, nudge, scale) — mouse and trackpad only.
+   Tailwind's own hover: is gated by (hover: hover) alone; motion on hover
+   also needs a precise pointer, or a tap leaves the element stuck mid-move.
+   Colour-only hovers keep plain hover:.  e.g. hover-fine:-translate-y-px */
+@custom-variant hover-fine {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+@theme {
+  /* Brand — the NixGen accent (site/src/styles/nx.css --accent), one hue
+     (223deg) with HSL saturation kept under 80%, fixed in both themes.
+     Contrast: white on 600 5.4:1, on 500 4.6:1, on 700 6.8:1; 600 as text on
+     the light page 5.0:1; 400 as text on the dark page 8.3:1. */
+  --color-brand-50: #f1f5fd;
+  --color-brand-100: #dfe7fb;
+  --color-brand-200: #c0d0f6;
+  --color-brand-300: #a1b8f2;
+  --color-brand-400: #8aa8f0;
+  --color-brand-500: #3e6de5;
+  --color-brand-600: #2e61e0;
+  --color-brand-700: #2250ce;
+  --color-brand-800: #1f46b2;
+  --color-brand-900: #1d3a90;
+  --color-brand-950: #152760;
+
+  /* Initials on a client's colour tile (the -500 avatar palette and the
+     CLIENT_COLORS presets): one ink in both themes, ≥4.5:1 on every swatch
+     (violet / indigo are the floor at 4.6:1). White failed on sky, emerald,
+     amber, teal and orange (2.1–2.9:1). */
+  --color-on-swatch: #030409;
+
+  --color-ink-50: rgb(var(--ink-50));
+  --color-ink-100: rgb(var(--ink-100));
+  --color-ink-200: rgb(var(--ink-200));
+  --color-ink-300: rgb(var(--ink-300));
+  --color-ink-400: rgb(var(--ink-400));
+  --color-ink-500: rgb(var(--ink-500));
+  --color-ink-600: rgb(var(--ink-600));
+  --color-ink-700: rgb(var(--ink-700));
+  --color-ink-800: rgb(var(--ink-800));
+  --color-ink-850: rgb(var(--ink-850));
+  --color-ink-900: rgb(var(--ink-900));
+
+  /* Sans-serif only: a work tool carries no serif face anywhere. Geist (UI),
+     Geist Mono (figures, times, code) and Space Grotesk (display), as on the
+     NixGen site. next/font self-hosts all three and sets --font-dd-* on <html>
+     (app/workspace/layout.tsx). Each var() carries a fallback because an unset
+     one would void the whole list; Schibsted is the display face's own. */
+  --font-sans:
+    var(--font-dd-sans, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
+  --font-display:
+    var(--font-dd-display, Schibsted Grotesk Variable), var(--font-dd-sans, ui-sans-serif),
+    ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-dd-mono, ui-monospace), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Motion curves (Emil Kowalski). Overriding Tailwind's own --ease-out /
+   --ease-in-out retunes every existing `ease-out` / `ease-in-out` utility to
+   the strong curve; `ease-drawer` is new. `static` so var(--ease-*) resolves
+   in plain CSS even where no utility uses it. Mirrored in
+   components/motion/presets.ts — presets.test.ts fails if they drift. */
+@theme static {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    /* The ink border token, so a bare `border` reads right in both themes
+       (gray-200 used to draw light lines on the dark theme). */
+    border-color: rgb(var(--ink-600));
+  }
+}
+
+@utility scrim {
+  /* ── Overlay ───────────────────────────────────────────────────────── */
+  /* The one scrim. Modal and the mobile drawer previously each rolled their own
+     (`bg-black/60` and `bg-ink-900/70`) — two values for one role, and the second went
+     *white* in light mode because --ink-900 is the page colour. */
+  @apply absolute inset-0;
+  background-color: rgb(var(--overlay) / var(--overlay-alpha));
+}
+
+@utility card {
+  /* ── Surfaces ──────────────────────────────────────────────────────── */
+  /* Hairline + a whisper of elevation (and, on dark, a 1px top highlight in
+     --shadow-1): the surface is defined by its edge, never by a glow. */
+  @apply bg-ink-800 border border-ink-600;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+@utility card-hover {
+  /* Colour + elevation on hover (no movement), on Emil's hover curve. The
+     scale entry keeps a `pressable-card` press easing when both are set. */
+  transition-property: background-color, border-color, box-shadow, scale;
+  transition-duration: 150ms, 150ms, 150ms, var(--dur-press);
+  transition-timing-function: ease, ease, ease, var(--ease-out);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border-color: rgb(var(--ink-500));
+      background-color: rgb(var(--ink-700) / 0.4);
+      box-shadow: var(--shadow-2);
+    }
+  }
+}
+
+@utility btn {
+  /* ── Buttons ───────────────────────────────────────────────────────── */
+  @apply inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium
+           select-none disabled:opacity-50 disabled:pointer-events-none;
+  border-radius: var(--radius-md);
+  letter-spacing: -0.006em;
+  /* Press feedback (the same contract as `pressable`): scale 0.97 on
+     :active, 160ms strong ease-out, colours on the same band. The
+     independent `scale` property, so it composes with any translate or
+     transform utility on the button. Adding a transition-* utility to a
+     .btn replaces this list — the press then snaps instead of easing. */
+  transition-property: background-color, border-color, color, box-shadow, scale;
+  transition-duration: var(--dur-press);
+  /* Colour changes on `ease`, the press on the strong ease-out (Emil). */
+  transition-timing-function: ease, ease, ease, ease, var(--ease-out);
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  &:active {
+    scale: var(--press-scale);
+  }
+  /* 44px under a finger, once, here: set per instance it was missed on every
+     button nobody remembered to tag. */
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+  }
+}
+
+@utility pressable {
+  /* Press feedback for every tappable that isn't a .btn: icon buttons, tab
+     items, chips, toggles, menu rows. Feedback on press-down (not release),
+     no double-tap delay, no long-press text selection or callout. Colour
+     transitions ride along; hover stays colour-only. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+  transition-duration: var(--dur-press);
+  transition-timing-function: ease, ease, ease, ease, ease, var(--ease-out);
+  &:active {
+    scale: var(--press-scale);
+  }
+  &:active:is(:disabled, [aria-disabled='true']) {
+    scale: none;
+  }
+}
+
+@utility pressable-card {
+  /* The wide-surface press: a navigable card or full-width row moves less
+     (0.98) so its edges don't lurch. Its text stays selectable (content). */
+  touch-action: manipulation;
+  transition-property: color, background-color, border-color, box-shadow, scale;
+  transition-duration: var(--dur-press);
+  transition-timing-function: ease, ease, ease, ease, var(--ease-out);
+  &:active {
+    scale: var(--press-scale-card);
+  }
+}
+
+@utility btn-primary {
+  /* Light: hover deepens (brand-700). Dark: hover lifts (brand-500, still
+     4.6:1 under white). The inset line is the machined top edge. */
+  @apply btn bg-brand-600 text-white border border-brand-600
+           hover:bg-brand-700 hover:border-brand-700
+           dark:hover:bg-brand-500 dark:hover:border-brand-500;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.14),
+    var(--shadow-1);
+}
+
+@utility btn-secondary {
+  @apply btn bg-ink-800 text-ink-100 border border-ink-600
+           hover:bg-ink-700 hover:border-ink-500 hover:text-ink-50;
+  box-shadow: var(--shadow-1);
+}
+
+@utility btn-ghost {
+  @apply btn text-ink-200 border border-transparent
+           hover:text-ink-50 hover:bg-ink-700;
+}
+
+@utility btn-danger {
+  /* rose-700 on hover: rose-500 fell to 3.7:1 under white. */
+  @apply btn bg-rose-600 text-white border border-rose-600
+           hover:bg-rose-700 hover:border-rose-700
+           focus-visible:ring-rose-500;
+  box-shadow:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.12),
+    var(--shadow-1);
+}
+
+@utility tap-target {
+  /* Small icon buttons: unchanged for a mouse, at least 44px under a finger.
+     Don't combine with `hidden` — this sets display on touch screens. */
+  @media (pointer: coarse) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+}
+
+@utility input {
+  /* ── Inputs ────────────────────────────────────────────────────────── */
+  /* Paper-white field in light; a recessed well (ink-850) in dark, so it
+     reads as an input on a card too. Focus = brand border + a soft halo. */
+  @apply bg-ink-800 dark:bg-ink-850 border border-ink-500 px-3 py-2 text-sm text-ink-50
+           placeholder:text-ink-400 transition-[border-color,box-shadow,background-color] duration-150 ease-out
+           focus:outline-hidden focus:border-brand-500 focus:ring-3 focus:ring-brand-500/20
+           focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-inset);
+  /* 44px under a finger, as on .btn: a search box or filter with no label
+     above it was a 41px target. */
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+  }
+}
+
+@utility chip {
+  /* ── Chips (pill status/filter tags) ───────────────────────────────── */
+  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+           text-xs font-medium border transition-[background-color,border-color,color] duration-150 ease-out;
+}
+
+@utility badge {
+  /* ── Badges — semantic status pills driven by status accents.
+     Pattern: /15 fill, /30 border; text 700 in light (800 for the pale hues
+     emerald / amber / rose) and 400 in dark — each ≥4.5:1 on its own tint
+     over both the card and the page. ──── */
+  @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium
+           border tabular-nums;
+  border-radius: var(--radius-sm);
+}
+
+@utility badge-neutral {
+  @apply bg-ink-700 border-ink-600 text-ink-200;
+}
+
+@utility badge-info {
+  @apply bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-400;
+}
+
+@utility badge-success {
+  @apply bg-emerald-500/15 border-emerald-500/30 text-emerald-800 dark:text-emerald-400;
+}
+
+@utility badge-warn {
+  @apply bg-amber-500/15 border-amber-500/30 text-amber-800 dark:text-amber-400;
+}
+
+@utility badge-danger {
+  @apply bg-rose-500/15 border-rose-500/30 text-rose-800 dark:text-rose-400;
+}
+
+@utility badge-brand {
+  @apply bg-brand-500/15 border-brand-500/30 text-brand-700 dark:text-brand-400;
+}
+
+@utility section-title {
+  /* ── Typographic helpers ───────────────────────────────────────────── */
+  /* The site's eyebrow, at workspace scale: small caps-tracked label in the
+     muted ink (≥5.6:1 on every surface), so headings above it carry the weight. */
+  @apply text-xs font-semibold uppercase text-ink-300;
+  letter-spacing: 0.06em;
+}
+
+@utility text-display {
+  /* Editorial display voice: tighter than tracking-tight, lining figures. */
+  @apply font-display;
+  letter-spacing: -0.028em;
+  font-variant-numeric: lining-nums;
+}
+
+@utility density-row {
+  /* ── Density helpers — consume the density vars above. ─────────────── */
+  padding-top: var(--row-py);
+  padding-bottom: var(--row-py);
+}
+
+@utility density-card {
+  padding: var(--card-p);
+}
+
+@utility tabular-nums {
+  /* Lining tabular figures — tables, money, durations, counters, dates.
+     Geist and Space Grotesk both ship tnum, so columns of figures align. */
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+@utility text-metric {
+  /* A stat's headline figure (StatCard, Growth Hub tiles): the UI face with
+     tabular lining figures, so a value that ticks over never reflows its row
+     and digits line up between tiles. Not the mono: at 24-40px its slashed
+     zero and word-wide spaces ("7h 15m", "$19,900") read as a terminal, and
+     an empty workspace opened on a wall of slashed zeros. Mono stays for
+     kbd, IDs, keys, URLs and code. */
+  @apply font-sans;
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'zero' 0;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+/* ── Motion — CSS enter-only animations. Opacity + transform only, the
+   strong curves, fill-mode `backwards` (nothing keeps a transform after it
+   ends, so no fixed descendant gets trapped). Enter + exit, springs, drag
+   and layout live in components/motion (Motion). Reduced motion turns the
+   movement into a plain fade (see the media block at the end). ─────── */
+
+@utility animate-fade {
+  /* Scrims, small reveals. */
+  animation: dd-fade 150ms var(--ease-out) backwards;
+}
+
+@utility animate-fade-rise {
+  /* Legacy page / panel entrance — new work uses animate-route (pages) or
+     animate-pop-in / PopoverPanel (popovers). */
+  animation: dd-fade-rise 200ms var(--ease-out) backwards;
+}
+
+@utility animate-route {
+  /* A route's content arriving: opacity only, 120ms — near-imperceptible
+     for a tens-a-day action, and none at all when the navigation came from
+     the keyboard (shortcut, palette, Enter on a link). No exit, no wait:
+     the new page is never held back by the old one leaving. */
+  animation: dd-fade var(--dur-route) var(--ease-out) backwards;
+  html[data-input='keyboard'] & {
+    animation: none;
+  }
+}
+
+@utility animate-pop-in {
+  /* CSS-only popover/menu enter (no exit): grows from its trigger. Set
+     --transform-origin on it (e.g. 'top right'); top centre otherwise.
+     Opened from the keyboard: appears instantly. */
+  transform-origin: var(--transform-origin, top);
+  animation: dd-pop-in var(--dur-popover) var(--ease-out) backwards;
+  html[data-input='keyboard'] & {
+    animation: none;
+  }
+}
+
+@utility animate-sheet-up {
+  /* Phone bottom sheets (legacy; SheetPanel adds exit + drag-to-dismiss). */
+  animation: dd-sheet-up var(--dur-sheet) var(--ease-drawer) backwards;
+}
+
+@utility animate-slide-in {
+  /* The phone navigation drawer, from the left edge (legacy; SheetPanel edge="left"). */
+  animation: dd-slide-in var(--dur-sheet) var(--ease-drawer) backwards;
+}
+
+@utility animate-shimmer {
+  /* The loading sweep, for an absolutely-filled child of an overflow-hidden
+     block (ui-foundation/Skeleton). A gradient band translated across —
+     compositor-only, linear (constant motion), 1.4s. */
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--ink-500) / 0) 0%,
+    rgb(var(--ink-500) / 0.55) 50%,
+    rgb(var(--ink-500) / 0) 100%
+  );
+  transform: translateX(-100%);
+  animation: dd-shimmer 1.4s linear infinite;
+}
+
+@utility skeleton {
+  /* A one-element placeholder block with the same sweep (motion/Skeleton). */
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(var(--ink-700));
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      90deg,
+      rgb(var(--ink-500) / 0) 0%,
+      rgb(var(--ink-500) / 0.55) 50%,
+      rgb(var(--ink-500) / 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: dd-shimmer 1.4s linear infinite;
+  }
+}
+
+@layer utilities {
+  /* ============================================================
+   THEME TOKENS — RGB triplets (no rgb() wrapper) so Tailwind
+   alpha modifiers work: bg-ink-800/60 → rgb(var(--ink-800) / 0.6)
+
+   Semantic meaning (identical in both themes):
+     --ink-900  page background
+     --ink-850  sidebar / topbar surface
+     --ink-800  card surface
+     --ink-700  hover surface
+     --ink-600  border
+     --ink-500  strong border / disabled
+     --ink-400  icon muted
+     --ink-300  secondary text muted
+     --ink-200  secondary text
+     --ink-100  primary body text
+     --ink-50   highest-contrast text (white in dark, near-black in light)
+   ============================================================ */
+
+  :root {
+    /* LIGHT THEME — the NixGen ink (nx.css --fg #0c0f17 / --fg-2 / --fg-3),
+       neutral-cool. Text rungs are AA on page, card, sidebar AND hover
+       (300 ≥5.6, 400 ≥4.6: 11px times and counts are set in it). --ink-900 and --ink-850 stay put: the launch screens,
+       manifest, pre-paint background and theme-color metas mirror them. */
+    --ink-900: 245 246 248; /* page        #f5f6f8 */
+    --ink-850: 238 240 244; /* sidebar     #eef0f4 */
+    --ink-800: 255 255 255; /* card        #ffffff */
+    --ink-700: 234 237 242; /* hover       #eaedf2 */
+    --ink-600: 225 229 236; /* border      #e1e5ec */
+    --ink-500: 203 209 220; /* strong brd  #cbd1dc */
+    --ink-400: 98 106 124; /* icon muted  #626a7c */
+    --ink-300: 88 96 114; /* text muted  #586072 */
+    --ink-200: 64 72 89; /* text 2nd    #404859 */
+    --ink-100: 28 34 47; /* body text   #1c222f */
+    --ink-50: 12 15 23; /* max contrast #0c0f17 */
+    color-scheme: light;
+
+    /* Modal / drawer scrim. A scrim is dark in BOTH themes — it exists to push the page
+     back. Do not reach for --ink-900 here: it is #f5f6f8 in light mode, which produces a
+     white veil that reads as a render bug rather than a dimmed page. */
+    --overlay: 12 15 23;
+    --overlay-alpha: 0.45;
+
+    /* Elevation — a cool ink cast, soft and wide (nx.css --shadow-*). */
+    --shadow-color: 12 16 28;
+    --shadow-1: 0 1px 2px 0 rgb(var(--shadow-color) / 0.04);
+    --shadow-2:
+      0 1px 2px 0 rgb(var(--shadow-color) / 0.04),
+      0 8px 20px -8px rgb(var(--shadow-color) / 0.1);
+    --shadow-3:
+      0 2px 6px -2px rgb(var(--shadow-color) / 0.06),
+      0 24px 56px -16px rgb(var(--shadow-color) / 0.2);
+    --shadow-inset: inset 0 1px 2px 0 rgb(var(--shadow-color) / 0.035);
+    --brand-select: 46 97 224;
+
+    /* One radius scale — every surface picks exactly one rung. */
+    --radius-sm: 0.375rem; /* 6px  — chips, badges, small controls */
+    --radius-md: 0.5rem; /* 8px  — buttons, inputs */
+    --radius-lg: 0.75rem; /* 12px — cards, modals, palette */
+
+    /* Density levers (see [data-density] below). Consumed by helpers +
+     stage-2 rows/cards so a single attr retunes the whole UI. */
+    --row-py: 0.625rem; /* 10px */
+    --card-p: 1rem; /* 16px */
+  }
+
+  .dark {
+    /* DARK THEME — the NixGen night palette (nx.css --surface / --fg-2 /
+       --fg-3): blue-black surfaces, crisper hairlines, and muted text lifted
+       to AA (the old 300/400 rungs were 3.0:1 / 1.9:1). --ink-900 and
+       --ink-850 stay put (launch screens, manifest, theme-color). */
+    --ink-900: 10 12 18; /* page        #0a0c12 */
+    --ink-850: 14 17 25; /* sidebar     #0e1119 */
+    --ink-800: 17 20 29; /* card        #11141d */
+    --ink-700: 24 28 40; /* hover       #181c28 */
+    --ink-600: 34 39 53; /* border      #222735 */
+    --ink-500: 48 55 73; /* strong brd  #303749 */
+    --ink-400: 118 126 146; /* icon muted  #767e92 */
+    --ink-300: 146 154 174; /* text muted  #929aae */
+    --ink-200: 176 183 200; /* text 2nd    #b0b7c8 */
+    --ink-100: 214 218 228; /* body text   #d6dae4 */
+    --ink-50: 243 245 250; /* max contrast #f3f5fa */
+    color-scheme: dark;
+
+    /* The scrim goes near-black and heavier in dark theme, where the page behind it is
+     already dark and needs more separation to recede. */
+    --overlay: 2 3 6;
+    --overlay-alpha: 0.72;
+
+    /* A blue-black cast (the page hue, never pure black), deeper — borders +
+       shadow carry elevation here, plus a 1px top highlight on raised
+       surfaces (the "machined edge"). */
+    --shadow-color: 2 3 8;
+    --shadow-1:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.035),
+      0 1px 2px 0 rgb(var(--shadow-color) / 0.35);
+    --shadow-2:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+      0 1px 2px 0 rgb(var(--shadow-color) / 0.35),
+      0 10px 24px -10px rgb(var(--shadow-color) / 0.6);
+    --shadow-3:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+      0 4px 12px -4px rgb(var(--shadow-color) / 0.5),
+      0 32px 72px -24px rgb(var(--shadow-color) / 0.75);
+    --shadow-inset: inset 0 1px 2px 0 rgb(var(--shadow-color) / 0.25);
+    --brand-select: 62 109 229;
+  }
+
+  /* Density — data-density on <html>, persisted by DensityProvider.
+   Compact tightens the 4px rhythm and drops the base type a notch. */
+  :root[data-density='compact'] {
+    font-size: 15px;
+    --row-py: 0.375rem; /* 6px */
+    --card-p: 0.75rem; /* 12px */
+  }
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply bg-ink-900 text-ink-100 antialiased font-sans;
+  }
+
+  /* No browser-default focus rings anywhere — brand ring is the one signal. */
+  :focus-visible {
+    @apply outline-hidden ring-2 ring-brand-500 ring-offset-2 ring-offset-ink-900;
+  }
+
+  /* Deliberate text selection (never unstyled). */
+  ::selection {
+    background: rgb(var(--brand-select, 37 99 235) / 0.22);
+  }
+}
+
+@keyframes dd-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes dd-fade-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes dd-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+@keyframes dd-pop-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+/* StatusDot's live halo: a ring that swells and fades from the dot. */
+@keyframes dd-breathe {
+  0%   { opacity: 0.5; transform: scale(1); }
+  70%  { opacity: 0; transform: scale(2.4); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes dd-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes dd-slide-in {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+/* ── App shell — phones and the installed app ─────────────────────────
+   Theme-independent, so no .dark copy. Use them through Tailwind's variable
+   shorthand: pt-(--safe-top), h-(--tabbar-h), h-(--app-h).
+     --safe-*    notch / home-indicator insets (0 unless viewport-fit=cover)
+     --tabbar-h  the phone tab bar row, in px so compact density can't shrink it
+     --app-h     the shell's height (100dvh; 100lvh in the installed app).
+                 pwa/useKeyboardViewport.ts swaps in the visual-viewport height
+                 (inline, on <html>) while the on-screen keyboard is open, so
+                 composers sit right above it on iOS; it also zeroes
+                 --safe-bottom and sets html[data-keyboard=open] meanwhile.
+
+   z-index scale (no tokens — keep new layers on these rungs):
+     10  sticky headers, message toolbars      30  menus, pickers, tooltips
+     20  in-page dropdowns                     40  popovers (crm, search results;
+                                                   50 when opened in a modal)
+     45  fixed notices (UpdatePrompt)          50  modal / sheet, phone drawer
+     80  notifications popover                 100 command palette
+     9999 toasts (Sonner)
+   The phone tab bar, Topbar and banners sit in normal flow and need none.
+   Never render a fixed layer inside a transform or backdrop-filter ancestor
+   (the Topbar; a Motion panel mid-animation) — it gets trapped there. The
+   animate-* utilities fill `backwards`, so they keep no transform after. */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --tabbar-h: 56px;
+  --app-h: 100dvh;
+
+  /* Motion durations (Emil's bands; components/motion/presets.ts mirrors
+     them). Exits are shorter than enters. UI < 300ms; the sheet travels a
+     screen height, so it sits in the 200–500ms drawer band. */
+  --dur-press: 160ms; /* button / tab press */
+  --dur-tooltip: 125ms; /* tooltip, small popover */
+  --dur-popover: 180ms; /* dropdown, menu, picker */
+  --dur-popover-exit: 120ms;
+  --dur-modal: 240ms; /* centred modal + scrim */
+  --dur-modal-exit: 150ms;
+  --dur-sheet: 350ms; /* phone sheet / drawer, from its edge */
+  --dur-sheet-exit: 250ms;
+  --dur-fade: 200ms; /* reduced-motion stand-in for movement */
+  --dur-route: 120ms; /* route content */
+  --dur-list: 240ms; /* one stagger item */
+  --stagger-gap: 40ms; /* between stagger items (30–80ms band) */
+  --press-scale: 0.97; /* buttons, tabs, chips */
+  --press-scale-card: 0.98; /* wide cards, full-width rows */
+}
+@supports not (height: 100dvh) {
+  :root { --app-h: 100vh; }
+}
+/* Installed app: no browser toolbars, so the large viewport is the real
+   screen. iOS 26 with viewport-fit=cover reports 100dvh short by the top
+   inset (797 vs 844px), which floated the tab bar above the bottom edge;
+   100lvh doesn't. iOS may match 'fullscreen' instead of 'standalone'. */
+@supports (height: 100lvh) {
+  @media (display-mode: standalone), (display-mode: fullscreen) {
+    :root { --app-h: 100lvh; }
+  }
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  /* No font inflation when an iPhone rotates to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Controls answer the tap at once (no double-tap-zoom wait; touch-action
+   doesn't inherit, so body's alone doesn't reach inside the scrollers) and
+   a held finger doesn't select their label. Content text stays selectable. */
+a[href],
+button,
+summary,
+select,
+label,
+[role='button'],
+[role='tab'],
+[role='menuitem'],
+[role='option'],
+[role='switch'],
+[role='checkbox'],
+[role='radio'] {
+  touch-action: manipulation;
+}
+button,
+summary,
+[role='button'],
+[role='tab'],
+[role='menuitem'],
+[role='switch'] {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* ── Motion kit hooks (components/motion) ─────────────────────────────── */
+
+/* useStagger / <Stagger>: a view's first load only. Direct children fade-rise
+   40ms apart; the 10th onward arrive together. `backwards`, so rows are
+   live throughout and keep no transform. */
+.dd-stagger > * {
+  animation: dd-fade-rise var(--dur-list) var(--ease-out) backwards;
+}
+.dd-stagger > :nth-child(2) { animation-delay: calc(var(--stagger-gap) * 1); }
+.dd-stagger > :nth-child(3) { animation-delay: calc(var(--stagger-gap) * 2); }
+.dd-stagger > :nth-child(4) { animation-delay: calc(var(--stagger-gap) * 3); }
+.dd-stagger > :nth-child(5) { animation-delay: calc(var(--stagger-gap) * 4); }
+.dd-stagger > :nth-child(6) { animation-delay: calc(var(--stagger-gap) * 5); }
+.dd-stagger > :nth-child(7) { animation-delay: calc(var(--stagger-gap) * 6); }
+.dd-stagger > :nth-child(8) { animation-delay: calc(var(--stagger-gap) * 7); }
+.dd-stagger > :nth-child(9) { animation-delay: calc(var(--stagger-gap) * 8); }
+.dd-stagger > :nth-child(n + 10) { animation-delay: calc(var(--stagger-gap) * 9); }
+
+/* StatusDot breathe: live state only (meeting in progress, sync running). */
+.dd-breathe::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  animation: dd-breathe 2s var(--ease-out) infinite;
+  pointer-events: none;
+}
+html,
+body {
+  /* No rubber-band or pull-to-refresh on the fixed shell; inner scrollers
+     contain their own overscroll. */
+  overscroll-behavior: none;
+  background-color: rgb(var(--ink-900));
+}
+body {
+  /* No double-tap-zoom delay on taps. */
+  touch-action: manipulation;
+}
+
+/* iOS zooms the page into any focused control under 16px. Unlayered on
+   purpose, so it beats text-sm / text-xs utilities on every form control
+   without touching call sites; px, not rem, because compact density shrinks
+   the root size. */
+@media (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Selects styled as `input`: drop the native arrow (it clashed with the
+   field in both themes) for a chevron in the muted icon ink. Unlayered so it
+   beats the utility's padding; other selects keep their native arrow. */
+select.input {
+  appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23626a7c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 14px;
+}
+.dark select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23929aae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+select.input[multiple],
+select.input[size]:not([size='1']) {
+  appearance: auto;
+  padding-right: 0.75rem;
+  background-image: none;
+}
+
+/* Ghost date field (Growth leads). The browser's calendar glyph is made
+   invisible and stretched over our own icon, so a click there still opens the
+   picker; an unset date hides the mm/dd/yyyy mask until the field has focus
+   (the cell shows a muted dash instead). */
+.date-ghost {
+  position: relative;
+}
+.date-ghost::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 1.75rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.date-ghost[data-empty]:not(:focus) {
+  color: transparent;
+}
+
+/* iOS draws empty date/time inputs zero-height and centres their value. */
+@supports (-webkit-touch-callout: none) {
+  input[type='date'],
+  input[type='time'],
+  input[type='datetime-local'],
+  input[type='month'] {
+    min-height: 2.5rem;
+    text-align: left;
+  }
+  input::-webkit-date-and-time-value {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Fewer and gentler, not none (Emil / Apple). CSS transitions and
+     keyframes collapse to instant — presses, hover colour bands, Tailwind's
+     transition-* utilities — then the exceptions below put back what
+     carries meaning. Motion (components/motion) follows the same rule via
+     MotionConfig reducedMotion="user": transforms and layout drop, opacity
+     stays. */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Things still arrive — by opacity, no movement. */
+  .animate-fade,
+  .animate-fade-rise,
+  .animate-route,
+  .animate-pop-in,
+  .animate-sheet-up,
+  .animate-slide-in {
+    animation-name: dd-fade !important;
+    animation-duration: var(--dur-fade) !important;
+  }
+  html[data-input='keyboard'] .animate-route,
+  html[data-input='keyboard'] .animate-pop-in {
+    animation: none !important;
+  }
+  /* A spinner is the only sign that work is happening: it keeps turning. */
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+  /* Decorative loops and cascades stop: skeletons hold still, lists land at once. */
+  .animate-shimmer,
+  .skeleton::after,
+  .dd-stagger > * {
+    animation: none !important;
+  }
+  /* A live dot keeps a still halo, so "live" survives without movement. */
+  .dd-breathe::after {
+    animation: none !important;
+    opacity: 0.25;
+    transform: scale(1.8);
+  }
+  :is(.btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger):active,
+  .pressable:active,
+  .pressable-card:active {
+    scale: none;
+  }
+  /* Colour and elevation changes aren't movement: the kit's controls keep
+     their colour bands (their scale is off just above). */
+  :is(.btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger),
+  .pressable,
+  .pressable-card,
+  .card-hover,
+  .input,
+  .chip {
+    transition-duration: var(--dur-press) !important;
+  }
+}
+
+/* Theme-aware scrollbar (matches original dark values when .dark is set).
+   Mouse devices only — touch platforms keep their native overlay bars. */
+@media (pointer: fine) {
+  /* A slim floating thumb (2px clear of each edge) over a transparent track,
+     so scrollers inside cards and the sidebar don't paint a page-coloured gutter. */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-corner { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgb(var(--ink-500));
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: rgb(var(--ink-400) / 0.7); }
+}

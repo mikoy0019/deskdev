@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAISON SÉRAPHINE — Atelier &amp; Lookbook</title>
+<meta name="description" content="Maison Séraphine — a quiet luxury fashion house. Editorial lookbooks, atelier-made garments, restrained modern tailoring." />
+
+<!-- Fonts: refined high-fashion serif + fine sans for labels -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ivory:   '#F4F1EA',
+          bone:    '#E9E4D8',
+          charcoal:'#1A1916',
+          ink:     '#0C0B09',
+          ash:     '#6E6A60',
+          clay:    '#A8856B', /* muted accent */
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          sans:  ['"Jost"', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          luxe: '0.42em',
+          wide2: '0.28em',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --ease: cubic-bezier(0.16,1,0.3,1); }
+  html, body { background:#F4F1EA; color:#1A1916; }
+  body { font-family:'Jost', sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+  ::selection { background:#A8856B; color:#F4F1EA; }
+
+  /* Thin scrollbar */
+  ::-webkit-scrollbar { width:9px; height:9px; }
+  ::-webkit-scrollbar-track { background:#E9E4D8; }
+  ::-webkit-scrollbar-thumb { background:#A8856B; }
+
+  .font-display { font-family:'Cormorant Garamond', serif; }
+
+  /* Clip-path image reveal */
+  .reveal-clip { clip-path: inset(0 0 100% 0); }
+  .reveal-clip.is-in { clip-path: inset(0 0 0% 0); transition: clip-path 1.6s var(--ease); }
+
+  /* Masked line reveal */
+  .mask-line { overflow:hidden; display:block; }
+  .mask-line > span { display:block; transform: translateY(110%); }
+
+  /* Image fallback shell */
+  .img-shell {
+    background: linear-gradient(135deg,#E9E4D8 0%,#cdc6b6 50%,#b7ad99 100%);
+    position:relative; overflow:hidden;
+  }
+  .img-shell::after {
+    content:""; position:absolute; inset:0;
+    background: radial-gradient(120% 80% at 30% 20%, rgba(255,255,255,.25), transparent 60%);
+    pointer-events:none;
+  }
+  .img-cover { width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* Parallax helper */
+  .parallax { will-change: transform; }
+
+  /* Marquee */
+  .marquee { display:flex; white-space:nowrap; will-change:transform; }
+  .marquee-track { animation: marquee 38s linear infinite; }
+  @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+  /* Hover product swap */
+  .swap { position:relative; overflow:hidden; }
+  .swap .img-b { position:absolute; inset:0; opacity:0; transition:opacity 1s var(--ease), transform 2s var(--ease); transform:scale(1.06); }
+  .swap:hover .img-b { opacity:1; transform:scale(1); }
+  .swap .img-a { transition:transform 2s var(--ease); }
+  .swap:hover .img-a { transform:scale(1.06); }
+
+  /* Thin rule */
+  .hr-thin { height:1px; background:rgba(26,25,22,.18); }
+
+  /* Link underline */
+  .ul-link { position:relative; }
+  .ul-link::after { content:""; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:currentColor; transition:width .5s var(--ease); }
+  .ul-link:hover::after { width:100%; }
+
+  /* Horizontal lookbook */
+  .h-track { display:flex; }
+
+  /* FAQ */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .6s var(--ease); }
+  .faq-item.open .faq-body { max-height:340px; }
+  .faq-item.open .faq-plus { transform:rotate(45deg); }
+  .faq-plus { transition:transform .5s var(--ease); }
+
+  /* Nav scrolled */
+  #nav.scrolled { background:rgba(244,241,234,.86); backdrop-filter:blur(14px); border-bottom:1px solid rgba(26,25,22,.08); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation:none !important; transition:none !important; }
+    .reveal-clip { clip-path:none !important; }
+    .mask-line > span { transform:none !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- ================= NAV ================= -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-[1500px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
+    <a href="#top" class="font-display text-2xl md:text-3xl tracking-[0.18em] text-charcoal">SÉRAPHINE</a>
+    <div class="hidden lg:flex items-center gap-10 text-[11px] tracking-wide2 uppercase text-charcoal/80">
+      <a href="#collection" class="ul-link">Collection</a>
+      <a href="#shop" class="ul-link">Shop</a>
+      <a href="#lookbook" class="ul-link">Lookbook</a>
+      <a href="#atelier" class="ul-link">Atelier</a>
+      <a href="#journal" class="ul-link">Press</a>
+    </div>
+    <div class="flex items-center gap-6 text-[11px] tracking-wide2 uppercase text-charcoal/80">
+      <a href="#newsletter" class="hidden sm:inline ul-link">Search</a>
+      <a href="#cta" class="ul-link">Bag (0)</a>
+      <button id="menuBtn" class="lg:hidden text-charcoal" aria-label="Menu">
+        <span class="block w-6 h-px bg-charcoal mb-1.5"></span>
+        <span class="block w-6 h-px bg-charcoal"></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobileMenu" class="fixed inset-0 z-[60] bg-ivory translate-x-full transition-transform duration-700 lg:hidden" style="transition-timing-function:cubic-bezier(0.16,1,0.3,1)">
+  <div class="px-6 h-20 flex items-center justify-between">
+    <span class="font-display text-2xl tracking-[0.18em]">SÉRAPHINE</span>
+    <button id="menuClose" class="text-charcoal text-3xl font-light" aria-label="Close">&times;</button>
+  </div>
+  <div class="px-6 mt-10 flex flex-col gap-7 font-display text-4xl">
+    <a href="#collection" class="mobile-link">Collection</a>
+    <a href="#shop" class="mobile-link">Shop</a>
+    <a href="#lookbook" class="mobile-link">Lookbook</a>
+    <a href="#atelier" class="mobile-link">Atelier</a>
+    <a href="#journal" class="mobile-link">Press</a>
+    <a href="#cta" class="mobile-link">Bag</a>
+  </div>
+</div>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="relative h-[100svh] min-h-[640px] w-full img-shell">
+  <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80"
+       alt="Editorial fashion campaign"
+       class="img-cover parallax hero-img absolute inset-0 scale-105"
+       onerror="this.style.display='none'" />
+  <div class="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/55"></div>
+
+  <div class="relative z-10 h-full max-w-[1500px] mx-auto px-6 md:px-10 flex flex-col justify-end pb-20 md:pb-28">
+    <p class="hero-kicker text-ivory/80 text-[11px] tracking-luxe uppercase mb-6">Autumn — Winter MMXXVI</p>
+    <h1 class="font-display text-ivory leading-[0.92] text-[clamp(3.4rem,12vw,11rem)] font-light">
+      <span class="mask-line"><span>The Quiet</span></span>
+      <span class="mask-line italic"><span>Hours</span></span>
+    </h1>
+    <div class="hero-sub mt-8 flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-14">
+      <p class="text-ivory/85 max-w-md font-light leading-relaxed">
+        A collection composed in shadow and linen — garments made to be lived in slowly, kept for a lifetime.
+      </p>
+      <a href="#shop" class="text-ivory text-[11px] tracking-wide2 uppercase ul-link whitespace-nowrap">Discover the Collection</a>
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 right-6 md:right-10 z-10 text-ivory/70 text-[10px] tracking-wide2 uppercase rotate-90 origin-bottom-right hidden md:block">Scroll</div>
+</section>
+
+<!-- ================= MARQUEE ================= -->
+<section class="py-6 bg-charcoal text-ivory overflow-hidden">
+  <div class="marquee marquee-track font-display text-3xl md:text-5xl italic font-light">
+    <div class="flex items-center">
+      <span class="mx-8">Tailoring</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Linen &amp; Wool</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Made in the Atelier</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Quiet Luxury</span><span class="mx-8 text-clay">✦</span>
+    </div>
+    <div class="flex items-center" aria-hidden="true">
+      <span class="mx-8">Tailoring</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Linen &amp; Wool</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Made in the Atelier</span><span class="mx-8 text-clay">✦</span>
+      <span class="mx-8">Quiet Luxury</span><span class="mx-8 text-clay">✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= COLLECTION INTRO ================= -->
+<section id="collection" class="max-w-[1500px] mx-auto px-6 md:px-10 py-28 md:py-40">
+  <div class="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+    <div class="lg:col-span-5">
+      <p class="text-clay text-[11px] tracking-luxe uppercase mb-8 anim-up">The Collection</p>
+      <h2 class="font-display text-[clamp(2.6rem,5vw,4.6rem)] leading-[1.02] font-light text-charcoal mb-8">
+        <span class="mask-line"><span>An ode to</span></span>
+        <span class="mask-line italic"><span>restraint &amp;</span></span>
+        <span class="mask-line"><span>natural cloth.</span></span>
+      </h2>
+      <p class="text-ash leading-relaxed max-w-md mb-10 anim-up">
+        Forty-one pieces, drawn from a single palette of bone, ash and clay. Each garment is cut once, stitched slowly, and finished by hand in our Paris atelier — designed to outlast the season that named it.
+      </p>
+      <a href="#shop" class="inline-block text-[11px] tracking-wide2 uppercase text-charcoal ul-link anim-up">Explore the Pieces</a>
+    </div>
+    <div class="lg:col-span-7">
+      <div class="reveal-clip img-shell aspect-[4/5] md:aspect-[16/11]">
+        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80"
+             alt="Collection editorial" class="img-cover parallax" onerror="this.style.display='none'" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURED PRODUCTS ================= -->
+<section id="shop" class="max-w-[1500px] mx-auto px-6 md:px-10 pb-28 md:pb-40">
+  <div class="flex items-end justify-between mb-14 flex-wrap gap-4">
+    <h2 class="font-display text-[clamp(2.2rem,4vw,3.6rem)] font-light text-charcoal anim-up">Featured Pieces</h2>
+    <a href="#cta" class="text-[11px] tracking-wide2 uppercase text-ash ul-link anim-up">View All — 41</a>
+  </div>
+
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-12">
+    <!-- card -->
+    <article class="group anim-up">
+      <div class="swap img-shell aspect-[3/4]">
+        <img class="img-a img-cover" src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80" alt="Garment front" onerror="this.style.display='none'" />
+        <img class="img-b img-cover" src="https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1600&q=80" alt="Garment detail" onerror="this.style.display='none'" />
+      </div>
+      <div class="mt-4 flex items-start justify-between">
+        <div>
+          <h3 class="font-display text-xl text-charcoal">Brume Wool Coat</h3>
+          <p class="text-ash text-xs tracking-wide2 uppercase mt-1">Outerwear</p>
+        </div>
+        <p class="font-display text-lg text-charcoal">€890</p>
+      </div>
+    </article>
+
+    <article class="group anim-up">
+      <div class="swap img-shell aspect-[3/4]">
+        <img class="img-a img-cover" src="https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1600&q=80" alt="Garment front" onerror="this.style.display='none'" />
+        <img class="img-b img-cover" src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80" alt="Garment detail" onerror="this.style.display='none'" />
+      </div>
+      <div class="mt-4 flex items-start justify-between">
+        <div>
+          <h3 class="font-display text-xl text-charcoal">Linen Atelier Shirt</h3>
+          <p class="text-ash text-xs tracking-wide2 uppercase mt-1">Essentials</p>
+        </div>
+        <p class="font-display text-lg text-charcoal">€240</p>
+      </div>
+    </article>
+
+    <article class="group anim-up">
+      <div class="swap img-shell aspect-[3/4]">
+        <img class="img-a img-cover" src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80" alt="Garment front" onerror="this.style.display='none'" />
+        <img class="img-b img-cover" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80" alt="Garment detail" onerror="this.style.display='none'" />
+      </div>
+      <div class="mt-4 flex items-start justify-between">
+        <div>
+          <h3 class="font-display text-xl text-charcoal">Tailored Ash Trouser</h3>
+          <p class="text-ash text-xs tracking-wide2 uppercase mt-1">Tailoring</p>
+        </div>
+        <p class="font-display text-lg text-charcoal">€360</p>
+      </div>
+    </article>
+
+    <article class="group anim-up">
+      <div class="swap img-shell aspect-[3/4]">
+        <img class="img-a img-cover" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80" alt="Garment front" onerror="this.style.display='none'" />
+        <img class="img-b img-cover" src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80" alt="Garment detail" onerror="this.style.display='none'" />
+      </div>
+      <div class="mt-4 flex items-start justify-between">
+        <div>
+          <h3 class="font-display text-xl text-charcoal">Séraphine Slip Dress</h3>
+          <p class="text-ash text-xs tracking-wide2 uppercase mt-1">Eveningwear</p>
+        </div>
+        <p class="font-display text-lg text-charcoal">€520</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= LOOKBOOK HORIZONTAL ================= -->
+<section id="lookbook" class="bg-charcoal text-ivory py-24 md:py-32 overflow-hidden">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10 mb-12 flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-clay text-[11px] tracking-luxe uppercase mb-5">The Lookbook</p>
+      <h2 class="font-display text-[clamp(2.4rem,5vw,4.4rem)] font-light leading-none">Composed in Shadow</h2>
+    </div>
+    <p class="text-ivory/55 text-[11px] tracking-wide2 uppercase">Drag / Scroll →</p>
+  </div>
+
+  <div id="hPin" class="relative">
+    <div id="hTrack" class="h-track gap-6 px-6 md:px-10 will-change-transform">
+      <figure class="shrink-0 w-[78vw] sm:w-[44vw] lg:w-[34vw]">
+        <div class="img-shell aspect-[3/4]">
+          <img class="img-cover parallax" src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1600&q=80" alt="Look 01" onerror="this.style.display='none'" />
+        </div>
+        <figcaption class="mt-4 flex justify-between text-[11px] tracking-wide2 uppercase text-ivory/60">
+          <span>Look 01 — Bone</span><span>AW26</span>
+        </figcaption>
+      </figure>
+      <figure class="shrink-0 w-[78vw] sm:w-[44vw] lg:w-[34vw] lg:mt-16">
+        <div class="img-shell aspect-[3/4]">
+          <img class="img-cover parallax" src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80" alt="Look 02" onerror="this.style.display='none'" />
+        </div>
+        <figcaption class="mt-4 flex justify-between text-[11px] tracking-wide2 uppercase text-ivory/60">
+          <span>Look 02 — Ash</span><span>AW26</span>
+        </figcaption>
+      </figure>
+      <figure class="shrink-0 w-[78vw] sm:w-[44vw] lg:w-[34vw]">
+        <div class="img-shell aspect-[3/4]">
+          <img class="img-cover parallax" src="https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1600&q=80" alt="Look 03" onerror="this.style.display='none'" />
+        </div>
+        <figcaption class="mt-4 flex justify-between text-[11px] tracking-wide2 uppercase text-ivory/60">
+          <span>Look 03 — Clay</span><span>AW26</span>
+        </figcaption>
+      </figure>
+      <figure class="shrink-0 w-[78vw] sm:w-[44vw] lg:w-[34vw] lg:mt-16">
+        <div class="img-shell aspect-[3/4]">
+          <img class="img-cover parallax" src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1600&q=80" alt="Look 04" onerror="this.style.display='none'" />
+        </div>
+        <figcaption class="mt-4 flex justify-between text-[11px] tracking-wide2 uppercase text-ivory/60">
+          <span>Look 04 — Shadow</span><span>AW26</span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ATELIER STORY ================= -->
+<section id="atelier" class="max-w-[1500px] mx-auto px-6 md:px-10 py-28 md:py-40">
+  <div class="grid lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+    <div class="lg:col-span-6 order-2 lg:order-1">
+      <div class="reveal-clip img-shell aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1485518882345-15568b007407?auto=format&fit=crop&w=1600&q=80"
+             alt="Inside the atelier" class="img-cover parallax" onerror="this.style.display='none'" />
+      </div>
+    </div>
+    <div class="lg:col-span-6 order-1 lg:order-2">
+      <p class="text-clay text-[11px] tracking-luxe uppercase mb-8 anim-up">The Atelier</p>
+      <h2 class="font-display text-[clamp(2.4rem,4.5vw,4rem)] leading-[1.04] font-light text-charcoal mb-8">
+        <span class="mask-line"><span>Made by hand,</span></span>
+        <span class="mask-line italic"><span>without hurry.</span></span>
+      </h2>
+      <p class="text-ash leading-relaxed max-w-lg mb-6 anim-up">
+        Founded in 2014 on a narrow street in the Marais, Séraphine began with a single tailor and a refusal to rush. Today, eleven artisans cut, drape and finish every piece under one roof.
+      </p>
+      <p class="text-ash leading-relaxed max-w-lg mb-10 anim-up">
+        We work only in natural fibres, dye in small lots, and produce nothing we cannot stand behind for a decade. Slowness is our discipline — and our luxury.
+      </p>
+      <div class="grid grid-cols-3 gap-6 max-w-md anim-up">
+        <div><p class="font-display text-4xl text-charcoal">11</p><p class="text-ash text-[10px] tracking-wide2 uppercase mt-1">Artisans</p></div>
+        <div><p class="font-display text-4xl text-charcoal">2014</p><p class="text-ash text-[10px] tracking-wide2 uppercase mt-1">Founded</p></div>
+        <div><p class="font-display text-4xl text-charcoal">100%</p><p class="text-ash text-[10px] tracking-wide2 uppercase mt-1">Natural Fibre</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PRESS / TESTIMONIALS ================= -->
+<section id="journal" class="bg-bone py-24 md:py-36">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <p class="text-clay text-[11px] tracking-luxe uppercase mb-12 text-center anim-up">As Seen In</p>
+    <div class="grid md:grid-cols-3 gap-12 md:gap-16">
+      <blockquote class="text-center anim-up">
+        <p class="font-display text-2xl md:text-[1.7rem] leading-snug italic text-charcoal mb-6">"A rare house that understands silence as a design language."</p>
+        <cite class="text-ash text-[11px] tracking-wide2 uppercase not-italic">— Vespertine Magazine</cite>
+      </blockquote>
+      <blockquote class="text-center anim-up md:border-x md:border-charcoal/12 md:px-12">
+        <p class="font-display text-2xl md:text-[1.7rem] leading-snug italic text-charcoal mb-6">"The most considered tailoring to come out of Paris in a decade."</p>
+        <cite class="text-ash text-[11px] tracking-wide2 uppercase not-italic">— The Cloth Review</cite>
+      </blockquote>
+      <blockquote class="text-center anim-up">
+        <p class="font-display text-2xl md:text-[1.7rem] leading-snug italic text-charcoal mb-6">"Clothes you forget you are wearing, and never want to remove."</p>
+        <cite class="text-ash text-[11px] tracking-wide2 uppercase not-italic">— Atlas Journal</cite>
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ================= NEWSLETTER ================= -->
+<section id="newsletter" class="max-w-[1500px] mx-auto px-6 md:px-10 py-28 md:py-36">
+  <div class="max-w-2xl mx-auto text-center">
+    <h2 class="font-display text-[clamp(2.2rem,4.5vw,3.8rem)] font-light text-charcoal mb-6 anim-up">
+      Join the House
+    </h2>
+    <p class="text-ash leading-relaxed mb-10 anim-up">
+      Private previews, atelier stories, and first access to each seasonal release. No noise — only the things worth knowing.
+    </p>
+    <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto anim-up" onsubmit="return false;">
+      <input type="email" required placeholder="Your email address"
+             class="flex-1 bg-transparent border-b border-charcoal/30 focus:border-charcoal outline-none py-3 text-charcoal placeholder:text-ash text-center sm:text-left transition-colors" />
+      <button class="border border-charcoal text-charcoal text-[11px] tracking-wide2 uppercase px-8 py-3 hover:bg-charcoal hover:text-ivory transition-colors duration-500">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="bg-charcoal text-ivory py-24 md:py-32">
+  <div class="max-w-3xl mx-auto px-6 md:px-10">
+    <h2 class="font-display text-[clamp(2.2rem,4vw,3.4rem)] font-light text-center mb-14 anim-up">Shipping &amp; Care</h2>
+
+    <div class="divide-y divide-ivory/12 border-y border-ivory/12">
+      <div class="faq-item">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-xl md:text-2xl">Where do you ship, and how long does it take?</span>
+          <span class="faq-plus text-2xl font-light text-clay shrink-0 ml-6">+</span>
+        </button>
+        <div class="faq-body"><p class="text-ivory/65 leading-relaxed pb-6 max-w-2xl">We ship worldwide. European orders arrive within 2–4 working days; international orders within 5–9. Each piece leaves the atelier wrapped in unbleached cotton and a numbered card of authenticity.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-xl md:text-2xl">What is your returns policy?</span>
+          <span class="faq-plus text-2xl font-light text-clay shrink-0 ml-6">+</span>
+        </button>
+        <div class="faq-body"><p class="text-ivory/65 leading-relaxed pb-6 max-w-2xl">Unworn pieces may be returned within 30 days for a full refund or exchange. Made-to-measure and final-sale items are exempt. Return shipping within the EU is complimentary.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-xl md:text-2xl">How should I care for natural fibres?</span>
+          <span class="faq-plus text-2xl font-light text-clay shrink-0 ml-6">+</span>
+        </button>
+        <div class="faq-body"><p class="text-ivory/65 leading-relaxed pb-6 max-w-2xl">Most pieces are best cold hand-washed or dry-cleaned, then laid flat to dry. Linen softens beautifully with wear; wool benefits from rest between wears. A care card accompanies every garment.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger w-full flex items-center justify-between py-6 text-left">
+          <span class="font-display text-xl md:text-2xl">Do you offer made-to-measure?</span>
+          <span class="faq-plus text-2xl font-light text-clay shrink-0 ml-6">+</span>
+        </button>
+        <div class="faq-body"><p class="text-ivory/65 leading-relaxed pb-6 max-w-2xl">Yes. Our atelier accepts a limited number of made-to-measure commissions each season, scheduled by appointment in Paris or remotely via guided measurement. Lead time is approximately six weeks.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FINAL CTA ================= -->
+<section id="cta" class="relative h-[70svh] min-h-[460px] img-shell flex items-center justify-center text-center">
+  <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80"
+       alt="Shop the collection" class="img-cover parallax absolute inset-0 scale-105" onerror="this.style.display='none'" />
+  <div class="absolute inset-0 bg-ink/45"></div>
+  <div class="relative z-10 px-6">
+    <p class="text-ivory/80 text-[11px] tracking-luxe uppercase mb-6 anim-up">Autumn — Winter MMXXVI</p>
+    <h2 class="font-display text-ivory text-[clamp(2.6rem,7vw,6rem)] font-light leading-[0.95] mb-10 anim-up">
+      Shop the Collection
+    </h2>
+    <a href="#shop" class="inline-block border border-ivory text-ivory text-[11px] tracking-wide2 uppercase px-10 py-4 hover:bg-ivory hover:text-charcoal transition-colors duration-500 anim-up">Enter the Boutique</a>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="bg-ivory pt-20 pb-12">
+  <div class="max-w-[1500px] mx-auto px-6 md:px-10">
+    <div class="grid md:grid-cols-12 gap-12 pb-16">
+      <div class="md:col-span-5">
+        <p class="font-display text-3xl tracking-[0.18em] text-charcoal mb-5">SÉRAPHINE</p>
+        <p class="text-ash max-w-sm leading-relaxed">Quiet luxury, made by hand in the Marais since 2014. Garments composed in shadow, kept for a lifetime.</p>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[10px] tracking-wide2 uppercase text-ash mb-5">Shop</p>
+        <ul class="space-y-3 text-charcoal/80 text-sm">
+          <li><a href="#shop" class="ul-link">Outerwear</a></li>
+          <li><a href="#shop" class="ul-link">Tailoring</a></li>
+          <li><a href="#shop" class="ul-link">Essentials</a></li>
+          <li><a href="#shop" class="ul-link">Eveningwear</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <p class="text-[10px] tracking-wide2 uppercase text-ash mb-5">House</p>
+        <ul class="space-y-3 text-charcoal/80 text-sm">
+          <li><a href="#atelier" class="ul-link">The Atelier</a></li>
+          <li><a href="#lookbook" class="ul-link">Lookbook</a></li>
+          <li><a href="#journal" class="ul-link">Press</a></li>
+          <li><a href="#newsletter" class="ul-link">Contact</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-3">
+        <p class="text-[10px] tracking-wide2 uppercase text-ash mb-5">Atelier</p>
+        <p class="text-charcoal/80 text-sm leading-relaxed">14 Rue des Ombres<br/>75004 Paris, France<br/>By appointment</p>
+        <div class="flex gap-5 mt-6 text-[11px] tracking-wide2 uppercase text-ash">
+          <a href="#" class="ul-link">Instagram</a>
+          <a href="#" class="ul-link">Pinterest</a>
+        </div>
+      </div>
+    </div>
+    <div class="hr-thin mb-8"></div>
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-wide2 uppercase text-ash">
+      <p>© MMXXVI Maison Séraphine. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="ul-link">Privacy</a>
+        <a href="#" class="ul-link">Terms</a>
+        <a href="#" class="ul-link">Returns</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ================= SCRIPTS ================= -->
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Nav scroll state */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 60);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* Mobile menu */
+  const mm = document.getElementById('mobileMenu');
+  document.getElementById('menuBtn').addEventListener('click', () => mm.classList.remove('translate-x-full'));
+  document.getElementById('menuClose').addEventListener('click', () => mm.classList.add('translate-x-full'));
+  document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => mm.classList.add('translate-x-full')));
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  if (reduce || typeof gsap === 'undefined') {
+    // Make everything visible without motion
+    document.querySelectorAll('.mask-line > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('.anim-up').forEach(e => { e.style.opacity = 1; });
+    document.querySelectorAll('.reveal-clip').forEach(e => e.classList.add('is-in'));
+    return;
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* Hero intro */
+  const heroTl = gsap.timeline({ defaults:{ ease:'power3.out' } });
+  heroTl.to('.hero-img', { scale:1, duration:2.2, ease:'power2.out' }, 0)
+        .from('.hero-kicker', { y:20, opacity:0, duration:1 }, 0.3)
+        .to('.mask-line > span', { y:'0%', duration:1.3, stagger:0.12, ease:'power4.out' }, 0.4)
+        .from('.hero-sub', { y:24, opacity:0, duration:1.1 }, 0.9);
+
+  /* Masked line reveals on scroll (non-hero) */
+  gsap.utils.toArray('.mask-line').forEach(line => {
+    if (line.closest('section')?.querySelector('.hero-kicker')) return; // skip hero handled above
+    const span = line.querySelector('span');
+    if (!span) return;
+    gsap.to(span, {
+      y:'0%', duration:1.2, ease:'power4.out',
+      scrollTrigger:{ trigger:line, start:'top 88%' }
+    });
+  });
+
+  /* Generic fade-up */
+  gsap.utils.toArray('.anim-up').forEach(el => {
+    gsap.set(el, { opacity:0, y:28 });
+    gsap.to(el, {
+      opacity:1, y:0, duration:1, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 90%' }
+    });
+  });
+
+  /* Clip-path reveals */
+  gsap.utils.toArray('.reveal-clip').forEach(el => {
+    ScrollTrigger.create({
+      trigger:el, start:'top 80%',
+      onEnter:() => el.classList.add('is-in')
+    });
+  });
+
+  /* Parallax on imagery */
+  gsap.utils.toArray('.parallax').forEach(img => {
+    if (img.classList.contains('hero-img')) {
+      gsap.to(img, {
+        yPercent:14, ease:'none',
+        scrollTrigger:{ trigger:img.closest('section'), start:'top top', end:'bottom top', scrub:true }
+      });
+      return;
+    }
+    gsap.fromTo(img, { yPercent:-8 }, {
+      yPercent:8, ease:'none',
+      scrollTrigger:{ trigger:img.closest('figure, div'), start:'top bottom', end:'bottom top', scrub:true }
+    });
+  });
+
+  /* Horizontal lookbook pin-scroll (desktop) */
+  const track = document.getElementById('hTrack');
+  const pin = document.getElementById('hPin');
+  if (track && pin && window.innerWidth >= 1024) {
+    const getScroll = () => track.scrollWidth - window.innerWidth + 40;
+    gsap.to(track, {
+      x: () => -getScroll(),
+      ease:'none',
+      scrollTrigger:{
+        trigger:pin,
+        start:'top top',
+        end: () => '+=' + getScroll(),
+        pin:true, scrub:1, invalidateOnRefresh:true
+      }
+    });
+  }
+
+  ScrollTrigger.refresh();
+})();
+</script>
+</body>
+</html>

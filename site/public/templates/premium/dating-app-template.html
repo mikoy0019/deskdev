@@ -1,0 +1,883 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Amorae â€” Meet someone who actually gets you</title>
+<meta name="description" content="Amorae is the relationship-first dating app. Real connections, guided conversations, and verified profiles for people who want something that lasts." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          coral: '#FF6B81',
+          blush: '#FF8FA3',
+          punch: '#FF4D6D',
+          violet: '#9D4EDD',
+          grape: '#7B2CBF',
+          cream: '#FFF6F3',
+          ink: '#2B1B2E',
+          mute: '#7A6A7E',
+        },
+        boxShadow: {
+          soft: '0 20px 60px -20px rgba(157,78,221,0.35)',
+          card: '0 30px 80px -30px rgba(255,77,109,0.45)',
+          glow: '0 0 0 1px rgba(255,255,255,0.6), 0 18px 50px -12px rgba(255,107,129,0.5)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --grad: linear-gradient(120deg,#FF6B81 0%,#FF4D6D 35%,#9D4EDD 100%); }
+  html, body { overflow-x: hidden; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(157,78,221,0.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(255,107,129,0.18), transparent 55%),
+      #FFF6F3;
+    color: #2B1B2E;
+  }
+  .grad-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grad-shift {
+    background: linear-gradient(120deg,#FF6B81,#FF4D6D,#9D4EDD,#7B2CBF,#FF8FA3);
+    background-size: 300% 300%;
+    animation: gradShift 12s ease infinite;
+  }
+  @keyframes gradShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .glass {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.6);
+  }
+  .phone {
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .swipe-card {
+    will-change: transform;
+    touch-action: none;
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .heart-float {
+    position: absolute;
+    will-change: transform, opacity;
+    pointer-events: none;
+  }
+  .accordion-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .45s cubic-bezier(.6,.05,.2,1);
+  }
+  .accordion-body > div { overflow: hidden; }
+  .faq.open .accordion-body { grid-template-rows: 1fr; }
+  .faq.open .faq-icon { transform: rotate(45deg); }
+  .reveal { opacity: 0; transform: translateY(28px); }
+  .magnetic { will-change: transform; }
+  .tilt-wrap { perspective: 1000px; }
+  @media (prefers-reduced-motion: reduce) {
+    .grad-shift, .marquee-track { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased selection:bg-coral/30">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="glass mt-4 rounded-2xl flex items-center justify-between px-4 sm:px-6 py-3 shadow-soft">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="grad-shift w-9 h-9 rounded-xl grid place-items-center shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9C.4 8.7 2 5 5.6 5 8 5 9.4 6.6 12 9.3 14.6 6.6 16 5 18.4 5 22 5 23.6 8.7 22 12c-2.5 4.4-10 9-10 9z"/></svg>
+        </span>
+        <span class="font-display text-xl font-600 tracking-tight">Amorae</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-7 text-sm font-500 text-ink/80">
+        <li><a href="#how" class="hover:text-punch transition">How it works</a></li>
+        <li><a href="#features" class="hover:text-punch transition">Features</a></li>
+        <li><a href="#safety" class="hover:text-punch transition">Safety</a></li>
+        <li><a href="#pricing" class="hover:text-punch transition">Premium</a></li>
+        <li><a href="#faq" class="hover:text-punch transition">FAQ</a></li>
+      </ul>
+      <a href="#download" id="nav-cta" class="magnetic grad-shift text-white text-sm font-600 px-5 py-2.5 rounded-xl shadow-card hover:brightness-105 transition">
+        Get Amorae
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-36 sm:pt-44 pb-20 sm:pb-28 overflow-hidden">
+  <div id="heart-field" class="absolute inset-0 -z-0"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center relative z-10">
+
+    <!-- Copy -->
+    <div>
+      <div class="reveal inline-flex items-center gap-2 glass rounded-full pl-2 pr-4 py-1.5 text-sm font-500 text-grape mb-6 shadow-soft">
+        <span class="grad-shift text-white text-xs px-2 py-0.5 rounded-full">New</span>
+        Guided first dates, in-app
+      </div>
+      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl leading-[1.05] font-600 tracking-tight">
+        Meet someone who
+        <span class="grad-text inline-block" id="rotator">actually gets you</span>
+      </h1>
+      <p class="reveal mt-6 text-lg text-mute max-w-lg">
+        Amorae is the relationship-first dating app. No endless swiping â€” just real, verified people, smarter matches, and conversations that go somewhere.
+      </p>
+
+      <div class="reveal mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
+        <a href="#download" id="hero-cta" class="magnetic grad-shift text-white font-600 px-7 py-4 rounded-2xl shadow-card hover:brightness-105 transition text-center">
+          Download free
+        </a>
+        <a href="#how" class="px-7 py-4 rounded-2xl glass font-600 text-ink hover:text-punch transition text-center shadow-soft">
+          See how it works
+        </a>
+      </div>
+
+      <div class="reveal mt-9 flex items-center gap-5">
+        <div class="flex -space-x-3">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="" />
+          <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=200&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="" />
+          <img src="https://images.unsplash.com/photo-1522098635833-216c03d81fbe?auto=format&fit=crop&w=200&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="" />
+          <span class="w-10 h-10 rounded-full border-2 border-white grad-shift grid place-items-center text-white text-xs font-700">2M+</span>
+        </div>
+        <p class="text-sm text-mute leading-tight">Loved by <span class="font-700 text-ink">2 million</span><br/>hopeful romantics</p>
+      </div>
+    </div>
+
+    <!-- Phone mockup with swipe stack -->
+    <div class="tilt-wrap flex justify-center lg:justify-end">
+      <div id="phone" class="phone relative w-[300px] sm:w-[340px]">
+        <div class="relative rounded-[2.6rem] bg-ink p-3 shadow-card">
+          <div class="rounded-[2.1rem] bg-cream overflow-hidden relative" style="aspect-ratio: 9/19;">
+            <!-- status bar -->
+            <div class="flex items-center justify-between px-5 pt-3 text-[11px] text-ink/60 font-600">
+              <span>9:41</span>
+              <span class="grad-text font-700">Amorae</span>
+              <span>â™¥ 98%</span>
+            </div>
+            <!-- card stack -->
+            <div id="card-stack" class="relative mx-4 mt-3" style="height: 70%;">
+              <!-- cards injected/declared -->
+              <article class="swipe-card absolute inset-0 rounded-3xl overflow-hidden shadow-card" data-i="2">
+                <div class="absolute inset-0 grad-shift"></div>
+                <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=900&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent"></div>
+                <div class="absolute bottom-0 p-4 text-white">
+                  <p class="font-display text-xl font-600">Priya, 28</p>
+                  <p class="text-sm text-white/80">Architect Â· 2 km away</p>
+                  <div class="flex gap-1.5 mt-2 text-[11px]">
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Hiking</span>
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Jazz</span>
+                  </div>
+                </div>
+              </article>
+              <article class="swipe-card absolute inset-0 rounded-3xl overflow-hidden shadow-card" data-i="1">
+                <div class="absolute inset-0 grad-shift"></div>
+                <img src="https://images.unsplash.com/photo-1522098635833-216c03d81fbe?auto=format&fit=crop&w=900&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent"></div>
+                <div class="absolute bottom-0 p-4 text-white">
+                  <p class="font-display text-xl font-600">Marcus, 31</p>
+                  <p class="text-sm text-white/80">Chef Â· 5 km away</p>
+                  <div class="flex gap-1.5 mt-2 text-[11px]">
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Cooking</span>
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Travel</span>
+                  </div>
+                </div>
+              </article>
+              <article class="swipe-card absolute inset-0 rounded-3xl overflow-hidden shadow-card" data-i="0">
+                <div class="absolute inset-0 grad-shift"></div>
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover" alt="" />
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent"></div>
+                <div class="absolute top-3 left-3 glass !bg-white/25 !border-white/40 text-white text-[11px] font-600 px-2.5 py-1 rounded-full flex items-center gap-1">
+                  <svg viewBox="0 0 24 24" class="w-3 h-3" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Verified
+                </div>
+                <div class="absolute bottom-0 p-4 text-white">
+                  <p class="font-display text-xl font-600">Sofia, 27</p>
+                  <p class="text-sm text-white/80">Illustrator Â· 1 km away</p>
+                  <div class="flex gap-1.5 mt-2 text-[11px]">
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Art</span>
+                    <span class="glass !bg-white/20 !border-white/30 px-2 py-0.5 rounded-full">Coffee</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+            <!-- action buttons -->
+            <div class="flex items-center justify-center gap-4 mt-4">
+              <button id="btn-pass" class="w-12 h-12 rounded-full glass grid place-items-center text-mute shadow-soft hover:scale-110 transition" aria-label="Pass">
+                <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6 6 18"/></svg>
+              </button>
+              <button id="btn-like" class="w-14 h-14 rounded-full grad-shift grid place-items-center text-white shadow-card hover:scale-110 transition" aria-label="Like">
+                <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9C.4 8.7 2 5 5.6 5 8 5 9.4 6.6 12 9.3 14.6 6.6 16 5 18.4 5 22 5 23.6 8.7 22 12c-2.5 4.4-10 9-10 9z"/></svg>
+              </button>
+              <button id="btn-star" class="w-12 h-12 rounded-full glass grid place-items-center text-violet shadow-soft hover:scale-110 transition" aria-label="Super like">
+                <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="m12 2 2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- floating match badge -->
+        <div class="absolute -left-6 top-16 glass rounded-2xl px-4 py-3 shadow-soft hidden sm:block" data-float>
+          <p class="text-xs text-mute">It's a match!</p>
+          <p class="font-700 text-punch">You + Sofia ðŸ’ž</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS STRIP ============ -->
+<section class="relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="glass rounded-3xl shadow-soft grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-ink/5 overflow-hidden">
+      <div class="p-7 text-center reveal">
+        <p class="font-display text-4xl font-600 grad-text"><span class="count" data-to="6200000">0</span><span>+</span></p>
+        <p class="text-sm text-mute mt-1">Matches made monthly</p>
+      </div>
+      <div class="p-7 text-center reveal">
+        <p class="font-display text-4xl font-600 grad-text"><span class="count" data-to="184000">0</span><span>+</span></p>
+        <p class="text-sm text-mute mt-1">First dates planned</p>
+      </div>
+      <div class="p-7 text-center reveal">
+        <p class="font-display text-4xl font-600 grad-text"><span class="count" data-to="92">0</span><span>%</span></p>
+        <p class="text-sm text-mute mt-1">Profiles verified</p>
+      </div>
+      <div class="p-7 text-center reveal">
+        <p class="font-display text-4xl font-600 grad-text"><span class="count" data-to="38000">0</span><span>+</span></p>
+        <p class="text-sm text-mute mt-1">Couples in 2024</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <p class="text-sm font-700 tracking-widest text-punch uppercase">How it works</p>
+      <h2 class="font-display text-3xl sm:text-5xl font-600 mt-3 leading-tight">Three gentle steps to your person</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="reveal glass rounded-3xl p-8 shadow-soft hover:-translate-y-1.5 transition duration-300">
+        <span class="grad-shift w-12 h-12 rounded-2xl grid place-items-center text-white font-display text-xl font-600 shadow-glow">1</span>
+        <h3 class="font-display text-xl font-600 mt-5">Tell us your heart</h3>
+        <p class="text-mute mt-2 text-[15px]">A 3-minute vibe quiz learns what matters to you â€” values, humour, the future you picture.</p>
+      </div>
+      <div class="reveal glass rounded-3xl p-8 shadow-soft hover:-translate-y-1.5 transition duration-300">
+        <span class="grad-shift w-12 h-12 rounded-2xl grid place-items-center text-white font-display text-xl font-600 shadow-glow">2</span>
+        <h3 class="font-display text-xl font-600 mt-5">Meet curated people</h3>
+        <p class="text-mute mt-2 text-[15px]">Each morning we hand-pick a few genuinely compatible, verified profiles. Quality over quantity.</p>
+      </div>
+      <div class="reveal glass rounded-3xl p-8 shadow-soft hover:-translate-y-1.5 transition duration-300">
+        <span class="grad-shift w-12 h-12 rounded-2xl grid place-items-center text-white font-display text-xl font-600 shadow-glow">3</span>
+        <h3 class="font-display text-xl font-600 mt-5">Plan the first date</h3>
+        <p class="text-mute mt-2 text-[15px]">Our concierge suggests warm icebreakers and nearby spots, so the spark moves from screen to real life.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES GRID ============ -->
+<section id="features" class="py-10 sm:py-16">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <p class="text-sm font-700 tracking-widest text-punch uppercase">Features</p>
+      <h2 class="font-display text-3xl sm:text-5xl font-600 mt-3 leading-tight">Built for connection, not addiction</h2>
+    </div>
+    <div class="grid md:grid-cols-3 lg:grid-cols-3 gap-6">
+      <div class="reveal glass rounded-3xl p-7 shadow-soft md:col-span-2 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-40 h-40 grad-shift rounded-full blur-2xl opacity-40"></div>
+        <div class="relative">
+          <h3 class="font-display text-2xl font-600">Compatibility Engine</h3>
+          <p class="text-mute mt-2 max-w-md">Our model weighs values, attachment style, and life goals â€” not just looks â€” to surface people you could truly build something with.</p>
+          <div class="flex flex-wrap gap-2 mt-5 text-xs font-600">
+            <span class="px-3 py-1.5 rounded-full bg-coral/10 text-punch">Values match</span>
+            <span class="px-3 py-1.5 rounded-full bg-violet/10 text-grape">Intent aligned</span>
+            <span class="px-3 py-1.5 rounded-full bg-coral/10 text-punch">Lifestyle fit</span>
+          </div>
+        </div>
+      </div>
+      <div class="reveal glass rounded-3xl p-7 shadow-soft">
+        <span class="w-11 h-11 rounded-2xl bg-coral/10 grid place-items-center text-punch mb-4">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600">Guided chats</h3>
+        <p class="text-mute mt-2 text-[15px]">Thoughtful prompts that make the first message effortless.</p>
+      </div>
+      <div class="reveal glass rounded-3xl p-7 shadow-soft">
+        <span class="w-11 h-11 rounded-2xl bg-violet/10 grid place-items-center text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5z"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600">Photo verification</h3>
+        <p class="text-mute mt-2 text-[15px]">Every face is real. A blue check means it's actually them.</p>
+      </div>
+      <div class="reveal glass rounded-3xl p-7 shadow-soft">
+        <span class="w-11 h-11 rounded-2xl bg-coral/10 grid place-items-center text-punch mb-4">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600">Slow mode</h3>
+        <p class="text-mute mt-2 text-[15px]">A daily pace that keeps dating calm, intentional, and human.</p>
+      </div>
+      <div class="reveal glass rounded-3xl p-7 shadow-soft">
+        <span class="w-11 h-11 rounded-2xl bg-violet/10 grid place-items-center text-grape mb-4">
+          <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>
+        </span>
+        <h3 class="font-display text-xl font-600">Date concierge</h3>
+        <p class="text-mute mt-2 text-[15px]">Curated nearby spots and reservations, handled in-app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SAFETY ============ -->
+<section id="safety" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal relative">
+      <div class="rounded-[2.5rem] overflow-hidden shadow-card relative grad-shift">
+        <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" class="w-full h-[420px] object-cover" alt="Two people enjoying a relaxed coffee date" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent"></div>
+      </div>
+      <div class="absolute -bottom-6 -right-4 sm:right-6 glass rounded-2xl p-4 shadow-soft max-w-[210px]">
+        <p class="font-700 text-ink text-sm flex items-center gap-2">
+          <span class="grad-shift w-7 h-7 rounded-full grid place-items-center text-white text-xs">âœ“</span>
+          Verified & protected
+        </p>
+        <p class="text-xs text-mute mt-1">24/7 trust team and instant ID checks.</p>
+      </div>
+    </div>
+    <div>
+      <p class="reveal text-sm font-700 tracking-widest text-punch uppercase">Safety first</p>
+      <h2 class="reveal font-display text-3xl sm:text-5xl font-600 mt-3 leading-tight">Date with peace of mind</h2>
+      <p class="reveal text-mute mt-4 text-lg max-w-md">Your safety isn't a feature â€” it's the foundation. We built Amorae so you can be open without ever feeling exposed.</p>
+      <ul class="mt-8 space-y-4">
+        <li class="reveal flex gap-4 items-start">
+          <span class="mt-1 w-7 h-7 rounded-full bg-coral/10 text-punch grid place-items-center shrink-0">âœ“</span>
+          <div><p class="font-600">Mandatory photo & ID verification</p><p class="text-mute text-[15px]">Bots and catfish don't make it past our gates.</p></div>
+        </li>
+        <li class="reveal flex gap-4 items-start">
+          <span class="mt-1 w-7 h-7 rounded-full bg-violet/10 text-grape grid place-items-center shrink-0">âœ“</span>
+          <div><p class="font-600">Share-your-date check-ins</p><p class="text-mute text-[15px]">Tell a trusted friend where you are with one tap.</p></div>
+        </li>
+        <li class="reveal flex gap-4 items-start">
+          <span class="mt-1 w-7 h-7 rounded-full bg-coral/10 text-punch grid place-items-center shrink-0">âœ“</span>
+          <div><p class="font-600">Block, mute & report â€” instantly</p><p class="text-mute text-[15px]">A human moderator reviews every report within hours.</p></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUCCESS STORIES MARQUEE ============ -->
+<section class="py-10 overflow-hidden">
+  <div class="max-w-2xl mx-auto px-5 text-center mb-10 reveal">
+    <p class="text-sm font-700 tracking-widest text-punch uppercase">Success stories</p>
+    <h2 class="font-display text-3xl sm:text-5xl font-600 mt-3">Real people, real sparks</h2>
+  </div>
+  <div class="marquee relative">
+    <div class="marquee-track gap-5">
+      <!-- duplicated set for seamless loop -->
+      <div class="story-set flex gap-5">
+        <article class="w-[330px] shrink-0 glass rounded-3xl p-6 shadow-soft">
+          <p class="text-[15px] text-ink/90">"We matched on a Tuesday, met for coffee that Saturday, and now we're planning a wedding. Amorae just *got* us."</p>
+          <div class="flex items-center gap-3 mt-5">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full object-cover" alt="" />
+            <div><p class="font-700 text-sm">Amara & Leo</p><p class="text-xs text-mute">Together 14 months</p></div>
+          </div>
+        </article>
+        <article class="w-[330px] shrink-0 glass rounded-3xl p-6 shadow-soft">
+          <p class="text-[15px] text-ink/90">"I was so tired of swipe-burnout. Three thoughtful matches a day changed everything. I met my partner in two weeks."</p>
+          <div class="flex items-center gap-3 mt-5">
+            <img src="https://images.unsplash.com/photo-1522098635833-216c03d81fbe?auto=format&fit=crop&w=120&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full object-cover" alt="" />
+            <div><p class="font-700 text-sm">Daniel</p><p class="text-xs text-mute">Brooklyn, NY</p></div>
+          </div>
+        </article>
+        <article class="w-[330px] shrink-0 glass rounded-3xl p-6 shadow-soft">
+          <p class="text-[15px] text-ink/90">"The guided prompts made me brave enough to actually say something real. Best decision I made all year."</p>
+          <div class="flex items-center gap-3 mt-5">
+            <img src="https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=120&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full object-cover" alt="" />
+            <div><p class="font-700 text-sm">Priya</p><p class="text-xs text-mute">London, UK</p></div>
+          </div>
+        </article>
+        <article class="w-[330px] shrink-0 glass rounded-3xl p-6 shadow-soft">
+          <p class="text-[15px] text-ink/90">"Verified profiles meant I could relax and just be myself. We've been inseparable since our first date."</p>
+          <div class="flex items-center gap-3 mt-5">
+            <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=120&q=80" onerror="this.style.display='none'" class="w-10 h-10 rounded-full object-cover" alt="" />
+            <div><p class="font-700 text-sm">Maya & Sam</p><p class="text-xs text-mute">Together 8 months</p></div>
+          </div>
+        </article>
+      </div>
+      <div class="story-set flex gap-5" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / PREMIUM ============ -->
+<section id="pricing" class="py-24 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mx-auto text-center mb-14 reveal">
+      <p class="text-sm font-700 tracking-widest text-punch uppercase">Premium</p>
+      <h2 class="font-display text-3xl sm:text-5xl font-600 mt-3 leading-tight">Free to fall for. Premium to go further.</h2>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Free -->
+      <div class="reveal glass rounded-3xl p-8 shadow-soft flex flex-col">
+        <h3 class="font-display text-2xl font-600">Spark</h3>
+        <p class="text-mute mt-1 text-sm">Everything you need to start.</p>
+        <p class="mt-6 font-display text-4xl font-600">$0<span class="text-base text-mute font-sans font-500">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-[15px] text-ink/80 flex-1">
+          <li class="flex gap-2"><span class="text-punch">âœ“</span> Daily curated matches</li>
+          <li class="flex gap-2"><span class="text-punch">âœ“</span> Verified profiles</li>
+          <li class="flex gap-2"><span class="text-punch">âœ“</span> Guided chat prompts</li>
+        </ul>
+        <a href="#download" class="mt-8 text-center font-600 px-5 py-3 rounded-2xl bg-ink/5 hover:bg-ink/10 transition">Start free</a>
+      </div>
+      <!-- Premium (highlighted) -->
+      <div class="reveal grad-shift rounded-3xl p-8 shadow-card flex flex-col text-white relative scale-[1.03]">
+        <span class="absolute -top-3 right-6 bg-white text-punch text-xs font-700 px-3 py-1 rounded-full shadow-soft">Most loved</span>
+        <h3 class="font-display text-2xl font-600">Flame</h3>
+        <p class="text-white/80 mt-1 text-sm">For serious romantics.</p>
+        <p class="mt-6 font-display text-4xl font-600">$14<span class="text-base text-white/70 font-sans font-500">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-[15px] flex-1">
+          <li class="flex gap-2"><span>âœ“</span> Unlimited curated matches</li>
+          <li class="flex gap-2"><span>âœ“</span> See who liked you</li>
+          <li class="flex gap-2"><span>âœ“</span> 5 super-likes weekly</li>
+          <li class="flex gap-2"><span>âœ“</span> Date concierge access</li>
+        </ul>
+        <a href="#download" class="mt-8 text-center font-700 px-5 py-3 rounded-2xl bg-white text-punch hover:bg-cream transition">Go Flame</a>
+      </div>
+      <!-- Top tier -->
+      <div class="reveal glass rounded-3xl p-8 shadow-soft flex flex-col">
+        <h3 class="font-display text-2xl font-600">Forever</h3>
+        <p class="text-mute mt-1 text-sm">Hands-on matchmaking.</p>
+        <p class="mt-6 font-display text-4xl font-600">$39<span class="text-base text-mute font-sans font-500">/mo</span></p>
+        <ul class="mt-6 space-y-3 text-[15px] text-ink/80 flex-1">
+          <li class="flex gap-2"><span class="text-grape">âœ“</span> Everything in Flame</li>
+          <li class="flex gap-2"><span class="text-grape">âœ“</span> Personal matchmaker</li>
+          <li class="flex gap-2"><span class="text-grape">âœ“</span> Priority verification</li>
+          <li class="flex gap-2"><span class="text-grape">âœ“</span> Monthly date planning</li>
+        </ul>
+        <a href="#download" class="mt-8 text-center font-600 px-5 py-3 rounded-2xl bg-ink/5 hover:bg-ink/10 transition">Get Forever</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-20 sm:py-28">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8">
+    <div class="glass rounded-[2.5rem] p-10 sm:p-14 shadow-soft text-center reveal relative overflow-hidden">
+      <div class="absolute -left-16 -top-16 w-48 h-48 grad-shift rounded-full blur-3xl opacity-30"></div>
+      <div class="relative">
+        <p class="text-sm font-700 tracking-widest text-punch uppercase">Our story</p>
+        <h2 class="font-display text-3xl sm:text-4xl font-600 mt-3 leading-tight max-w-3xl mx-auto">We were tired of dating apps that profit from your loneliness</h2>
+        <p class="text-mute mt-5 text-lg max-w-2xl mx-auto">So in 2021 we built the opposite â€” an app designed to get you off the app. Amorae measures success by relationships that last, not by minutes scrolled. We're a small team of romantics, engineers, and psychologists who believe technology should bring people closer, gently.</p>
+        <div class="flex flex-wrap justify-center gap-8 mt-9 text-center">
+          <div><p class="font-display text-3xl font-600 grad-text">2021</p><p class="text-sm text-mute">Founded</p></div>
+          <div><p class="font-display text-3xl font-600 grad-text">48</p><p class="text-sm text-mute">Countries</p></div>
+          <div><p class="font-display text-3xl font-600 grad-text">B-Corp</p><p class="text-sm text-mute">Certified</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 sm:py-28">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12 reveal">
+      <p class="text-sm font-700 tracking-widest text-punch uppercase">FAQ</p>
+      <h2 class="font-display text-3xl sm:text-5xl font-600 mt-3">Good questions, honest answers</h2>
+    </div>
+    <div class="space-y-4" id="faq-list">
+      <div class="faq reveal glass rounded-2xl shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-600">
+          <span>Is Amorae really free to use?</span>
+          <span class="faq-icon grad-shift text-white w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-mute">Yes. Spark gives you daily curated matches, verified profiles, and guided chats at no cost, forever. Premium tiers simply unlock extras like seeing who liked you and the date concierge.</p></div></div>
+      </div>
+      <div class="faq reveal glass rounded-2xl shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-600">
+          <span>How are matches chosen?</span>
+          <span class="faq-icon grad-shift text-white w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-mute">Our compatibility engine weighs your values, intentions, attachment style, and lifestyle â€” then hand-picks a small set of genuinely aligned, verified people each day. No infinite feed.</p></div></div>
+      </div>
+      <div class="faq reveal glass rounded-2xl shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-600">
+          <span>What makes verification different here?</span>
+          <span class="faq-icon grad-shift text-white w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-mute">Verification is mandatory, not optional. Every member confirms their photos and ID before they can match, so the person you meet is exactly who they say they are.</p></div></div>
+      </div>
+      <div class="faq reveal glass rounded-2xl shadow-soft overflow-hidden">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5 font-600">
+          <span>Can I cancel premium anytime?</span>
+          <span class="faq-icon grad-shift text-white w-7 h-7 rounded-full grid place-items-center transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-mute">Absolutely. Cancel in two taps from your settings, no questions asked. Your plan stays active until the end of the billing period.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="download" class="py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="grad-shift rounded-[2.8rem] p-10 sm:p-16 shadow-card text-center text-white relative overflow-hidden">
+      <div id="cta-hearts" class="absolute inset-0"></div>
+      <div class="relative">
+        <h2 class="font-display text-3xl sm:text-5xl font-600 leading-tight max-w-2xl mx-auto">Your person is closer than you think</h2>
+        <p class="text-white/85 mt-4 text-lg max-w-xl mx-auto">Join two million people choosing dating that feels good. Download Amorae and meet someone real this week.</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-9">
+          <a href="#" class="magnetic flex items-center justify-center gap-3 bg-white text-ink px-6 py-3.5 rounded-2xl font-600 shadow-soft hover:bg-cream transition">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path d="M16.5 1.6c0 1.2-.5 2.4-1.3 3.3-.9 1-2.3 1.7-3.5 1.6-.1-1.2.5-2.4 1.3-3.3.9-1 2.4-1.7 3.5-1.6zM20 17.2c-.6 1.4-.9 2-1.7 3.2-1.1 1.7-2.6 3.8-4.5 3.8-1.7 0-2.1-1.1-4.4-1.1-2.3 0-2.8 1.1-4.4 1.1-1.9 0-3.3-1.9-4.4-3.6C-1 17.4-1.3 11.3 1.7 8.1c1-1.1 2.6-1.8 4.1-1.8 1.7 0 2.8 1.1 4.2 1.1 1.4 0 2.2-1.1 4.2-1.1 1.4 0 2.8.7 3.8 1.9-3.3 1.8-2.8 6.6 1 9z"/></svg>
+            <span class="text-left leading-tight"><span class="block text-[11px] opacity-70">Download on the</span><span class="block font-700 -mt-0.5">App Store</span></span>
+          </a>
+          <a href="#" class="magnetic flex items-center justify-center gap-3 bg-white text-ink px-6 py-3.5 rounded-2xl font-600 shadow-soft hover:bg-cream transition">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path d="M3.6 2.3c-.3.3-.5.8-.5 1.4v16.6c0 .6.2 1.1.5 1.4l.1.1 9.3-9.3v-.2zM16.8 14.8l-3.1-3.1 3.1-3.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2zM13 11.7l3.1 3.1L4.6 21.4c-.4.2-.8.2-1.1 0zM4.6 2.6l11.5 6.5L13 12.3z"/></svg>
+            <span class="text-left leading-tight"><span class="block text-[11px] opacity-70">Get it on</span><span class="block font-700 -mt-0.5">Google Play</span></span>
+          </a>
+        </div>
+        <p class="text-white/70 text-sm mt-6">Free to download Â· No ads Â· Cancel premium anytime</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10 pb-12 border-b border-ink/10">
+      <div class="md:col-span-1">
+        <a href="#top" class="flex items-center gap-2.5">
+          <span class="grad-shift w-9 h-9 rounded-xl grid place-items-center shadow-glow">
+            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M12 21s-7.5-4.6-10-9C.4 8.7 2 5 5.6 5 8 5 9.4 6.6 12 9.3 14.6 6.6 16 5 18.4 5 22 5 23.6 8.7 22 12c-2.5 4.4-10 9-10 9z"/></svg>
+          </span>
+          <span class="font-display text-xl font-600">Amorae</span>
+        </a>
+        <p class="text-mute text-sm mt-4 max-w-xs">Dating designed to get you off the app â€” and into a relationship that lasts.</p>
+      </div>
+      <div>
+        <p class="font-700 text-sm mb-4">Product</p>
+        <ul class="space-y-2.5 text-sm text-mute">
+          <li><a href="#how" class="hover:text-punch transition">How it works</a></li>
+          <li><a href="#features" class="hover:text-punch transition">Features</a></li>
+          <li><a href="#pricing" class="hover:text-punch transition">Premium</a></li>
+          <li><a href="#safety" class="hover:text-punch transition">Safety</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-sm mb-4">Company</p>
+        <ul class="space-y-2.5 text-sm text-mute">
+          <li><a href="#about" class="hover:text-punch transition">About us</a></li>
+          <li><a href="#" class="hover:text-punch transition">Careers</a></li>
+          <li><a href="#" class="hover:text-punch transition">Press</a></li>
+          <li><a href="#" class="hover:text-punch transition">Blog</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-700 text-sm mb-4">Legal</p>
+        <ul class="space-y-2.5 text-sm text-mute">
+          <li><a href="#" class="hover:text-punch transition">Privacy</a></li>
+          <li><a href="#" class="hover:text-punch transition">Terms</a></li>
+          <li><a href="#" class="hover:text-punch transition">Community guidelines</a></li>
+          <li><a href="#" class="hover:text-punch transition">Cookie settings</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-7">
+      <p class="text-sm text-mute">Â© 2024 Amorae Labs, PBC. Made with love for love.</p>
+      <div class="flex gap-3">
+        <a href="#" aria-label="Instagram" class="w-9 h-9 rounded-full glass grid place-items-center text-mute hover:text-punch transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.8.3 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.8-.3-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.4a6.4 6.4 0 1 0 0 12.8 6.4 6.4 0 0 0 0-12.8zm0 10.6a4.2 4.2 0 1 1 0-8.4 4.2 4.2 0 0 1 0 8.4zm6.6-10.9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg></a>
+        <a href="#" aria-label="TikTok" class="w-9 h-9 rounded-full glass grid place-items-center text-mute hover:text-punch transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M16 2c.3 2.3 1.8 4 4 4.2v2.6c-1.5 0-2.9-.5-4-1.3v6.6c0 3.4-2.7 6.1-6.1 6.1A6.1 6.1 0 0 1 9.9 8.2v2.7a3.4 3.4 0 1 0 2.4 3.3V2z"/></svg></a>
+        <a href="#" aria-label="X" class="w-9 h-9 rounded-full glass grid place-items-center text-mute hover:text-punch transition"><svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path d="M18.2 2h3.3l-7.2 8.3L23 22h-6.6l-5.2-6.8L5.3 22H2l7.7-8.8L1.7 2h6.8l4.7 6.2zM17 20h1.8L7.1 3.9H5.1z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav shadow on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('translate-y-0', true);
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) nav.firstElementChild.firstElementChild.classList.add('!shadow-card');
+    else nav.firstElementChild.firstElementChild.classList.remove('!shadow-card');
+  });
+
+  /* ---------- Duplicate marquee for seamless loop ---------- */
+  const setA = document.querySelector('.story-set');
+  const setB = document.querySelectorAll('.story-set')[1];
+  if (setA && setB) setB.innerHTML = setA.innerHTML;
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const faq = btn.closest('.faq');
+      const open = faq.classList.contains('open');
+      document.querySelectorAll('.faq').forEach((f) => f.classList.remove('open'));
+      if (!open) faq.classList.add('open');
+    });
+  });
+
+  /* ---------- Headline rotator ---------- */
+  const rotator = document.getElementById('rotator');
+  const words = ['actually gets you', "you'll grow with", 'feels like home', 'stays for the long run'];
+  let wi = 0;
+  if (rotator && !reduce) {
+    setInterval(() => {
+      wi = (wi + 1) % words.length;
+      rotator.style.transition = 'opacity .4s, transform .4s';
+      rotator.style.opacity = '0';
+      rotator.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        rotator.textContent = words[wi];
+        rotator.style.opacity = '1';
+        rotator.style.transform = 'translateY(0)';
+      }, 400);
+    }, 2800);
+  }
+
+  /* ---------- Floating hearts ---------- */
+  function spawnHearts(container, count, opts) {
+    if (!container || reduce) return;
+    const col = opts.color || 'rgba(255,107,129,0.5)';
+    for (let i = 0; i < count; i++) {
+      const h = document.createElement('span');
+      h.className = 'heart-float';
+      h.innerHTML = '<svg viewBox="0 0 24 24" width="' + (opts.size || 24) + '" fill="' + col + '"><path d="M12 21s-7.5-4.6-10-9C.4 8.7 2 5 5.6 5 8 5 9.4 6.6 12 9.3 14.6 6.6 16 5 18.4 5 22 5 23.6 8.7 22 12c-2.5 4.4-10 9-10 9z"/></svg>';
+      h.style.left = Math.random() * 100 + '%';
+      h.style.top = Math.random() * 100 + '%';
+      h.style.opacity = '0';
+      container.appendChild(h);
+      floatLoop(h);
+    }
+  }
+  function floatLoop(h) {
+    const dur = 5 + Math.random() * 6;
+    const x = (Math.random() - 0.5) * 60;
+    gsap.fromTo(h,
+      { y: 30, opacity: 0, scale: 0.6 },
+      { y: -120, x: '+=' + x, opacity: 0.9, scale: 1, duration: dur, ease: 'sine.out',
+        onComplete: () => { gsap.to(h, { opacity: 0, duration: 0.6, onComplete: () => floatLoop(h) }); } });
+  }
+
+  /* ---------- Swipe card stack ---------- */
+  function initSwipe() {
+    const stack = document.getElementById('card-stack');
+    if (!stack) return;
+    let cards = Array.from(stack.querySelectorAll('.swipe-card'));
+
+    function layout() {
+      cards.forEach((c, idx) => {
+        const depth = cards.length - 1 - idx; // top card = last in DOM
+        gsap.set(c, {
+          scale: 1 - depth * 0.05,
+          y: depth * 14,
+          zIndex: idx + 1,
+          rotation: 0,
+          x: 0,
+          opacity: depth > 2 ? 0 : 1,
+        });
+      });
+    }
+    layout();
+
+    function topCard() { return cards[cards.length - 1]; }
+
+    function fling(dir) {
+      const card = topCard();
+      if (!card) return;
+      gsap.to(card, {
+        x: dir * 460, y: -40, rotation: dir * 22, opacity: 0, duration: 0.5, ease: 'power2.in',
+        onComplete: () => {
+          gsap.set(card, { x: 0, y: 0, rotation: 0, opacity: 1 });
+          stack.insertBefore(card, stack.firstChild);
+          cards = Array.from(stack.querySelectorAll('.swipe-card'));
+          layout();
+        }
+      });
+    }
+
+    // Pointer drag on top card (delegated)
+    let dragging = false, startX = 0, startY = 0, current = null;
+    stack.addEventListener('pointerdown', (e) => {
+      current = topCard();
+      if (!current) return;
+      dragging = true; startX = e.clientX; startY = e.clientY;
+      current.setPointerCapture(e.pointerId);
+    });
+    stack.addEventListener('pointermove', (e) => {
+      if (!dragging || !current) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      gsap.set(current, { x: dx, y: dy * 0.4, rotation: dx * 0.05 });
+    });
+    stack.addEventListener('pointerup', (e) => {
+      if (!dragging || !current) return;
+      dragging = false;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 90) fling(dx > 0 ? 1 : -1);
+      else gsap.to(current, { x: 0, y: 0, rotation: 0, duration: 0.4, ease: 'elastic.out(1,0.6)' });
+      current = null;
+    });
+
+    document.getElementById('btn-like').addEventListener('click', () => { fling(1); burstHeart(); });
+    document.getElementById('btn-pass').addEventListener('click', () => fling(-1));
+    document.getElementById('btn-star').addEventListener('click', () => fling(1));
+
+    // Auto demo swipe
+    if (!reduce) {
+      let demo = setInterval(() => { if (!dragging) fling(Math.random() > 0.4 ? 1 : -1); }, 4200);
+      stack.addEventListener('pointerdown', () => clearInterval(demo), { once: true });
+    }
+  }
+
+  function burstHeart() {
+    if (reduce) return;
+    const phone = document.getElementById('phone');
+    const h = document.createElement('span');
+    h.className = 'heart-float';
+    h.style.left = '50%'; h.style.top = '60%';
+    h.innerHTML = '<svg viewBox="0 0 24 24" width="40" fill="rgba(255,77,109,0.85)"><path d="M12 21s-7.5-4.6-10-9C.4 8.7 2 5 5.6 5 8 5 9.4 6.6 12 9.3 14.6 6.6 16 5 18.4 5 22 5 23.6 8.7 22 12c-2.5 4.4-10 9-10 9z"/></svg>';
+    phone.appendChild(h);
+    gsap.fromTo(h, { scale: 0, opacity: 1, y: 0 }, { scale: 1.6, opacity: 0, y: -80, duration: 1, ease: 'power2.out', onComplete: () => h.remove() });
+  }
+
+  /* ---------- Count up ---------- */
+  function countUp(el) {
+    const to = +el.dataset.to;
+    const obj = { v: 0 };
+    gsap.to(obj, {
+      v: to, duration: 2, ease: 'power2.out',
+      onUpdate: () => {
+        const v = obj.v;
+        el.textContent = v >= 1000000 ? (v / 1000000).toFixed(1) + 'M'
+          : v >= 1000 ? Math.round(v / 1000) + 'K'
+          : Math.round(v);
+      }
+    });
+  }
+
+  /* ---------- Magnetic CTA buttons ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      el.addEventListener('pointermove', (e) => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width / 2;
+        const my = e.clientY - r.top - r.height / 2;
+        gsap.to(el, { x: mx * 0.3, y: my * 0.4, duration: 0.4 });
+      });
+      el.addEventListener('pointerleave', () => gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.5)' }));
+    });
+  }
+
+  /* ---------- GSAP scroll animations ---------- */
+  window.addEventListener('load', () => {
+    initSwipe();
+    spawnHearts(document.getElementById('heart-field'), 10, { color: 'rgba(255,143,163,0.35)', size: 22 });
+    spawnHearts(document.getElementById('cta-hearts'), 8, { color: 'rgba(255,255,255,0.35)', size: 26 });
+
+    if (typeof gsap === 'undefined') {
+      document.querySelectorAll('.reveal').forEach((e) => { e.style.opacity = 1; e.style.transform = 'none'; });
+      return;
+    }
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (reduce) {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+      document.querySelectorAll('.count').forEach((el) => {
+        const to = +el.dataset.to;
+        el.textContent = to >= 1000000 ? (to/1000000).toFixed(1)+'M' : to >= 1000 ? Math.round(to/1000)+'K' : to;
+      });
+      return;
+    }
+
+    // Reveal batches
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // Count-ups
+    document.querySelectorAll('.count').forEach((el) => {
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', once: true, onEnter: () => countUp(el) });
+    });
+
+    // Phone parallax + intro
+    gsap.from('#phone', { y: 60, opacity: 0, duration: 1, ease: 'power3.out', delay: 0.2 });
+    gsap.to('#phone', {
+      y: -50, ease: 'none',
+      scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: 1 }
+    });
+
+    // Tilt-3D phone on pointer
+    const phone = document.getElementById('phone');
+    if (window.matchMedia('(pointer:fine)').matches) {
+      const wrap = phone.closest('.tilt-wrap');
+      wrap.addEventListener('pointermove', (e) => {
+        const r = wrap.getBoundingClientRect();
+        const rx = ((e.clientY - r.top) / r.height - 0.5) * -12;
+        const ry = ((e.clientX - r.left) / r.width - 0.5) * 16;
+        gsap.to(phone, { rotateX: rx, rotateY: ry, duration: 0.5, transformPerspective: 900 });
+      });
+      wrap.addEventListener('pointerleave', () => gsap.to(phone, { rotateX: 0, rotateY: 0, duration: 0.6 }));
+    }
+
+    // Float badge
+    document.querySelectorAll('[data-float]').forEach((el) => {
+      gsap.to(el, { y: -10, duration: 2.4, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+    });
+
+    // Hero copy stagger
+    gsap.from('#rotator', { opacity: 0, y: 20, duration: 0.8, delay: 0.3 });
+  });
+})();
+</script>
+</body>
+</html>
+

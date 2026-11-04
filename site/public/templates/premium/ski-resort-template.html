@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Alpenfrost — Mountain Ski Resort &amp; Lodge</title>
+<meta name="description" content="Alpenfrost — a high-alpine ski resort & lodge. 142 runs, 19 lifts, untracked powder and timber-warm lodging at 2,840m." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          frost: {
+            50:  '#f2f8fd',
+            100: '#e3f0fb',
+            200: '#c1ddf5',
+            300: '#8cc1ec',
+            400: '#4f9fdd',
+            500: '#2b80c8',
+            600: '#1d63a8',
+            700: '#1a4f88',
+            800: '#1b4470',
+            900: '#1b3a5e',
+            950: '#12253d',
+          },
+          glacier: '#0a1626',
+          ice: '#eaf3fb',
+          ember: '#ff7a3c',      // warm accent
+          ember2: '#ff9d5c',
+        },
+        fontFamily: {
+          display: ['"Cormorant Garamond"', 'serif'],
+          sans: ['"Sora"', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --ember: #ff7a3c; }
+  * { -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #0a1626;
+    color: #eaf3fb;
+    font-family: 'Sora', system-ui, sans-serif;
+    cursor: none;
+  }
+  ::selection { background: var(--ember); color: #0a1626; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; border-radius: 9999px;
+    pointer-events: none; z-index: 9999; mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #fff; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1.5px solid rgba(255,255,255,.6);
+    transition: width .25s ease, height .25s ease, border-color .25s ease, background .25s ease;
+  }
+  .cursor-ring.is-hover { width: 64px; height: 64px; border-color: var(--ember); background: rgba(255,122,60,.12); }
+
+  /* Ken burns */
+  @keyframes kenburns {
+    0%   { transform: scale(1.08) translate3d(0,0,0); }
+    100% { transform: scale(1.22) translate3d(-1.5%, -2%, 0); }
+  }
+  .kenburns { animation: kenburns 22s ease-in-out infinite alternate; }
+
+  /* Falling snow */
+  .snow-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .flake {
+    position: absolute; top: -10px; color: #fff; opacity: .85;
+    animation: fall linear infinite;
+    text-shadow: 0 0 6px rgba(255,255,255,.5);
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); }
+    100% { transform: translateY(110vh) translateX(40px) rotate(360deg); }
+  }
+
+  /* Gradient image fallbacks */
+  .img-fallback {
+    background:
+      radial-gradient(120% 120% at 20% 0%, #2b80c8 0%, #1b3a5e 45%, #0a1626 100%);
+  }
+
+  .glass {
+    background: rgba(18, 37, 61, .55);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(140, 193, 236, .14);
+  }
+  .text-stroke { -webkit-text-stroke: 1px rgba(234,243,251,.35); color: transparent; }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s cubic-bezier(.4,0,.2,1); }
+
+  /* Snow widget gauge */
+  .gauge-bar { transition: width 1.4s cubic-bezier(.16,1,.3,1); }
+
+  /* Magnetic */
+  .magnetic { will-change: transform; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kenburns { animation: none !important; }
+    .flake { animation: none !important; display: none; }
+    * { scroll-behavior: auto !important; }
+  }
+
+  /* Hide custom cursor on touch */
+  @media (hover: none) {
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased selection:bg-ember">
+
+<!-- Custom cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 left-0 w-full z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 py-5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group" data-cursor>
+      <span class="relative inline-flex w-9 h-9 items-center justify-center rounded-full bg-gradient-to-br from-frost-400 to-ember text-glacier font-bold text-lg shadow-lg shadow-frost-900/40">
+        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-12 4 7 3-5 5 10z"/></svg>
+      </span>
+      <span class="font-display text-2xl tracking-wide text-ice">Alpen<span class="text-ember">frost</span></span>
+    </a>
+
+    <ul class="hidden lg:flex items-center gap-8 text-sm font-light text-frost-100/80">
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#mountain">The Mountain</a></li>
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#lodging">Lodging</a></li>
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#activities">Activities</a></li>
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#passes">Passes</a></li>
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#events">Events</a></li>
+      <li><a data-cursor class="hover:text-ice transition-colors" href="#faq">FAQ</a></li>
+    </ul>
+
+    <a href="#passes" id="navBook" data-cursor class="magnetic relative inline-flex items-center gap-2 rounded-full bg-ember px-6 py-2.5 text-sm font-medium text-glacier shadow-lg shadow-ember/30 hover:shadow-ember/50 transition-shadow">
+      <span class="magnetic-inner inline-flex items-center gap-2">
+        Book Now
+        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-end overflow-hidden">
+  <!-- Parallax image -->
+  <div class="absolute inset-0 z-0" data-hero-parallax>
+    <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=1600&q=80"
+         alt="Alpine peaks at dawn"
+         class="kenburns w-full h-[120%] object-cover"
+         onerror="this.style.display='none'" />
+    <div class="absolute inset-0 img-fallback -z-10"></div>
+  </div>
+  <!-- Overlays -->
+  <div class="absolute inset-0 z-10 bg-gradient-to-t from-glacier via-glacier/40 to-glacier/30"></div>
+  <div class="absolute inset-0 z-10 bg-gradient-to-r from-glacier/70 via-transparent to-transparent"></div>
+
+  <!-- Falling snow -->
+  <div class="snow-layer z-20" id="heroSnow"></div>
+
+  <div class="relative z-30 w-full max-w-7xl mx-auto px-6 lg:px-10 pb-20 lg:pb-28">
+    <div class="max-w-3xl">
+      <p class="reveal flex items-center gap-3 text-frost-200 text-sm tracking-[0.3em] uppercase mb-6">
+        <span class="h-px w-10 bg-ember"></span> Elevation 2,840m · Est. 1971
+      </p>
+      <h1 class="font-display leading-[0.92] text-ice mb-6">
+        <span class="reveal block text-[15vw] lg:text-[10rem]" data-kinetic>Chase the</span>
+        <span class="reveal block text-[15vw] lg:text-[10rem] italic text-ember" data-kinetic>fall line.</span>
+      </h1>
+      <p class="reveal max-w-xl text-lg text-frost-100/85 font-light mb-9">
+        Untracked powder, timber-warm lodges and 142 runs carved into the spine of the
+        Varsehorn massif. This is winter, the way it was meant to be ridden.
+      </p>
+      <div class="reveal flex flex-wrap items-center gap-4">
+        <a href="#passes" data-cursor class="magnetic group inline-flex items-center gap-2 rounded-full bg-ember px-8 py-4 text-glacier font-medium shadow-xl shadow-ember/30">
+          <span class="magnetic-inner inline-flex items-center gap-2">
+            Book Your Stay
+            <svg viewBox="0 0 24 24" class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+        <a href="#mountain" data-cursor class="inline-flex items-center gap-2 rounded-full glass px-8 py-4 text-ice font-light hover:bg-frost-900/60 transition-colors">
+          Explore the Mountain
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 text-frost-200/60 text-xs tracking-widest flex flex-col items-center gap-2">
+    <span>SCROLL</span>
+    <span class="block w-px h-10 bg-gradient-to-b from-frost-200/60 to-transparent animate-pulse"></span>
+  </div>
+</section>
+
+<!-- ============ CONDITIONS / SNOW REPORT STRIP ============ -->
+<section class="relative z-30 -mt-16 lg:-mt-20 px-4">
+  <div class="max-w-6xl mx-auto glass rounded-3xl p-6 lg:p-8 shadow-2xl shadow-glacier/60">
+    <div class="flex flex-col lg:flex-row lg:items-center gap-8">
+      <!-- Live widget -->
+      <div class="flex items-center gap-5 lg:border-r lg:border-frost-300/15 lg:pr-8">
+        <div class="relative w-16 h-16 rounded-2xl bg-frost-900/60 flex items-center justify-center overflow-hidden">
+          <div class="snow-layer" id="widgetSnow"></div>
+          <svg viewBox="0 0 24 24" class="w-8 h-8 text-frost-200 relative z-10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-frost-200/70">Live Conditions</p>
+          <p class="font-display text-3xl text-ice leading-none mt-1">−9°C <span class="text-ember text-xl">·</span> Snowing</p>
+          <p class="text-xs text-frost-200/60 mt-1" id="liveClock">Summit · packed powder</p>
+        </div>
+      </div>
+
+      <!-- Stats / count ups -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 flex-1">
+        <div>
+          <p class="font-display text-4xl text-ember countup" data-target="62" data-suffix="cm">0</p>
+          <p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Base Depth</p>
+        </div>
+        <div>
+          <p class="font-display text-4xl text-ice countup" data-target="142">0</p>
+          <p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Runs Open</p>
+        </div>
+        <div>
+          <p class="font-display text-4xl text-ice countup" data-target="19">0</p>
+          <p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Lifts Spinning</p>
+        </div>
+        <div>
+          <p class="font-display text-4xl text-ice countup" data-target="2840" data-suffix="m">0</p>
+          <p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Summit Elev.</p>
+        </div>
+      </div>
+
+      <!-- Snow gauge -->
+      <div class="lg:border-l lg:border-frost-300/15 lg:pl-8 w-full lg:w-52">
+        <p class="text-xs uppercase tracking-widest text-frost-200/70 mb-2">24h Snowfall</p>
+        <div class="h-2.5 w-full rounded-full bg-frost-900/70 overflow-hidden">
+          <div class="gauge-bar h-full rounded-full bg-gradient-to-r from-frost-400 to-ember" style="width:0%" data-gauge="84"></div>
+        </div>
+        <p class="font-display text-2xl text-ice mt-2">18 cm fresh</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE MOUNTAIN ============ -->
+<section id="mountain" class="relative py-28 lg:py-36 px-6 lg:px-10">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+      <div>
+        <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">01 — The Mountain</p>
+        <h2 class="reveal font-display text-5xl lg:text-7xl text-ice leading-tight max-w-2xl">
+          Terrain for every line you dare to draw.
+        </h2>
+      </div>
+      <p class="reveal max-w-sm text-frost-100/70 font-light">
+        From mellow rolling greens to the legendary couloirs of North Bowl, the Varsehorn
+        offers 3,100 vertical metres of fall-line freedom.
+      </p>
+    </div>
+
+    <!-- Terrain breakdown -->
+    <div class="grid md:grid-cols-3 gap-6 mb-16">
+      <div data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded-full bg-green-400/90 flex items-center justify-center text-glacier font-bold text-sm">●</span>
+          <span class="text-frost-200/60 text-sm uppercase tracking-widest">Beginner</span>
+        </div>
+        <p class="font-display text-5xl text-ice mb-2">38<span class="text-frost-300 text-2xl"> runs</span></p>
+        <p class="text-frost-100/70 font-light text-sm">Wide, groomed boulevards and the Meadowlark learning park — gentle pitch, big confidence.</p>
+      </div>
+      <div data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 rounded bg-frost-400 flex items-center justify-center text-glacier font-bold text-sm">■</span>
+          <span class="text-frost-200/60 text-sm uppercase tracking-widest">Intermediate</span>
+        </div>
+        <p class="font-display text-5xl text-ice mb-2">71<span class="text-frost-300 text-2xl"> runs</span></p>
+        <p class="text-frost-100/70 font-light text-sm">Cruisy blues spilling off four high-speed chairs. Lap Skyline Ridge until your legs quit.</p>
+      </div>
+      <div data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="w-8 h-8 flex items-center justify-center text-glacier font-bold text-base" style="background:#0a1626;border:2px solid #fff;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)"></span>
+          <span class="text-frost-200/60 text-sm uppercase tracking-widest">Expert</span>
+        </div>
+        <p class="font-display text-5xl text-ice mb-2">33<span class="text-frost-300 text-2xl"> runs</span></p>
+        <p class="text-frost-100/70 font-light text-sm">Steep chutes, hike-to bowls and the infamous North Couloir. Avalanche-managed, heart-managed by you.</p>
+      </div>
+    </div>
+
+    <!-- Big parallax image -->
+    <div class="reveal relative rounded-[2rem] overflow-hidden h-[55vh] lg:h-[70vh]" data-parallax-wrap>
+      <img src="https://images.unsplash.com/photo-1502810365585-56ad8c8f1c2a?auto=format&fit=crop&w=1600&q=80"
+           alt="Skier carving fresh snow"
+           class="w-full h-[125%] object-cover" data-parallax-img
+           onerror="this.style.display='none'" />
+      <div class="absolute inset-0 img-fallback -z-10"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-glacier/80 via-transparent to-transparent"></div>
+      <div class="absolute bottom-8 left-8 right-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="text-ember text-xs uppercase tracking-[0.3em] mb-2">Signature Descent</p>
+          <h3 class="font-display text-4xl lg:text-5xl text-ice">North Couloir · 2.4 km</h3>
+        </div>
+        <span class="glass rounded-full px-5 py-2 text-sm text-ice">42° max pitch</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LODGING ============ -->
+<section id="lodging" class="relative py-24 lg:py-32 px-6 lg:px-10 bg-frost-950/40">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">02 — Lodging</p>
+      <h2 class="reveal font-display text-5xl lg:text-7xl text-ice">Come in from the cold.</h2>
+      <p class="reveal max-w-xl mx-auto mt-5 text-frost-100/70 font-light">Three ski-in, ski-out properties wrapped in larch timber, stone hearths and slow mornings.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Card 1 -->
+      <article data-tilt class="reveal group glass rounded-3xl overflow-hidden hover:-translate-y-2 transition-transform duration-500">
+        <div class="relative h-60 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1486078695445-0497c2e98e1c?auto=format&fit=crop&w=1600&q=80"
+               alt="Timber lodge interior" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.2s]"
+               onerror="this.style.display='none'" />
+          <div class="absolute inset-0 img-fallback -z-10"></div>
+          <span class="absolute top-4 left-4 glass rounded-full px-4 py-1.5 text-xs text-ice">Flagship</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-display text-3xl text-ice mb-2">The Larchwood Grand</h3>
+          <p class="text-frost-100/70 font-light text-sm mb-5">Slope-side suites with private balconies, a glass-walled spa and a fireside whisky bar.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-frost-200/60 text-sm">from <span class="text-ice font-display text-2xl">€420</span>/nt</span>
+            <a href="#passes" data-cursor class="text-ember text-sm hover:underline">Reserve →</a>
+          </div>
+        </div>
+      </article>
+      <!-- Card 2 -->
+      <article data-tilt class="reveal group glass rounded-3xl overflow-hidden hover:-translate-y-2 transition-transform duration-500">
+        <div class="relative h-60 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517825738774-7de9363ef735?auto=format&fit=crop&w=1600&q=80"
+               alt="Cozy alpine chalet" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.2s]"
+               onerror="this.style.display='none'" />
+          <div class="absolute inset-0 img-fallback -z-10"></div>
+          <span class="absolute top-4 left-4 glass rounded-full px-4 py-1.5 text-xs text-ice">Chalet</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-display text-3xl text-ice mb-2">Snowdrift Chalets</h3>
+          <p class="text-frost-100/70 font-light text-sm mb-5">Standalone log chalets for two to ten, with hot tubs steaming beneath the stars.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-frost-200/60 text-sm">from <span class="text-ice font-display text-2xl">€680</span>/nt</span>
+            <a href="#passes" data-cursor class="text-ember text-sm hover:underline">Reserve →</a>
+          </div>
+        </div>
+      </article>
+      <!-- Card 3 -->
+      <article data-tilt class="reveal group glass rounded-3xl overflow-hidden hover:-translate-y-2 transition-transform duration-500 md:col-span-2 lg:col-span-1">
+        <div class="relative h-60 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=1600&q=80"
+               alt="Mountain hostel bunk view" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1.2s]"
+               onerror="this.style.display='none'" />
+          <div class="absolute inset-0 img-fallback -z-10"></div>
+          <span class="absolute top-4 left-4 glass rounded-full px-4 py-1.5 text-xs text-ice">Lodge</span>
+        </div>
+        <div class="p-7">
+          <h3 class="font-display text-3xl text-ice mb-2">Basecamp Loft</h3>
+          <p class="text-frost-100/70 font-light text-sm mb-5">Design-forward bunk rooms and a buzzing après hall — for riders who chase laps, not luxury.</p>
+          <div class="flex items-center justify-between">
+            <span class="text-frost-200/60 text-sm">from <span class="text-ice font-display text-2xl">€95</span>/nt</span>
+            <a href="#passes" data-cursor class="text-ember text-sm hover:underline">Reserve →</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACTIVITIES ============ -->
+<section id="activities" class="relative py-24 lg:py-32 px-6 lg:px-10">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-16">
+      <div>
+        <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">03 — Beyond the Slopes</p>
+        <h2 class="reveal font-display text-5xl lg:text-7xl text-ice max-w-2xl">More than a mountain.</h2>
+      </div>
+      <p class="reveal max-w-sm text-frost-100/70 font-light">When the lifts stop spinning, the adventure keeps climbing.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div data-tilt class="reveal glass rounded-3xl p-7 hover:-translate-y-1.5 transition-transform duration-500">
+        <span class="text-4xl">🌌</span>
+        <h3 class="font-display text-2xl text-ice mt-4 mb-2">Night Skiing</h3>
+        <p class="text-frost-100/70 font-light text-sm">Floodlit groomers and a 5km torchlit descent every Friday.</p>
+      </div>
+      <div data-tilt class="reveal glass rounded-3xl p-7 hover:-translate-y-1.5 transition-transform duration-500">
+        <span class="text-4xl">♨️</span>
+        <h3 class="font-display text-2xl text-ice mt-4 mb-2">Glacier Spa</h3>
+        <p class="text-frost-100/70 font-light text-sm">Geothermal pools, cedar saunas and ice plunges at 2,400m.</p>
+      </div>
+      <div data-tilt class="reveal glass rounded-3xl p-7 hover:-translate-y-1.5 transition-transform duration-500">
+        <span class="text-4xl">🛷</span>
+        <h3 class="font-display text-2xl text-ice mt-4 mb-2">Husky &amp; Sled</h3>
+        <p class="text-frost-100/70 font-light text-sm">Guided sled-dog runs through the silent Varse forest valleys.</p>
+      </div>
+      <div data-tilt class="reveal glass rounded-3xl p-7 hover:-translate-y-1.5 transition-transform duration-500">
+        <span class="text-4xl">🍷</span>
+        <h3 class="font-display text-2xl text-ice mt-4 mb-2">Summit Dining</h3>
+        <p class="text-frost-100/70 font-light text-sm">A five-course tasting menu served at the top of the gondola.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PASSES / TICKETS PRICING ============ -->
+<section id="passes" class="relative py-24 lg:py-32 px-6 lg:px-10 bg-frost-950/40">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">04 — Passes &amp; Tickets</p>
+      <h2 class="reveal font-display text-5xl lg:text-7xl text-ice">Lock in your season.</h2>
+      <p class="reveal max-w-xl mx-auto mt-5 text-frost-100/70 font-light">Flexible day tickets to unlimited season passes — all with direct-to-lift access.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 items-stretch">
+      <!-- Day -->
+      <div data-tilt class="reveal glass rounded-3xl p-8 flex flex-col hover:-translate-y-1.5 transition-transform duration-500">
+        <p class="text-frost-200/70 uppercase tracking-widest text-sm">Day Pass</p>
+        <p class="font-display text-6xl text-ice mt-3">€72<span class="text-xl text-frost-300">/day</span></p>
+        <p class="text-frost-100/70 font-light text-sm mt-3 mb-6">Spontaneous powder days, no commitment.</p>
+        <ul class="space-y-3 text-sm text-frost-100/80 font-light flex-1">
+          <li class="flex gap-2"><span class="text-ember">✓</span> All 19 lifts</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> Real-time digital ticket</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> Kids under 6 ride free</li>
+        </ul>
+        <a href="#" data-cursor class="mt-7 text-center rounded-full glass py-3 text-ice hover:bg-frost-900/60 transition-colors">Buy Day Pass</a>
+      </div>
+      <!-- Season - featured -->
+      <div data-tilt class="reveal relative rounded-3xl p-8 flex flex-col bg-gradient-to-b from-frost-700/60 to-frost-900/70 border border-ember/40 shadow-2xl shadow-ember/10 lg:scale-105 hover:-translate-y-1.5 transition-transform duration-500">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-ember text-glacier text-xs font-semibold px-4 py-1 rounded-full uppercase tracking-wide">Most Popular</span>
+        <p class="text-ember uppercase tracking-widest text-sm">Season Pass</p>
+        <p class="font-display text-6xl text-ice mt-3">€890<span class="text-xl text-frost-300">/yr</span></p>
+        <p class="text-frost-100/70 font-light text-sm mt-3 mb-6">Ride every storm, all winter long.</p>
+        <ul class="space-y-3 text-sm text-frost-100/90 font-light flex-1">
+          <li class="flex gap-2"><span class="text-ember">✓</span> Unlimited days &amp; night skiing</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> 20% off lodging &amp; dining</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> Priority lift lanes</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> 3 partner-resort days</li>
+        </ul>
+        <a href="#" data-cursor class="magnetic mt-7 text-center rounded-full bg-ember py-3 text-glacier font-medium shadow-lg shadow-ember/30">
+          <span class="magnetic-inner inline-block">Get Season Pass</span>
+        </a>
+      </div>
+      <!-- Family -->
+      <div data-tilt class="reveal glass rounded-3xl p-8 flex flex-col hover:-translate-y-1.5 transition-transform duration-500">
+        <p class="text-frost-200/70 uppercase tracking-widest text-sm">Family Pack</p>
+        <p class="font-display text-6xl text-ice mt-3">€240<span class="text-xl text-frost-300">/day</span></p>
+        <p class="text-frost-100/70 font-light text-sm mt-3 mb-6">Two adults, up to three kids.</p>
+        <ul class="space-y-3 text-sm text-frost-100/80 font-light flex-1">
+          <li class="flex gap-2"><span class="text-ember">✓</span> All 19 lifts</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> Free ski-school taster</li>
+          <li class="flex gap-2"><span class="text-ember">✓</span> Hot-chocolate vouchers</li>
+        </ul>
+        <a href="#" data-cursor class="mt-7 text-center rounded-full glass py-3 text-ice hover:bg-frost-900/60 transition-colors">Buy Family Pack</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 lg:py-32 px-6 lg:px-10">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal relative rounded-[2rem] overflow-hidden h-[60vh]" data-parallax-wrap>
+      <img src="https://images.unsplash.com/photo-1486078695445-0497c2e98e1c?auto=format&fit=crop&w=1600&q=80"
+           alt="Misty mountain ridge" class="w-full h-[125%] object-cover" data-parallax-img
+           onerror="this.style.display='none'" />
+      <div class="absolute inset-0 img-fallback -z-10"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-glacier/60 to-transparent"></div>
+    </div>
+    <div>
+      <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">05 — Our Story</p>
+      <h2 class="reveal font-display text-5xl lg:text-6xl text-ice leading-tight mb-6">
+        Half a century, one obsession: <span class="italic text-ember">the perfect turn.</span>
+      </h2>
+      <p class="reveal text-frost-100/75 font-light mb-5">
+        Alpenfrost began in 1971 with a single rope-tow and a family who believed the mountain
+        belonged to everyone. Five decades on, we still groom by hand at dawn and still believe
+        a good day on snow can change a life.
+      </p>
+      <p class="reveal text-frost-100/75 font-light mb-8">
+        Today we run on 100% renewable hydro power, plant a tree for every season pass, and
+        protect 4,000 hectares of alpine wilderness — so the next generation gets their turns too.
+      </p>
+      <div class="reveal grid grid-cols-3 gap-6">
+        <div><p class="font-display text-4xl text-ember countup" data-target="54" data-suffix="yr">0</p><p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Seasons</p></div>
+        <div><p class="font-display text-4xl text-ice countup" data-target="100" data-suffix="%">0</p><p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Renewable</p></div>
+        <div><p class="font-display text-4xl text-ice countup" data-target="4000" data-suffix="ha">0</p><p class="text-xs text-frost-200/60 mt-1 uppercase tracking-wider">Protected</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 lg:py-32 px-6 lg:px-10 bg-frost-950/40">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">06 — Riders Say</p>
+      <h2 class="reveal font-display text-5xl lg:text-7xl text-ice">Stoke, in their words.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="text-ember mb-4">★★★★★</div>
+        <blockquote class="font-display text-2xl text-ice leading-snug mb-6">"Champagne powder, zero queues, and an après scene that runs till the stars come out."</blockquote>
+        <figcaption class="text-sm text-frost-100/70">— Mara Ellison · Freeride Mag</figcaption>
+      </figure>
+      <figure data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="text-ember mb-4">★★★★★</div>
+        <blockquote class="font-display text-2xl text-ice leading-snug mb-6">"My kids learned to ski here and never wanted to leave. The Meadowlark park is pure magic."</blockquote>
+        <figcaption class="text-sm text-frost-100/70">— Jonas Reidt · Season passholder</figcaption>
+      </figure>
+      <figure data-tilt class="reveal glass rounded-3xl p-8 hover:-translate-y-1.5 transition-transform duration-500">
+        <div class="text-ember mb-4">★★★★★</div>
+        <blockquote class="font-display text-2xl text-ice leading-snug mb-6">"North Couloir is the most honest 2.4km in the Alps. I dream about that fall line."</blockquote>
+        <figcaption class="text-sm text-frost-100/70">— Sofia Brandt · Pro athlete</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EVENTS ============ -->
+<section id="events" class="relative py-24 lg:py-32 px-6 lg:px-10">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div>
+        <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">07 — Winter Calendar</p>
+        <h2 class="reveal font-display text-5xl lg:text-7xl text-ice">This season on the hill.</h2>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div data-cursor class="reveal group glass rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 hover:bg-frost-900/50 transition-colors">
+        <div class="sm:w-28 shrink-0"><p class="font-display text-3xl text-ember">Dec 14</p><p class="text-xs text-frost-200/60 uppercase tracking-wider">Opening Day</p></div>
+        <div class="flex-1"><h3 class="font-display text-2xl text-ice">First Tracks Festival</h3><p class="text-frost-100/70 font-light text-sm">Free gondola laps, live folk band and bonfire at base village.</p></div>
+        <span class="text-ember opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+      </div>
+      <div data-cursor class="reveal group glass rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 hover:bg-frost-900/50 transition-colors">
+        <div class="sm:w-28 shrink-0"><p class="font-display text-3xl text-ember">Jan 23</p><p class="text-xs text-frost-200/60 uppercase tracking-wider">Race</p></div>
+        <div class="flex-1"><h3 class="font-display text-2xl text-ice">Varsehorn Vertical Challenge</h3><p class="text-frost-100/70 font-light text-sm">3,100m ski-mountaineering race from base to summit, all abilities.</p></div>
+        <span class="text-ember opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+      </div>
+      <div data-cursor class="reveal group glass rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 hover:bg-frost-900/50 transition-colors">
+        <div class="sm:w-28 shrink-0"><p class="font-display text-3xl text-ember">Feb 18</p><p class="text-xs text-frost-200/60 uppercase tracking-wider">Music</p></div>
+        <div class="flex-1"><h3 class="font-display text-2xl text-ice">Snow &amp; Sound Weekender</h3><p class="text-frost-100/70 font-light text-sm">Slope-side DJ stages and a midnight torchlit descent finale.</p></div>
+        <span class="text-ember opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+      </div>
+      <div data-cursor class="reveal group glass rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 hover:bg-frost-900/50 transition-colors">
+        <div class="sm:w-28 shrink-0"><p class="font-display text-3xl text-ember">Mar 30</p><p class="text-xs text-frost-200/60 uppercase tracking-wider">Closing</p></div>
+        <div class="flex-1"><h3 class="font-display text-2xl text-ice">Spring Slush Cup</h3><p class="text-frost-100/70 font-light text-sm">Pond-skim costume contest and the season's biggest base-village party.</p></div>
+        <span class="text-ember opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 lg:py-32 px-6 lg:px-10 bg-frost-950/40">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-14">
+      <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-4">08 — Good to Know</p>
+      <h2 class="reveal font-display text-5xl lg:text-7xl text-ice">Questions, answered.</h2>
+    </div>
+    <div class="space-y-4" id="faqList">
+      <div class="reveal faq-item glass rounded-2xl overflow-hidden">
+        <button data-cursor class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-xl text-ice">When does the season run?</span>
+          <span class="faq-icon text-ember text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-frost-100/70 font-light">Lifts spin from mid-December through late March, conditions permitting. Glacier laps on North Bowl often stretch into April.</p></div>
+      </div>
+      <div class="reveal faq-item glass rounded-2xl overflow-hidden">
+        <button data-cursor class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-xl text-ice">Do you rent gear on-site?</span>
+          <span class="faq-icon text-ember text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-frost-100/70 font-light">Yes — three slope-side rental shops carry skis, boards, boots, helmets and avalanche kit, with overnight tuning included.</p></div>
+      </div>
+      <div class="reveal faq-item glass rounded-2xl overflow-hidden">
+        <button data-cursor class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-xl text-ice">Is Alpenfrost good for beginners?</span>
+          <span class="faq-icon text-ember text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-frost-100/70 font-light">Absolutely. 38 green runs and the dedicated Meadowlark learning area make us one of the most beginner-friendly resorts in the range, with award-winning ski schools.</p></div>
+      </div>
+      <div class="reveal faq-item glass rounded-2xl overflow-hidden">
+        <button data-cursor class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-xl text-ice">How do I get there?</span>
+          <span class="faq-icon text-ember text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-frost-100/70 font-light">We're 90 minutes by direct shuttle from Valden International Airport, with a free village cable-car connecting all lodging to the base.</p></div>
+      </div>
+      <div class="reveal faq-item glass rounded-2xl overflow-hidden">
+        <button data-cursor class="faq-trigger w-full flex items-center justify-between gap-4 text-left px-6 py-5">
+          <span class="font-display text-xl text-ice">Can I cancel a booking?</span>
+          <span class="faq-icon text-ember text-2xl transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-6 text-frost-100/70 font-light">All lodging is free to cancel up to 14 days before arrival. Season passes include a snow-guarantee refund if we open fewer than 30 days.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 lg:py-40 px-6 lg:px-10 overflow-hidden">
+  <div class="absolute inset-0 z-0" data-parallax-wrap>
+    <img src="https://images.unsplash.com/photo-1502810365585-56ad8c8f1c2a?auto=format&fit=crop&w=1600&q=80"
+         alt="Sunset over snowy peaks" class="w-full h-[125%] object-cover" data-parallax-img
+         onerror="this.style.display='none'" />
+    <div class="absolute inset-0 img-fallback -z-10"></div>
+  </div>
+  <div class="absolute inset-0 z-10 bg-glacier/75"></div>
+  <div class="snow-layer z-20" id="ctaSnow"></div>
+  <div class="relative z-30 max-w-3xl mx-auto text-center">
+    <p class="reveal text-ember tracking-[0.3em] uppercase text-sm mb-5">Your turn awaits</p>
+    <h2 class="reveal font-display text-5xl lg:text-8xl text-ice leading-[0.95] mb-7">
+      The snow is falling.<br/><span class="italic text-ember">Are you?</span>
+    </h2>
+    <p class="reveal text-frost-100/80 font-light text-lg mb-10 max-w-xl mx-auto">
+      Book your stay at Alpenfrost and wake up to first tracks on the Varsehorn massif.
+    </p>
+    <a href="#passes" data-cursor class="magnetic inline-flex items-center gap-2 rounded-full bg-ember px-10 py-5 text-glacier font-medium text-lg shadow-2xl shadow-ember/40">
+      <span class="magnetic-inner inline-flex items-center gap-2">
+        Book Your Stay
+        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-glacier border-t border-frost-300/10 px-6 lg:px-10 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5 mb-5">
+          <span class="inline-flex w-9 h-9 items-center justify-center rounded-full bg-gradient-to-br from-frost-400 to-ember text-glacier">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20l6-12 4 7 3-5 5 10z"/></svg>
+          </span>
+          <span class="font-display text-2xl text-ice">Alpen<span class="text-ember">frost</span></span>
+        </a>
+        <p class="text-frost-100/60 font-light text-sm max-w-xs">A high-alpine ski resort &amp; lodge on the Varsehorn massif. Carving turns and warming hearts since 1971.</p>
+      </div>
+      <div>
+        <h4 class="text-ice font-medium mb-4 text-sm uppercase tracking-wider">Explore</h4>
+        <ul class="space-y-2 text-sm text-frost-100/60 font-light">
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#mountain">The Mountain</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#lodging">Lodging</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#activities">Activities</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#passes">Passes</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-ice font-medium mb-4 text-sm uppercase tracking-wider">Resort</h4>
+        <ul class="space-y-2 text-sm text-frost-100/60 font-light">
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#events">Events</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#about">Our Story</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#faq">FAQ</a></li>
+          <li><a data-cursor class="hover:text-ember transition-colors" href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-ice font-medium mb-4 text-sm uppercase tracking-wider">Stay in the loop</h4>
+        <p class="text-frost-100/60 font-light text-sm mb-3">Powder alerts &amp; deals.</p>
+        <form class="flex gap-2" onsubmit="return false;">
+          <input type="email" placeholder="you@email.com" class="flex-1 rounded-full bg-frost-900/60 border border-frost-300/15 px-4 py-2 text-sm text-ice placeholder:text-frost-200/40 focus:outline-none focus:border-ember/60" />
+          <button data-cursor class="rounded-full bg-ember px-4 py-2 text-glacier text-sm font-medium">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-frost-300/10 text-xs text-frost-200/50">
+      <p>© 2026 Alpenfrost Mountain Resort. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a data-cursor class="hover:text-ember transition-colors" href="#">Privacy</a>
+        <a data-cursor class="hover:text-ember transition-colors" href="#">Terms</a>
+        <a data-cursor class="hover:text-ember transition-colors" href="#">Snow Safety</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTouch = window.matchMedia('(hover: none)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScrollNav = () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('glass', 'shadow-lg', 'shadow-glacier/40');
+    } else {
+      nav.classList.remove('glass', 'shadow-lg', 'shadow-glacier/40');
+    }
+  };
+  window.addEventListener('scroll', onScrollNav, { passive: true });
+  onScrollNav();
+
+  /* ---------- Falling snow ---------- */
+  function makeSnow(container, count, glyphs) {
+    if (reduce || !container) return;
+    const flakes = glyphs || ['❄', '❅', '•', '·'];
+    for (let i = 0; i < count; i++) {
+      const f = document.createElement('span');
+      f.className = 'flake';
+      f.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+      const size = Math.random() * 14 + 6;
+      f.style.left = Math.random() * 100 + '%';
+      f.style.fontSize = size + 'px';
+      f.style.opacity = (Math.random() * 0.6 + 0.25).toFixed(2);
+      f.style.animationDuration = (Math.random() * 8 + 6) + 's';
+      f.style.animationDelay = (-Math.random() * 12) + 's';
+      container.appendChild(f);
+    }
+  }
+  makeSnow(document.getElementById('heroSnow'), 45);
+  makeSnow(document.getElementById('ctaSnow'), 35);
+  makeSnow(document.getElementById('widgetSnow'), 14, ['•', '·']);
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  if (!isTouch && !reduce) {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let rx = mx, ry = my;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    (function loop() {
+      rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    })();
+
+    document.querySelectorAll('[data-cursor], a, button').forEach((el) => {
+      el.addEventListener('mouseenter', () => ring.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('is-hover'));
+    });
+
+    /* Magnetic buttons */
+    document.querySelectorAll('.magnetic').forEach((btn) => {
+      const inner = btn.querySelector('.magnetic-inner') || btn;
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.25}px, ${y * 0.35}px)`;
+        inner.style.transform = `translate(${x * 0.12}px, ${y * 0.18}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+        inner.style.transform = '';
+      });
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      /* Hero kinetic + reveal stagger */
+      gsap.set('.reveal', { opacity: 0, y: 34 });
+      gsap.utils.toArray('section').forEach((sec) => {
+        const items = sec.querySelectorAll('.reveal');
+        if (!items.length) return;
+        gsap.to(items, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.09,
+          scrollTrigger: { trigger: sec, start: 'top 78%' }
+        });
+      });
+
+      /* Kinetic headline emphasis */
+      gsap.utils.toArray('[data-kinetic]').forEach((el, i) => {
+        gsap.from(el, {
+          opacity: 0, y: 80, skewY: 6, duration: 1.1, ease: 'power4.out', delay: 0.15 + i * 0.12
+        });
+      });
+
+      /* Hero parallax */
+      const heroP = document.querySelector('[data-hero-parallax]');
+      if (heroP) {
+        gsap.to(heroP, {
+          yPercent: 18, ease: 'none',
+          scrollTrigger: { trigger: heroP, start: 'top top', end: 'bottom top', scrub: true }
+        });
+      }
+
+      /* Container parallax on alpine imagery */
+      gsap.utils.toArray('[data-parallax-img]').forEach((img) => {
+        gsap.fromTo(img, { yPercent: -10 }, {
+          yPercent: 10, ease: 'none',
+          scrollTrigger: { trigger: img.closest('[data-parallax-wrap]'), start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+    } else {
+      gsap.set('.reveal', { opacity: 1, y: 0 });
+    }
+
+    /* Count-ups (run regardless of reduced motion, just instant) */
+    document.querySelectorAll('.countup').forEach((el) => {
+      const target = parseFloat(el.dataset.target);
+      const suffix = el.dataset.suffix || '';
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 88%', once: true,
+        onEnter: () => {
+          if (reduce) { el.textContent = target.toLocaleString() + suffix; return; }
+          gsap.to(obj, {
+            v: target, duration: 1.8, ease: 'power2.out',
+            onUpdate: () => {
+              const val = target >= 1000 ? Math.round(obj.v).toLocaleString() : Math.round(obj.v);
+              el.textContent = val + suffix;
+            }
+          });
+        }
+      });
+    });
+
+    /* Snow gauge fill */
+    document.querySelectorAll('[data-gauge]').forEach((bar) => {
+      ScrollTrigger.create({
+        trigger: bar, start: 'top 92%', once: true,
+        onEnter: () => { bar.style.width = bar.dataset.gauge + '%'; }
+      });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.countup').forEach((el) => {
+      el.textContent = (parseFloat(el.dataset.target)).toLocaleString() + (el.dataset.suffix || '');
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const body = item.querySelector('.faq-body');
+      const icon = item.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      /* close all */
+      document.querySelectorAll('.faq-item').forEach((it) => {
+        it.querySelector('.faq-body').style.maxHeight = '0px';
+        const ic = it.querySelector('.faq-icon');
+        ic.textContent = '+'; ic.style.transform = 'rotate(0deg)';
+      });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.textContent = '−'; icon.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  /* ---------- Tilt on cards ---------- */
+  if (!isTouch && !reduce) {
+    document.querySelectorAll('[data-tilt]').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateX(${-py * 5}deg) rotateY(${px * 5}deg) translateY(-6px)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
+  }
+
+  /* ---------- Live clock-ish ticker in widget ---------- */
+  const clockEl = document.getElementById('liveClock');
+  if (clockEl) {
+    const states = ['Summit · packed powder', 'Mid · fresh corduroy', 'Base · soft snow', 'North Bowl · deep & open'];
+    let i = 0;
+    setInterval(() => { i = (i + 1) % states.length; clockEl.textContent = states[i]; }, 3200);
+  }
+})();
+</script>
+</body>
+</html>

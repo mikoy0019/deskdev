@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VerdantGuard — Residential Pest Control Done Right</title>
+<meta name="description" content="VerdantGuard delivers eco-conscious, family-safe residential pest control with a 100% satisfaction guarantee. Same-week service, transparent plans, and friendly local technicians." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          moss:    { 50:'#f1faf3', 100:'#ddf3e2', 200:'#bce6c8', 300:'#8dd2a3', 400:'#56b577', 500:'#2f9858', 600:'#1f7a46', 700:'#1a613a', 800:'#174d30', 900:'#143f29' },
+          teal:    { 400:'#2bb7b3', 500:'#149e9b', 600:'#0c7d7c', 700:'#0d6363' },
+          ember:   { 400:'#ffb547', 500:'#f99422', 600:'#e2760a' },
+          ink:     '#0e1f18',
+        },
+        fontFamily: {
+          display: ['"Fraunces"', 'serif'],
+          sans:    ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          soft: '0 18px 50px -20px rgba(20,63,41,0.35)',
+          glow: '0 0 0 1px rgba(47,152,88,0.18), 0 24px 60px -28px rgba(20,158,155,0.45)',
+        },
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background:#f7fbf8; color:#0e1f18; font-family:'Plus Jakarta Sans',sans-serif; }
+  ::selection { background:#2f9858; color:#fff; }
+
+  .grain:before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .leaf-bg{
+    background:
+      radial-gradient(1100px 600px at 85% -10%, rgba(43,183,179,.18), transparent 60%),
+      radial-gradient(900px 600px at -10% 20%, rgba(47,152,88,.14), transparent 55%);
+  }
+
+  .gradient-fallback{ background:linear-gradient(135deg,#1f7a46,#149e9b 55%,#2bb7b3); }
+
+  .reveal{ opacity:0; transform:translateY(34px); }
+  .reveal-x{ opacity:0; transform:translateX(-40px); }
+
+  .marquee-track{ display:flex; width:max-content; animation:marquee 26s linear infinite; }
+  @keyframes marquee{ to{ transform:translateX(-50%); } }
+  .marquee:hover .marquee-track{ animation-play-state:paused; }
+
+  .tilt{ transform-style:preserve-3d; transition:transform .25s ease; will-change:transform; }
+
+  .magnetic{ will-change:transform; }
+
+  .accordion-body{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .42s cubic-bezier(.4,0,.2,1); }
+  .accordion-body > div{ overflow:hidden; }
+  .accordion.open .accordion-body{ grid-template-rows:1fr; }
+  .accordion.open .chev{ transform:rotate(45deg); }
+
+  .shield-ring{ transform-origin:center; }
+
+  .nav-blur{ backdrop-filter:saturate(150%) blur(10px); }
+
+  .underline-sweep{ position:relative; }
+  .underline-sweep:after{ content:""; position:absolute; left:0; bottom:-3px; height:2px; width:0; background:#2f9858; transition:width .3s ease; }
+  .underline-sweep:hover:after{ width:100%; }
+
+  .plan-pop{ transition:transform .3s ease, box-shadow .3s ease; }
+  .plan-pop:hover{ transform:translateY(-8px); }
+
+  @media (prefers-reduced-motion: reduce){
+    .marquee-track{ animation:none; }
+    *{ scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body class="grain antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="relative grid place-items-center w-10 h-10 rounded-xl bg-moss-600 text-white shadow-soft overflow-hidden">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 2.5C8 5 5 7 5 11c0 4.2 3.1 7.6 7 9.5 3.9-1.9 7-5.3 7-9.5 0-4-3-6-7-8.5Z" stroke-linejoin="round"/>
+          <path d="M12 6.5c-2 1.5-3.5 3-3.5 5.2" stroke-linecap="round" opacity=".7"/>
+        </svg>
+      </span>
+      <span class="font-display text-xl font-600 tracking-tight text-ink">Verdant<span class="text-moss-600">Guard</span></span>
+    </a>
+
+    <div class="hidden lg:flex items-center gap-8 text-sm font-500 text-ink/75">
+      <a href="#pests" class="underline-sweep">Pests We Treat</a>
+      <a href="#plans" class="underline-sweep">Plans</a>
+      <a href="#how" class="underline-sweep">How It Works</a>
+      <a href="#areas" class="underline-sweep">Service Areas</a>
+      <a href="#faq" class="underline-sweep">FAQ</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="tel:+15550148820" class="hidden sm:inline text-sm font-600 text-moss-700 hover:text-moss-600 transition">(555) 014-8820</a>
+      <a href="#quote" id="cta-magnet" class="magnetic relative inline-flex items-center gap-2 rounded-full bg-ember-500 hover:bg-ember-600 text-white text-sm font-700 px-5 py-2.5 shadow-soft transition-colors">
+        <span class="relative z-10">Free Quote</span>
+        <svg class="w-4 h-4 relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="leaf-bg relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
+  <div data-parallax class="absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full bg-teal-400/10 blur-3xl"></div>
+  <div data-parallax class="absolute bottom-0 -left-32 w-[420px] h-[420px] rounded-full bg-moss-400/10 blur-3xl"></div>
+
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center relative z-10">
+    <!-- copy -->
+    <div>
+      <span class="reveal inline-flex items-center gap-2 rounded-full bg-white/70 ring-1 ring-moss-200 px-4 py-1.5 text-xs font-600 text-moss-700 mb-6">
+        <span class="w-2 h-2 rounded-full bg-moss-500 animate-pulse"></span>
+        Family-safe • Eco-conscious • Locally owned
+      </span>
+      <h1 class="reveal font-display text-4xl sm:text-5xl lg:text-6xl font-600 leading-[1.05] tracking-tight text-ink">
+        A home that's <span class="text-moss-600">truly</span> yours — <span class="text-teal-600">pest-free</span> for good.
+      </h1>
+      <p class="reveal mt-6 text-lg text-ink/70 max-w-xl">
+        VerdantGuard protects families with low-tox, pet-friendly treatments and same-week visits. No pushy contracts, no mystery fees — just a calmer, cleaner home you can breathe in.
+      </p>
+
+      <!-- instant quote -->
+      <div id="quote" class="reveal mt-8 rounded-2xl bg-white shadow-glow p-2 max-w-xl">
+        <form id="quote-form" class="flex flex-col sm:flex-row gap-2">
+          <div class="flex-1 flex items-center gap-2 px-4 rounded-xl bg-moss-50">
+            <svg class="w-5 h-5 text-moss-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-5.4-7-11a7 7 0 0114 0c0 5.6-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            <input required type="text" placeholder="Your ZIP code" class="w-full bg-transparent py-3.5 text-sm placeholder:text-ink/40 focus:outline-none" />
+          </div>
+          <select class="px-4 py-3.5 rounded-xl bg-moss-50 text-sm text-ink/70 focus:outline-none">
+            <option>Pick a pest…</option>
+            <option>Ants</option><option>Roaches</option><option>Spiders</option>
+            <option>Rodents</option><option>Termites</option><option>Mosquitoes</option>
+          </select>
+          <button type="submit" class="rounded-xl bg-moss-600 hover:bg-moss-700 text-white font-700 text-sm px-6 py-3.5 transition whitespace-nowrap">Get my quote</button>
+        </form>
+        <p id="quote-msg" class="hidden px-4 py-2 text-sm font-600 text-moss-700"></p>
+      </div>
+      <p class="reveal mt-3 text-xs text-ink/50">Free, no-obligation estimate in under 60 seconds. We never sell your info.</p>
+    </div>
+
+    <!-- hero visual -->
+    <div class="reveal relative">
+      <div class="relative rounded-[2rem] overflow-hidden shadow-soft gradient-fallback aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1558036117-15d82a90b9b1?auto=format&fit=crop&w=1600&q=80" alt="Healthy green home garden" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-moss-900/60 via-transparent"></div>
+
+        <!-- floating rating card -->
+        <div class="absolute top-5 left-5 rounded-2xl bg-white/95 nav-blur px-4 py-3 shadow-soft">
+          <div class="flex items-center gap-1 text-ember-500">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .6-5.3 4.6 1.6 6.9L12 17.8 5.7 20.6l1.6-6.9L2 9.1l7-.6L12 2Z"/></svg>
+            <span class="font-700 text-ink text-sm"><span data-count="4.9" data-decimals="1">0</span>/5</span>
+          </div>
+          <p class="text-[11px] text-ink/55 mt-0.5">2,400+ verified reviews</p>
+        </div>
+      </div>
+
+      <!-- shield protection animation -->
+      <div class="absolute -bottom-6 -left-6 sm:-left-10 rounded-2xl bg-white shadow-glow p-4 flex items-center gap-3">
+        <div class="relative grid place-items-center w-14 h-14">
+          <svg viewBox="0 0 56 56" class="w-14 h-14">
+            <circle class="shield-ring" cx="28" cy="28" r="24" fill="none" stroke="#ddf3e2" stroke-width="4"/>
+            <circle id="shield-progress" cx="28" cy="28" r="24" fill="none" stroke="#2f9858" stroke-width="4" stroke-linecap="round" stroke-dasharray="151" stroke-dashoffset="151" transform="rotate(-90 28 28)"/>
+          </svg>
+          <svg class="absolute w-6 h-6 text-moss-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 5 6v5c0 4.4 3 8 7 9 4-1 7-4.6 7-9V6l-7-3Z" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-700 text-ink">Protected & guaranteed</p>
+          <p class="text-xs text-ink/55">Free re-treats between visits</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative -mt-2 z-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="rounded-3xl bg-ink text-white shadow-soft px-6 sm:px-12 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="reveal text-center lg:text-left">
+        <p class="font-display text-4xl font-600 text-teal-400"><span data-count="18400" data-suffix="+">0</span></p>
+        <p class="mt-1 text-sm text-white/60">Homes protected</p>
+      </div>
+      <div class="reveal text-center lg:text-left">
+        <p class="font-display text-4xl font-600 text-moss-300"><span data-count="98" data-suffix="%">0</span></p>
+        <p class="mt-1 text-sm text-white/60">Repeat-free guarantee</p>
+      </div>
+      <div class="reveal text-center lg:text-left">
+        <p class="font-display text-4xl font-600 text-ember-400"><span data-count="24" data-suffix="h">0</span></p>
+        <p class="mt-1 text-sm text-white/60">Avg. response time</p>
+      </div>
+      <div class="reveal text-center lg:text-left">
+        <p class="font-display text-4xl font-600 text-teal-400"><span data-count="12">0</span></p>
+        <p class="mt-1 text-sm text-white/60">Years serving locals</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES MARQUEE ============ -->
+<section class="py-10 overflow-hidden">
+  <div class="marquee relative">
+    <div class="marquee-track gap-4">
+      <!-- duplicate set ×2 for seamless loop -->
+      <div class="flex gap-4 pr-4" aria-hidden="false">
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Ant colonies</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">German roaches</span>
+        <span class="rounded-full bg-ember-400/10 ring-1 ring-ember-400/30 px-6 py-2.5 text-sm font-600 text-ember-600 whitespace-nowrap">Rodent exclusion</span>
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Termite barriers</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">Mosquito fogging</span>
+        <span class="rounded-full bg-ember-400/10 ring-1 ring-ember-400/30 px-6 py-2.5 text-sm font-600 text-ember-600 whitespace-nowrap">Wasp & hornet nests</span>
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Spider treatment</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">Bed bug heat</span>
+      </div>
+      <div class="flex gap-4 pr-4" aria-hidden="true">
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Ant colonies</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">German roaches</span>
+        <span class="rounded-full bg-ember-400/10 ring-1 ring-ember-400/30 px-6 py-2.5 text-sm font-600 text-ember-600 whitespace-nowrap">Rodent exclusion</span>
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Termite barriers</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">Mosquito fogging</span>
+        <span class="rounded-full bg-ember-400/10 ring-1 ring-ember-400/30 px-6 py-2.5 text-sm font-600 text-ember-600 whitespace-nowrap">Wasp & hornet nests</span>
+        <span class="rounded-full bg-moss-50 ring-1 ring-moss-200 px-6 py-2.5 text-sm font-600 text-moss-700 whitespace-nowrap">Spider treatment</span>
+        <span class="rounded-full bg-teal-400/10 ring-1 ring-teal-400/30 px-6 py-2.5 text-sm font-600 text-teal-700 whitespace-nowrap">Bed bug heat</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PESTS WE TREAT ============ -->
+<section id="pests" class="py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Pests we treat</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Whatever's bugging you, we know its playbook.</h2>
+      <p class="reveal text-ink/65 mt-4">Each pest gets a targeted, evidence-based approach — not a one-size-fits-all spray. Hover any card to see how we handle it.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- card -->
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-moss-50 text-moss-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="7" r="2.2"/><circle cx="12" cy="13" r="2.6"/><circle cx="12" cy="19" r="2"/><path d="M9.5 13H4M14.5 13H20M10 19H6M14 19h4" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Ants</h3>
+        <p class="text-sm text-ink/60 mt-2">We trace trails to the nest and break the colony's lifecycle — no endless sprays at the kitchen counter.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-teal-400/10 text-teal-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="12" rx="4" ry="6"/><path d="M12 6V3M9 5 7 3M15 5l2-2M8 12H3M16 12h5M9 18l-2 2M15 18l2 2" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Roaches</h3>
+        <p class="text-sm text-ink/60 mt-2">Gel-bait stations and crack-and-crevice work that hit harborages — safe around food prep zones.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-ember-400/10 text-ember-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="m9 10-5-3M15 10l5-3M9 14l-5 3M15 14l5 3M9 12H3M15 12h6" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Spiders</h3>
+        <p class="text-sm text-ink/60 mt-2">De-webbing eaves plus residual perimeter barriers that keep corners clear for months.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-moss-50 text-moss-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 13c0-3 2-5 5-5h2c3 0 5 2 5 5v2H5v-2Z"/><circle cx="9" cy="11" r="1"/><path d="M17 13c2 0 3-1 3-2M5 18l-1 2M19 18l1 2" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Rodents</h3>
+        <p class="text-sm text-ink/60 mt-2">Seal entry points, set tamper-proof stations, and exclude them for good — not just trap and repeat.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-teal-400/10 text-teal-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4v16M8 8l8 8M16 8l-8 8M5 12h14" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Termites</h3>
+        <p class="text-sm text-ink/60 mt-2">Liquid barriers and bait systems that defend your home's structure with annual monitoring.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-ember-400/10 text-ember-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="13" r="2"/><path d="M12 11V5M10 6 7 4M14 6l3-2M8 13H4M16 13h4M10 16l-2 3M14 16l2 3" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Mosquitoes</h3>
+        <p class="text-sm text-ink/60 mt-2">Larvicide on standing water plus yard misting so you can actually enjoy the backyard again.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-moss-50 text-moss-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M7 7l10 10M17 7 7 17" stroke-linecap="round"/><circle cx="12" cy="12" r="2.5"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Wasps</h3>
+        <p class="text-sm text-ink/60 mt-2">Safe nest removal from eaves and soffits, then deterrents so they don't rebuild next season.</p>
+      </article>
+
+      <article class="pest-card reveal group rounded-2xl bg-white ring-1 ring-moss-100 p-6 shadow-soft cursor-pointer">
+        <div class="w-12 h-12 grid place-items-center rounded-xl bg-teal-400/10 text-teal-600 mb-4 transition-transform group-hover:-rotate-6">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="9" width="14" height="7" rx="3.5"/><path d="M9 9V7a3 3 0 016 0v2M9 16v2M15 16v2" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="font-display text-xl font-600 text-ink">Bed bugs</h3>
+        <p class="text-sm text-ink/60 mt-2">Targeted heat remediation that reaches every seam — discreet, thorough, and pet-safe.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES / PLANS ============ -->
+<section id="plans" class="py-20 sm:py-28 bg-moss-50/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Plans</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Simple protection plans, honest pricing.</h2>
+      <p class="reveal text-ink/65 mt-4">No lock-in contracts. Cancel anytime. Every plan includes free re-treats if pests come back between visits.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+      <!-- plan 1 -->
+      <div class="plan-pop reveal rounded-3xl bg-white ring-1 ring-moss-100 p-8 shadow-soft">
+        <h3 class="font-display text-2xl font-600 text-ink">Single Visit</h3>
+        <p class="text-sm text-ink/55 mt-1">One-time targeted treatment</p>
+        <p class="mt-6 font-display text-4xl font-600 text-ink">$<span data-count="129">0</span></p>
+        <p class="text-xs text-ink/50">starting price • most homes</p>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Full interior + perimeter</li>
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> 30-day spot guarantee</li>
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Detailed home report</li>
+          <li class="flex gap-2 text-ink/35"><span>–</span> Recurring monitoring</li>
+        </ul>
+        <a href="#quote" class="mt-8 block text-center rounded-full ring-1 ring-moss-300 text-moss-700 font-700 text-sm py-3 hover:bg-moss-50 transition">Choose Single</a>
+      </div>
+
+      <!-- plan 2 (featured) -->
+      <div class="plan-pop reveal relative rounded-3xl bg-ink text-white p-8 shadow-glow lg:-translate-y-3">
+        <span class="absolute top-5 right-5 rounded-full bg-ember-500 text-white text-[11px] font-700 px-3 py-1">Most popular</span>
+        <h3 class="font-display text-2xl font-600">Seasonal Shield</h3>
+        <p class="text-sm text-white/55 mt-1">Quarterly visits, year-round cover</p>
+        <p class="mt-6 font-display text-4xl font-600">$<span data-count="39">0</span><span class="text-lg text-white/50">/mo</span></p>
+        <p class="text-xs text-white/45">billed quarterly • free re-treats</p>
+        <ul class="mt-6 space-y-3 text-sm text-white/80">
+          <li class="flex gap-2"><span class="text-moss-300">✓</span> 4 scheduled visits / year</li>
+          <li class="flex gap-2"><span class="text-moss-300">✓</span> Unlimited free re-treats</li>
+          <li class="flex gap-2"><span class="text-moss-300">✓</span> Covers 20+ common pests</li>
+          <li class="flex gap-2"><span class="text-moss-300">✓</span> Priority same-week booking</li>
+        </ul>
+        <a href="#quote" class="mt-8 block text-center rounded-full bg-ember-500 hover:bg-ember-600 text-white font-700 text-sm py-3 transition">Choose Shield</a>
+      </div>
+
+      <!-- plan 3 -->
+      <div class="plan-pop reveal rounded-3xl bg-white ring-1 ring-moss-100 p-8 shadow-soft">
+        <h3 class="font-display text-2xl font-600 text-ink">Total Home</h3>
+        <p class="text-sm text-ink/55 mt-1">Everything + termite & rodent</p>
+        <p class="mt-6 font-display text-4xl font-600 text-ink">$<span data-count="59">0</span><span class="text-lg text-ink/40">/mo</span></p>
+        <p class="text-xs text-ink/50">billed quarterly • best value</p>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70">
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Everything in Seasonal Shield</li>
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Annual termite inspection</li>
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Rodent exclusion & sealing</li>
+          <li class="flex gap-2"><span class="text-moss-500">✓</span> Mosquito yard program</li>
+        </ul>
+        <a href="#quote" class="mt-8 block text-center rounded-full ring-1 ring-moss-300 text-moss-700 font-700 text-sm py-3 hover:bg-moss-50 transition">Choose Total</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="py-20 sm:py-28 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="reveal-x relative">
+      <div class="rounded-[2rem] overflow-hidden shadow-soft gradient-fallback aspect-[5/4]">
+        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1600&q=80" alt="Lush safe backyard for family" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+      </div>
+      <div class="absolute -top-5 -right-3 sm:right-6 rounded-2xl bg-white shadow-glow px-5 py-4">
+        <p class="font-display text-2xl font-600 text-moss-600">100%</p>
+        <p class="text-xs text-ink/55">Satisfaction guarantee</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Why VerdantGuard</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Tough on pests. Gentle on the people you love.</h2>
+      <p class="reveal text-ink/65 mt-4 max-w-lg">We chose this work because we live here too. That means low-tox products, honest advice, and standing behind every visit.</p>
+
+      <div class="mt-8 space-y-5">
+        <div class="reveal flex gap-4">
+          <div class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-moss-50 text-moss-600">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3c-2 4-6 5-6 9a6 6 0 0012 0c0-4-4-5-6-9Z" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h3 class="font-600 text-ink">Eco-conscious by default</h3>
+            <p class="text-sm text-ink/60 mt-1">Botanical and low-tox formulas first — stronger options only where truly needed, always disclosed.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <div class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-teal-400/10 text-teal-600">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0112 0M17 11l2 2 3-3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h3 class="font-600 text-ink">Pet & kid safe</h3>
+            <p class="text-sm text-ink/60 mt-1">Treatments dry fast and re-entry times are clear, so the whole household stays comfortable.</p>
+          </div>
+        </div>
+        <div class="reveal flex gap-4">
+          <div class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-ember-400/10 text-ember-600">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 12l2 2 4-4M12 3 5 6v5c0 4.4 3 8 7 9 4-1 7-4.6 7-9V6l-7-3Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h3 class="font-600 text-ink">Guaranteed results</h3>
+            <p class="text-sm text-ink/60 mt-1">Pests back between visits? So are we — free re-treats until it's handled. That's the promise.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-20 sm:py-28 bg-ink text-white relative overflow-hidden">
+  <div data-parallax class="absolute top-0 right-0 w-96 h-96 rounded-full bg-teal-400/10 blur-3xl"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 relative z-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-400">How it works</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 mt-3">From first call to pest-free — in four easy steps.</h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="reveal relative rounded-2xl bg-white/5 ring-1 ring-white/10 p-7">
+        <span class="font-display text-5xl font-600 text-teal-400/40">01</span>
+        <h3 class="font-600 text-lg mt-3">Tell us what's bugging you</h3>
+        <p class="text-sm text-white/60 mt-2">Grab a free quote online or by phone — takes about a minute, no obligation.</p>
+      </div>
+      <div class="reveal relative rounded-2xl bg-white/5 ring-1 ring-white/10 p-7">
+        <span class="font-display text-5xl font-600 text-moss-300/40">02</span>
+        <h3 class="font-600 text-lg mt-3">We inspect & plan</h3>
+        <p class="text-sm text-white/60 mt-2">A local tech identifies the source and maps a treatment plan you approve up front.</p>
+      </div>
+      <div class="reveal relative rounded-2xl bg-white/5 ring-1 ring-white/10 p-7">
+        <span class="font-display text-5xl font-600 text-ember-400/40">03</span>
+        <h3 class="font-600 text-lg mt-3">Targeted treatment</h3>
+        <p class="text-sm text-white/60 mt-2">We treat the real problem areas with family-safe products and tidy up after.</p>
+      </div>
+      <div class="reveal relative rounded-2xl bg-white/5 ring-1 ring-white/10 p-7">
+        <span class="font-display text-5xl font-600 text-teal-400/40">04</span>
+        <h3 class="font-600 text-lg mt-3">We keep watch</h3>
+        <p class="text-sm text-white/60 mt-2">Ongoing visits and free re-treats keep your home protected season after season.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICE AREAS ============ -->
+<section id="areas" class="py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Service areas</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Proudly local. Genuinely nearby.</h2>
+      <p class="reveal text-ink/65 mt-4 max-w-lg">We serve homes across the greater valley with same-week availability. Don't see your neighborhood? Reach out — we're expanding fast.</p>
+
+      <div class="reveal mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Cedar Hollow</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Maple Ridge</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Brookside</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Fernwood</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Lakeview</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Oakfield</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Riverbend</span>
+        <span class="rounded-xl bg-moss-50 ring-1 ring-moss-100 px-4 py-3 text-sm font-600 text-moss-700">Stonegate</span>
+        <span class="rounded-xl bg-teal-400/10 ring-1 ring-teal-400/30 px-4 py-3 text-sm font-600 text-teal-700">+ nearby towns</span>
+      </div>
+    </div>
+
+    <div class="reveal relative">
+      <div class="rounded-[2rem] overflow-hidden shadow-soft gradient-fallback aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=1600&q=80" alt="Residential neighborhood we serve" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent"></div>
+      </div>
+      <div class="absolute bottom-5 left-5 rounded-2xl bg-white/95 nav-blur px-5 py-4 shadow-soft flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-moss-500 animate-pulse"></span>
+        <p class="text-sm font-600 text-ink">Now booking same-week visits</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-20 sm:py-28 bg-moss-50/60">
+  <div class="max-w-5xl mx-auto px-5 sm:px-8 text-center">
+    <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Our story</p>
+    <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3 max-w-3xl mx-auto">Started by neighbors who were tired of the runaround.</h2>
+    <p class="reveal text-lg text-ink/65 mt-6 max-w-3xl mx-auto">
+      VerdantGuard began in a single garage twelve years ago, after our founder got quoted a fortune for a problem that needed a fifteen-minute fix. We built the kind of company we wished we'd called: upfront pricing, real explanations, and technicians who treat your home like their own. Today we're a tight-knit local crew protecting thousands of families — and we still answer the phone ourselves.
+    </p>
+    <div class="reveal mt-10 flex flex-wrap justify-center gap-8 text-center">
+      <div><p class="font-display text-3xl font-600 text-moss-600">Licensed</p><p class="text-xs text-ink/55 mt-1">& fully insured</p></div>
+      <div><p class="font-display text-3xl font-600 text-teal-600">Local</p><p class="text-xs text-ink/55 mt-1">crew, not a call center</p></div>
+      <div><p class="font-display text-3xl font-600 text-ember-500">Trained</p><p class="text-xs text-ink/55 mt-1">certified technicians</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">Neighbors talk</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Loved by the families we look after.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-2xl bg-white ring-1 ring-moss-100 p-7 shadow-soft">
+        <div class="flex gap-1 text-ember-500 mb-4">★★★★★</div>
+        <blockquote class="text-ink/75 text-sm leading-relaxed">"We had ants marching through the pantry every spring. One visit and a follow-up — gone. The tech even showed me the gap they were using. Genuinely kind people."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-moss-100 grid place-items-center font-700 text-moss-700 text-sm">DR</span>
+          <div><p class="text-sm font-600 text-ink">Dana R.</p><p class="text-xs text-ink/50">Cedar Hollow</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-2xl bg-white ring-1 ring-moss-100 p-7 shadow-soft md:-translate-y-3">
+        <div class="flex gap-1 text-ember-500 mb-4">★★★★★</div>
+        <blockquote class="text-ink/75 text-sm leading-relaxed">"With two toddlers and a dog, I was nervous about treatments. They walked me through every product and re-entry time. No smell, no worry, no roaches. Worth every penny."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-teal-400/20 grid place-items-center font-700 text-teal-700 text-sm">MP</span>
+          <div><p class="text-sm font-600 text-ink">Marcus P.</p><p class="text-xs text-ink/50">Brookside</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="reveal rounded-2xl bg-white ring-1 ring-moss-100 p-7 shadow-soft">
+        <div class="flex gap-1 text-ember-500 mb-4">★★★★★</div>
+        <blockquote class="text-ink/75 text-sm leading-relaxed">"Mosquitoes used to chase us indoors by 6pm. Their yard program changed our summer — we eat dinner outside now. They text before every visit too."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-9 h-9 rounded-full bg-ember-400/20 grid place-items-center font-700 text-ember-600 text-sm">SL</span>
+          <div><p class="text-sm font-600 text-ink">Sofia L.</p><p class="text-xs text-ink/50">Lakeview</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-20 sm:py-28 bg-moss-50/60">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <p class="reveal text-sm font-700 uppercase tracking-widest text-teal-600">FAQ</p>
+      <h2 class="reveal font-display text-3xl sm:text-4xl font-600 text-ink mt-3">Good questions, straight answers.</h2>
+    </div>
+
+    <div class="space-y-3">
+      <div class="accordion reveal rounded-2xl bg-white ring-1 ring-moss-100 overflow-hidden">
+        <button class="acc-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-ink">Are your treatments safe for kids and pets?</span>
+          <span class="chev shrink-0 w-3 h-3 border-r-2 border-b-2 border-moss-500 transition-transform"></span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-sm text-ink/65">Yes. We lead with low-tox and botanical formulas, and any product we use comes with a clear re-entry time we'll explain on site. Treatments typically dry within an hour or two.</p></div></div>
+      </div>
+
+      <div class="accordion reveal rounded-2xl bg-white ring-1 ring-moss-100 overflow-hidden">
+        <button class="acc-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-ink">Do I have to sign a long-term contract?</span>
+          <span class="chev shrink-0 w-3 h-3 border-r-2 border-b-2 border-moss-500 transition-transform"></span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-sm text-ink/65">Never. Our recurring plans are month-to-month and you can cancel anytime. We earn your renewal with results, not fine print.</p></div></div>
+      </div>
+
+      <div class="accordion reveal rounded-2xl bg-white ring-1 ring-moss-100 overflow-hidden">
+        <button class="acc-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-ink">What if the pests come back?</span>
+          <span class="chev shrink-0 w-3 h-3 border-r-2 border-b-2 border-moss-500 transition-transform"></span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-sm text-ink/65">We come back free. Every recurring plan includes unlimited re-treats between scheduled visits. If something resurfaces, just call and we'll handle it at no extra charge.</p></div></div>
+      </div>
+
+      <div class="accordion reveal rounded-2xl bg-white ring-1 ring-moss-100 overflow-hidden">
+        <button class="acc-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-ink">How soon can someone come out?</span>
+          <span class="chev shrink-0 w-3 h-3 border-r-2 border-b-2 border-moss-500 transition-transform"></span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-sm text-ink/65">In most of our service areas we offer same-week appointments, and priority same-day slots for active infestations on our Shield and Total Home plans.</p></div></div>
+      </div>
+
+      <div class="accordion reveal rounded-2xl bg-white ring-1 ring-moss-100 overflow-hidden">
+        <button class="acc-btn w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-ink">Do I need to leave home during treatment?</span>
+          <span class="chev shrink-0 w-3 h-3 border-r-2 border-b-2 border-moss-500 transition-transform"></span>
+        </button>
+        <div class="accordion-body"><div><p class="px-6 pb-5 text-sm text-ink/65">Usually not. Most exterior and targeted interior work lets you stay home. For a few specialized treatments we'll ask for a short re-entry window, and we'll tell you well in advance.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-20 sm:py-28">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8">
+    <div class="relative rounded-[2.5rem] bg-gradient-to-br from-moss-700 via-moss-600 to-teal-600 text-white px-8 sm:px-14 py-16 text-center shadow-soft overflow-hidden">
+      <div data-parallax class="absolute -top-16 -right-16 w-72 h-72 rounded-full bg-white/10 blur-2xl"></div>
+      <div data-parallax class="absolute -bottom-20 -left-10 w-80 h-80 rounded-full bg-teal-400/20 blur-3xl"></div>
+      <div class="relative z-10">
+        <h2 class="reveal font-display text-3xl sm:text-5xl font-600 leading-tight max-w-3xl mx-auto">Take your home back this week.</h2>
+        <p class="reveal mt-5 text-white/80 max-w-xl mx-auto">Free quote, family-safe treatments, and a guarantee that actually means something. Let's make pests someone else's problem.</p>
+        <div class="reveal mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="#quote" class="rounded-full bg-ember-500 hover:bg-ember-600 text-white font-700 px-8 py-4 shadow-soft transition">Get my free quote</a>
+          <a href="tel:+15550148820" class="rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/30 text-white font-700 px-8 py-4 transition">Call (555) 014-8820</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-white/70">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <div class="lg:col-span-1">
+      <a href="#top" class="flex items-center gap-2.5 mb-4">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-moss-600 text-white">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5C8 5 5 7 5 11c0 4.2 3.1 7.6 7 9.5 3.9-1.9 7-5.3 7-9.5 0-4-3-6-7-8.5Z" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="font-display text-lg font-600 text-white">Verdant<span class="text-moss-400">Guard</span></span>
+      </a>
+      <p class="text-sm leading-relaxed">Eco-conscious residential pest control. Locally owned, family-safe, and guaranteed — because this is our home too.</p>
+    </div>
+    <div>
+      <h4 class="text-white font-600 text-sm mb-4">Services</h4>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href="#pests" class="hover:text-moss-300 transition">Ant control</a></li>
+        <li><a href="#pests" class="hover:text-moss-300 transition">Roach treatment</a></li>
+        <li><a href="#pests" class="hover:text-moss-300 transition">Rodent exclusion</a></li>
+        <li><a href="#pests" class="hover:text-moss-300 transition">Mosquito program</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-600 text-sm mb-4">Company</h4>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href="#about" class="hover:text-moss-300 transition">Our story</a></li>
+        <li><a href="#plans" class="hover:text-moss-300 transition">Plans & pricing</a></li>
+        <li><a href="#areas" class="hover:text-moss-300 transition">Service areas</a></li>
+        <li><a href="#faq" class="hover:text-moss-300 transition">FAQ</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-white font-600 text-sm mb-4">Get in touch</h4>
+      <ul class="space-y-2.5 text-sm">
+        <li><a href="tel:+15550148820" class="hover:text-moss-300 transition">(555) 014-8820</a></li>
+        <li><a href="mailto:hello@verdantguard.example" class="hover:text-moss-300 transition">hello@verdantguard.example</a></li>
+        <li class="text-white/50">Mon–Sat, 7am–7pm</li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/45">
+      <p>© 2026 VerdantGuard Pest Control. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-white/70 transition">Privacy</a>
+        <a href="#" class="hover:text-white/70 transition">Terms</a>
+        <a href="#" class="hover:text-white/70 transition">Licensing</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- NAV scroll state ---- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) nav.classList.add('bg-white/85','nav-blur','shadow-soft');
+    else nav.classList.remove('bg-white/85','nav-blur','shadow-soft');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive:true });
+
+  /* ---- Instant quote micro-interaction ---- */
+  const form = document.getElementById('quote-form');
+  const msg  = document.getElementById('quote-msg');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    msg.classList.remove('hidden');
+    msg.textContent = 'Thanks! A local tech will text your estimate shortly. ✓';
+    if (!reduce && window.gsap) gsap.fromTo(msg, { y:-6, opacity:0 }, { y:0, opacity:1, duration:.4 });
+  });
+
+  if (reduce) {
+    document.querySelectorAll('.reveal,.reveal-x').forEach(el => { el.style.opacity=1; el.style.transform='none'; });
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const dec = +el.dataset.decimals || 0;
+      el.textContent = (+el.dataset.count).toFixed(dec) + (el.dataset.suffix||'');
+    });
+    document.getElementById('shield-progress').style.strokeDashoffset = 0;
+  } else {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ---- Section reveals ---- */
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity:1, y:0, duration:.9, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 88%' }
+      });
+    });
+    gsap.utils.toArray('.reveal-x').forEach((el) => {
+      gsap.to(el, {
+        opacity:1, x:0, duration:1, ease:'power3.out',
+        scrollTrigger:{ trigger:el, start:'top 85%' }
+      });
+    });
+
+    /* ---- Container parallax ---- */
+    gsap.utils.toArray('[data-parallax]').forEach((el) => {
+      gsap.to(el, {
+        yPercent: -18, ease:'none',
+        scrollTrigger:{ trigger: el.closest('section'), start:'top bottom', end:'bottom top', scrub:true }
+      });
+    });
+
+    /* ---- Count-ups ---- */
+    document.querySelectorAll('[data-count]').forEach((el) => {
+      const target = +el.dataset.count;
+      const dec = +el.dataset.decimals || 0;
+      const suffix = el.dataset.suffix || '';
+      const obj = { v:0 };
+      ScrollTrigger.create({
+        trigger: el, start:'top 90%', once:true,
+        onEnter: () => gsap.to(obj, {
+          v:target, duration:1.8, ease:'power2.out',
+          onUpdate: () => {
+            el.textContent = (dec ? obj.v.toFixed(dec) : Math.round(obj.v).toLocaleString()) + suffix;
+          }
+        })
+      });
+    });
+
+    /* ---- Shield protection animation ---- */
+    const shield = document.getElementById('shield-progress');
+    ScrollTrigger.create({
+      trigger: shield, start:'top 95%', once:true,
+      onEnter: () => gsap.to(shield, { strokeDashoffset:0, duration:1.6, ease:'power2.inOut' })
+    });
+
+    /* ---- Pest/plan card tilt on pointer ---- */
+    document.querySelectorAll('.pest-card').forEach((card) => {
+      card.classList.add('tilt');
+      card.addEventListener('pointermove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - .5;
+        const py = (e.clientY - r.top) / r.height - .5;
+        gsap.to(card, { rotateY: px*8, rotateX: -py*8, duration:.4, ease:'power2.out', transformPerspective:700 });
+      });
+      card.addEventListener('pointerleave', () => {
+        gsap.to(card, { rotateY:0, rotateX:0, duration:.5, ease:'power3.out' });
+      });
+    });
+
+    /* ---- Magnetic Get-Quote CTA ---- */
+    const magnet = document.getElementById('cta-magnet');
+    if (magnet) {
+      magnet.addEventListener('pointermove', (e) => {
+        const r = magnet.getBoundingClientRect();
+        const mx = e.clientX - r.left - r.width/2;
+        const my = e.clientY - r.top - r.height/2;
+        gsap.to(magnet, { x: mx*.35, y: my*.45, duration:.4, ease:'power2.out' });
+      });
+      magnet.addEventListener('pointerleave', () => {
+        gsap.to(magnet, { x:0, y:0, duration:.6, ease:'elastic.out(1,.4)' });
+      });
+    }
+
+    /* ---- Animated headline (hero) ---- */
+    gsap.from('#top h1', { opacity:0, y:24, duration:1, ease:'power3.out', delay:.1 });
+  }
+
+  /* ---- FAQ accordion (works regardless of motion pref) ---- */
+  document.querySelectorAll('.acc-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.accordion');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>

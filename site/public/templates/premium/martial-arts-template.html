@@ -1,0 +1,880 @@
+﻿<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STEELYARD ACADEMY â€” BJJ Â· Boxing Â· MMA</title>
+<meta name="description" content="Steelyard Academy â€” a disciplined fight gym forging fighters in Brazilian Jiu-Jitsu, boxing and MMA. Free trial class. No ego. All grit." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: '#0a0a0c',
+          coal: '#121216',
+          steel: '#1c1d22',
+          ash: '#a8a8b0',
+          crimson: '#e1121d',
+          ember: '#ff3b3b',
+          gold: '#d6a64a',
+        },
+        fontFamily: {
+          display: ['"Oswald"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
+          mono: ['"Space Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body {
+    background: #0a0a0c;
+    color: #f4f4f5;
+    font-family: 'Inter', sans-serif;
+    cursor: none;
+  }
+  @media (hover: none), (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none !important; }
+  }
+
+  .font-display { font-family: 'Oswald', sans-serif; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #fff; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1.5px solid #e1121d;
+    transition: width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .cursor-ring.grow { width: 64px; height: 64px; background: rgba(225,18,29,.15); border-color: #ff3b3b; }
+
+  /* Headline kinetic */
+  .kinetic-line { overflow: hidden; }
+  .kinetic-word { display: inline-block; will-change: transform; }
+
+  /* Marquee */
+  .marquee { display: flex; white-space: nowrap; will-change: transform; }
+  .marquee-track { display: flex; animation: scrollX 28s linear infinite; }
+  .marquee-track.rev { animation-direction: reverse; }
+  @keyframes scrollX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* Texture grit */
+  .grit::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Slash divider */
+  .slash-accent { background: linear-gradient(100deg, transparent 0%, transparent 48%, #e1121d 48%, #e1121d 52%, transparent 52%); }
+
+  .img-frame { position: relative; overflow: hidden; background: linear-gradient(135deg, #1c1d22 0%, #0a0a0c 100%); }
+  .img-frame img { transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+
+  /* Tilt cards */
+  .tilt { transform-style: preserve-3d; transition: transform .2s ease; will-change: transform; }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .45s ease; }
+  .faq-item.open .faq-body { max-height: 260px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(40px); }
+
+  ::selection { background: #e1121d; color: #fff; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal, .kinetic-word { opacity: 1 !important; transform: none !important; }
+    .marquee-track { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased relative">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="nav">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex items-center justify-between h-20">
+      <a href="#top" class="flex items-center gap-3 group" data-hover>
+        <span class="grid place-items-center w-9 h-9 bg-crimson text-white font-display font-bold text-lg leading-none rotate-2 group-hover:rotate-0 transition-transform">I</span>
+        <span class="font-display font-bold tracking-[0.18em] text-lg">STEELYARD<span class="text-crimson">.</span></span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-medium tracking-wide text-ash">
+        <a href="#disciplines" class="hover:text-white transition-colors" data-hover>Disciplines</a>
+        <a href="#coaches" class="hover:text-white transition-colors" data-hover>Coaches</a>
+        <a href="#schedule" class="hover:text-white transition-colors" data-hover>Schedule</a>
+        <a href="#pricing" class="hover:text-white transition-colors" data-hover>Membership</a>
+        <a href="#faq" class="hover:text-white transition-colors" data-hover>FAQ</a>
+      </nav>
+
+      <a href="#cta" id="joinCta" class="relative inline-flex items-center gap-2 bg-crimson text-white font-display font-semibold tracking-wider text-sm px-5 py-2.5 uppercase overflow-hidden group" data-hover>
+        <span class="relative z-10">Free Trial</span>
+        <span class="relative z-10 transition-transform group-hover:translate-x-1">â†’</span>
+        <span class="absolute inset-0 bg-ink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center overflow-hidden grit" id="hero">
+  <div class="absolute inset-0 img-frame">
+    <img src="https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Fighter training" class="w-full h-full object-cover object-center opacity-40 scale-110" id="heroImg" />
+    <div class="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/30"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/60"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-5 lg:px-8 w-full pt-28 pb-16">
+    <div class="max-w-3xl">
+      <div class="flex items-center gap-3 mb-6 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">Est. 2014 Â· East District Fight Co.</span>
+      </div>
+
+      <h1 class="font-display font-bold uppercase leading-[0.92] text-[clamp(3rem,9vw,7.5rem)]">
+        <span class="kinetic-line block"><span class="kinetic-word">Forged</span> <span class="kinetic-word text-crimson">Under</span></span>
+        <span class="kinetic-line block"><span class="kinetic-word">Pressure</span></span>
+      </h1>
+
+      <p class="mt-6 max-w-xl text-lg text-ash leading-relaxed reveal" data-reveal>
+        Brazilian Jiu-Jitsu, boxing and MMA under one roof. No ego on the mats.
+        No shortcuts in the ring. Just disciplined work that builds you into something harder.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4 reveal" data-reveal>
+        <a href="#cta" class="group relative inline-flex items-center gap-3 bg-crimson text-white font-display font-semibold tracking-wider uppercase px-8 py-4 text-sm overflow-hidden" data-hover>
+          <span class="relative z-10">Claim Free Trial</span>
+          <span class="relative z-10">â†’</span>
+          <span class="absolute inset-0 bg-ember scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+        </a>
+        <a href="#disciplines" class="inline-flex items-center gap-2 font-display font-medium tracking-wider uppercase text-sm text-white/80 hover:text-white border border-white/20 hover:border-crimson px-6 py-4 transition-colors" data-hover>
+          Explore Disciplines
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ash/60 reveal" data-reveal>
+    <span class="font-mono text-[10px] tracking-[0.3em] uppercase">Scroll</span>
+    <span class="h-8 w-px bg-gradient-to-b from-crimson to-transparent"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE 1 ============ -->
+<div class="bg-crimson text-white py-3 overflow-hidden border-y border-black/20 select-none">
+  <div class="marquee">
+    <div class="marquee-track font-display font-semibold uppercase tracking-wider text-sm">
+      <span class="px-6">Brazilian Jiu-Jitsu</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Boxing</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Muay Thai</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">MMA</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Wrestling</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Brazilian Jiu-Jitsu</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Boxing</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Muay Thai</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">MMA</span><span class="px-6 text-white/50">âœ¦</span>
+      <span class="px-6">Wrestling</span><span class="px-6 text-white/50">âœ¦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ STATS STRIP ============ -->
+<section class="bg-coal py-16 relative grit" id="stats">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-x divide-white/5">
+      <div class="text-center px-4 reveal" data-reveal>
+        <div class="font-display font-bold text-5xl lg:text-6xl text-white"><span class="count" data-target="940">0</span>+</div>
+        <div class="mt-2 font-mono text-xs tracking-[0.2em] uppercase text-ash">Active Members</div>
+      </div>
+      <div class="text-center px-4 reveal" data-reveal>
+        <div class="font-display font-bold text-5xl lg:text-6xl text-crimson"><span class="count" data-target="186">0</span></div>
+        <div class="mt-2 font-mono text-xs tracking-[0.2em] uppercase text-ash">Belts Awarded</div>
+      </div>
+      <div class="text-center px-4 reveal" data-reveal>
+        <div class="font-display font-bold text-5xl lg:text-6xl text-white"><span class="count" data-target="11">0</span></div>
+        <div class="mt-2 font-mono text-xs tracking-[0.2em] uppercase text-ash">Years On The Mats</div>
+      </div>
+      <div class="text-center px-4 reveal" data-reveal>
+        <div class="font-display font-bold text-5xl lg:text-6xl text-gold"><span class="count" data-target="27">0</span></div>
+        <div class="mt-2 font-mono text-xs tracking-[0.2em] uppercase text-ash">Amateur Titles</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DISCIPLINES ============ -->
+<section class="py-24 lg:py-32 relative" id="disciplines">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
+      <div>
+        <div class="flex items-center gap-3 mb-4 reveal" data-reveal>
+          <span class="h-px w-10 bg-crimson"></span>
+          <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">01 â€” The Arts</span>
+        </div>
+        <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+          Pick Your<br/><span class="text-crimson">Battlefield</span>
+        </h2>
+      </div>
+      <p class="max-w-sm text-ash reveal" data-reveal>
+        Five core disciplines, programmed for every level â€” from your first class to your first cage walk.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card -->
+      <article class="tilt group relative bg-coal border border-white/5 hover:border-crimson/50 p-7 overflow-hidden transition-colors reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/5 group-hover:text-crimson/10 transition-colors">01</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-crimson/10 text-crimson text-2xl mb-5">ðŸ¥‹</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide">Brazilian Jiu-Jitsu</h3>
+          <p class="mt-3 text-ash text-sm leading-relaxed">Gi & no-gi grappling. Leverage over strength. Learn to stay calm where others panic.</p>
+          <div class="mt-5 font-mono text-xs tracking-wider text-crimson uppercase">All levels Â· Gi + No-Gi â†’</div>
+        </div>
+      </article>
+
+      <article class="tilt group relative bg-coal border border-white/5 hover:border-crimson/50 p-7 overflow-hidden transition-colors reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/5 group-hover:text-crimson/10 transition-colors">02</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-crimson/10 text-crimson text-2xl mb-5">ðŸ¥Š</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide">Boxing</h3>
+          <p class="mt-3 text-ash text-sm leading-relaxed">Footwork, head movement, and a jab that lands. Conditioning that doesn't quit.</p>
+          <div class="mt-5 font-mono text-xs tracking-wider text-crimson uppercase">Beginner â†’ Sparring â†’</div>
+        </div>
+      </article>
+
+      <article class="tilt group relative bg-coal border border-white/5 hover:border-crimson/50 p-7 overflow-hidden transition-colors reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/5 group-hover:text-crimson/10 transition-colors">03</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-crimson/10 text-crimson text-2xl mb-5">ðŸ¦µ</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide">Muay Thai</h3>
+          <p class="mt-3 text-ash text-sm leading-relaxed">The art of eight limbs. Elbows, knees, clinch â€” sharpened on Thai pads.</p>
+          <div class="mt-5 font-mono text-xs tracking-wider text-crimson uppercase">Striking Â· Clinch â†’</div>
+        </div>
+      </article>
+
+      <article class="tilt group relative bg-coal border border-white/5 hover:border-crimson/50 p-7 overflow-hidden transition-colors reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/5 group-hover:text-crimson/10 transition-colors">04</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-crimson/10 text-crimson text-2xl mb-5">ðŸ¤¼</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide">Wrestling</h3>
+          <p class="mt-3 text-ash text-sm leading-relaxed">Takedowns, scrambles, top control. Decide where the fight happens.</p>
+          <div class="mt-5 font-mono text-xs tracking-wider text-crimson uppercase">Folkstyle Â· Freestyle â†’</div>
+        </div>
+      </article>
+
+      <article class="tilt group relative bg-coal border border-white/5 hover:border-crimson/50 p-7 overflow-hidden transition-colors reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/5 group-hover:text-crimson/10 transition-colors">05</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-crimson/10 text-crimson text-2xl mb-5">âš”ï¸</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide">MMA</h3>
+          <p class="mt-3 text-ash text-sm leading-relaxed">Where it all comes together. Cage work, fight IQ, and a real competition track.</p>
+          <div class="mt-5 font-mono text-xs tracking-wider text-crimson uppercase">Amateur Â· Pro Track â†’</div>
+        </div>
+      </article>
+
+      <article class="tilt group relative bg-crimson p-7 overflow-hidden reveal" data-reveal data-hover>
+        <div class="absolute -right-6 -top-6 font-display font-bold text-8xl text-white/10">+</div>
+        <div class="relative">
+          <span class="inline-grid place-items-center w-12 h-12 bg-white/15 text-white text-2xl mb-5">ðŸ”¥</span>
+          <h3 class="font-display font-semibold uppercase text-2xl tracking-wide text-white">Strength & Conditioning</h3>
+          <p class="mt-3 text-white/80 text-sm leading-relaxed">Built for fighters. Engine work, mobility, and the gas tank to outlast anyone.</p>
+          <a href="#schedule" class="mt-5 inline-block font-mono text-xs tracking-wider text-white uppercase underline underline-offset-4">View schedule â†’</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COACHES ============ -->
+<section class="py-24 lg:py-32 bg-coal relative grit" id="coaches">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="mb-14">
+      <div class="flex items-center gap-3 mb-4 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">02 â€” Cornermen</span>
+      </div>
+      <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+        The Coaches<br/>In Your <span class="text-crimson">Corner</span>
+      </h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <!-- coach -->
+      <article class="group relative img-frame aspect-[3/4] reveal" data-reveal data-hover>
+        <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Head coach" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 inset-x-0 p-5">
+          <div class="font-mono text-[10px] tracking-[0.25em] text-crimson uppercase mb-1">Head Coach Â· BJJ Black Belt</div>
+          <h3 class="font-display font-semibold uppercase text-xl">Marcus "Anvil" Reyes</h3>
+          <p class="text-ash text-xs mt-1">3rd-degree black belt. 18 yrs on the mats.</p>
+        </div>
+      </article>
+
+      <article class="group relative img-frame aspect-[3/4] reveal" data-reveal data-hover>
+        <img src="https://images.unsplash.com/photo-1583473848882-f9a5bc7fd2ee?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Boxing coach" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 inset-x-0 p-5">
+          <div class="font-mono text-[10px] tracking-[0.25em] text-crimson uppercase mb-1">Boxing Lead</div>
+          <h3 class="font-display font-semibold uppercase text-xl">Dani Okonkwo</h3>
+          <p class="text-ash text-xs mt-1">Ex-national amateur. 40-fight record.</p>
+        </div>
+      </article>
+
+      <article class="group relative img-frame aspect-[3/4] reveal" data-reveal data-hover>
+        <img src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="MMA coach" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 inset-x-0 p-5">
+          <div class="font-mono text-[10px] tracking-[0.25em] text-crimson uppercase mb-1">MMA Â· Wrestling</div>
+          <h3 class="font-display font-semibold uppercase text-xl">Sol Vukovic</h3>
+          <p class="text-ash text-xs mt-1">Pro MMA vet. Cornered 60+ fights.</p>
+        </div>
+      </article>
+
+      <article class="group relative img-frame aspect-[3/4] reveal" data-reveal data-hover>
+        <img src="https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'"
+             alt="Muay Thai coach" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-transparent"></div>
+        <div class="absolute bottom-0 inset-x-0 p-5">
+          <div class="font-mono text-[10px] tracking-[0.25em] text-crimson uppercase mb-1">Muay Thai Â· S&C</div>
+          <h3 class="font-display font-semibold uppercase text-xl">Priya Chandrasekar</h3>
+          <p class="text-ash text-xs mt-1">Lumpinee-trained. Clinch specialist.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section class="py-24 lg:py-32 relative" id="schedule">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+      <div>
+        <div class="flex items-center gap-3 mb-4 reveal" data-reveal>
+          <span class="h-px w-10 bg-crimson"></span>
+          <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">03 â€” Weekly Grind</span>
+        </div>
+        <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+          Mat <span class="text-crimson">Schedule</span>
+        </h2>
+      </div>
+      <p class="max-w-sm text-ash reveal" data-reveal>Open mats Saturday mornings. Drop in any session listed below â€” your first one's on us.</p>
+    </div>
+
+    <div class="overflow-x-auto reveal" data-reveal>
+      <table class="w-full min-w-[640px] border-collapse">
+        <thead>
+          <tr class="text-left font-mono text-xs tracking-[0.2em] uppercase text-ash border-b border-white/10">
+            <th class="py-4 pr-4 font-normal">Time</th>
+            <th class="py-4 px-4 font-normal">Mon</th>
+            <th class="py-4 px-4 font-normal">Tue</th>
+            <th class="py-4 px-4 font-normal">Wed</th>
+            <th class="py-4 px-4 font-normal">Thu</th>
+            <th class="py-4 px-4 font-normal">Fri</th>
+          </tr>
+        </thead>
+        <tbody class="font-display uppercase text-sm">
+          <tr class="border-b border-white/5 hover:bg-coal/60 transition-colors">
+            <td class="py-4 pr-4 font-mono text-xs text-gold">06:00</td>
+            <td class="py-4 px-4">Boxing</td>
+            <td class="py-4 px-4 text-crimson">BJJ Gi</td>
+            <td class="py-4 px-4">Boxing</td>
+            <td class="py-4 px-4 text-crimson">BJJ Gi</td>
+            <td class="py-4 px-4">S&C</td>
+          </tr>
+          <tr class="border-b border-white/5 hover:bg-coal/60 transition-colors">
+            <td class="py-4 pr-4 font-mono text-xs text-gold">12:00</td>
+            <td class="py-4 px-4 text-crimson">No-Gi</td>
+            <td class="py-4 px-4">Muay Thai</td>
+            <td class="py-4 px-4 text-crimson">No-Gi</td>
+            <td class="py-4 px-4">Muay Thai</td>
+            <td class="py-4 px-4 text-crimson">Open Mat</td>
+          </tr>
+          <tr class="border-b border-white/5 hover:bg-coal/60 transition-colors">
+            <td class="py-4 pr-4 font-mono text-xs text-gold">18:00</td>
+            <td class="py-4 px-4">MMA</td>
+            <td class="py-4 px-4">Wrestling</td>
+            <td class="py-4 px-4">MMA</td>
+            <td class="py-4 px-4">Wrestling</td>
+            <td class="py-4 px-4 text-crimson">Sparring</td>
+          </tr>
+          <tr class="hover:bg-coal/60 transition-colors">
+            <td class="py-4 pr-4 font-mono text-xs text-gold">19:30</td>
+            <td class="py-4 px-4 text-crimson">BJJ Gi</td>
+            <td class="py-4 px-4">Boxing</td>
+            <td class="py-4 px-4 text-crimson">BJJ Gi</td>
+            <td class="py-4 px-4">Boxing</td>
+            <td class="py-4 px-4">Fundamentals</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE 2 (reverse) ============ -->
+<div class="bg-coal text-white py-4 overflow-hidden border-y border-white/5 select-none">
+  <div class="marquee">
+    <div class="marquee-track rev font-display font-bold uppercase tracking-wider text-2xl text-white/10">
+      <span class="px-6">No Ego</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">All Grit</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">Train Hard</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">Stay Humble</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">No Ego</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">All Grit</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">Train Hard</span><span class="px-6 text-crimson/40">/</span>
+      <span class="px-6">Stay Humble</span><span class="px-6 text-crimson/40">/</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PRICING ============ -->
+<section class="py-24 lg:py-32 relative grit" id="pricing">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <div class="flex items-center justify-center gap-3 mb-4 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">04 â€” Membership</span>
+        <span class="h-px w-10 bg-crimson"></span>
+      </div>
+      <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+        Lock In Your <span class="text-crimson">Spot</span>
+      </h2>
+      <p class="mt-4 max-w-lg mx-auto text-ash reveal" data-reveal>No contracts. Cancel anytime. Every plan starts with a free trial week.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- plan -->
+      <div class="tilt bg-coal border border-white/10 p-8 flex flex-col reveal" data-reveal data-hover>
+        <div class="font-mono text-xs tracking-[0.25em] uppercase text-ash">Drop-In</div>
+        <div class="mt-4 flex items-end gap-1">
+          <span class="font-display font-bold text-5xl">$25</span>
+          <span class="text-ash text-sm mb-1">/ class</span>
+        </div>
+        <p class="mt-3 text-ash text-sm">For travellers and the merely curious.</p>
+        <ul class="mt-6 space-y-3 text-sm text-ash flex-1">
+          <li class="flex gap-2"><span class="text-crimson">âœ¦</span> Any single class</li>
+          <li class="flex gap-2"><span class="text-crimson">âœ¦</span> Gear loan included</li>
+          <li class="flex gap-2"><span class="text-crimson">âœ¦</span> No commitment</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center font-display font-semibold uppercase tracking-wider text-sm border border-white/20 hover:border-crimson py-3 transition-colors" data-hover>Drop In</a>
+      </div>
+
+      <!-- featured -->
+      <div class="tilt relative bg-crimson p-8 flex flex-col scale-[1.03] shadow-2xl shadow-crimson/20 reveal" data-reveal data-hover>
+        <div class="absolute top-0 right-0 bg-ink text-white font-mono text-[10px] tracking-[0.2em] uppercase px-3 py-1">Most Picked</div>
+        <div class="font-mono text-xs tracking-[0.25em] uppercase text-white/80">Unlimited</div>
+        <div class="mt-4 flex items-end gap-1 text-white">
+          <span class="font-display font-bold text-6xl">$129</span>
+          <span class="text-white/80 text-sm mb-1.5">/ mo</span>
+        </div>
+        <p class="mt-3 text-white/85 text-sm">Train every discipline, every day. The real deal.</p>
+        <ul class="mt-6 space-y-3 text-sm text-white/90 flex-1">
+          <li class="flex gap-2"><span>âœ¦</span> Unlimited classes â€” all arts</li>
+          <li class="flex gap-2"><span>âœ¦</span> Open mat + sparring access</li>
+          <li class="flex gap-2"><span>âœ¦</span> Free belt progression seminars</li>
+          <li class="flex gap-2"><span>âœ¦</span> 1 free guest pass / month</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center bg-ink text-white font-display font-semibold uppercase tracking-wider text-sm py-3 hover:bg-black transition-colors" data-hover>Start Free Trial</a>
+      </div>
+
+      <!-- plan -->
+      <div class="tilt bg-coal border border-white/10 p-8 flex flex-col reveal" data-reveal data-hover>
+        <div class="font-mono text-xs tracking-[0.25em] uppercase text-ash">Fight Team</div>
+        <div class="mt-4 flex items-end gap-1">
+          <span class="font-display font-bold text-5xl">$189</span>
+          <span class="text-ash text-sm mb-1">/ mo</span>
+        </div>
+        <p class="mt-3 text-ash text-sm">By invite. For active competitors.</p>
+        <ul class="mt-6 space-y-3 text-sm text-ash flex-1">
+          <li class="flex gap-2"><span class="text-gold">âœ¦</span> Everything in Unlimited</li>
+          <li class="flex gap-2"><span class="text-gold">âœ¦</span> Private corner coaching</li>
+          <li class="flex gap-2"><span class="text-gold">âœ¦</span> Fight camp programming</li>
+          <li class="flex gap-2"><span class="text-gold">âœ¦</span> Travel + corner support</li>
+        </ul>
+        <a href="#cta" class="mt-7 text-center font-display font-semibold uppercase tracking-wider text-sm border border-gold/40 text-gold hover:bg-gold hover:text-ink py-3 transition-colors" data-hover>Request Invite</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / PHILOSOPHY ============ -->
+<section class="py-24 lg:py-32 bg-coal relative overflow-hidden grit" id="about">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative img-frame aspect-[4/5] reveal" data-reveal data-parallax>
+      <img src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=1600&q=80"
+           onerror="this.style.display='none'"
+           alt="Gym interior" class="w-full h-full object-cover opacity-70" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-transparent"></div>
+      <div class="absolute bottom-5 left-5 right-5 border-l-2 border-crimson pl-4">
+        <p class="font-display uppercase text-lg leading-tight">"You don't rise to the occasion.<br/>You fall to your training."</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center gap-3 mb-4 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">05 â€” The Code</span>
+      </div>
+      <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2rem,4.5vw,3.5rem)] reveal" data-reveal>
+        Built On Discipline.<br/>Forged By <span class="text-crimson">Repetition</span>.
+      </h2>
+      <p class="mt-6 text-ash leading-relaxed reveal" data-reveal>
+        Steelyard started in a leaky warehouse with two heavy bags and a borrowed mat.
+        Eleven years later we're still the same at the core: no flashy contracts, no ego on the floor,
+        no one left behind on a hard day.
+      </p>
+      <p class="mt-4 text-ash leading-relaxed reveal" data-reveal>
+        We train fighters and we train people who'll never fight â€” both leave sharper, calmer, harder to break.
+        That's the whole point.
+      </p>
+      <div class="mt-8 grid grid-cols-3 gap-4 reveal" data-reveal>
+        <div class="border-t border-crimson pt-3"><div class="font-display font-bold text-2xl">Respect</div><div class="font-mono text-[10px] tracking-wider text-ash uppercase">On & off mat</div></div>
+        <div class="border-t border-crimson pt-3"><div class="font-display font-bold text-2xl">Consistency</div><div class="font-mono text-[10px] tracking-wider text-ash uppercase">Show up</div></div>
+        <div class="border-t border-crimson pt-3"><div class="font-display font-bold text-2xl">Grit</div><div class="font-mono text-[10px] tracking-wider text-ash uppercase">Earn it</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / TRANSFORMATIONS ============ -->
+<section class="py-24 lg:py-32 relative" id="testimonials">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="mb-14">
+      <div class="flex items-center gap-3 mb-4 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">06 â€” From The Floor</span>
+      </div>
+      <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+        Real People.<br/>Real <span class="text-crimson">Transformations</span>.
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="bg-coal border border-white/5 p-8 reveal" data-reveal data-hover>
+        <div class="text-crimson text-4xl font-display leading-none mb-4">"</div>
+        <blockquote class="text-ash leading-relaxed">Walked in unfit and anxious. Eight months later I got my blue belt and dropped 14kg. This place rebuilt me.</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 bg-crimson/20 text-crimson font-display font-bold">TM</span>
+          <div><div class="font-display uppercase text-sm">Tariq M.</div><div class="font-mono text-[10px] text-ash uppercase tracking-wider">BJJ Blue Belt Â· 1 yr</div></div>
+        </figcaption>
+      </figure>
+
+      <figure class="bg-coal border border-white/5 p-8 reveal" data-reveal data-hover>
+        <div class="text-crimson text-4xl font-display leading-none mb-4">"</div>
+        <blockquote class="text-ash leading-relaxed">I came for fitness and stayed for the people. Took my first amateur boxing bout last spring â€” and won.</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 bg-crimson/20 text-crimson font-display font-bold">JL</span>
+          <div><div class="font-display uppercase text-sm">Jess L.</div><div class="font-mono text-[10px] text-ash uppercase tracking-wider">Boxing Â· 2 yrs</div></div>
+        </figcaption>
+      </figure>
+
+      <figure class="bg-coal border border-white/5 p-8 reveal" data-reveal data-hover>
+        <div class="text-crimson text-4xl font-display leading-none mb-4">"</div>
+        <blockquote class="text-ash leading-relaxed">The coaches actually coach. No cliques, no ego. Just honest work and a corner that shows up on fight night.</blockquote>
+        <figcaption class="mt-6 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 bg-crimson/20 text-crimson font-display font-bold">DA</span>
+          <div><div class="font-display uppercase text-sm">Devon A.</div><div class="font-mono text-[10px] text-ash uppercase tracking-wider">MMA Amateur Â· 3 yrs</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="py-24 lg:py-32 bg-coal relative grit" id="faq">
+  <div class="mx-auto max-w-3xl px-5 lg:px-8">
+    <div class="text-center mb-12">
+      <div class="flex items-center justify-center gap-3 mb-4 reveal" data-reveal>
+        <span class="h-px w-10 bg-crimson"></span>
+        <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">07 â€” Questions</span>
+        <span class="h-px w-10 bg-crimson"></span>
+      </div>
+      <h2 class="font-display font-bold uppercase leading-[0.95] text-[clamp(2.2rem,5vw,4rem)] reveal" data-reveal>
+        Before Your <span class="text-crimson">First Class</span>
+      </h2>
+    </div>
+
+    <div class="space-y-3">
+      <div class="faq-item border border-white/10 bg-ink/40 reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-display uppercase text-lg">Do I need any experience?</span>
+          <span class="faq-plus text-crimson text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-ash text-sm leading-relaxed">None at all. Most of our members started with zero background. Fundamentals classes run daily and you'll always have someone showing you the ropes.</p></div>
+      </div>
+
+      <div class="faq-item border border-white/10 bg-ink/40 reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-display uppercase text-lg">What should I bring to a trial?</span>
+          <span class="faq-plus text-crimson text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-ash text-sm leading-relaxed">Just shorts, a t-shirt, water and a towel. We loan gloves and gis for your first sessions â€” no need to buy gear before you know you love it.</p></div>
+      </div>
+
+      <div class="faq-item border border-white/10 bg-ink/40 reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-display uppercase text-lg">Will I get hurt sparring?</span>
+          <span class="faq-plus text-crimson text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-ash text-sm leading-relaxed">Sparring is controlled, optional, and earned. Beginners drill technique for weeks before any contact. Safety and respect are non-negotiable on our mats.</p></div>
+      </div>
+
+      <div class="faq-item border border-white/10 bg-ink/40 reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 text-left p-5" data-hover>
+          <span class="font-display uppercase text-lg">Is there a contract?</span>
+          <span class="faq-plus text-crimson text-2xl transition-transform shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="px-5 pb-5 text-ash text-sm leading-relaxed">No lock-ins. Memberships are month-to-month and you can pause or cancel anytime. We'd rather earn your loyalty than trap it in fine print.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 lg:py-36 overflow-hidden grit" id="cta">
+  <div class="absolute inset-0 img-frame">
+    <img src="https://images.unsplash.com/photo-1583473848882-f9a5bc7fd2ee?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'"
+         alt="Fighter" class="w-full h-full object-cover opacity-25" data-parallax />
+    <div class="absolute inset-0 bg-gradient-to-b from-ink via-ink/90 to-ink"></div>
+  </div>
+  <div class="relative mx-auto max-w-4xl px-5 lg:px-8 text-center">
+    <div class="flex items-center justify-center gap-3 mb-6 reveal" data-reveal>
+      <span class="h-px w-10 bg-crimson"></span>
+      <span class="font-mono text-xs tracking-[0.3em] text-crimson uppercase">Your Move</span>
+      <span class="h-px w-10 bg-crimson"></span>
+    </div>
+    <h2 class="font-display font-bold uppercase leading-[0.92] text-[clamp(2.5rem,8vw,6rem)] reveal" data-reveal>
+      Stop Watching.<br/><span class="text-crimson">Start Training.</span>
+    </h2>
+    <p class="mt-6 max-w-xl mx-auto text-ash text-lg reveal" data-reveal>
+      One free trial week. Every discipline. Zero pressure. Walk in tomorrow â€” walk out a fighter.
+    </p>
+    <div class="mt-9 flex flex-wrap justify-center gap-4 reveal" data-reveal>
+      <a href="#top" class="group relative inline-flex items-center gap-3 bg-crimson text-white font-display font-semibold tracking-wider uppercase px-9 py-4 text-sm overflow-hidden" data-hover>
+        <span class="relative z-10">Claim Free Trial Week</span>
+        <span class="relative z-10">â†’</span>
+        <span class="absolute inset-0 bg-ember scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300"></span>
+      </a>
+      <a href="#schedule" class="inline-flex items-center gap-2 font-display font-medium tracking-wider uppercase text-sm text-white/80 hover:text-white border border-white/20 hover:border-crimson px-7 py-4 transition-colors" data-hover>
+        View Schedule
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink border-t border-white/5 pt-16 pb-8">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-10 mb-12">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-3 mb-4" data-hover>
+          <span class="grid place-items-center w-9 h-9 bg-crimson text-white font-display font-bold text-lg leading-none rotate-2">I</span>
+          <span class="font-display font-bold tracking-[0.18em] text-lg">STEELYARD<span class="text-crimson">.</span></span>
+        </a>
+        <p class="text-ash text-sm max-w-sm leading-relaxed">East District Fight Co. â€” Brazilian Jiu-Jitsu, boxing, Muay Thai, wrestling & MMA. Forging fighters since 2014.</p>
+        <div class="mt-5 font-mono text-xs text-ash">
+          <div>47 Forge Lane, East District</div>
+          <div class="mt-1">hello@steelyard.gym Â· (555) 018-4427</div>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display uppercase tracking-wider text-sm mb-4 text-crimson">Train</h4>
+        <ul class="space-y-2 text-sm text-ash">
+          <li><a href="#disciplines" class="hover:text-white transition-colors" data-hover>Disciplines</a></li>
+          <li><a href="#schedule" class="hover:text-white transition-colors" data-hover>Schedule</a></li>
+          <li><a href="#pricing" class="hover:text-white transition-colors" data-hover>Membership</a></li>
+          <li><a href="#coaches" class="hover:text-white transition-colors" data-hover>Coaches</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display uppercase tracking-wider text-sm mb-4 text-crimson">Follow</h4>
+        <ul class="space-y-2 text-sm text-ash">
+          <li><a href="#" class="hover:text-white transition-colors" data-hover>Instagram</a></li>
+          <li><a href="#" class="hover:text-white transition-colors" data-hover>YouTube</a></li>
+          <li><a href="#" class="hover:text-white transition-colors" data-hover>TikTok</a></li>
+          <li><a href="#faq" class="hover:text-white transition-colors" data-hover>FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/5 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 font-mono text-[11px] tracking-wider text-ash/60 uppercase">
+      <span>Â© 2025 Steelyard Academy. All rights reserved.</span>
+      <span>No Ego Â· All Grit</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  (function(){
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    if (!dot || !ring) return;
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx+'px'; dot.style.top = my+'px';
+    });
+    (function loop(){
+      rx += (mx-rx)*0.18; ry += (my-ry)*0.18;
+      ring.style.left = rx+'px'; ring.style.top = ry+'px';
+      requestAnimationFrame(loop);
+    })();
+    document.querySelectorAll('[data-hover]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  })();
+
+  /* ---------- Nav scroll bg ---------- */
+  (function(){
+    const nav = document.getElementById('nav');
+    const onScroll = () => {
+      if (scrollY > 40) nav.classList.add('bg-ink/90','backdrop-blur-md','shadow-lg','shadow-black/40');
+      else nav.classList.remove('bg-ink/90','backdrop-blur-md','shadow-lg','shadow-black/40');
+    };
+    onScroll(); addEventListener('scroll', onScroll, {passive:true});
+  })();
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Magnetic Join CTA ---------- */
+  (function(){
+    const cta = document.getElementById('joinCta');
+    if (!cta || reduceMotion) return;
+    cta.addEventListener('mousemove', e => {
+      const r = cta.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width/2;
+      const y = e.clientY - r.top - r.height/2;
+      cta.style.transform = `translate(${x*0.3}px, ${y*0.4}px)`;
+    });
+    cta.addEventListener('mouseleave', () => cta.style.transform = 'translate(0,0)');
+  })();
+
+  /* ---------- Tilt cards ---------- */
+  if (!reduceMotion) {
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left)/r.width - 0.5;
+        const py = (e.clientY - r.top)/r.height - 0.5;
+        card.style.transform = `perspective(800px) rotateX(${-py*6}deg) rotateY(${px*6}deg)`;
+      });
+      card.addEventListener('mouseleave', () => card.style.transform = 'perspective(800px) rotateX(0) rotateY(0)');
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (!reduceMotion && window.gsap) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero kinetic headline */
+    gsap.set('.kinetic-word', { yPercent: 110 });
+    gsap.to('.kinetic-word', {
+      yPercent: 0, duration: 1, ease: 'power4.out', stagger: 0.08, delay: 0.2
+    });
+
+    /* Hero parallax + zoom settle */
+    gsap.to('#heroImg', { scale: 1, duration: 2.4, ease: 'power2.out' });
+    gsap.to('#heroImg', {
+      yPercent: 18, ease: 'none',
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    /* Section reveals */
+    gsap.utils.toArray('[data-reveal]').forEach(el => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    /* Container parallax on action imagery */
+    gsap.utils.toArray('[data-parallax]').forEach(img => {
+      gsap.fromTo(img, { yPercent: -12 }, {
+        yPercent: 12, ease: 'none',
+        scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach(el => {
+      const target = +el.dataset.target;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => {
+          const obj = { v: 0 };
+          gsap.to(obj, {
+            v: target, duration: 1.8, ease: 'power2.out',
+            onUpdate: () => el.textContent = Math.floor(obj.v).toLocaleString()
+          });
+        }
+      });
+    });
+  } else {
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.target).toLocaleString());
+  }
+
+  /* ---------- Smooth anchor scroll ---------- */
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href');
+      if (id.length > 1) {
+        const t = document.querySelector(id);
+        if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth', block:'start'}); }
+      }
+    });
+  });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sterling & Associates â€” Attorneys at Law</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{
+  colors:{navy:'#1a2744','navy-light':'#243656',gold:'#c4a35a','gold-light':'#d4b56a',surface:'#f8f7f4','surface-dark':'#efeee9',card:'#ffffff',txt:'#1a2744',muted:'#5a6a7a',border:'rgba(26,39,68,0.08)'},
+  fontFamily:{serif:['Libre Baskerville','Georgia','serif'],sans:['Inter','system-ui','sans-serif']}
+}}}
+</script>
+<style>
+.reveal{opacity:0;transform:translateY(30px);transition:all .9s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.12s}.st2{transition-delay:.24s}.st3{transition-delay:.36s}
+.practice-card{transition:all .4s cubic-bezier(.16,1,.3,1)}
+.practice-card:hover{transform:translateY(-6px);box-shadow:0 15px 40px rgba(26,39,68,.08)}
+</style>
+</head>
+<body class="bg-surface text-txt font-sans antialiased overflow-x-hidden">
+
+<!-- NAV -->
+<nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-border">
+  <div class="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+    <div class="font-serif text-xl font-700 text-navy tracking-tight">STERLING <span class="text-gold">&</span> ASSOCIATES</div>
+    <div class="hidden md:flex gap-8 text-sm font-medium text-muted">
+      <a href="#practice" class="hover:text-navy transition-colors">Practice Areas</a>
+      <a href="#team" class="hover:text-navy transition-colors">Our Team</a>
+      <a href="#results" class="hover:text-navy transition-colors">Results</a>
+      <a href="#contact" class="hover:text-navy transition-colors">Contact</a>
+    </div>
+    <button class="bg-navy text-white px-6 py-2.5 text-sm font-semibold hover:bg-navy-light transition-all">Free Consultation</button>
+  </div>
+</nav>
+
+<!-- HERO â€” Authoritative, trust-building -->
+<section class="py-24 md:py-32 px-8 relative">
+  <div class="absolute top-0 left-0 right-0 h-[60%] bg-navy"></div>
+  <div class="max-w-7xl mx-auto relative z-10">
+    <div class="grid lg:grid-cols-2 gap-16 items-end">
+      <div class="text-white pb-16">
+        <div class="text-gold text-xs font-semibold tracking-[0.3em] uppercase mb-6" style="animation:fadeUp .7s .2s both">Established 1987 Â· New York</div>
+        <h1 class="font-serif text-5xl md:text-6xl leading-[1.1] mb-6" style="animation:fadeUp .9s .3s both">
+          Justice.<br>Advocacy.<br><span class="text-gold">Results.</span>
+        </h1>
+        <p class="text-white/60 text-lg leading-relaxed max-w-lg mb-10" style="animation:fadeUp .9s .5s both">
+          For over 35 years, Sterling & Associates has provided aggressive, results-driven legal representation to individuals and businesses across all areas of law.
+        </p>
+        <div class="flex gap-4 flex-wrap" style="animation:fadeUp .9s .7s both">
+          <button class="bg-gold text-navy px-8 py-4 font-bold text-sm hover:bg-gold-light transition-all">Free Case Evaluation â†’</button>
+          <a href="tel:+12125551234" class="border border-white/20 text-white px-8 py-4 font-medium text-sm hover:border-gold hover:text-gold transition-all">(212) 555-1234</a>
+        </div>
+      </div>
+      <!-- Results card -->
+      <div class="bg-white rounded-lg shadow-2xl shadow-navy/10 p-10 border border-border" style="animation:fadeUp 1s .4s both">
+        <div class="text-xs text-gold font-semibold tracking-[0.2em] uppercase mb-6">Case Results</div>
+        <div class="space-y-6">
+          <div class="flex justify-between items-center pb-4 border-b border-border">
+            <div><div class="font-serif text-lg font-700">$12.5M</div><div class="text-muted text-xs mt-0.5">Medical Malpractice</div></div>
+            <span class="text-xs text-gold font-semibold px-3 py-1 bg-gold/10 rounded-full">Verdict</span>
+          </div>
+          <div class="flex justify-between items-center pb-4 border-b border-border">
+            <div><div class="font-serif text-lg font-700">$8.2M</div><div class="text-muted text-xs mt-0.5">Personal Injury</div></div>
+            <span class="text-xs text-gold font-semibold px-3 py-1 bg-gold/10 rounded-full">Settlement</span>
+          </div>
+          <div class="flex justify-between items-center pb-4 border-b border-border">
+            <div><div class="font-serif text-lg font-700">$5.7M</div><div class="text-muted text-xs mt-0.5">Employment Law</div></div>
+            <span class="text-xs text-gold font-semibold px-3 py-1 bg-gold/10 rounded-full">Verdict</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <div><div class="font-serif text-lg font-700">$3.1M</div><div class="text-muted text-xs mt-0.5">Product Liability</div></div>
+            <span class="text-xs text-gold font-semibold px-3 py-1 bg-gold/10 rounded-full">Settlement</span>
+          </div>
+        </div>
+        <div class="mt-8 pt-6 border-t border-border text-center">
+          <div class="font-serif text-3xl font-700 text-navy">$100M+</div>
+          <div class="text-xs text-muted mt-1">Total Recovered for Clients</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="py-16 px-8 bg-surface-dark border-y border-border">
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <div class="reveal"><div class="font-serif text-4xl font-700 text-navy">35+</div><div class="text-sm text-muted mt-1">Years of Practice</div></div>
+    <div class="reveal st1"><div class="font-serif text-4xl font-700 text-navy">5,000+</div><div class="text-sm text-muted mt-1">Cases Won</div></div>
+    <div class="reveal st2"><div class="font-serif text-4xl font-700 text-gold">98%</div><div class="text-sm text-muted mt-1">Success Rate</div></div>
+    <div class="reveal st3"><div class="font-serif text-4xl font-700 text-navy">$100M+</div><div class="text-sm text-muted mt-1">Recovered</div></div>
+  </div>
+</section>
+
+<!-- PRACTICE AREAS -->
+<section id="practice" class="py-28 px-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal text-gold text-xs font-semibold tracking-[0.3em] uppercase mb-3">Practice Areas</div>
+      <h2 class="reveal st1 font-serif text-3xl md:text-4xl">How We Can <span class="text-gold">Help</span></h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="reveal practice-card bg-white rounded-lg p-8 border border-border cursor-pointer">
+        <div class="text-3xl mb-5">âš–ï¸</div>
+        <h3 class="font-serif text-lg font-700 mb-2">Personal Injury</h3>
+        <p class="text-muted text-sm leading-relaxed">Car accidents, slip and fall, workplace injuries. We fight for maximum compensation.</p>
+      </div>
+      <div class="reveal st1 practice-card bg-white rounded-lg p-8 border border-border cursor-pointer">
+        <div class="text-3xl mb-5">ðŸ¢</div>
+        <h3 class="font-serif text-lg font-700 mb-2">Corporate Law</h3>
+        <p class="text-muted text-sm leading-relaxed">M&A, compliance, governance, and business formation for companies of all sizes.</p>
+      </div>
+      <div class="reveal st2 practice-card bg-white rounded-lg p-8 border border-border cursor-pointer">
+        <div class="text-3xl mb-5">ðŸ‘¥</div>
+        <h3 class="font-serif text-lg font-700 mb-2">Employment Law</h3>
+        <p class="text-muted text-sm leading-relaxed">Wrongful termination, discrimination, harassment, and wage disputes.</p>
+      </div>
+      <div class="reveal st3 practice-card bg-white rounded-lg p-8 border border-border cursor-pointer">
+        <div class="text-3xl mb-5">ðŸ </div>
+        <h3 class="font-serif text-lg font-700 mb-2">Real Estate</h3>
+        <p class="text-muted text-sm leading-relaxed">Commercial and residential transactions, disputes, zoning, and landlord-tenant law.</p>
+      </div>
+      <div class="reveal practice-card bg-white rounded-lg p-8 border border-border cursor-pointer">
+        <div class="text-3xl mb-5">ðŸ“</div>
+        <h3 class="font-serif text-lg font-700 mb-2">Estate Planning</h3>
+        <p class="text-muted text-sm leading-relaxed">Wills, trusts, probate, and asset protection for individuals and families.</p>
+      </div>
+      <div class="reveal st1 practice-card bg-navy rounded-lg p-8 cursor-pointer text-white">
+        <div class="text-3xl mb-5">ðŸ“ž</div>
+        <h3 class="font-serif text-lg font-700 mb-2">Free Consultation</h3>
+        <p class="text-white/70 text-sm leading-relaxed mb-4">Not sure where to start? Contact us for a free, no-obligation case review.</p>
+        <span class="text-gold text-sm font-semibold">Contact Us â†’</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="contact" class="py-28 px-8 bg-navy text-white text-center">
+  <div class="max-w-2xl mx-auto">
+    <div class="reveal text-gold text-xs font-semibold tracking-[0.3em] uppercase mb-4">Get Started</div>
+    <h2 class="reveal st1 font-serif text-3xl md:text-4xl mb-4">Your rights <span class="text-gold">matter</span></h2>
+    <p class="reveal st2 text-white/50 mb-10">Contact us today for a free, confidential consultation. No fees unless we win your case.</p>
+    <div class="reveal st3 flex gap-4 justify-center flex-wrap">
+      <button class="bg-gold text-navy px-10 py-4 font-bold text-sm hover:bg-gold-light transition-all">Free Case Review â†’</button>
+      <a href="tel:+12125551234" class="border border-white/20 text-white px-10 py-4 font-medium text-sm hover:border-gold hover:text-gold transition-all">(212) 555-1234</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-border py-12 px-8 bg-white">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
+    <div>
+      <div class="font-serif text-lg font-700 text-navy mb-3">STERLING <span class="text-gold">&</span> ASSOCIATES</div>
+      <p class="text-muted text-sm max-w-xs">Experienced attorneys fighting for justice since 1987.</p>
+      <div class="text-xs text-muted mt-4">100 Park Avenue, Suite 4200<br>New York, NY 10017</div>
+    </div>
+    <div class="grid grid-cols-2 gap-10 text-sm">
+      <div><div class="font-semibold text-navy mb-3">Practice</div><div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-navy transition-colors">Personal Injury</a><a href="#" class="hover:text-navy transition-colors">Corporate</a><a href="#" class="hover:text-navy transition-colors">Employment</a><a href="#" class="hover:text-navy transition-colors">Real Estate</a></div></div>
+      <div><div class="font-semibold text-navy mb-3">Firm</div><div class="flex flex-col gap-2 text-muted"><a href="#" class="hover:text-navy transition-colors">About</a><a href="#" class="hover:text-navy transition-colors">Team</a><a href="#" class="hover:text-navy transition-colors">Results</a><a href="#" class="hover:text-navy transition-colors">Contact</a></div></div>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto mt-10 pt-6 border-t border-border flex justify-between text-xs text-muted">
+    <span>Â© 2026 Sterling & Associates. All rights reserved.</span>
+    <div class="flex gap-4"><a href="#" class="hover:text-navy transition-colors">Privacy</a><a href="#" class="hover:text-navy transition-colors">Disclaimer</a></div>
+  </div>
+</footer>
+
+<script>
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+document.body.style.opacity='0';document.body.style.transition='opacity .4s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

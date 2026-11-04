@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verdaleaf — Residential Landscaping & Lawn Care</title>
+<meta name="description" content="Verdaleaf crafts living outdoor spaces — full-service landscaping, lawn care, and seasonal garden design for homes across the valley." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          fern:    { 50:'#f1f7ef', 100:'#e0efdc', 200:'#c2dfba', 300:'#97c88a', 400:'#69ad56', 500:'#479136', 600:'#357328', 700:'#2a5a21', 800:'#24481e', 900:'#1f3c1b', 950:'#0d210c' },
+          moss:    { 400:'#7c9a5a', 500:'#647d45', 600:'#4d6135' },
+          clay:    { 100:'#f1e7da', 300:'#d8bd9c', 500:'#b58a5d', 700:'#8a6238' },
+          bark:    '#2c2418',
+          cream:   '#f7f4ec',
+          sun:     '#e3b341',
+        },
+        fontFamily: {
+          display: ['"Fraunces"', 'serif'],
+          body:    ['"Outfit"', 'sans-serif'],
+        },
+        boxShadow: {
+          leaf: '0 24px 60px -20px rgba(36,72,30,0.45)',
+          soft: '0 12px 40px -16px rgba(36,72,30,0.30)',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --ease: cubic-bezier(.22,1,.36,1); }
+  html, body { overflow-x: hidden; }
+  body { background: #f7f4ec; color: #24481e; font-family: 'Outfit', sans-serif; }
+
+  ::selection { background: #69ad56; color: #fff; }
+
+  /* Animated gradient seam under hero */
+  .grain::before {
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* Marquee */
+  .marquee-track { display:flex; width:max-content; animation: scrollx 28s linear infinite; }
+  @keyframes scrollx { to { transform: translateX(-50%); } }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* Leaf float accents */
+  .leaf-accent { position:absolute; pointer-events:none; opacity:.5; will-change: transform; }
+
+  /* Before/after slider */
+  .ba-wrap { position:relative; overflow:hidden; touch-action:none; user-select:none; }
+  .ba-after { position:absolute; inset:0; clip-path: inset(0 50% 0 0); }
+  .ba-handle { position:absolute; top:0; bottom:0; left:50%; width:3px; transform:translateX(-50%); background:#f7f4ec; cursor:ew-resize; }
+  .ba-handle::after {
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:46px; height:46px; border-radius:9999px; background:#f7f4ec;
+    box-shadow:0 6px 18px rgba(0,0,0,.3);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%232a5a21' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 18 9 12 15 6'/%3E%3Cpolyline points='9 18 15 12 9 6' transform='translate(6 0)'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center; background-size:22px;
+  }
+
+  /* FAQ accordion */
+  .faq-body { max-height:0; overflow:hidden; transition:max-height .5s var(--ease); }
+  .faq-item.open .faq-body { max-height:240px; }
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  /* Magnetic button */
+  .magnetic { will-change: transform; }
+
+  /* Tilt cards */
+  .tilt { transform-style: preserve-3d; will-change: transform; transition: box-shadow .4s var(--ease); }
+  .tilt-inner { transform: translateZ(40px); }
+
+  .underline-grow { position:relative; }
+  .underline-grow::after { content:''; position:absolute; left:0; bottom:-3px; height:2px; width:0; background:currentColor; transition:width .35s var(--ease); }
+  .underline-grow:hover::after { width:100%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track, .leaf-accent { animation: none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="font-body antialiased">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2.5 group">
+      <span class="grid place-items-center w-10 h-10 rounded-xl bg-fern-600 text-cream shadow-soft group-hover:rotate-12 transition-transform duration-500">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>
+      </span>
+      <span class="font-display text-2xl font-600 tracking-tight text-fern-800">Verdaleaf</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8 text-[15px] font-500 text-fern-800/80">
+      <a href="#services" class="underline-grow hover:text-fern-700">Services</a>
+      <a href="#work" class="underline-grow hover:text-fern-700">Our Work</a>
+      <a href="#process" class="underline-grow hover:text-fern-700">Process</a>
+      <a href="#areas" class="underline-grow hover:text-fern-700">Areas</a>
+      <a href="#faq" class="underline-grow hover:text-fern-700">FAQ</a>
+    </div>
+
+    <a href="#quote" id="navCta" class="magnetic hidden sm:inline-flex items-center gap-2 rounded-full bg-fern-600 text-cream px-5 py-2.5 text-sm font-600 shadow-soft hover:bg-fern-700 transition-colors">
+      Free Quote
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-center grain overflow-hidden">
+  <!-- bg image -->
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-fern-900 via-fern-800 to-fern-950">
+    <div class="hero-parallax absolute inset-0 will-change-transform">
+      <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1600&q=80"
+           alt="Lush manicured backyard garden" onerror="this.style.display='none'"
+           class="w-full h-[120%] object-cover" />
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-fern-950/85 via-fern-900/55 to-fern-900/10"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-fern-950/80 via-transparent to-fern-950/30"></div>
+  </div>
+
+  <!-- floating leaf accents -->
+  <svg class="leaf-accent left-[6%] top-[22%] text-fern-300" width="54" height="54" viewBox="0 0 24 24" fill="currentColor" data-float="1"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+  <svg class="leaf-accent right-[10%] top-[30%] text-moss-400" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" data-float="2"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+  <svg class="leaf-accent right-[22%] bottom-[16%] text-sun" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" data-float="3"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 pt-32 pb-20 w-full">
+    <div class="max-w-3xl">
+      <span class="hero-line inline-flex items-center gap-2 rounded-full bg-cream/15 backdrop-blur border border-cream/25 px-4 py-1.5 text-cream/90 text-sm font-500 mb-7">
+        <span class="w-2 h-2 rounded-full bg-fern-300 animate-pulse"></span>
+        Locally rooted · Valley-wide service
+      </span>
+
+      <h1 class="font-display text-cream leading-[0.95] tracking-tight text-5xl sm:text-6xl lg:text-7xl font-600">
+        <span class="hero-word inline-block">Gardens</span>
+        <span class="hero-word inline-block">that</span>
+        <span class="hero-word inline-block italic text-fern-300">flourish</span><br/>
+        <span class="hero-word inline-block">in</span>
+        <span class="hero-word inline-block">every</span>
+        <span class="hero-word inline-block">season.</span>
+      </h1>
+
+      <p class="hero-line mt-7 text-cream/80 text-lg sm:text-xl max-w-xl leading-relaxed">
+        Verdaleaf designs, plants, and tends living outdoor spaces — from weekly lawn care to full backyard transformations. Honest crews, healthy soil, lasting curb appeal.
+      </p>
+
+      <div class="hero-line mt-9 flex flex-col sm:flex-row gap-4">
+        <a href="#quote" id="heroCta" class="magnetic inline-flex items-center justify-center gap-2 rounded-full bg-fern-400 text-fern-950 px-7 py-4 text-base font-700 shadow-leaf hover:bg-fern-300 transition-colors">
+          Get a Free Quote
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#work" class="inline-flex items-center justify-center gap-2 rounded-full border border-cream/35 text-cream px-7 py-4 text-base font-600 hover:bg-cream/10 transition-colors">
+          See Recent Work
+        </a>
+      </div>
+
+      <div class="hero-line mt-12 flex items-center gap-3 text-cream/80">
+        <div class="flex -space-x-3">
+          <span class="w-9 h-9 rounded-full ring-2 ring-fern-900 bg-clay-300"></span>
+          <span class="w-9 h-9 rounded-full ring-2 ring-fern-900 bg-moss-400"></span>
+          <span class="w-9 h-9 rounded-full ring-2 ring-fern-900 bg-fern-300"></span>
+          <span class="w-9 h-9 rounded-full ring-2 ring-fern-900 bg-sun"></span>
+        </div>
+        <div class="text-sm leading-tight">
+          <div class="flex items-center gap-1 text-sun">
+            ★★★★★ <span class="text-cream/90 font-600 ml-1">4.9</span>
+          </div>
+          <span class="text-cream/65">from 600+ neighborhood reviews</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="#stats" class="absolute bottom-6 left-1/2 -translate-x-1/2 text-cream/60 hidden sm:flex flex-col items-center gap-2 text-xs tracking-widest uppercase">
+    Scroll
+    <span class="w-px h-10 bg-gradient-to-b from-cream/60 to-transparent"></span>
+  </a>
+</section>
+
+<!-- ============ STATS STRIP ============ -->
+<section id="stats" class="relative bg-fern-950 text-cream py-14 border-y border-fern-800">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
+    <div class="reveal text-center lg:text-left">
+      <div class="font-display text-5xl font-600 text-fern-300"><span class="count" data-to="12480">0</span><span>+</span></div>
+      <p class="mt-2 text-cream/70 text-sm">Lawns cared for</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <div class="font-display text-5xl font-600 text-fern-300"><span class="count" data-to="18">0</span></div>
+      <p class="mt-2 text-cream/70 text-sm">Years rooted locally</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <div class="font-display text-5xl font-600 text-fern-300"><span class="count" data-to="4" data-dec="1">0</span><span>.9★</span></div>
+      <p class="mt-2 text-cream/70 text-sm">Average homeowner rating</p>
+    </div>
+    <div class="reveal text-center lg:text-left">
+      <div class="font-display text-5xl font-600 text-fern-300"><span class="count" data-to="100">0</span><span>%</span></div>
+      <p class="mt-2 text-cream/70 text-sm">Satisfaction guarantee</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="marquee bg-fern-600 text-cream py-4 overflow-hidden">
+  <div class="marquee-track items-center gap-10 text-lg font-display italic">
+    <!-- duplicated for seamless loop -->
+    <span class="flex items-center gap-10">
+      <span>Lawn Care</span><span class="text-fern-300">✦</span>
+      <span>Garden Design</span><span class="text-fern-300">✦</span>
+      <span>Hardscaping</span><span class="text-fern-300">✦</span>
+      <span>Irrigation</span><span class="text-fern-300">✦</span>
+      <span>Tree & Shrub</span><span class="text-fern-300">✦</span>
+      <span>Seasonal Cleanup</span><span class="text-fern-300">✦</span>
+      <span>Sod Installation</span><span class="text-fern-300">✦</span>
+      <span>Mulch & Beds</span><span class="text-fern-300">✦</span>
+    </span>
+    <span class="flex items-center gap-10" aria-hidden="true">
+      <span>Lawn Care</span><span class="text-fern-300">✦</span>
+      <span>Garden Design</span><span class="text-fern-300">✦</span>
+      <span>Hardscaping</span><span class="text-fern-300">✦</span>
+      <span>Irrigation</span><span class="text-fern-300">✦</span>
+      <span>Tree & Shrub</span><span class="text-fern-300">✦</span>
+      <span>Seasonal Cleanup</span><span class="text-fern-300">✦</span>
+      <span>Sod Installation</span><span class="text-fern-300">✦</span>
+      <span>Mulch & Beds</span><span class="text-fern-300">✦</span>
+    </span>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <span class="text-fern-600 font-600 tracking-widest text-sm uppercase">What we do</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 text-fern-800 mt-3 leading-tight">
+        Full-service care for every corner of your yard
+      </h2>
+      <p class="mt-4 text-fern-800/70 text-lg">From the first mow of spring to the last leaf of fall — one trusted crew, every service under the canopy.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-fern-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-fern-600 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22a8 8 0 0 1 8-8M6 18a8 8 0 0 1 8-8M10 14a8 8 0 0 1 8-8M22 2v6h-6"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Weekly Lawn Care</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Precision mowing, edging, trimming, and blow-down on a reliable schedule that keeps turf thick and green.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-fern-600 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-clay-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-clay-500 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8M4.93 10.93 12 18l7.07-7.07M2 22h20"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Garden Design</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Native-forward planting plans, perennial borders, and seasonal color that thrives in our local climate.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-clay-700 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-fern-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-moss-500 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Hardscaping</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Patios, walkways, retaining walls, and fire pits built to last — natural stone and clean modern pavers.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-moss-600 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-fern-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-fern-600 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7Z"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Irrigation & Drainage</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Smart sprinkler systems and drainage solutions that save water and keep roots happy year-round.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-fern-600 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-fern-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-fern-700 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 9 8H4l4 4-2 6 6-4 6 4-2-6 4-4h-5z"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Tree & Shrub Care</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Pruning, shaping, feeding, and health checks to keep your canopy strong and storm-ready.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-fern-700 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+
+      <article class="svc-card reveal group relative rounded-3xl bg-white p-7 shadow-soft border border-fern-100 hover:shadow-leaf hover:-translate-y-1.5 transition-all duration-500 overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-clay-100 group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="relative">
+          <div class="w-12 h-12 grid place-items-center rounded-xl bg-clay-700 text-cream mb-5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-600 text-fern-800">Seasonal Cleanup</h3>
+          <p class="mt-2 text-fern-800/65 text-[15px] leading-relaxed">Spring wake-ups and fall leaf removal — mulch refresh, bed prep, and a tidy reset between seasons.</p>
+          <span class="mt-5 inline-flex items-center gap-1.5 text-clay-700 font-600 text-sm group-hover:gap-3 transition-all">Learn more →</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BEFORE / AFTER ============ -->
+<section class="relative py-24 sm:py-32 bg-fern-800 text-cream overflow-hidden grain">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <div class="reveal">
+      <span class="text-fern-300 font-600 tracking-widest text-sm uppercase">The transformation</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 mt-3 leading-tight">Drag to watch tired turf<br/>become a thriving yard</h2>
+      <p class="mt-5 text-cream/75 text-lg leading-relaxed">Most of our projects start with patchy grass and forgotten beds. A season later, homeowners barely recognize the place. Slide the handle to see one Maple Grove backyard before and after.</p>
+      <ul class="mt-8 space-y-3 text-cream/85">
+        <li class="flex items-center gap-3"><span class="text-fern-300">✓</span> Soil tested & reconditioned before a single seed</li>
+        <li class="flex items-center gap-3"><span class="text-fern-300">✓</span> Drought-smart plant selection for low upkeep</li>
+        <li class="flex items-center gap-3"><span class="text-fern-300">✓</span> Free 12-month health check after install</li>
+      </ul>
+    </div>
+
+    <div class="reveal">
+      <div class="ba-wrap rounded-3xl shadow-leaf aspect-[4/3] bg-gradient-to-br from-fern-700 to-fern-950" id="baWrap">
+        <!-- before -->
+        <div class="absolute inset-0 bg-gradient-to-br from-clay-700 to-bark">
+          <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1600&q=80"
+               alt="Yard before landscaping" onerror="this.style.display='none'"
+               class="w-full h-full object-cover" />
+          <span class="absolute bottom-4 left-4 rounded-full bg-bark/80 px-3 py-1 text-xs font-600 tracking-wide">BEFORE</span>
+        </div>
+        <!-- after -->
+        <div class="ba-after" id="baAfter">
+          <div class="absolute inset-0 bg-gradient-to-br from-fern-500 to-fern-800">
+            <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1600&q=80"
+                 alt="Yard after landscaping" onerror="this.style.display='none'"
+                 class="w-full h-full object-cover" />
+          </div>
+          <span class="absolute bottom-4 right-4 rounded-full bg-fern-600/90 px-3 py-1 text-xs font-600 tracking-wide">AFTER</span>
+        </div>
+        <div class="ba-handle" id="baHandle"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-2 gap-14 items-center">
+      <div class="reveal relative">
+        <div class="rounded-3xl overflow-hidden shadow-leaf aspect-[4/5] bg-gradient-to-br from-fern-400 to-fern-700">
+          <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80"
+               alt="Landscaper tending a garden bed" onerror="this.style.display='none'"
+               class="w-full h-full object-cover" />
+        </div>
+        <div class="absolute -bottom-6 -right-4 sm:right-6 bg-white rounded-2xl shadow-leaf px-6 py-5 border border-fern-100">
+          <div class="font-display text-3xl font-600 text-fern-700">100%</div>
+          <div class="text-sm text-fern-800/70">Licensed & insured crews</div>
+        </div>
+      </div>
+
+      <div>
+        <span class="reveal block text-fern-600 font-600 tracking-widest text-sm uppercase">Why Verdaleaf</span>
+        <h2 class="reveal font-display text-4xl sm:text-5xl font-600 text-fern-800 mt-3 leading-tight">Care that comes from people who love what they grow</h2>
+        <p class="reveal mt-5 text-fern-800/70 text-lg leading-relaxed">We're not a faceless franchise. You'll see the same crew lead every visit, get straight answers about your soil, and never be upsold on something your yard doesn't need.</p>
+
+        <div class="mt-9 grid sm:grid-cols-2 gap-5">
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-fern-100 text-fern-700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <div><h4 class="font-600 text-fern-800">Same crew, every time</h4><p class="text-fern-800/65 text-sm mt-1">Consistent care from people who know your yard.</p></div>
+          </div>
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-fern-100 text-fern-700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 7v6c0 5 3.5 7.7 8 9 4.5-1.3 8-4 8-9V7Z"/></svg></span>
+            <div><h4 class="font-600 text-fern-800">Eco-conscious methods</h4><p class="text-fern-800/65 text-sm mt-1">Organic options, native plants, less waste.</p></div>
+          </div>
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-fern-100 text-fern-700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+            <div><h4 class="font-600 text-fern-800">Show up on time</h4><p class="text-fern-800/65 text-sm mt-1">Text-ahead arrivals and a tidy site, always.</p></div>
+          </div>
+          <div class="reveal flex gap-4">
+            <span class="shrink-0 w-11 h-11 grid place-items-center rounded-xl bg-fern-100 text-fern-700"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></span>
+            <div><h4 class="font-600 text-fern-800">Real local support</h4><p class="text-fern-800/65 text-sm mt-1">Call a person, not a phone tree.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="relative py-24 sm:py-32 bg-fern-950 text-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16 reveal">
+      <span class="text-fern-300 font-600 tracking-widest text-sm uppercase">How it works</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 mt-3 leading-tight">Four simple steps to a greener yard</h2>
+    </div>
+
+    <div class="grid md:grid-cols-4 gap-8">
+      <div class="reveal relative">
+        <div class="font-display text-6xl font-400 text-fern-700/60">01</div>
+        <h3 class="font-display text-2xl font-600 mt-2">Walk & Talk</h3>
+        <p class="mt-2 text-cream/65 text-[15px] leading-relaxed">We visit, listen to your goals, and assess soil, sun, and drainage on the spot.</p>
+        <span class="hidden md:block absolute top-8 -right-4 text-fern-700">→</span>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display text-6xl font-400 text-fern-700/60">02</div>
+        <h3 class="font-display text-2xl font-600 mt-2">Clear Plan</h3>
+        <p class="mt-2 text-cream/65 text-[15px] leading-relaxed">A flat, itemized quote with a planting plan and timeline — no surprises, no pressure.</p>
+        <span class="hidden md:block absolute top-8 -right-4 text-fern-700">→</span>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display text-6xl font-400 text-fern-700/60">03</div>
+        <h3 class="font-display text-2xl font-600 mt-2">We Get to Work</h3>
+        <p class="mt-2 text-cream/65 text-[15px] leading-relaxed">Our crew transforms the space with care, cleaning up fully at the end of every day.</p>
+        <span class="hidden md:block absolute top-8 -right-4 text-fern-700">→</span>
+      </div>
+      <div class="reveal relative">
+        <div class="font-display text-6xl font-400 text-fern-700/60">04</div>
+        <h3 class="font-display text-2xl font-600 mt-2">Keep It Thriving</h3>
+        <p class="mt-2 text-cream/65 text-[15px] leading-relaxed">Optional maintenance plans keep your investment lush season after season.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RECENT PROJECTS ============ -->
+<section id="work" class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+      <div class="reveal max-w-xl">
+        <span class="text-fern-600 font-600 tracking-widest text-sm uppercase">Recent work</span>
+        <h2 class="font-display text-4xl sm:text-5xl font-600 text-fern-800 mt-3 leading-tight">Yards we're proud of</h2>
+      </div>
+      <a href="#quote" class="reveal inline-flex items-center gap-2 text-fern-700 font-600 underline-grow self-start sm:self-auto">Start your project →</a>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <article class="reveal tilt group rounded-3xl overflow-hidden shadow-soft hover:shadow-leaf transition-all duration-500 bg-gradient-to-br from-fern-500 to-fern-800 aspect-[4/5] relative">
+        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=1600&q=80" alt="Backyard garden retreat project" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-fern-950/85 via-transparent to-transparent"></div>
+        <div class="tilt-inner absolute bottom-0 p-6 text-cream">
+          <span class="text-xs font-600 tracking-widest uppercase text-fern-300">Maple Grove</span>
+          <h3 class="font-display text-2xl font-600 mt-1">Backyard Garden Retreat</h3>
+          <p class="text-cream/70 text-sm mt-1">Full redesign · stone patio · perennial beds</p>
+        </div>
+      </article>
+
+      <article class="reveal tilt group rounded-3xl overflow-hidden shadow-soft hover:shadow-leaf transition-all duration-500 bg-gradient-to-br from-fern-500 to-fern-800 aspect-[4/5] relative">
+        <img src="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1600&q=80" alt="Front lawn revival project" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-fern-950/85 via-transparent to-transparent"></div>
+        <div class="tilt-inner absolute bottom-0 p-6 text-cream">
+          <span class="text-xs font-600 tracking-widest uppercase text-fern-300">Cedar Heights</span>
+          <h3 class="font-display text-2xl font-600 mt-1">Front Lawn Revival</h3>
+          <p class="text-cream/70 text-sm mt-1">New sod · irrigation · curb-appeal planting</p>
+        </div>
+      </article>
+
+      <article class="reveal tilt group rounded-3xl overflow-hidden shadow-soft hover:shadow-leaf transition-all duration-500 bg-gradient-to-br from-fern-500 to-fern-800 aspect-[4/5] relative md:col-span-2 lg:col-span-1">
+        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1600&q=80" alt="Hillside terrace garden project" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <div class="absolute inset-0 bg-gradient-to-t from-fern-950/85 via-transparent to-transparent"></div>
+        <div class="tilt-inner absolute bottom-0 p-6 text-cream">
+          <span class="text-xs font-600 tracking-widest uppercase text-fern-300">Willow Bend</span>
+          <h3 class="font-display text-2xl font-600 mt-1">Hillside Terrace Garden</h3>
+          <p class="text-cream/70 text-sm mt-1">Retaining walls · native grasses · drainage</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 sm:py-32 bg-fern-800 text-cream overflow-hidden">
+  <svg class="leaf-accent right-[4%] top-[12%] text-fern-700" width="120" height="120" viewBox="0 0 24 24" fill="currentColor" data-float="2"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+  <div class="max-w-4xl mx-auto px-5 sm:px-8 text-center relative">
+    <span class="reveal text-fern-300 font-600 tracking-widest text-sm uppercase">Our roots</span>
+    <h2 class="reveal font-display text-3xl sm:text-5xl font-500 mt-4 leading-snug">
+      "We started Verdaleaf with one truck, a trailer, and a belief that a well-kept yard makes a house feel like home. Eighteen years later, that's still the whole point."
+    </h2>
+    <div class="reveal mt-8 flex items-center justify-center gap-4">
+      <span class="w-12 h-12 rounded-full bg-clay-300"></span>
+      <div class="text-left">
+        <div class="font-600">Marisol & Dev Aldridge</div>
+        <div class="text-cream/65 text-sm">Founders, Verdaleaf</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14 reveal">
+      <span class="text-fern-600 font-600 tracking-widest text-sm uppercase">Neighbors say</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 text-fern-800 mt-3 leading-tight">Loved across the valley</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal rounded-3xl bg-white p-7 shadow-soft border border-fern-100">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="text-fern-800/80 leading-relaxed">"They turned a muddy mess into the nicest yard on the block. The crew was respectful, on time, and genuinely cared."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-fern-300"></span><div><div class="font-600 text-fern-800">Priya N.</div><div class="text-sm text-fern-800/60">Cedar Heights</div></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-fern-700 text-cream p-7 shadow-leaf md:-translate-y-3">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="leading-relaxed">"Five years of weekly care and my lawn has never looked greener. Honest pricing and zero hassle — I recommend them to everyone."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-clay-300"></span><div><div class="font-600">Marcus T.</div><div class="text-sm text-cream/70">Maple Grove</div></div></figcaption>
+      </figure>
+      <figure class="reveal rounded-3xl bg-white p-7 shadow-soft border border-fern-100">
+        <div class="text-sun text-lg mb-3">★★★★★</div>
+        <blockquote class="text-fern-800/80 leading-relaxed">"The garden design exceeded what I imagined. Everything they planted is thriving and the maintenance plan keeps it easy."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3"><span class="w-10 h-10 rounded-full bg-moss-400"></span><div><div class="font-600 text-fern-800">Eleanor & Jim R.</div><div class="text-sm text-fern-800/60">Willow Bend</div></div></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICE AREAS ============ -->
+<section id="areas" class="relative py-24 sm:py-32 bg-fern-950 text-cream">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 items-center">
+    <div class="reveal">
+      <span class="text-fern-300 font-600 tracking-widest text-sm uppercase">Where we work</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 mt-3 leading-tight">Proudly serving the valley & beyond</h2>
+      <p class="mt-5 text-cream/75 text-lg">If your home is within about 30 minutes of our yard, we've probably mowed a lawn nearby. Not sure if you're in range? Just ask.</p>
+      <a href="#quote" class="mt-7 inline-flex items-center gap-2 rounded-full bg-fern-400 text-fern-950 px-6 py-3 font-600 hover:bg-fern-300 transition-colors">Check my address →</a>
+    </div>
+    <div class="reveal grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Maple Grove</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Cedar Heights</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Willow Bend</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Riverton</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Oakdale</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Brookside</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Pine Hollow</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Elmwood</span>
+      <span class="rounded-xl bg-fern-800 px-4 py-3 text-center font-500 text-cream/90 hover:bg-fern-700 transition-colors">Harvest Hill</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 sm:py-32 bg-cream">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-14 reveal">
+      <span class="text-fern-600 font-600 tracking-widest text-sm uppercase">Good to know</span>
+      <h2 class="font-display text-4xl sm:text-5xl font-600 text-fern-800 mt-3 leading-tight">Frequently asked</h2>
+    </div>
+
+    <div class="space-y-4" id="faqList">
+      <div class="faq-item reveal rounded-2xl bg-white border border-fern-100 shadow-soft overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-fern-800 text-lg">How quickly can you get me a quote?</span>
+          <span class="faq-icon shrink-0 text-fern-600 text-2xl leading-none transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-fern-800/70 leading-relaxed">Most quotes go out within 48 hours of our visit. Simple lawn-care estimates we can often send same-day after a quick look at your property.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-white border border-fern-100 shadow-soft overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-fern-800 text-lg">Do you offer year-round maintenance plans?</span>
+          <span class="faq-icon shrink-0 text-fern-600 text-2xl leading-none transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-fern-800/70 leading-relaxed">Yes. Our seasonal plans cover mowing through summer, cleanup in fall, and dormant-season tree care — billed monthly with no long-term lock-in.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-white border border-fern-100 shadow-soft overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-fern-800 text-lg">Are your crews licensed and insured?</span>
+          <span class="faq-icon shrink-0 text-fern-600 text-2xl leading-none transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-fern-800/70 leading-relaxed">Fully. Every Verdaleaf crew is licensed, bonded, and insured, and we're happy to share our certificates before any work begins.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-white border border-fern-100 shadow-soft overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-fern-800 text-lg">Can you work with eco-friendly, organic methods?</span>
+          <span class="faq-icon shrink-0 text-fern-600 text-2xl leading-none transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-fern-800/70 leading-relaxed">Absolutely. We offer organic fertilization, native and pollinator-friendly planting, and water-wise irrigation for homeowners who want a greener footprint.</p></div>
+      </div>
+      <div class="faq-item reveal rounded-2xl bg-white border border-fern-100 shadow-soft overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-600 text-fern-800 text-lg">What if I'm not happy with the work?</span>
+          <span class="faq-icon shrink-0 text-fern-600 text-2xl leading-none transition-transform duration-300">+</span>
+        </button>
+        <div class="faq-body"><p class="px-6 pb-5 text-fern-800/70 leading-relaxed">We back every visit with a 100% satisfaction guarantee. If something's not right, tell us and we'll return to make it right at no extra cost.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="quote" class="relative py-24 sm:py-32 bg-fern-600 text-cream overflow-hidden grain">
+  <svg class="leaf-accent left-[8%] top-[18%] text-fern-500" width="80" height="80" viewBox="0 0 24 24" fill="currentColor" data-float="1"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+  <svg class="leaf-accent right-[10%] bottom-[14%] text-fern-500" width="60" height="60" viewBox="0 0 24 24" fill="currentColor" data-float="3"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.06.66C7 18 9 16 17 16c2 0 4-1 4-4 0-3-2-4-4-4Z"/></svg>
+
+  <div class="max-w-3xl mx-auto px-5 sm:px-8 text-center relative">
+    <h2 class="reveal font-display text-4xl sm:text-6xl font-600 leading-tight">Ready to fall in love<br/>with your yard again?</h2>
+    <p class="reveal mt-5 text-cream/85 text-lg max-w-xl mx-auto">Tell us a little about your space and we'll send a free, no-pressure quote — usually within two days.</p>
+
+    <form class="reveal mt-9 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="return false">
+      <input type="email" required placeholder="you@email.com" class="flex-1 rounded-full px-6 py-4 text-fern-900 bg-cream placeholder-fern-800/40 focus:outline-none focus:ring-4 focus:ring-fern-300/50" />
+      <button id="formCta" class="magnetic rounded-full bg-fern-950 text-cream px-7 py-4 font-700 hover:bg-bark transition-colors whitespace-nowrap">Get My Free Quote</button>
+    </form>
+    <p class="reveal mt-4 text-cream/70 text-sm">Or call <a href="tel:+15550123456" class="underline-grow font-600 text-cream">(555) 012-3456</a> — we answer in person.</p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-fern-950 text-cream/80 pt-16 pb-8">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-1">
+        <a href="#top" class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center w-9 h-9 rounded-lg bg-fern-600 text-cream"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span>
+          <span class="font-display text-xl font-600 text-cream">Verdaleaf</span>
+        </a>
+        <p class="text-sm text-cream/60 leading-relaxed">Residential landscaping & lawn care, rooted in the valley since 2008.</p>
+      </div>
+      <div>
+        <h4 class="font-600 text-cream mb-4">Services</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#services" class="hover:text-fern-300 transition-colors">Lawn Care</a></li>
+          <li><a href="#services" class="hover:text-fern-300 transition-colors">Garden Design</a></li>
+          <li><a href="#services" class="hover:text-fern-300 transition-colors">Hardscaping</a></li>
+          <li><a href="#services" class="hover:text-fern-300 transition-colors">Irrigation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-600 text-cream mb-4">Company</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="#about" class="hover:text-fern-300 transition-colors">Our Story</a></li>
+          <li><a href="#work" class="hover:text-fern-300 transition-colors">Recent Work</a></li>
+          <li><a href="#areas" class="hover:text-fern-300 transition-colors">Service Areas</a></li>
+          <li><a href="#faq" class="hover:text-fern-300 transition-colors">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-600 text-cream mb-4">Get in touch</h4>
+        <ul class="space-y-2 text-sm">
+          <li><a href="tel:+15550123456" class="hover:text-fern-300 transition-colors">(555) 012-3456</a></li>
+          <li><a href="mailto:hello@verdaleaf.co" class="hover:text-fern-300 transition-colors">hello@verdaleaf.co</a></li>
+          <li class="text-cream/60">Mon–Sat · 7am–6pm</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-fern-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-cream/50">
+      <p>© 2026 Verdaleaf Landscaping Co. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-fern-300 transition-colors">Privacy</a>
+        <a href="#" class="hover:text-fern-300 transition-colors">Terms</a>
+        <a href="#" class="hover:text-fern-300 transition-colors">Careers</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) {
+      nav.classList.add('bg-cream/90','backdrop-blur','shadow-soft');
+    } else {
+      nav.classList.remove('bg-cream/90','backdrop-blur','shadow-soft');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.querySelector('.faq-q').addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Before / After slider ---------- */
+  const baWrap = document.getElementById('baWrap');
+  const baAfter = document.getElementById('baAfter');
+  const baHandle = document.getElementById('baHandle');
+  let dragging = false;
+  const setBA = (clientX) => {
+    const r = baWrap.getBoundingClientRect();
+    let pct = ((clientX - r.left) / r.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    baAfter.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    baHandle.style.left = pct + '%';
+  };
+  const start = () => dragging = true;
+  const end = () => dragging = false;
+  const move = (e) => { if (!dragging) return; const x = e.touches ? e.touches[0].clientX : e.clientX; setBA(x); };
+  baWrap.addEventListener('mousedown', (e)=>{ start(); setBA(e.clientX); });
+  baWrap.addEventListener('touchstart', (e)=>{ start(); setBA(e.touches[0].clientX); }, { passive:true });
+  window.addEventListener('mousemove', move);
+  window.addEventListener('touchmove', move, { passive:true });
+  window.addEventListener('mouseup', end);
+  window.addEventListener('touchend', end);
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce) {
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${x * 0.3}px, ${y * 0.4}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; btn.style.transition = 'transform .4s var(--ease)'; });
+      btn.addEventListener('mouseenter', () => { btn.style.transition = 'transform .1s ease-out'; });
+    });
+
+    /* ---------- Tilt cards ---------- */
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${px * 8}deg) rotateX(${-py * 8}deg)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)'; });
+    });
+  }
+
+  /* ---------- GSAP ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* Hero entrance */
+    gsap.set(['.hero-word', '.hero-line'], { opacity: 0, y: 40 });
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.to('.hero-word', { opacity: 1, y: 0, duration: 0.9, stagger: 0.08 }, 0.2)
+      .to('.hero-line', { opacity: 1, y: 0, duration: 0.8, stagger: 0.12 }, 0.5);
+
+    /* Section reveals */
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 86%' }
+      });
+    });
+
+    /* Hero parallax */
+    gsap.to('.hero-parallax', {
+      yPercent: 16, ease: 'none',
+      scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true }
+    });
+
+    /* Leaf float */
+    gsap.utils.toArray('.leaf-accent').forEach((leaf, i) => {
+      gsap.to(leaf, {
+        y: '+=22', x: (i % 2 ? '+=14' : '-=14'), rotation: (i % 2 ? 12 : -12),
+        duration: 4 + i, repeat: -1, yoyo: true, ease: 'sine.inOut'
+      });
+    });
+
+    /* Count-ups */
+    gsap.utils.toArray('.count').forEach((el) => {
+      const to = parseFloat(el.getAttribute('data-to'));
+      const dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, {
+          v: to, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => {
+            el.textContent = dec ? obj.v.toFixed(dec) : Math.round(obj.v).toLocaleString();
+          }
+        })
+      });
+    });
+  } else {
+    /* Reduced motion fallback: show counts at final value */
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseFloat(el.getAttribute('data-to'));
+      const dec = parseInt(el.getAttribute('data-dec') || '0', 10);
+      el.textContent = dec ? to.toFixed(dec) : Math.round(to).toLocaleString();
+    });
+  }
+})();
+</script>
+</body>
+</html>

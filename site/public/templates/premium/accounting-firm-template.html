@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Northbeam &amp; Co. — Accounting, Bookkeeping &amp; Tax for Small Business</title>
+<meta name="description" content="Northbeam &amp; Co. is a modern accounting firm helping small businesses with bookkeeping, tax strategy, payroll and CFO advisory. Clean books, clear numbers, calm tax seasons." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: {
+            950: '#080e1a',
+            900: '#0c1424',
+            800: '#13203a',
+            700: '#1c2e4f',
+            600: '#2a4068',
+          },
+          slatey: {
+            100: '#eef2f8',
+            200: '#dce4ef',
+            300: '#b7c4d8',
+            400: '#8597b3',
+          },
+          emer: {
+            300: '#5eead4',
+            400: '#2dd4bf',
+            500: '#14b8a6',
+            600: '#0d9488',
+          },
+        },
+        boxShadow: {
+          glow: '0 0 0 1px rgba(45,212,191,0.18), 0 24px 70px -24px rgba(13,148,136,0.45)',
+          card: '0 18px 50px -22px rgba(8,14,26,0.5)',
+        },
+        keyframes: {
+          floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+          shimmer: { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } },
+        },
+        animation: {
+          floaty: 'floaty 6s ease-in-out infinite',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html, body { overflow-x: hidden; }
+  body { background: #080e1a; color: #e8eef7; font-family: 'Inter', sans-serif; }
+  ::selection { background: rgba(45,212,191,0.3); color: #fff; }
+
+  .grad-text {
+    background: linear-gradient(100deg, #5eead4 0%, #2dd4bf 45%, #b7c4d8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(45,212,191,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,212,191,0.06) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+  .glass {
+    background: linear-gradient(180deg, rgba(28,46,79,0.55), rgba(12,20,36,0.6));
+    border: 1px solid rgba(133,151,179,0.16);
+    backdrop-filter: blur(10px);
+  }
+  .marquee-track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+
+  .accent-line { background: linear-gradient(90deg, transparent, #2dd4bf, transparent); }
+  .tilt-wrap { transform-style: preserve-3d; perspective: 1100px; }
+  .ring-grow { transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1); }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+  details[open] .faq-icon { transform: rotate(45deg); }
+
+  .reveal { opacity: 0; transform: translateY(28px); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .marquee-track { animation: none; }
+    .animate-floaty { animation: none; }
+  }
+  .bar { transform-origin: bottom; transform: scaleY(0); }
+</style>
+</head>
+
+<body class="antialiased selection:bg-emer-400/30">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="mt-3 flex items-center justify-between rounded-2xl glass px-4 sm:px-6 py-3">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-emer-400 to-emer-600 shadow-glow">
+          <svg viewBox="0 0 24 24" class="h-5 w-5 text-ink-950" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M4 19V8M9 19V5M14 19v-7M19 19v-11"/>
+          </svg>
+        </span>
+        <span class="font-display font-extrabold text-lg tracking-tight">Northbeam<span class="text-emer-400">.</span></span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-7 text-sm text-slatey-300">
+        <a href="#services" class="hover:text-white transition">Services</a>
+        <a href="#serve" class="hover:text-white transition">Who we serve</a>
+        <a href="#process" class="hover:text-white transition">Process</a>
+        <a href="#pricing" class="hover:text-white transition">Pricing</a>
+        <a href="#faq" class="hover:text-white transition">FAQ</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="#pricing" class="hidden sm:inline-flex text-sm text-slatey-200 hover:text-white px-3 py-2 transition">Sign in</a>
+        <a href="#cta" id="bookCall" class="inline-flex items-center gap-2 rounded-xl bg-emer-500 hover:bg-emer-400 text-ink-950 font-semibold text-sm px-4 py-2.5 transition shadow-glow">
+          Book a call
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-36 pb-24 sm:pt-44 sm:pb-28 overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-60"></div>
+  <div class="absolute -top-32 -right-24 h-[34rem] w-[34rem] rounded-full bg-emer-600/20 blur-[120px]"></div>
+  <div class="absolute top-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-ink-700/40 blur-[110px]"></div>
+
+  <div class="relative max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">
+    <!-- copy -->
+    <div class="lg:col-span-6">
+      <div class="reveal inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs text-slatey-300 mb-6">
+        <span class="h-2 w-2 rounded-full bg-emer-400 animate-pulse"></span>
+        Now accepting clients for the 2026 tax year
+      </div>
+      <h1 class="reveal font-display font-extrabold text-4xl sm:text-5xl xl:text-6xl leading-[1.05] tracking-tight">
+        Clean books,<br/>
+        <span class="grad-text" id="rotator">clear numbers,</span><br/>
+        calm tax seasons.
+      </h1>
+      <p class="reveal mt-6 text-slatey-300 text-lg max-w-xl leading-relaxed">
+        Northbeam &amp; Co. is the modern accounting partner for small business — bookkeeping, tax strategy, payroll and fractional CFO, handled by humans who actually pick up the phone.
+      </p>
+      <div class="reveal mt-8 flex flex-wrap items-center gap-3">
+        <a href="#cta" id="magnet" class="relative inline-flex items-center gap-2 rounded-xl bg-emer-500 hover:bg-emer-400 text-ink-950 font-semibold px-6 py-3.5 transition shadow-glow">
+          <span class="pointer-events-none">Book a free consult</span>
+          <svg viewBox="0 0 24 24" class="h-4 w-4 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="#services" class="inline-flex items-center gap-2 rounded-xl glass px-6 py-3.5 text-slatey-100 hover:text-white transition">
+          See our services
+        </a>
+      </div>
+
+      <!-- count-ups -->
+      <div class="reveal mt-12 grid grid-cols-3 gap-6 max-w-md">
+        <div>
+          <div class="font-display font-extrabold text-3xl text-white"><span class="count" data-to="640">0</span>+</div>
+          <div class="text-xs text-slatey-400 mt-1">Businesses served</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-3xl text-white">$<span class="count" data-to="38">0</span>M</div>
+          <div class="text-xs text-slatey-400 mt-1">Tax saved for clients</div>
+        </div>
+        <div>
+          <div class="font-display font-extrabold text-3xl text-white"><span class="count" data-to="4.9" data-dec="1">0</span></div>
+          <div class="text-xs text-slatey-400 mt-1">Avg. client rating</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dashboard mock (tilt 3D) -->
+    <div class="lg:col-span-6 tilt-wrap">
+      <div id="dashboard" class="reveal relative glass rounded-3xl p-5 sm:p-6 shadow-card will-change-transform">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <div class="text-xs text-slatey-400">Financial overview</div>
+            <div class="font-display font-bold text-white">Q2 · 2026</div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs text-emer-300 bg-emer-500/10 rounded-full px-3 py-1.5">
+            <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8"/></svg>
+            Books reconciled
+          </div>
+        </div>
+
+        <!-- stat tiles -->
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="rounded-2xl bg-ink-900/70 border border-slatey-400/10 p-4">
+            <div class="text-xs text-slatey-400">Net income</div>
+            <div class="font-display font-bold text-xl text-white mt-1">$<span class="count" data-to="284" data-suffix="">0</span>,910</div>
+            <div class="text-[11px] text-emer-300 mt-1">▲ 12.4% vs last qtr</div>
+          </div>
+          <div class="rounded-2xl bg-ink-900/70 border border-slatey-400/10 p-4">
+            <div class="text-xs text-slatey-400">Cash runway</div>
+            <div class="font-display font-bold text-xl text-white mt-1"><span class="count" data-to="18">0</span> mo</div>
+            <div class="text-[11px] text-slatey-400 mt-1">Healthy &amp; stable</div>
+          </div>
+        </div>
+
+        <!-- bar chart -->
+        <div class="rounded-2xl bg-ink-900/70 border border-slatey-400/10 p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-xs text-slatey-400">Revenue vs expenses</div>
+            <div class="flex items-center gap-3 text-[10px] text-slatey-400">
+              <span class="flex items-center gap-1"><i class="h-2 w-2 rounded-full bg-emer-400 inline-block"></i>Revenue</span>
+              <span class="flex items-center gap-1"><i class="h-2 w-2 rounded-full bg-slatey-400 inline-block"></i>Expenses</span>
+            </div>
+          </div>
+          <div class="flex items-end justify-between gap-2 h-28" id="chart">
+            <!-- bars injected -->
+          </div>
+        </div>
+
+        <!-- ring + line -->
+        <div class="grid grid-cols-3 gap-3 mt-3 items-center">
+          <div class="col-span-1 rounded-2xl bg-ink-900/70 border border-slatey-400/10 p-3 grid place-items-center">
+            <svg viewBox="0 0 80 80" class="h-20 w-20 -rotate-90">
+              <circle cx="40" cy="40" r="32" stroke="rgba(133,151,179,0.18)" stroke-width="8" fill="none"/>
+              <circle id="ring" cx="40" cy="40" r="32" stroke="#2dd4bf" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201" class="ring-grow"/>
+            </svg>
+            <div class="text-center -mt-14 mb-2">
+              <div class="font-display font-bold text-white text-lg">92%</div>
+              <div class="text-[10px] text-slatey-400">margin score</div>
+            </div>
+          </div>
+          <div class="col-span-2 rounded-2xl bg-ink-900/70 border border-slatey-400/10 p-3">
+            <div class="text-xs text-slatey-400 mb-2">Profit trend</div>
+            <svg viewBox="0 0 200 60" class="w-full h-12" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="lg" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.45"/>
+                  <stop offset="100%" stop-color="#2dd4bf" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="trendFill" d="M0,50 L20,44 L45,46 L70,34 L95,38 L120,24 L150,28 L175,14 L200,18 L200,60 L0,60 Z" fill="url(#lg)"/>
+              <path id="trendLine" d="M0,50 L20,44 L45,46 L70,34 L95,38 L120,24 L150,28 L175,14 L200,18" fill="none" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="absolute -bottom-4 -left-4 animate-floaty glass rounded-2xl px-4 py-3 shadow-card hidden sm:block">
+          <div class="text-[10px] text-slatey-400">Next filing</div>
+          <div class="text-sm font-semibold text-white">Auto-prepared ✓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / LOGO MARQUEE ============ -->
+<section class="py-10 border-y border-slatey-400/10 bg-ink-900/40">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <p class="text-center text-xs uppercase tracking-[0.2em] text-slatey-400 mb-7">Trusted by founders across every industry</p>
+    <div class="marquee-wrap relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+      <div class="marquee-track gap-12">
+        <!-- two copies for seamless loop -->
+        <div class="flex items-center gap-12 text-slatey-300 font-display font-semibold text-lg whitespace-nowrap">
+          <span class="opacity-70 hover:opacity-100 transition">Harbor &amp; Lane</span>
+          <span class="opacity-70 hover:opacity-100 transition">Quillset</span>
+          <span class="opacity-70 hover:opacity-100 transition">Greenfork Cafés</span>
+          <span class="opacity-70 hover:opacity-100 transition">Brightside Dental</span>
+          <span class="opacity-70 hover:opacity-100 transition">Mason Forge</span>
+          <span class="opacity-70 hover:opacity-100 transition">Tide &amp; Timber</span>
+          <span class="opacity-70 hover:opacity-100 transition">Outset Studio</span>
+        </div>
+        <div class="flex items-center gap-12 text-slatey-300 font-display font-semibold text-lg whitespace-nowrap" aria-hidden="true">
+          <span class="opacity-70">Harbor &amp; Lane</span>
+          <span class="opacity-70">Quillset</span>
+          <span class="opacity-70">Greenfork Cafés</span>
+          <span class="opacity-70">Brightside Dental</span>
+          <span class="opacity-70">Mason Forge</span>
+          <span class="opacity-70">Tide &amp; Timber</span>
+          <span class="opacity-70">Outset Studio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="py-24 sm:py-28 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">WHAT WE DO</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">Full-service accounting, without the firm-sized invoice</h2>
+      <p class="reveal mt-4 text-slatey-300 text-lg">One team for your books, your taxes, and the decisions in between. Pick a package or build your own.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card -->
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Bookkeeping</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">Monthly reconciliation, categorized transactions and clean financials you can actually read — closed by the 10th, every month.</p>
+      </article>
+
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7h6M9 11h6M9 15h4M6 3h12a1 1 0 011 1v16l-3-2-2 2-2-2-2 2-2-2-2 2V4a1 1 0 011-1z"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Tax prep &amp; strategy</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">Federal &amp; state filings done right, plus year-round planning that legally shrinks your bill before the deadline ever shows up.</p>
+      </article>
+
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M5 8h9a3 3 0 010 6H7a3 3 0 000 6h10"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Payroll</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">Run payroll in minutes — filings, W-2s, 1099s and direct deposit handled, with compliance baked in for every state you operate in.</p>
+      </article>
+
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Fractional CFO</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">Cash-flow forecasts, budgets and board-ready reporting from a senior advisor — the strategic view, without a full-time salary.</p>
+      </article>
+
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 21V12h6v9"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Entity &amp; setup</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">LLC vs. S-corp guidance, EIN registration and a clean chart of accounts — start your business on a foundation that scales.</p>
+      </article>
+
+      <article class="service-card reveal group glass rounded-2xl p-6 transition-transform duration-300 will-change-transform">
+        <div class="grid place-items-center h-12 w-12 rounded-xl bg-emer-500/15 text-emer-300 mb-5">
+          <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="font-display font-bold text-lg mb-2">Audit support</h3>
+        <p class="text-slatey-300 text-sm leading-relaxed">Notice in the mail? We respond, represent and resolve — IRS and state correspondence handled by people who speak the language.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHO WE SERVE ============ -->
+<section id="serve" class="py-24 sm:py-28 bg-ink-900/40 border-y border-slatey-400/10 relative overflow-hidden">
+  <div class="absolute -right-32 top-10 h-80 w-80 rounded-full bg-emer-600/10 blur-[100px]"></div>
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-5">
+        <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">WHO WE SERVE</p>
+        <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">Built for the businesses big firms overlook</h2>
+        <p class="reveal mt-4 text-slatey-300 text-lg">If you're under $10M in revenue and tired of being a rounding error at a giant firm, you're exactly who we built Northbeam for.</p>
+        <a href="#cta" class="reveal mt-7 inline-flex items-center gap-2 text-emer-300 font-semibold hover:gap-3 transition-all">
+          Find your fit
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+        <div class="reveal glass rounded-2xl p-5 flex items-start gap-4">
+          <span class="text-2xl">🏗️</span>
+          <div><h3 class="font-semibold text-white">Trades &amp; contractors</h3><p class="text-sm text-slatey-300 mt-1">Job costing, equipment depreciation and quarterly estimates done for you.</p></div>
+        </div>
+        <div class="reveal glass rounded-2xl p-5 flex items-start gap-4">
+          <span class="text-2xl">☕</span>
+          <div><h3 class="font-semibold text-white">Cafés &amp; retail</h3><p class="text-sm text-slatey-300 mt-1">POS reconciliation, inventory and sales-tax filings across locations.</p></div>
+        </div>
+        <div class="reveal glass rounded-2xl p-5 flex items-start gap-4">
+          <span class="text-2xl">💻</span>
+          <div><h3 class="font-semibold text-white">Agencies &amp; SaaS</h3><p class="text-sm text-slatey-300 mt-1">Deferred revenue, contractor 1099s and runway forecasting for growth.</p></div>
+        </div>
+        <div class="reveal glass rounded-2xl p-5 flex items-start gap-4">
+          <span class="text-2xl">🩺</span>
+          <div><h3 class="font-semibold text-white">Clinics &amp; practices</h3><p class="text-sm text-slatey-300 mt-1">Owner comp planning, S-corp optimization and clean monthly P&amp;Ls.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section id="process" class="py-24 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-16">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">HOW IT WORKS</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">From messy to immaculate in four steps</h2>
+    </div>
+
+    <div class="relative grid md:grid-cols-4 gap-6">
+      <div class="hidden md:block absolute top-7 left-0 right-0 h-px accent-line"></div>
+      <div class="reveal relative">
+        <div class="grid place-items-center h-14 w-14 rounded-2xl glass font-display font-bold text-emer-300 text-lg mb-5 relative z-10">01</div>
+        <h3 class="font-display font-bold text-lg mb-2">Discovery call</h3>
+        <p class="text-sm text-slatey-300 leading-relaxed">A free 30-minute call to understand your business, your books and your goals — no pressure, no jargon.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="grid place-items-center h-14 w-14 rounded-2xl glass font-display font-bold text-emer-300 text-lg mb-5 relative z-10">02</div>
+        <h3 class="font-display font-bold text-lg mb-2">Cleanup &amp; setup</h3>
+        <p class="text-sm text-slatey-300 leading-relaxed">We clean up historical books, connect your accounts and build a chart of accounts that makes sense.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="grid place-items-center h-14 w-14 rounded-2xl glass font-display font-bold text-emer-300 text-lg mb-5 relative z-10">03</div>
+        <h3 class="font-display font-bold text-lg mb-2">Monthly rhythm</h3>
+        <p class="text-sm text-slatey-300 leading-relaxed">Books closed by the 10th, a short Loom walkthrough, and a real human on call when you need one.</p>
+      </div>
+      <div class="reveal relative">
+        <div class="grid place-items-center h-14 w-14 rounded-2xl glass font-display font-bold text-emer-300 text-lg mb-5 relative z-10">04</div>
+        <h3 class="font-display font-bold text-lg mb-2">Strategy &amp; filing</h3>
+        <p class="text-sm text-slatey-300 leading-relaxed">Quarterly tax planning and stress-free filing — so April is just another month.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="py-24 sm:py-28 bg-ink-900/40 border-y border-slatey-400/10 relative">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto mb-14">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">PRICING</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">Flat monthly pricing. No surprise invoices.</h2>
+      <p class="reveal mt-4 text-slatey-300 text-lg">Pick the package that fits today. Upgrade the moment you outgrow it.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- starter -->
+      <div class="reveal glass rounded-3xl p-7">
+        <h3 class="font-display font-bold text-xl">Essentials</h3>
+        <p class="text-sm text-slatey-400 mt-1">For solo founders &amp; side businesses</p>
+        <div class="mt-5 flex items-end gap-1"><span class="font-display font-extrabold text-4xl">$249</span><span class="text-slatey-400 mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-slatey-200">
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Monthly bookkeeping</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Quarterly financials</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Annual tax filing</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Email support</li>
+        </ul>
+        <a href="#cta" class="mt-7 block text-center rounded-xl glass py-3 font-semibold hover:bg-ink-700/40 transition">Get started</a>
+      </div>
+
+      <!-- popular -->
+      <div class="reveal relative rounded-3xl p-7 bg-gradient-to-b from-emer-500/15 to-ink-900/60 border border-emer-400/40 shadow-glow scale-[1.03]">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-bold uppercase tracking-wide bg-emer-400 text-ink-950 px-3 py-1 rounded-full">Most popular</div>
+        <h3 class="font-display font-bold text-xl">Growth</h3>
+        <p class="text-sm text-slatey-300 mt-1">For growing teams &amp; S-corps</p>
+        <div class="mt-5 flex items-end gap-1"><span class="font-display font-extrabold text-4xl text-white">$549</span><span class="text-slatey-300 mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-slatey-100">
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Everything in Essentials</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Monthly financials &amp; Loom</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Payroll for up to 10</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Quarterly tax planning</li>
+        </ul>
+        <a href="#cta" class="mt-7 block text-center rounded-xl bg-emer-500 hover:bg-emer-400 text-ink-950 py-3 font-semibold transition">Start with Growth</a>
+      </div>
+
+      <!-- cfo -->
+      <div class="reveal glass rounded-3xl p-7">
+        <h3 class="font-display font-bold text-xl">Advisory</h3>
+        <p class="text-sm text-slatey-400 mt-1">For scaling companies</p>
+        <div class="mt-5 flex items-end gap-1"><span class="font-display font-extrabold text-4xl">$1,200</span><span class="text-slatey-400 mb-1">/mo</span></div>
+        <ul class="mt-6 space-y-3 text-sm text-slatey-200">
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Everything in Growth</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Fractional CFO advisory</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Cash-flow forecasting</li>
+          <li class="flex gap-2.5"><svg viewBox="0 0 24 24" class="h-5 w-5 text-emer-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>Dedicated advisor</li>
+        </ul>
+        <a href="#cta" class="mt-7 block text-center rounded-xl glass py-3 font-semibold hover:bg-ink-700/40 transition">Talk to us</a>
+      </div>
+    </div>
+
+    <!-- savings calculator -->
+    <div class="reveal mt-12 max-w-3xl mx-auto glass rounded-3xl p-7 sm:p-8">
+      <div class="flex items-center justify-between flex-wrap gap-4 mb-5">
+        <div>
+          <h3 class="font-display font-bold text-lg">Estimate your tax savings</h3>
+          <p class="text-sm text-slatey-400">Slide to your annual revenue — see what proactive planning can return.</p>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slatey-400">Est. annual savings</div>
+          <div class="font-display font-extrabold text-3xl grad-text">$<span id="savingsOut">6,000</span></div>
+        </div>
+      </div>
+      <input id="revSlider" type="range" min="50000" max="2000000" step="10000" value="300000"
+        class="w-full accent-emer-500 cursor-pointer" />
+      <div class="flex justify-between text-xs text-slatey-400 mt-2">
+        <span>$50K revenue</span>
+        <span id="revLabel" class="text-emer-300 font-semibold">$300K revenue</span>
+        <span>$2M</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="py-24 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">WHY NORTHBEAM</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight mb-8">The precision of a firm. The warmth of a friend.</h2>
+      <div class="space-y-6">
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center h-11 w-11 rounded-xl bg-emer-500/15 text-emer-300 shrink-0"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></span>
+          <div><h3 class="font-semibold text-white">Real humans, fast replies</h3><p class="text-sm text-slatey-300 mt-1">A named accountant who knows your business — and answers within one business day, guaranteed.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center h-11 w-11 rounded-xl bg-emer-500/15 text-emer-300 shrink-0"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 8v4l3 2"/></svg></span>
+          <div><h3 class="font-semibold text-white">Closed by the 10th</h3><p class="text-sm text-slatey-300 mt-1">Your books are reconciled and reported before mid-month — no more waiting on last quarter's numbers.</p></div>
+        </div>
+        <div class="reveal flex gap-4">
+          <span class="grid place-items-center h-11 w-11 rounded-xl bg-emer-500/15 text-emer-300 shrink-0"><svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <div><h3 class="font-semibold text-white">Audit-ready always</h3><p class="text-sm text-slatey-300 mt-1">Documentation kept tidy and defensible, so a notice from the IRS is an inconvenience — not a crisis.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- image card -->
+    <div class="reveal relative rounded-3xl overflow-hidden glass p-1.5 shadow-card">
+      <div class="relative rounded-[1.3rem] overflow-hidden bg-gradient-to-br from-ink-800 to-ink-950 aspect-[4/3]">
+        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Accounting workspace"
+             class="absolute inset-0 h-full w-full object-cover opacity-70" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-transparent"></div>
+        <div class="absolute bottom-5 left-5 right-5 glass rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <div class="text-xs text-slatey-400">Client satisfaction</div>
+            <div class="font-display font-bold text-xl text-white">98% renewal rate</div>
+          </div>
+          <div class="flex -space-x-2">
+            <span class="h-9 w-9 rounded-full bg-emer-400 border-2 border-ink-900"></span>
+            <span class="h-9 w-9 rounded-full bg-slatey-300 border-2 border-ink-900"></span>
+            <span class="h-9 w-9 rounded-full bg-ink-600 border-2 border-ink-900"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / TEAM ============ -->
+<section class="py-24 sm:py-28 bg-ink-900/40 border-y border-slatey-400/10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">OUR TEAM</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">CPAs who'd rather talk plainly than bill by the hour</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal glass rounded-2xl p-6 text-center">
+        <div class="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-emer-400 to-emer-600 grid place-items-center font-display font-bold text-2xl text-ink-950 mb-4">DC</div>
+        <h3 class="font-semibold text-white">Dana Cole, CPA</h3>
+        <p class="text-xs text-slatey-400 mt-1">Founder &amp; Managing Partner</p>
+      </div>
+      <div class="reveal glass rounded-2xl p-6 text-center">
+        <div class="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-ink-600 to-ink-800 grid place-items-center font-display font-bold text-2xl text-emer-300 mb-4">MR</div>
+        <h3 class="font-semibold text-white">Marco Ruiz, EA</h3>
+        <p class="text-xs text-slatey-400 mt-1">Head of Tax Strategy</p>
+      </div>
+      <div class="reveal glass rounded-2xl p-6 text-center">
+        <div class="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-slatey-300 to-slatey-400 grid place-items-center font-display font-bold text-2xl text-ink-950 mb-4">PT</div>
+        <h3 class="font-semibold text-white">Priya Tan</h3>
+        <p class="text-xs text-slatey-400 mt-1">Lead Bookkeeper</p>
+      </div>
+      <div class="reveal glass rounded-2xl p-6 text-center">
+        <div class="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-emer-500 to-ink-700 grid place-items-center font-display font-bold text-2xl text-white mb-4">JF</div>
+        <h3 class="font-semibold text-white">Jordan Fell, CPA</h3>
+        <p class="text-xs text-slatey-400 mt-1">Fractional CFO</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 sm:py-28">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl mb-14">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">CLIENT STORIES</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">The numbers speak — so do our clients</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+      <figure class="reveal glass rounded-2xl p-6">
+        <div class="flex gap-0.5 text-emer-400 mb-4">★★★★★</div>
+        <blockquote class="text-slatey-200 leading-relaxed">"Northbeam cleaned up two years of chaos in three weeks. For the first time, I actually understand my own P&amp;L."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-emer-400/80 grid place-items-center text-ink-950 font-bold text-sm">EH</span>
+          <div><div class="text-sm font-semibold text-white">Elena Hartley</div><div class="text-xs text-slatey-400">Owner, Harbor &amp; Lane</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-2xl p-6">
+        <div class="flex gap-0.5 text-emer-400 mb-4">★★★★★</div>
+        <blockquote class="text-slatey-200 leading-relaxed">"The S-corp switch they recommended saved us $14K in year one. Best money we never spent on a big firm."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-slatey-300 grid place-items-center text-ink-950 font-bold text-sm">TM</span>
+          <div><div class="text-sm font-semibold text-white">Theo Mason</div><div class="text-xs text-slatey-400">Founder, Mason Forge</div></div>
+        </figcaption>
+      </figure>
+      <figure class="reveal glass rounded-2xl p-6">
+        <div class="flex gap-0.5 text-emer-400 mb-4">★★★★★</div>
+        <blockquote class="text-slatey-200 leading-relaxed">"April used to give me nightmares. Now I get a calm email saying it's filed. That peace of mind is worth everything."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="h-10 w-10 rounded-full bg-ink-600 grid place-items-center text-emer-300 font-bold text-sm">RG</span>
+          <div><div class="text-sm font-semibold text-white">Rina Goswami</div><div class="text-xs text-slatey-400">Director, Brightside Dental</div></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-28 bg-ink-900/40 border-y border-slatey-400/10">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <p class="reveal text-emer-400 font-semibold text-sm tracking-wide mb-3">FAQ</p>
+      <h2 class="reveal font-display font-extrabold text-3xl sm:text-4xl tracking-tight">Questions, answered plainly</h2>
+    </div>
+    <div class="space-y-3">
+      <details class="reveal glass rounded-2xl p-5 group" open>
+        <summary class="flex items-center justify-between gap-4">
+          <span class="font-semibold text-white">Do you work with my existing accounting software?</span>
+          <span class="faq-icon text-emer-400 text-2xl leading-none transition-transform shrink-0">+</span>
+        </summary>
+        <p class="mt-3 text-sm text-slatey-300 leading-relaxed">Yes. We work in QuickBooks, Xero and most modern platforms. If you're not on one yet, we'll set you up on the right fit during onboarding — at no extra cost.</p>
+      </details>
+      <details class="reveal glass rounded-2xl p-5 group">
+        <summary class="flex items-center justify-between gap-4">
+          <span class="font-semibold text-white">How far behind can my books be?</span>
+          <span class="faq-icon text-emer-400 text-2xl leading-none transition-transform shrink-0">+</span>
+        </summary>
+        <p class="mt-3 text-sm text-slatey-300 leading-relaxed">As far as it takes. We've untangled clients who hadn't reconciled in years. We quote catch-up work separately and clearly before any commitment.</p>
+      </details>
+      <details class="reveal glass rounded-2xl p-5 group">
+        <summary class="flex items-center justify-between gap-4">
+          <span class="font-semibold text-white">Are taxes included in the monthly price?</span>
+          <span class="faq-icon text-emer-400 text-2xl leading-none transition-transform shrink-0">+</span>
+        </summary>
+        <p class="mt-3 text-sm text-slatey-300 leading-relaxed">Annual business filing is included on every plan. Personal returns and multi-state complexity are available as add-ons, always quoted up front — never a surprise.</p>
+      </details>
+      <details class="reveal glass rounded-2xl p-5 group">
+        <summary class="flex items-center justify-between gap-4">
+          <span class="font-semibold text-white">Is there a long-term contract?</span>
+          <span class="faq-icon text-emer-400 text-2xl leading-none transition-transform shrink-0">+</span>
+        </summary>
+        <p class="mt-3 text-sm text-slatey-300 leading-relaxed">No lock-in. Our plans are month-to-month — we'd rather earn your business every month than trap you in a contract.</p>
+      </details>
+      <details class="reveal glass rounded-2xl p-5 group">
+        <summary class="flex items-center justify-between gap-4">
+          <span class="font-semibold text-white">What if I get audited?</span>
+          <span class="faq-icon text-emer-400 text-2xl leading-none transition-transform shrink-0">+</span>
+        </summary>
+        <p class="mt-3 text-sm text-slatey-300 leading-relaxed">We've got you. Audit support and IRS correspondence are included on Growth and Advisory plans, and available as an add-on for Essentials.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="cta" class="py-24 sm:py-28 relative overflow-hidden">
+  <div class="absolute inset-0 grid-bg opacity-40"></div>
+  <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[30rem] w-[30rem] rounded-full bg-emer-600/20 blur-[120px]"></div>
+  <div class="relative max-w-4xl mx-auto px-5 sm:px-8 text-center">
+    <div class="reveal glass rounded-3xl p-10 sm:p-14 shadow-card">
+      <h2 class="font-display font-extrabold text-3xl sm:text-5xl tracking-tight leading-tight">Let's give your numbers<br/>the <span class="grad-text">clarity they deserve.</span></h2>
+      <p class="mt-5 text-slatey-300 text-lg max-w-xl mx-auto">Book a free 30-minute consult. Walk away with at least one tax-saving idea — whether you hire us or not.</p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="#top" class="inline-flex items-center gap-2 rounded-xl bg-emer-500 hover:bg-emer-400 text-ink-950 font-semibold px-7 py-4 transition shadow-glow">
+          Book your free consult
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a href="tel:+18005551234" class="inline-flex items-center gap-2 rounded-xl glass px-7 py-4 text-slatey-100 hover:text-white transition">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>
+          (800) 555-1234
+        </a>
+      </div>
+      <p class="mt-6 text-xs text-slatey-400">No spam · No obligation · Real CPA on the call</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-slatey-400/10 pt-16 pb-10 bg-ink-950">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2.5 mb-4">
+          <span class="grid place-items-center h-9 w-9 rounded-xl bg-gradient-to-br from-emer-400 to-emer-600">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-ink-950" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 19V8M9 19V5M14 19v-7M19 19v-11"/></svg>
+          </span>
+          <span class="font-display font-extrabold text-lg">Northbeam<span class="text-emer-400">.</span></span>
+        </a>
+        <p class="text-sm text-slatey-400 max-w-xs leading-relaxed">Modern accounting, bookkeeping &amp; tax for small businesses that deserve a real partner.</p>
+        <p class="text-xs text-slatey-500 mt-4">Member, AICPA · Registered Tax Practitioners</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Services</h4>
+        <ul class="space-y-2.5 text-sm text-slatey-400">
+          <li><a href="#services" class="hover:text-emer-300 transition">Bookkeeping</a></li>
+          <li><a href="#services" class="hover:text-emer-300 transition">Tax strategy</a></li>
+          <li><a href="#services" class="hover:text-emer-300 transition">Payroll</a></li>
+          <li><a href="#services" class="hover:text-emer-300 transition">Fractional CFO</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Company</h4>
+        <ul class="space-y-2.5 text-sm text-slatey-400">
+          <li><a href="#serve" class="hover:text-emer-300 transition">Who we serve</a></li>
+          <li><a href="#process" class="hover:text-emer-300 transition">Our process</a></li>
+          <li><a href="#pricing" class="hover:text-emer-300 transition">Pricing</a></li>
+          <li><a href="#faq" class="hover:text-emer-300 transition">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white text-sm mb-4">Get in touch</h4>
+        <ul class="space-y-2.5 text-sm text-slatey-400">
+          <li><a href="mailto:hello@northbeam.co" class="hover:text-emer-300 transition">hello@northbeam.co</a></li>
+          <li><a href="tel:+18005551234" class="hover:text-emer-300 transition">(800) 555-1234</a></li>
+          <li class="text-slatey-500">Mon–Fri · 8am–6pm CT</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-slatey-400/10">
+      <p class="text-xs text-slatey-500">© 2026 Northbeam &amp; Co. All rights reserved. This is a demo template.</p>
+      <div class="flex items-center gap-5 text-xs text-slatey-500">
+        <a href="#" class="hover:text-slatey-300 transition">Privacy</a>
+        <a href="#" class="hover:text-slatey-300 transition">Terms</a>
+        <a href="#" class="hover:text-slatey-300 transition">Security</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV shrink on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.querySelector('div > div').classList.add('!py-2');
+    else nav.querySelector('div > div').classList.remove('!py-2');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Build bar chart ---------- */
+  const chart = document.getElementById('chart');
+  const rev = [55, 70, 62, 85, 78, 96];
+  const exp = [40, 48, 44, 52, 50, 58];
+  rev.forEach((r, i) => {
+    const col = document.createElement('div');
+    col.className = 'flex-1 flex items-end justify-center gap-1 h-full';
+    col.innerHTML =
+      `<div class="bar w-2.5 rounded-t bg-emer-400" style="height:${r}%"></div>
+       <div class="bar w-2.5 rounded-t bg-slatey-400/70" style="height:${exp[i]}%"></div>`;
+    chart.appendChild(col);
+  });
+
+  /* ---------- Savings calculator ---------- */
+  const slider = document.getElementById('revSlider');
+  const out = document.getElementById('savingsOut');
+  const label = document.getElementById('revLabel');
+  const fmt = (n) => n.toLocaleString('en-US');
+  const updateSavings = () => {
+    const v = +slider.value;
+    const savings = Math.round((v * 0.06) / 100) * 100; // ~6% modeled, rounded
+    out.textContent = fmt(savings);
+    const revK = v >= 1000000 ? (v / 1000000).toFixed(1).replace('.0','') + 'M' : Math.round(v / 1000) + 'K';
+    label.textContent = '$' + revK + ' revenue';
+  };
+  slider.addEventListener('input', updateSavings);
+  updateSavings();
+
+  if (reduce) {
+    document.querySelectorAll('.reveal').forEach(el => { el.style.opacity = 1; el.style.transform = 'none'; });
+    document.querySelectorAll('.bar').forEach(b => b.style.transform = 'scaleY(1)');
+    document.getElementById('ring').style.strokeDashoffset = 201 * (1 - 0.92);
+    runCounts();
+    return;
+  }
+
+  if (!window.gsap) { document.querySelectorAll('.reveal').forEach(el => el.style.opacity = 1); return; }
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ---------- Reveal animations ---------- */
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' },
+    });
+  });
+
+  /* ---------- Stagger groups ---------- */
+  ['#services', '#serve', '#pricing'].forEach((sel) => {
+    const sec = document.querySelector(sel);
+    if (!sec) return;
+    const cards = sec.querySelectorAll('.reveal');
+    gsap.to(cards, {
+      opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.08,
+      scrollTrigger: { trigger: sec, start: 'top 78%' },
+    });
+  });
+
+  /* ---------- Hero count-ups ---------- */
+  function runCounts() {
+    document.querySelectorAll('.count').forEach((el) => {
+      const to = parseFloat(el.dataset.to);
+      const dec = parseInt(el.dataset.dec || '0', 10);
+      const obj = { v: 0 };
+      gsap.to(obj, {
+        v: to, duration: 1.8, ease: 'power2.out',
+        onUpdate: () => {
+          el.textContent = dec ? obj.v.toFixed(dec) : Math.round(obj.v).toLocaleString('en-US');
+        },
+      });
+    });
+  }
+  ScrollTrigger.create({ trigger: '#top', start: 'top 70%', once: true, onEnter: runCounts });
+
+  /* ---------- Chart bars grow ---------- */
+  ScrollTrigger.create({
+    trigger: '#dashboard', start: 'top 80%', once: true,
+    onEnter: () => {
+      gsap.to('.bar', { scaleY: 1, duration: 0.9, ease: 'power3.out', stagger: 0.05 });
+      const ring = document.getElementById('ring');
+      requestAnimationFrame(() => { ring.style.strokeDashoffset = String(201 * (1 - 0.92)); });
+      const line = document.getElementById('trendLine');
+      const len = line.getTotalLength();
+      line.style.strokeDasharray = len; line.style.strokeDashoffset = len;
+      gsap.to(line, { strokeDashoffset: 0, duration: 1.6, ease: 'power2.out' });
+    },
+  });
+
+  /* ---------- Container parallax on dashboard ---------- */
+  gsap.to('#dashboard', {
+    yPercent: -8, ease: 'none',
+    scrollTrigger: { trigger: '#dashboard', start: 'top bottom', end: 'bottom top', scrub: 1 },
+  });
+
+  /* ---------- Animated headline rotator ---------- */
+  const rotator = document.getElementById('rotator');
+  const words = ['clear numbers,', 'real strategy,', 'fewer surprises,'];
+  let wi = 0;
+  setInterval(() => {
+    wi = (wi + 1) % words.length;
+    gsap.to(rotator, { opacity: 0, y: -8, duration: 0.3, ease: 'power2.in', onComplete: () => {
+      rotator.textContent = words[wi];
+      gsap.fromTo(rotator, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' });
+    }});
+  }, 2800);
+
+  /* ---------- Tilt-3D dashboard ---------- */
+  const tilt = document.getElementById('dashboard');
+  const tiltWrap = tilt.closest('.tilt-wrap');
+  tiltWrap.addEventListener('mousemove', (e) => {
+    const r = tiltWrap.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    gsap.to(tilt, { rotateY: px * 9, rotateX: -py * 9, duration: 0.5, ease: 'power2.out', transformPerspective: 1100 });
+  });
+  tiltWrap.addEventListener('mouseleave', () => {
+    gsap.to(tilt, { rotateY: 0, rotateX: 0, duration: 0.7, ease: 'power3.out' });
+  });
+
+  /* ---------- Service card hover lift ---------- */
+  document.querySelectorAll('.service-card').forEach((card) => {
+    card.addEventListener('mouseenter', () => gsap.to(card, { y: -6, scale: 1.015, duration: 0.3, ease: 'power2.out' }));
+    card.addEventListener('mouseleave', () => gsap.to(card, { y: 0, scale: 1, duration: 0.4, ease: 'power2.out' }));
+  });
+
+  /* ---------- Magnetic CTA ---------- */
+  const mag = document.getElementById('magnet');
+  if (mag) {
+    mag.addEventListener('mousemove', (e) => {
+      const r = mag.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width / 2;
+      const y = e.clientY - r.top - r.height / 2;
+      gsap.to(mag, { x: x * 0.3, y: y * 0.4, duration: 0.4, ease: 'power2.out' });
+    });
+    mag.addEventListener('mouseleave', () => gsap.to(mag, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' }));
+  }
+})();
+</script>
+</body>
+</html>

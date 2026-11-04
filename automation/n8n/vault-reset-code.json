@@ -1,0 +1,155 @@
+{
+  "name": "[deskdev] vault-reset-code",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-vault-reset-code",
+        "options": {},
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-vault-reset-code",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/vault_settings?select=owner_email&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "owner",
+      "name": "Lookup owner",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the vault-reset approval email. The recipient is ALWAYS the vault owner\n// read from vault_settings, never the caller's `to`: whoever holds the shared\n// webhook secret must not be able to mail arbitrary addresses from the company Gmail.\nconst b = $('Trigger').first().json.body || {};\nconst owner = String($json.owner_email || '').trim();\nconst code = String(b.code || '');\nconst mins = Math.min(Math.max(parseInt(b.expires_minutes, 10) || 15, 1), 60);\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst by = esc(String(b.requested_by || 'An admin').slice(0, 120));\nconst byEmail = esc(String(b.requested_by_email || '').slice(0, 120));\n\n// Fail loudly (the Edge Function sees a 500 and drops the code) rather than\n// \"succeed\" with nothing sent or with the code sent somewhere else.\nif (!owner) throw new Error('vault-reset: no vault owner email in vault_settings');\nif (b.to && String(b.to).trim().toLowerCase() !== owner.toLowerCase()) throw new Error('vault-reset: recipient mismatch');\nif (!/^\\d{6}$/.test(code)) throw new Error('vault-reset: malformed code');\n\nconst html = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 4px\">Vault reset approval</h2>\n  <p style=\"margin:0 0 16px;color:#666\">${by}${byEmail ? ' (' + byEmail + ')' : ''} is asking to reset the DeskDev Studio vault.</p>\n  <div style=\"padding:18px;border:1px solid #eee;border-radius:10px;text-align:center\">\n    <div style=\"font-size:32px;font-weight:700;letter-spacing:8px;font-family:ui-monospace,monospace\">${code}</div>\n    <div style=\"margin-top:6px;color:#666;font-size:13px\">Expires in ${mins} minutes</div>\n  </div>\n  <p style=\"margin-top:18px;color:#111\">A reset does <strong>not</strong> delete the stored credentials &mdash; they are archived, and can be restored later with the current master password. It does force a new master password and a new authenticator.</p>\n  <p style=\"margin-top:12px;color:#b45309\"><strong>If you did not expect this request, do not share the code.</strong></p>\n  <p style=\"margin-top:20px;color:#999;font-size:12px\">Sent by n8n for DeskDev Studio</p></div>`;\n\nreturn [{ json: { to: owner, subject: 'DeskDev Vault reset code: ' + code, html } }];\n"
+      },
+      "id": "build",
+      "name": "Build email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Send email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "deskdev-vault-reset-email"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Lookup owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup owner": {
+      "main": [
+        [
+          {
+            "node": "Build email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

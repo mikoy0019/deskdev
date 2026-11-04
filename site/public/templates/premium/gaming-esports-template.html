@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VOLTAGE NINE — Esports Collective</title>
+<meta name="description" content="VOLTAGE NINE — a championship esports collective. Five titles. One mindset. Watch the squad that runs the server." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#05030c',
+          ink2:   '#0b0718',
+          panel:  '#120a26',
+          violet: '#8b2bff',
+          grape:  '#b35bff',
+          acid:   '#c6ff2e',
+          cyan:   '#23f0ff',
+          magenta:'#ff2eb0',
+          ash:    '#a89cc4',
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          body:    ['"Sora"', 'sans-serif'],
+          mono:    ['"Share Tech Mono"', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Sora:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --vio:#8b2bff; --acid:#c6ff2e; --cyan:#23f0ff; --mag:#ff2eb0; }
+
+  html, body { overflow-x: hidden; background:#05030c; }
+  body { font-family:'Sora',sans-serif; color:#e9e3f7; }
+
+  ::selection { background:var(--acid); color:#05030c; }
+
+  /* grid backdrop */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(139,43,255,.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,43,255,.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+  }
+  .scanlines::after {
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,.18) 2px 4px);
+    mix-blend-mode:overlay; opacity:.5;
+  }
+
+  /* angular clip shapes */
+  .clip-blade   { clip-path: polygon(0 0, 100% 0, 100% 86%, 88% 100%, 0 100%); }
+  .clip-card    { clip-path: polygon(0 0, 100% 0, 100% 88%, 92% 100%, 0 100%); }
+  .clip-tag     { clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%); }
+  .clip-chevron { clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%, 8% 50%); }
+
+  /* neon text + glow */
+  .neon-acid { color:var(--acid); text-shadow:0 0 8px rgba(198,255,46,.55), 0 0 26px rgba(198,255,46,.25); }
+  .neon-vio  { color:var(--grape, #b35bff); text-shadow:0 0 10px rgba(139,43,255,.6), 0 0 30px rgba(139,43,255,.3); }
+  .neon-box  { box-shadow:0 0 0 1px rgba(139,43,255,.4), 0 0 30px rgba(139,43,255,.28); }
+
+  @keyframes pulseGlow {
+    0%,100% { box-shadow:0 0 0 1px rgba(198,255,46,.4), 0 0 18px rgba(198,255,46,.25); }
+    50%     { box-shadow:0 0 0 1px rgba(198,255,46,.8), 0 0 40px rgba(198,255,46,.55); }
+  }
+  .glow-pulse { animation:pulseGlow 2.6s ease-in-out infinite; }
+
+  /* glitch / RGB split headline */
+  .glitch { position:relative; display:inline-block; }
+  .glitch::before, .glitch::after {
+    content:attr(data-text); position:absolute; inset:0; pointer-events:none;
+  }
+  .glitch::before { color:var(--cyan); transform:translate(-2px,0); mix-blend-mode:screen; clip-path:inset(0 0 55% 0); }
+  .glitch::after  { color:var(--mag); transform:translate(2px,0);  mix-blend-mode:screen; clip-path:inset(55% 0 0 0); }
+  .glitch.go::before { animation:glx1 1.6s steps(2) infinite; }
+  .glitch.go::after  { animation:glx2 1.9s steps(2) infinite; }
+  @keyframes glx1 { 0%,92%,100%{transform:translate(-2px,0)} 93%{transform:translate(-6px,-2px)} 96%{transform:translate(4px,1px)} }
+  @keyframes glx2 { 0%,90%,100%{transform:translate(2px,0)} 91%{transform:translate(6px,2px)} 95%{transform:translate(-4px,-1px)} }
+
+  /* marquee */
+  .marquee { display:flex; width:max-content; animation:scrollx 28s linear infinite; }
+  .marquee.rev { animation-direction:reverse; }
+  @keyframes scrollx { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .marquee-wrap:hover .marquee { animation-play-state:paused; }
+
+  /* magnetic + tilt */
+  .magnetic { will-change:transform; }
+  .tilt { transform-style:preserve-3d; will-change:transform; transition:transform .12s ease-out; }
+  .tilt-inner { transform:translateZ(40px); }
+
+  /* nav link underline */
+  .nav-link { position:relative; }
+  .nav-link::after {
+    content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:var(--acid);
+    box-shadow:0 0 10px var(--acid); transition:width .25s ease;
+  }
+  .nav-link:hover::after { width:100%; }
+
+  /* accordion */
+  .acc-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
+  .acc.open .acc-body { max-height:340px; }
+  .acc.open .acc-plus { transform:rotate(45deg); }
+
+  /* reveal default */
+  .reveal { opacity:0; transform:translateY(28px); }
+
+  /* hide scrollbar on marquee row */
+  .noscroll::-webkit-scrollbar { display:none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { animation:none !important; }
+    .glitch.go::before, .glitch.go::after { animation:none !important; }
+    .glow-pulse { animation:none !important; }
+    .reveal { opacity:1 !important; transform:none !important; }
+  }
+</style>
+</head>
+
+<body class="bg-ink text-white font-body antialiased selection:bg-acid">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="mt-4 flex items-center justify-between rounded-none clip-card border border-violet/30 bg-ink2/80 backdrop-blur-md px-5 py-3">
+      <a href="#top" class="flex items-center gap-3 group">
+        <span class="relative grid place-items-center w-9 h-9 clip-chevron bg-violet neon-box">
+          <span class="font-display font-bold text-sm text-white">V9</span>
+        </span>
+        <span class="font-display font-bold tracking-[0.22em] text-sm">VOLTAGE<span class="neon-acid">NINE</span></span>
+      </a>
+      <nav class="hidden lg:flex items-center gap-8 text-[13px] font-display tracking-widest text-ash">
+        <a href="#roster"  class="nav-link hover:text-white">ROSTER</a>
+        <a href="#stats"   class="nav-link hover:text-white">STATS</a>
+        <a href="#matches" class="nav-link hover:text-white">MATCHES</a>
+        <a href="#merch"   class="nav-link hover:text-white">MERCH</a>
+        <a href="#faq"     class="nav-link hover:text-white">FAQ</a>
+      </nav>
+      <a href="#join" data-magnetic class="magnetic hidden sm:inline-flex items-center gap-2 clip-tag bg-acid text-ink font-display font-bold text-xs tracking-widest px-5 py-3 hover:brightness-110">
+        JOIN THE NINE
+      </a>
+      <button id="burger" class="lg:hidden text-acid font-display text-xs tracking-widest border border-violet/40 px-3 py-2">MENU</button>
+    </div>
+  </div>
+  <!-- mobile menu -->
+  <div id="mobileMenu" class="lg:hidden hidden px-5">
+    <div class="mt-2 max-w-7xl mx-auto bg-ink2/95 border border-violet/30 clip-card p-5 flex flex-col gap-4 font-display tracking-widest text-sm text-ash">
+      <a href="#roster"  class="hover:text-acid">ROSTER</a>
+      <a href="#stats"   class="hover:text-acid">STATS</a>
+      <a href="#matches" class="hover:text-acid">MATCHES</a>
+      <a href="#merch"   class="hover:text-acid">MERCH</a>
+      <a href="#faq"     class="hover:text-acid">FAQ</a>
+      <a href="#join"    class="text-ink bg-acid clip-tag px-4 py-2 text-center font-bold">JOIN THE NINE</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center grid-bg scanlines overflow-hidden">
+  <!-- parallax glows -->
+  <div data-parallax="-60" class="pointer-events-none absolute -top-32 -left-24 w-[34rem] h-[34rem] rounded-full bg-violet/30 blur-[140px]"></div>
+  <div data-parallax="40"  class="pointer-events-none absolute top-1/3 -right-32 w-[30rem] h-[30rem] rounded-full bg-magenta/20 blur-[150px]"></div>
+  <div data-parallax="20"  class="pointer-events-none absolute bottom-0 left-1/3 w-[26rem] h-[26rem] rounded-full bg-cyan/10 blur-[150px]"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-10 items-center pt-32 pb-20">
+    <div class="lg:col-span-7">
+      <div class="reveal inline-flex items-center gap-3 clip-tag border border-acid/40 bg-acid/5 px-4 py-2 mb-7">
+        <span class="w-2 h-2 bg-acid rounded-full glow-pulse"></span>
+        <span class="font-mono text-[11px] tracking-[0.3em] text-acid">EST. 2021 · 5 TITLES · ONE MINDSET</span>
+      </div>
+
+      <h1 class="font-display font-bold leading-[0.92] tracking-tight text-[15vw] sm:text-[11vw] lg:text-[7.4rem]">
+        <span class="block reveal">WE RUN</span>
+        <span class="block reveal glitch neon-vio" data-text="THE SERVER">THE SERVER</span>
+      </h1>
+
+      <p class="reveal mt-7 max-w-xl text-ash text-base sm:text-lg leading-relaxed">
+        VOLTAGE NINE is a championship esports collective built on raw mechanics and
+        relentless macro. Five core players. Zero excuses. Watch the squad that turns
+        clutch moments into highlight reels.
+      </p>
+
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4">
+        <a href="#matches" data-magnetic class="magnetic inline-flex items-center gap-2 clip-tag bg-acid text-ink font-display font-bold tracking-widest text-sm px-7 py-4 glow-pulse">
+          NEXT MATCH ▸
+        </a>
+        <a href="#roster" class="inline-flex items-center gap-2 clip-tag border border-violet/50 text-white font-display font-bold tracking-widest text-sm px-7 py-4 hover:bg-violet/15">
+          MEET THE ROSTER
+        </a>
+      </div>
+
+      <div class="reveal mt-12 flex flex-wrap gap-8 font-mono text-xs text-ash">
+        <div><span class="block text-2xl font-display font-bold neon-acid" data-count="148">0</span>TOURNAMENT WINS</div>
+        <div><span class="block text-2xl font-display font-bold neon-acid" data-count="11">0</span>MAJOR TROPHIES</div>
+        <div><span class="block text-2xl font-display font-bold neon-acid" data-count="2">0</span>M+ FANS</div>
+      </div>
+    </div>
+
+    <!-- hero art -->
+    <div class="lg:col-span-5 relative reveal">
+      <div data-tilt class="tilt relative clip-blade neon-box bg-gradient-to-br from-panel to-ink2 border border-violet/40 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-transparent z-10"></div>
+        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Esports arena"
+             class="w-full h-[30rem] object-cover opacity-90" />
+        <div class="absolute bottom-5 left-5 z-20 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">// LIVE_FEED</div>
+          <div class="font-display font-bold text-xl tracking-wide">ARENA · SECTOR 9</div>
+        </div>
+      </div>
+      <div class="absolute -bottom-6 -left-6 clip-tag bg-magenta/90 text-ink font-display font-bold text-xs tracking-widest px-5 py-3 rotate-[-3deg] neon-box">
+        #1 RANKED · GLOBAL
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-[0.4em] text-ash animate-pulse">SCROLL ▾</div>
+</section>
+
+<!-- ============ SPONSORS MARQUEE ============ -->
+<section class="relative border-y border-violet/20 bg-ink2 py-6 overflow-hidden">
+  <div class="marquee-wrap noscroll overflow-hidden">
+    <div class="marquee gap-14 px-7 items-center">
+      <!-- duplicated for seamless loop -->
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">HYPERVOLT</span>
+      <span class="font-display font-bold tracking-widest text-acid/70 text-lg">RIFTGEAR</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">NEONFORGE</span>
+      <span class="font-display font-bold tracking-widest text-cyan/70 text-lg">PULSEDRINK</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">APEXCHAIR</span>
+      <span class="font-display font-bold tracking-widest text-magenta/70 text-lg">ZEROLAG ISP</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">CRYOKEYS</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">HYPERVOLT</span>
+      <span class="font-display font-bold tracking-widest text-acid/70 text-lg">RIFTGEAR</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">NEONFORGE</span>
+      <span class="font-display font-bold tracking-widest text-cyan/70 text-lg">PULSEDRINK</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">APEXCHAIR</span>
+      <span class="font-display font-bold tracking-widest text-magenta/70 text-lg">ZEROLAG ISP</span>
+      <span class="font-display font-bold tracking-widest text-ash/70 text-lg">CRYOKEYS</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ROSTER ============ -->
+<section id="roster" class="relative py-24 lg:py-32 grid-bg overflow-hidden">
+  <div data-parallax="-30" class="pointer-events-none absolute top-10 right-0 w-96 h-96 rounded-full bg-violet/20 blur-[130px]"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 01 — THE_SQUAD</span>
+        <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3 leading-none">THE <span class="neon-vio">ROSTER</span></h2>
+      </div>
+      <p class="reveal max-w-md text-ash">Five players. Five disciplines. One synced brain. Each carries a role the others would die for on the rift.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- player cards -->
+      <!-- 1 -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-72 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel via-panel/20 to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Player Specter"
+               class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 left-4 z-20 clip-tag bg-acid text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">IGL</span>
+        </div>
+        <div class="p-6 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">@SPECTER_V9</div>
+          <h3 class="font-display font-bold text-2xl mt-1">Kael "Specter" Voss</h3>
+          <p class="text-ash text-sm mt-2">In-game leader. Reads the map three rounds ahead and calls plays before the enemy commits.</p>
+          <div class="flex gap-4 mt-4 font-mono text-[11px] text-ash">
+            <span>K/D <b class="text-white">1.42</b></span><span>HS% <b class="text-white">61</b></span><span>MVP <b class="text-white">38</b></span>
+          </div>
+        </div>
+      </article>
+      <!-- 2 -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-72 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel via-panel/20 to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Player Nyx"
+               class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 left-4 z-20 clip-tag bg-magenta text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">ENTRY</span>
+        </div>
+        <div class="p-6 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">@NYX_V9</div>
+          <h3 class="font-display font-bold text-2xl mt-1">Mara "Nyx" Idris</h3>
+          <p class="text-ash text-sm mt-2">Entry fragger. First through every door, trading space for tempo with insane aim duels.</p>
+          <div class="flex gap-4 mt-4 font-mono text-[11px] text-ash">
+            <span>K/D <b class="text-white">1.58</b></span><span>HS% <b class="text-white">68</b></span><span>MVP <b class="text-white">44</b></span>
+          </div>
+        </div>
+      </article>
+      <!-- 3 -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-72 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel via-panel/20 to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Player Volt"
+               class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 left-4 z-20 clip-tag bg-cyan text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">AWP</span>
+        </div>
+        <div class="p-6 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">@VOLT_V9</div>
+          <h3 class="font-display font-bold text-2xl mt-1">Dion "Volt" Reyes</h3>
+          <p class="text-ash text-sm mt-2">The closer. Holds the angle nobody dares peek and snaps games shut with one flick.</p>
+          <div class="flex gap-4 mt-4 font-mono text-[11px] text-ash">
+            <span>K/D <b class="text-white">1.49</b></span><span>HS% <b class="text-white">55</b></span><span>MVP <b class="text-white">41</b></span>
+          </div>
+        </div>
+      </article>
+      <!-- 4 -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-72 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel via-panel/20 to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Player Echo"
+               class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 left-4 z-20 clip-tag bg-acid text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">SUPPORT</span>
+        </div>
+        <div class="p-6 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">@ECHO_V9</div>
+          <h3 class="font-display font-bold text-2xl mt-1">Sana "Echo" Aluko</h3>
+          <p class="text-ash text-sm mt-2">Utility brain. Bends every smoke and flash to set up teammates for free frags.</p>
+          <div class="flex gap-4 mt-4 font-mono text-[11px] text-ash">
+            <span>ASST <b class="text-white">9.1</b></span><span>UTIL <b class="text-white">A+</b></span><span>MVP <b class="text-white">27</b></span>
+          </div>
+        </div>
+      </article>
+      <!-- 5 -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-72 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel via-panel/20 to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Player Riot"
+               class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 left-4 z-20 clip-tag bg-violet text-white font-display font-bold text-[11px] tracking-widest px-3 py-1">FLEX</span>
+        </div>
+        <div class="p-6 tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">@RIOT_V9</div>
+          <h3 class="font-display font-bold text-2xl mt-1">Theo "Riot" Bishara</h3>
+          <p class="text-ash text-sm mt-2">The wildcard. Plays every role at pro level and swaps to whatever the comp needs.</p>
+          <div class="flex gap-4 mt-4 font-mono text-[11px] text-ash">
+            <span>K/D <b class="text-white">1.37</b></span><span>HS% <b class="text-white">59</b></span><span>MVP <b class="text-white">33</b></span>
+          </div>
+        </div>
+      </article>
+      <!-- coach card -->
+      <article data-tilt class="tilt reveal group relative clip-card bg-gradient-to-br from-violet/25 to-panel border border-acid/40 overflow-hidden flex flex-col justify-center p-8 text-center">
+        <div class="tilt-inner">
+          <div class="font-mono text-[11px] tracking-widest text-acid">// HEAD_COACH</div>
+          <h3 class="font-display font-bold text-3xl mt-2 neon-acid">"PROXY"</h3>
+          <p class="text-ash text-sm mt-3">Lena Marchetti — the architect behind every Voltage Nine comp. 12 years on the analyst desk.</p>
+          <a href="#about" class="inline-block mt-5 clip-tag border border-acid/50 text-acid font-display font-bold text-xs tracking-widest px-5 py-2 hover:bg-acid/10">READ THE PHILOSOPHY ▸</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS / ACHIEVEMENTS ============ -->
+<section id="stats" class="relative py-24 lg:py-28 bg-ink2 border-y border-violet/20 scanlines overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-16">
+      <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 02 — THE_RECORD</span>
+      <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3">PURE <span class="neon-vio">DOMINANCE</span></h2>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal clip-card bg-panel/60 border border-violet/30 p-7 text-center hover:neon-box transition-shadow">
+        <div class="font-display font-bold text-5xl neon-acid" data-count="148" data-suffix="">0</div>
+        <div class="font-mono text-[11px] tracking-widest text-ash mt-2">TOURNAMENT WINS</div>
+      </div>
+      <div class="reveal clip-card bg-panel/60 border border-violet/30 p-7 text-center hover:neon-box transition-shadow">
+        <div class="font-display font-bold text-5xl neon-acid" data-count="11">0</div>
+        <div class="font-mono text-[11px] tracking-widest text-ash mt-2">MAJOR TROPHIES</div>
+      </div>
+      <div class="reveal clip-card bg-panel/60 border border-violet/30 p-7 text-center hover:neon-box transition-shadow">
+        <div class="font-display font-bold text-5xl neon-acid" data-count="2" data-suffix="M">0</div>
+        <div class="font-mono text-[11px] tracking-widest text-ash mt-2">GLOBAL FANS</div>
+      </div>
+      <div class="reveal clip-card bg-panel/60 border border-violet/30 p-7 text-center hover:neon-box transition-shadow">
+        <div class="font-display font-bold text-5xl neon-acid" data-count="93" data-suffix="%">0</div>
+        <div class="font-mono text-[11px] tracking-widest text-ash mt-2">WIN RATE · 2025</div>
+      </div>
+    </div>
+
+    <!-- trophy timeline -->
+    <div class="mt-16 grid md:grid-cols-3 gap-5">
+      <div class="reveal clip-tag bg-ink/60 border border-violet/30 p-6">
+        <div class="font-mono text-acid text-xs tracking-widest">2025 · APEX MAJOR</div>
+        <div class="font-display font-bold text-2xl mt-1">CHAMPIONS</div>
+        <p class="text-ash text-sm mt-2">A clean 3–0 grand final sweep that broke the bracket record.</p>
+      </div>
+      <div class="reveal clip-tag bg-ink/60 border border-violet/30 p-6">
+        <div class="font-mono text-acid text-xs tracking-widest">2024 · NEON CUP</div>
+        <div class="font-display font-bold text-2xl mt-1">CHAMPIONS</div>
+        <p class="text-ash text-sm mt-2">Back-to-back regional title with the highest combined rating on record.</p>
+      </div>
+      <div class="reveal clip-tag bg-ink/60 border border-violet/30 p-6">
+        <div class="font-mono text-acid text-xs tracking-widest">2023 · RIFT WORLDS</div>
+        <div class="font-display font-bold text-2xl mt-1">RUNNERS-UP</div>
+        <p class="text-ash text-sm mt-2">A five-map heartbreaker that launched the dynasty era.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATCHES / SCHEDULE ============ -->
+<section id="matches" class="relative py-24 lg:py-32 grid-bg overflow-hidden">
+  <div data-parallax="-40" class="pointer-events-none absolute bottom-0 left-0 w-96 h-96 rounded-full bg-magenta/15 blur-[140px]"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div>
+        <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 03 — THE_SCHEDULE</span>
+        <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3">UPCOMING <span class="neon-vio">MATCHES</span></h2>
+      </div>
+      <a href="#join" class="reveal clip-tag border border-acid/50 text-acid font-display font-bold text-xs tracking-widest px-5 py-3 hover:bg-acid/10">SET MATCH ALERTS ▸</a>
+    </div>
+
+    <div class="space-y-4">
+      <!-- match row -->
+      <div class="reveal group flex flex-col sm:flex-row sm:items-center justify-between gap-4 clip-card bg-panel border border-violet/30 hover:border-acid/60 transition-colors p-5 sm:p-6">
+        <div class="flex items-center gap-5">
+          <div class="text-center font-mono">
+            <div class="text-acid text-xs tracking-widest">JUN 12</div>
+            <div class="text-2xl font-display font-bold">20:00</div>
+          </div>
+          <div class="h-12 w-px bg-violet/30"></div>
+          <div>
+            <div class="font-display font-bold text-lg">VOLTAGE NINE <span class="text-ash font-body font-normal">vs</span> CRIMSON HALO</div>
+            <div class="font-mono text-[11px] text-ash tracking-widest mt-1">APEX MAJOR · QUARTERFINAL · BO5</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="clip-tag bg-magenta/20 text-magenta font-mono text-[11px] tracking-widest px-3 py-1 border border-magenta/40">FEATURED</span>
+          <a href="#join" class="clip-tag bg-acid text-ink font-display font-bold text-xs tracking-widest px-5 py-2 group-hover:brightness-110">WATCH ▸</a>
+        </div>
+      </div>
+      <div class="reveal group flex flex-col sm:flex-row sm:items-center justify-between gap-4 clip-card bg-panel border border-violet/30 hover:border-acid/60 transition-colors p-5 sm:p-6">
+        <div class="flex items-center gap-5">
+          <div class="text-center font-mono">
+            <div class="text-acid text-xs tracking-widest">JUN 18</div>
+            <div class="text-2xl font-display font-bold">18:30</div>
+          </div>
+          <div class="h-12 w-px bg-violet/30"></div>
+          <div>
+            <div class="font-display font-bold text-lg">VOLTAGE NINE <span class="text-ash font-body font-normal">vs</span> NULL SECT</div>
+            <div class="font-mono text-[11px] text-ash tracking-widest mt-1">NEON CUP · GROUP STAGE · BO3</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#join" class="clip-tag bg-acid text-ink font-display font-bold text-xs tracking-widest px-5 py-2 group-hover:brightness-110">WATCH ▸</a>
+        </div>
+      </div>
+      <div class="reveal group flex flex-col sm:flex-row sm:items-center justify-between gap-4 clip-card bg-panel border border-violet/30 hover:border-acid/60 transition-colors p-5 sm:p-6">
+        <div class="flex items-center gap-5">
+          <div class="text-center font-mono">
+            <div class="text-acid text-xs tracking-widest">JUN 25</div>
+            <div class="text-2xl font-display font-bold">21:15</div>
+          </div>
+          <div class="h-12 w-px bg-violet/30"></div>
+          <div>
+            <div class="font-display font-bold text-lg">VOLTAGE NINE <span class="text-ash font-body font-normal">vs</span> IRON COVENANT</div>
+            <div class="font-mono text-[11px] text-ash tracking-widest mt-1">RIFT WORLDS · QUALIFIER · BO5</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="#join" class="clip-tag bg-acid text-ink font-display font-bold text-xs tracking-widest px-5 py-2 group-hover:brightness-110">WATCH ▸</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 lg:py-32 bg-ink2 border-y border-violet/20 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative reveal">
+      <div data-tilt class="tilt clip-blade neon-box border border-violet/40 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-tr from-violet/30 via-transparent to-magenta/20 z-10 mix-blend-screen"></div>
+        <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=1600&q=80"
+             onerror="this.style.display='none'" alt="Team practicing"
+             class="w-full h-[28rem] object-cover opacity-85" />
+      </div>
+      <div class="absolute -top-5 -right-5 clip-tag bg-acid text-ink font-display font-bold text-xs tracking-widest px-5 py-3 rotate-3">SINCE 2021</div>
+    </div>
+    <div>
+      <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 04 — THE_ETHOS</span>
+      <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3 leading-none">BUILT IN<br/>THE <span class="neon-vio">TRENCHES</span></h2>
+      <p class="reveal mt-6 text-ash leading-relaxed">
+        Voltage Nine started in a cramped internet café with five strangers and a shared
+        refusal to lose. No academy pipeline. No silver spoons. Just scrim after scrim
+        until the mechanics became muscle memory and the calls became telepathy.
+      </p>
+      <p class="reveal mt-4 text-ash leading-relaxed">
+        Today we operate a full performance facility — analysts, nutritionists, a VOD
+        lab — but the mindset hasn't changed. Outwork the bracket. Win the boring rounds.
+        Let the highlights happen on their own.
+      </p>
+      <div class="reveal mt-8 grid grid-cols-3 gap-4 font-mono text-xs text-ash">
+        <div class="clip-tag border border-violet/30 p-4"><div class="text-acid text-2xl font-display font-bold" data-count="14">0</div>STAFF</div>
+        <div class="clip-tag border border-violet/30 p-4"><div class="text-acid text-2xl font-display font-bold" data-count="6">0</div>TITLES PLAYED</div>
+        <div class="clip-tag border border-violet/30 p-4"><div class="text-acid text-2xl font-display font-bold" data-count="40">0</div>HRS/WK SCRIM</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MERCH / HIGHLIGHTS ============ -->
+<section id="merch" class="relative py-24 lg:py-32 grid-bg overflow-hidden">
+  <div data-parallax="30" class="pointer-events-none absolute top-20 right-10 w-80 h-80 rounded-full bg-cyan/10 blur-[130px]"></div>
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+      <div>
+        <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 05 — THE_DROP</span>
+        <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3">GEAR & <span class="neon-vio">DROPS</span></h2>
+      </div>
+      <p class="reveal max-w-md text-ash">Limited runs. Player-designed. When it sells out, it's gone for good. Rep the Nine.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <article data-tilt class="tilt reveal group clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-64 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Pro jersey" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 right-4 z-20 clip-tag bg-acid text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">NEW</span>
+        </div>
+        <div class="p-6 tilt-inner flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-xl">2025 PRO JERSEY</h3>
+            <p class="font-mono text-[11px] text-ash mt-1 tracking-widest">OFFICIAL · STITCHED</p>
+          </div>
+          <span class="font-display font-bold text-acid text-lg">$74</span>
+        </div>
+      </article>
+      <article data-tilt class="tilt reveal group clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-64 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Hoodie" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 right-4 z-20 clip-tag bg-magenta text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">LIMITED</span>
+        </div>
+        <div class="p-6 tilt-inner flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-xl">GLITCH HOODIE</h3>
+            <p class="font-mono text-[11px] text-ash mt-1 tracking-widest">HEAVYWEIGHT · UNISEX</p>
+          </div>
+          <span class="font-display font-bold text-acid text-lg">$89</span>
+        </div>
+      </article>
+      <article data-tilt class="tilt reveal group clip-card bg-panel border border-violet/30 overflow-hidden hover:border-acid/60 transition-colors">
+        <div class="relative h-64 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-panel to-transparent z-10"></div>
+          <img src="https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=1600&q=80"
+               onerror="this.style.display='none'" alt="Mousepad" class="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500" />
+          <span class="absolute top-4 right-4 z-20 clip-tag bg-cyan text-ink font-display font-bold text-[11px] tracking-widest px-3 py-1">PRO SPEC</span>
+        </div>
+        <div class="p-6 tilt-inner flex items-center justify-between">
+          <div>
+            <h3 class="font-display font-bold text-xl">XL CONTROL PAD</h3>
+            <p class="font-mono text-[11px] text-ash mt-1 tracking-widest">STITCHED EDGE · 900×400</p>
+          </div>
+          <span class="font-display font-bold text-acid text-lg">$32</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / COMMUNITY ============ -->
+<section class="relative py-24 lg:py-28 bg-ink2 border-y border-violet/20 scanlines overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-16">
+      <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 06 — THE_CROWD</span>
+      <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3">FROM THE <span class="neon-vio">STANDS</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal clip-card bg-panel border border-violet/30 p-7">
+        <div class="text-acid font-display text-3xl">"</div>
+        <blockquote class="text-ash leading-relaxed -mt-2">Watched them clutch a 1v4 to take the major. I've never screamed at a screen that hard in my life. Voltage Nine for life.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] tracking-widest text-acid">@RIFTWATCHER · DAY-ONE FAN</figcaption>
+      </figure>
+      <figure class="reveal clip-card bg-panel border border-violet/30 p-7">
+        <div class="text-acid font-display text-3xl">"</div>
+        <blockquote class="text-ash leading-relaxed -mt-2">The VOD reviews on their channel made me a better player. This org actually gives back to the community it built.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] tracking-widest text-acid">@QUEUEDUP · AMATEUR PRO</figcaption>
+      </figure>
+      <figure class="reveal clip-card bg-panel border border-violet/30 p-7">
+        <div class="text-acid font-display text-3xl">"</div>
+        <blockquote class="text-ash leading-relaxed -mt-2">Specter's IGL calls are a masterclass. Casting their matches is the easiest job in esports — they make highlights every round.</blockquote>
+        <figcaption class="mt-5 font-mono text-[11px] tracking-widest text-acid">@CASTER_KILO · SHOUTCASTER</figcaption>
+      </figure>
+    </div>
+
+    <!-- community marquee -->
+    <div class="marquee-wrap noscroll overflow-hidden mt-14 border-y border-violet/20 py-4">
+      <div class="marquee rev gap-10 px-6 font-display font-bold tracking-widest text-ash/60">
+        <span>#WERUNTHESERVER</span><span class="neon-acid">⚡</span><span>2M FANS STRONG</span><span class="neon-acid">⚡</span>
+        <span>BUILT IN THE TRENCHES</span><span class="neon-acid">⚡</span><span>OUTWORK THE BRACKET</span><span class="neon-acid">⚡</span>
+        <span>#WERUNTHESERVER</span><span class="neon-acid">⚡</span><span>2M FANS STRONG</span><span class="neon-acid">⚡</span>
+        <span>BUILT IN THE TRENCHES</span><span class="neon-acid">⚡</span><span>OUTWORK THE BRACKET</span><span class="neon-acid">⚡</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 lg:py-32 grid-bg overflow-hidden">
+  <div class="max-w-4xl mx-auto px-5 lg:px-8">
+    <div class="text-center mb-14">
+      <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// 07 — INTEL</span>
+      <h2 class="reveal font-display font-bold text-5xl sm:text-6xl mt-3">FREQUENT <span class="neon-vio">INTEL</span></h2>
+    </div>
+
+    <div class="space-y-3" id="faqList">
+      <div class="acc reveal clip-tag bg-panel border border-violet/30">
+        <button class="acc-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-display font-bold tracking-wide">How do I try out for Voltage Nine?</span>
+          <span class="acc-plus text-acid font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="acc-body px-6"><p class="pb-5 text-ash">We run open qualifiers twice a year. Hit our Discord, climb our community ladder, and our analysts scout the top of the leaderboard. Raw mechanics get you noticed; macro gets you signed.</p></div>
+      </div>
+      <div class="acc reveal clip-tag bg-panel border border-violet/30">
+        <button class="acc-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-display font-bold tracking-wide">Where can I watch your matches live?</span>
+          <span class="acc-plus text-acid font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="acc-body px-6"><p class="pb-5 text-ash">Every official match streams on our channels with full multi-POV and post-game VOD reviews. Set a match alert below and we'll ping you before the first map drops.</p></div>
+      </div>
+      <div class="acc reveal clip-tag bg-panel border border-violet/30">
+        <button class="acc-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-display font-bold tracking-wide">Do you ship merch internationally?</span>
+          <span class="acc-plus text-acid font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="acc-body px-6"><p class="pb-5 text-ash">Yes — we ship worldwide from regional fulfillment hubs. Drops are limited runs, so once a piece sells out it does not restock. Join the list to get early access windows.</p></div>
+      </div>
+      <div class="acc reveal clip-tag bg-panel border border-violet/30">
+        <button class="acc-head w-full flex items-center justify-between text-left px-6 py-5">
+          <span class="font-display font-bold tracking-wide">Are you open to sponsorship partners?</span>
+          <span class="acc-plus text-acid font-display text-2xl transition-transform">+</span>
+        </button>
+        <div class="acc-body px-6"><p class="pb-5 text-ash">Always — but we only partner with brands our players actually use. If that's you, reach out through the partnerships link in our footer and our ops team will set up a call.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="join" class="relative py-28 lg:py-36 overflow-hidden bg-ink2">
+  <div data-parallax="-50" class="pointer-events-none absolute -top-20 left-1/4 w-[40rem] h-[40rem] rounded-full bg-violet/30 blur-[160px]"></div>
+  <div data-parallax="30"  class="pointer-events-none absolute bottom-0 right-1/4 w-[30rem] h-[30rem] rounded-full bg-acid/10 blur-[150px]"></div>
+  <div class="relative z-10 max-w-4xl mx-auto px-5 lg:px-8 text-center">
+    <span class="reveal font-mono text-xs tracking-[0.4em] text-acid">// JOIN_THE_NINE</span>
+    <h2 class="reveal font-display font-bold text-6xl sm:text-7xl lg:text-8xl mt-4 leading-[0.9]">
+      <span class="glitch neon-vio" data-text="RUN WITH US">RUN WITH US</span>
+    </h2>
+    <p class="reveal mt-6 text-ash max-w-xl mx-auto text-lg">Match alerts, early merch drops, exclusive VODs, and Discord access. Two million strong and counting — pull up.</p>
+
+    <form class="reveal mt-10 flex flex-col sm:flex-row gap-3 max-w-lg mx-auto" onsubmit="return false">
+      <input type="email" required placeholder="your@email.gg"
+             class="flex-1 bg-ink/70 border border-violet/40 clip-tag px-5 py-4 font-mono text-sm text-white placeholder-ash/60 focus:outline-none focus:border-acid" />
+      <button data-magnetic class="magnetic clip-tag bg-acid text-ink font-display font-bold tracking-widest text-sm px-7 py-4 glow-pulse">JOIN ▸</button>
+    </form>
+    <p class="reveal mt-4 font-mono text-[11px] text-ash tracking-widest">NO SPAM · UNSUB ANYTIME · WE RUN THE SERVER</p>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-ink border-t border-violet/20 pt-16 pb-8 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-2">
+        <a href="#top" class="flex items-center gap-3 mb-4">
+          <span class="grid place-items-center w-9 h-9 clip-chevron bg-violet neon-box font-display font-bold text-sm">V9</span>
+          <span class="font-display font-bold tracking-[0.22em]">VOLTAGE<span class="neon-acid">NINE</span></span>
+        </a>
+        <p class="text-ash max-w-sm text-sm leading-relaxed">A championship esports collective built in the trenches. Five core players, one synced brain, and a community two million strong.</p>
+        <div class="flex gap-3 mt-6 font-mono text-[11px] tracking-widest">
+          <a href="#" class="clip-tag border border-violet/40 px-4 py-2 text-ash hover:text-acid hover:border-acid/50">TWITCH</a>
+          <a href="#" class="clip-tag border border-violet/40 px-4 py-2 text-ash hover:text-acid hover:border-acid/50">YOUTUBE</a>
+          <a href="#" class="clip-tag border border-violet/40 px-4 py-2 text-ash hover:text-acid hover:border-acid/50">DISCORD</a>
+          <a href="#" class="clip-tag border border-violet/40 px-4 py-2 text-ash hover:text-acid hover:border-acid/50">X</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-display font-bold tracking-widest text-sm mb-4 text-acid">TEAM</h4>
+        <ul class="space-y-2 text-sm text-ash font-mono">
+          <li><a href="#roster" class="hover:text-white">Roster</a></li>
+          <li><a href="#stats" class="hover:text-white">Achievements</a></li>
+          <li><a href="#matches" class="hover:text-white">Schedule</a></li>
+          <li><a href="#about" class="hover:text-white">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-display font-bold tracking-widest text-sm mb-4 text-acid">CONNECT</h4>
+        <ul class="space-y-2 text-sm text-ash font-mono">
+          <li><a href="#merch" class="hover:text-white">Merch</a></li>
+          <li><a href="#join" class="hover:text-white">Join the Nine</a></li>
+          <li><a href="#" class="hover:text-white">Partnerships</a></li>
+          <li><a href="#faq" class="hover:text-white">FAQ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-12 pt-6 border-t border-violet/15 flex flex-col sm:flex-row justify-between gap-3 font-mono text-[11px] tracking-widest text-ash/70">
+      <span>© 2026 VOLTAGE NINE ESPORTS. ALL RIGHTS RESERVED.</span>
+      <span>WE RUN THE SERVER ⚡ FICTIONAL BRAND · TEMPLATE DEMO</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ----- Nav scroll state -----
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) nav.classList.add('shadow-2xl');
+    else nav.classList.remove('shadow-2xl');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // ----- Mobile menu -----
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+  burger?.addEventListener('click', () => menu.classList.toggle('hidden'));
+  menu?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => menu.classList.add('hidden')));
+
+  // ----- Accordion -----
+  document.querySelectorAll('.acc-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.acc');
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.acc').forEach(a => a.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  // ----- Activate glitch -----
+  document.querySelectorAll('.glitch').forEach(g => g.classList.add('go'));
+
+  if (reduce) {
+    // Static counters, no motion
+    document.querySelectorAll('[data-count]').forEach(el => {
+      el.textContent = el.dataset.count + (el.dataset.suffix || '');
+    });
+    return;
+  }
+
+  // ----- GSAP setup -----
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Reveal animations
+  gsap.utils.toArray('.reveal').forEach((el) => {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: el, start: 'top 88%' }
+    });
+  });
+
+  // Stagger hero reveals
+  gsap.to('#top .reveal', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.08, delay: 0.1 });
+
+  // Section parallax glows
+  gsap.utils.toArray('[data-parallax]').forEach((el) => {
+    const dist = parseFloat(el.dataset.parallax);
+    gsap.to(el, {
+      yPercent: dist, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  // Count-ups
+  document.querySelectorAll('[data-count]').forEach((el) => {
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const obj = { v: 0 };
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => gsap.to(obj, {
+        v: target, duration: 1.6, ease: 'power2.out',
+        onUpdate: () => {
+          const val = target % 1 === 0 ? Math.round(obj.v) : obj.v.toFixed(1);
+          el.textContent = val + suffix;
+        }
+      })
+    });
+  });
+
+  // ----- Magnetic CTAs -----
+  document.querySelectorAll('[data-magnetic]').forEach((el) => {
+    const strength = 0.4;
+    el.addEventListener('mousemove', (e) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - (r.left + r.width / 2)) * strength;
+      const y = (e.clientY - (r.top + r.height / 2)) * strength;
+      gsap.to(el, { x, y, duration: 0.3, ease: 'power3.out' });
+    });
+    el.addEventListener('mouseleave', () => gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1,0.4)' }));
+  });
+
+  // ----- Tilt on cards -----
+  document.querySelectorAll('[data-tilt]').forEach((card) => {
+    const max = 8;
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - 0.5;
+      const py = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `perspective(900px) rotateY(${px * max}deg) rotateX(${-py * max}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)';
+    });
+  });
+})();
+</script>
+</body>
+</html>

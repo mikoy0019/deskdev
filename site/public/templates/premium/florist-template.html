@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fleuriste &mdash; Botanical Atelier &amp; Event Flowers</title>
+<meta name="description" content="Fleuriste is a boutique botanical atelier crafting seasonal bouquets, wedding florals, and weekly flower subscriptions delivered with quiet luxury." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          cream:   '#F6F0E9',
+          ivory:   '#FBF7F1',
+          blush:   '#E7C9C4',
+          rose:    '#C98B86',
+          sage:    '#8FA088',
+          moss:    '#5C6B53',
+          clay:    '#8A6F63',
+          ink:     '#3A332E',
+          stone:   '#7A7068',
+        },
+        fontFamily: {
+          serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+          sans:  ['Jost', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --accent:#C98B86; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FBF7F1;
+    color: #3A332E;
+    font-family: 'Jost', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: #E7C9C4; color: #3A332E; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    border-radius: 9999px; mix-blend-mode: multiply;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+  .cursor-dot { width: 7px; height: 7px; background: #C98B86; }
+  .cursor-ring {
+    width: 38px; height: 38px; border: 1px solid rgba(201,139,134,.55);
+    transition: width .3s ease, height .3s ease, background .3s ease, border-color .3s ease;
+  }
+  .cursor-ring.is-hover { width: 64px; height: 64px; background: rgba(231,201,196,.18); border-color: rgba(201,139,134,.8); }
+  @media (hover: none), (max-width: 768px) { .cursor-dot, .cursor-ring { display:none; } }
+
+  /* Clip reveal for images */
+  .clip-reveal { clip-path: inset(0 0 100% 0); }
+
+  /* Masked serif text reveal */
+  .reveal-line { overflow: hidden; display: block; }
+  .reveal-line > span { display: block; transform: translateY(110%); }
+
+  .img-frame { background: linear-gradient(135deg, #E7C9C4 0%, #F6F0E9 55%, #8FA088 160%); }
+  .soft-grad { background: radial-gradient(120% 120% at 20% 0%, #FBF7F1 0%, #F6F0E9 60%, #EFE6DA 100%); }
+
+  /* Petals */
+  .petal {
+    position: absolute; pointer-events: none; opacity: .55;
+    filter: drop-shadow(0 4px 8px rgba(58,51,46,.06));
+  }
+
+  /* Accordion */
+  .faq-item .faq-body { max-height: 0; overflow: hidden; transition: max-height .55s cubic-bezier(.25,.8,.25,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item .faq-plus { transition: transform .4s ease; }
+  .faq-item.open .faq-plus { transform: rotate(135deg); }
+
+  .magnetic { will-change: transform; }
+  .link-underline { position: relative; }
+  .link-underline::after {
+    content:''; position:absolute; left:0; bottom:-3px; height:1px; width:100%;
+    background: currentColor; transform: scaleX(0); transform-origin: right;
+    transition: transform .4s cubic-bezier(.25,.8,.25,1);
+  }
+  .link-underline:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  .product-card .product-img { transition: transform 1.1s cubic-bezier(.16,.84,.44,1); }
+  .product-card:hover .product-img { transform: scale(1.07); }
+  .product-card .quick { transition: opacity .4s ease, transform .4s ease; }
+  .product-card:hover .quick { opacity:1; transform: translateY(0); }
+
+  .parallax-wrap { overflow: hidden; }
+  .parallax-img { will-change: transform; transform: scale(1.18); }
+
+  .marquee-track { animation: marquee 38s linear infinite; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .clip-reveal { clip-path: none !important; }
+    .reveal-line > span { transform: none !important; }
+    .parallax-img { transform: none !important; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+    <a href="#home" class="flex items-center gap-2 group" data-cursor="hover">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-rose">
+        <path d="M12 12c0-3 2-5 5-5-1 3-3 5-5 5Zm0 0c0-3-2-5-5-5 1 3 3 5 5 5Zm0 0c3 0 5 2 5 5-3-1-5-3-5-5Zm0 0c-3 0-5 2-5 5 3-1 5-3 5-5Z" fill="currentColor"/>
+        <circle cx="12" cy="12" r="1.6" fill="#5C6B53"/>
+      </svg>
+      <span class="font-serif text-2xl tracking-tight">Fleuriste</span>
+    </a>
+    <ul class="hidden lg:flex items-center gap-9 text-[13px] tracking-[.14em] uppercase text-ink/80">
+      <li><a href="#shop" class="link-underline" data-cursor="hover">Shop</a></li>
+      <li><a href="#occasions" class="link-underline" data-cursor="hover">Occasions</a></li>
+      <li><a href="#story" class="link-underline" data-cursor="hover">Atelier</a></li>
+      <li><a href="#subscribe" class="link-underline" data-cursor="hover">Subscriptions</a></li>
+      <li><a href="#faq" class="link-underline" data-cursor="hover">FAQ</a></li>
+    </ul>
+    <div class="flex items-center gap-5">
+      <button class="hidden sm:inline text-[13px] tracking-[.14em] uppercase text-ink/70 link-underline" data-cursor="hover">Account</button>
+      <button id="cartBtn" class="relative flex items-center gap-2 group" data-cursor="hover" aria-label="Cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="text-ink">
+          <path d="M6 8h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8Z" stroke="currentColor" stroke-width="1.3"/>
+          <path d="M9 8a3 3 0 0 1 6 0" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+        <span class="absolute -top-2 -right-2 bg-rose text-ivory text-[10px] w-4 h-4 rounded-full grid place-items-center" id="cartCount">3</span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="home" class="relative min-h-screen soft-grad flex items-center pt-24 pb-16">
+  <!-- petals -->
+  <svg class="petal w-10 h-10 text-blush" style="top:18%;left:8%" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+  <svg class="petal w-8 h-8 text-rose/70" style="top:62%;left:14%" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+  <svg class="petal w-12 h-12 text-sage/60" style="top:30%;right:10%" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-12 gap-10 items-center w-full">
+    <div class="lg:col-span-6 relative z-10">
+      <p class="text-[12px] tracking-[.34em] uppercase text-rose mb-6 reveal-line"><span>Boutique Botanical Atelier &middot; Est. 2014</span></p>
+      <h1 class="font-serif leading-[.95] text-ink text-[clamp(3rem,8vw,6.5rem)] mb-7">
+        <span class="reveal-line"><span>Flowers that</span></span>
+        <span class="reveal-line"><span class="italic text-rose">whisper</span></span>
+        <span class="reveal-line"><span>the season.</span></span>
+      </h1>
+      <p class="max-w-md text-ink/70 text-lg leading-relaxed mb-9 reveal-line"><span>Hand-tied bouquets, considered wedding florals, and weekly stems &mdash; cut at dawn, arranged with intention, delivered to your door.</span></p>
+      <div class="flex flex-wrap items-center gap-5">
+        <a href="#shop" data-cursor="hover" class="magnetic group inline-flex items-center gap-3 bg-ink text-ivory px-9 py-4 rounded-full text-sm tracking-[.12em] uppercase hover:bg-rose transition-colors duration-500">
+          Shop the bouquets
+          <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+        </a>
+        <a href="#story" data-cursor="hover" class="text-sm tracking-[.14em] uppercase text-ink/70 link-underline">Our story</a>
+      </div>
+    </div>
+
+    <div class="lg:col-span-6 relative">
+      <div class="parallax-wrap rounded-[2rem] img-frame overflow-hidden aspect-[4/5] shadow-2xl shadow-rose/20">
+        <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1600&q=80"
+             alt="Seasonal hand-tied bouquet" loading="eager"
+             onerror="this.style.display='none'"
+             class="parallax-img w-full h-full object-cover clip-reveal" data-reveal />
+      </div>
+      <!-- floating stat card -->
+      <div class="absolute -left-4 lg:-left-10 bottom-8 bg-ivory/90 backdrop-blur rounded-2xl px-6 py-5 shadow-xl shadow-ink/5 border border-blush/40">
+        <div class="font-serif text-4xl text-rose"><span class="count" data-to="9400">0</span>+</div>
+        <p class="text-[11px] tracking-[.2em] uppercase text-stone mt-1">Arrangements delivered</p>
+      </div>
+    </div>
+  </div>
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-[11px] tracking-[.3em] uppercase text-stone flex flex-col items-center gap-2">
+    <span>Scroll</span>
+    <span class="w-px h-10 bg-stone/40 block"></span>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="bg-moss text-ivory py-4 overflow-hidden">
+  <div class="marquee-track whitespace-nowrap flex gap-12 font-serif italic text-2xl">
+    <span>Peonies &bull; Ranunculus &bull; Garden Roses &bull; Anemone &bull; Sweet Pea &bull; Dahlia &bull; Tulip &bull; Lisianthus &bull;</span>
+    <span>Peonies &bull; Ranunculus &bull; Garden Roses &bull; Anemone &bull; Sweet Pea &bull; Dahlia &bull; Tulip &bull; Lisianthus &bull;</span>
+  </div>
+</div>
+
+<!-- ============ BESTSELLERS ============ -->
+<section id="shop" class="py-24 lg:py-32 bg-ivory">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+      <div>
+        <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-4">The Collection</p>
+        <h2 class="font-serif text-[clamp(2.4rem,5vw,4rem)] leading-[1] text-ink reveal-line"><span>Bestselling bouquets</span></h2>
+      </div>
+      <a href="#" data-cursor="hover" class="text-sm tracking-[.14em] uppercase text-ink/70 link-underline">View all stems &rarr;</a>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8" id="productGrid">
+      <!-- Card 1 -->
+      <article class="product-card group" data-fade>
+        <div class="relative overflow-hidden rounded-[1.5rem] img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=1600&q=80" alt="Blush peony bouquet" loading="lazy" onerror="this.style.display='none'" class="product-img w-full h-full object-cover" />
+          <span class="absolute top-4 left-4 bg-ivory/90 text-ink text-[10px] tracking-[.2em] uppercase px-3 py-1 rounded-full">Seasonal</span>
+          <button class="quick opacity-0 translate-y-3 absolute bottom-4 inset-x-4 bg-ink text-ivory text-xs tracking-[.16em] uppercase py-3 rounded-full hover:bg-rose transition-colors" data-cursor="hover" data-add>Add to cart &mdash; &pound;58</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-5">
+          <h3 class="font-serif text-2xl text-ink">Camille</h3>
+          <span class="text-rose font-medium">&pound;58</span>
+        </div>
+        <p class="text-sm text-stone mt-1">Blush peonies, garden roses, dusty miller.</p>
+      </article>
+      <!-- Card 2 -->
+      <article class="product-card group" data-fade>
+        <div class="relative overflow-hidden rounded-[1.5rem] img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1600&q=80" alt="Wildflower arrangement" loading="lazy" onerror="this.style.display='none'" class="product-img w-full h-full object-cover" />
+          <span class="absolute top-4 left-4 bg-rose/90 text-ivory text-[10px] tracking-[.2em] uppercase px-3 py-1 rounded-full">Bestseller</span>
+          <button class="quick opacity-0 translate-y-3 absolute bottom-4 inset-x-4 bg-ink text-ivory text-xs tracking-[.16em] uppercase py-3 rounded-full hover:bg-rose transition-colors" data-cursor="hover" data-add>Add to cart &mdash; &pound;46</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-5">
+          <h3 class="font-serif text-2xl text-ink">Meadow</h3>
+          <span class="text-rose font-medium">&pound;46</span>
+        </div>
+        <p class="text-sm text-stone mt-1">Foraged wildflowers, grasses, ranunculus.</p>
+      </article>
+      <!-- Card 3 -->
+      <article class="product-card group" data-fade>
+        <div class="relative overflow-hidden rounded-[1.5rem] img-frame aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=1600&q=80" alt="Romantic rose arrangement" loading="lazy" onerror="this.style.display='none'" class="product-img w-full h-full object-cover" />
+          <span class="absolute top-4 left-4 bg-ivory/90 text-ink text-[10px] tracking-[.2em] uppercase px-3 py-1 rounded-full">Limited</span>
+          <button class="quick opacity-0 translate-y-3 absolute bottom-4 inset-x-4 bg-ink text-ivory text-xs tracking-[.16em] uppercase py-3 rounded-full hover:bg-rose transition-colors" data-cursor="hover" data-add>Add to cart &mdash; &pound;72</button>
+        </div>
+        <div class="flex items-baseline justify-between mt-5">
+          <h3 class="font-serif text-2xl text-ink">Aurelia</h3>
+          <span class="text-rose font-medium">&pound;72</span>
+        </div>
+        <p class="text-sm text-stone mt-1">Garden roses, anemone, trailing jasmine.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OCCASIONS ============ -->
+<section id="occasions" class="py-24 lg:py-32 bg-cream">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-4">For every chapter</p>
+      <h2 class="font-serif text-[clamp(2.4rem,5vw,4rem)] leading-[1.05] text-ink reveal-line"><span>Flowers for the moments</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="group relative overflow-hidden rounded-[1.75rem] aspect-[4/5] img-frame" data-fade data-cursor="hover">
+        <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1600&q=80" alt="Wedding florals" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
+        <div class="absolute bottom-0 p-8 text-ivory">
+          <h3 class="font-serif text-3xl mb-2">Weddings</h3>
+          <p class="text-sm text-ivory/80 mb-3">Bridal, ceremony &amp; reception florals, fully styled.</p>
+          <span class="text-[11px] tracking-[.2em] uppercase link-underline">Enquire &rarr;</span>
+        </div>
+      </div>
+      <div class="group relative overflow-hidden rounded-[1.75rem] aspect-[4/5] img-frame" data-fade data-cursor="hover">
+        <img src="https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=1600&q=80" alt="Event flowers" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
+        <div class="absolute bottom-0 p-8 text-ivory">
+          <h3 class="font-serif text-3xl mb-2">Events</h3>
+          <p class="text-sm text-ivory/80 mb-3">Installations, tablescapes &amp; brand activations.</p>
+          <span class="text-[11px] tracking-[.2em] uppercase link-underline">Enquire &rarr;</span>
+        </div>
+      </div>
+      <div class="group relative overflow-hidden rounded-[1.75rem] aspect-[4/5] img-frame" data-fade data-cursor="hover">
+        <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1600&q=80" alt="Flower subscriptions" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"></div>
+        <div class="absolute bottom-0 p-8 text-ivory">
+          <h3 class="font-serif text-3xl mb-2">Subscriptions</h3>
+          <p class="text-sm text-ivory/80 mb-3">Fresh stems delivered weekly, fortnightly or monthly.</p>
+          <span class="text-[11px] tracking-[.2em] uppercase link-underline">Subscribe &rarr;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT / STORY ============ -->
+<section id="story" class="py-24 lg:py-32 bg-ivory overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
+    <div class="relative order-2 lg:order-1">
+      <div class="parallax-wrap rounded-[2rem] img-frame overflow-hidden aspect-[4/5] shadow-xl shadow-sage/15">
+        <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=1600&q=80" alt="Florist at work in the atelier" loading="lazy" onerror="this.style.display='none'" class="parallax-img w-full h-full object-cover" />
+      </div>
+      <svg class="petal w-14 h-14 text-blush absolute -top-6 -right-4" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-5">The Atelier</p>
+      <h2 class="font-serif text-[clamp(2.2rem,4.5vw,3.6rem)] leading-[1.05] text-ink mb-7 reveal-line"><span>Grown slowly,</span></h2>
+      <h2 class="font-serif italic text-[clamp(2.2rem,4.5vw,3.6rem)] leading-[1.05] text-rose -mt-4 mb-8 reveal-line"><span>arranged by hand.</span></h2>
+      <p class="text-ink/70 leading-relaxed mb-5">Fleuriste began as a single market stall and a quiet obsession with seasonality. Today our atelier works with a small circle of regenerative British growers, cutting at dawn so every stem reaches you at its peak.</p>
+      <p class="text-ink/70 leading-relaxed mb-10">No imported uniformity, no foam, no waste &mdash; only flowers with a sense of place, tied by hands that know them.</p>
+      <div class="grid grid-cols-3 gap-6">
+        <div><div class="font-serif text-4xl text-rose"><span class="count" data-to="640">0</span></div><p class="text-[11px] tracking-[.18em] uppercase text-stone mt-1">Weddings styled</p></div>
+        <div><div class="font-serif text-4xl text-rose"><span class="count" data-to="12">0</span></div><p class="text-[11px] tracking-[.18em] uppercase text-stone mt-1">Local growers</p></div>
+        <div><div class="font-serif text-4xl text-rose"><span class="count" data-to="0">0</span>%</div><p class="text-[11px] tracking-[.18em] uppercase text-stone mt-1">Floral foam used</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="py-24 lg:py-32 bg-moss text-ivory relative overflow-hidden">
+  <svg class="petal w-20 h-20 text-sage/40 absolute top-10 right-10" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="max-w-2xl mb-16">
+      <p class="text-[12px] tracking-[.3em] uppercase text-blush mb-4">How it works</p>
+      <h2 class="font-serif text-[clamp(2.4rem,5vw,4rem)] leading-[1.05] reveal-line"><span>From our hands to yours</span></h2>
+    </div>
+    <div class="grid md:grid-cols-4 gap-10">
+      <div data-fade>
+        <div class="font-serif text-5xl text-blush mb-4">01</div>
+        <h3 class="font-serif text-2xl mb-2">Choose</h3>
+        <p class="text-ivory/70 text-sm leading-relaxed">Pick a signature bouquet or let our florists design to the season.</p>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-5xl text-blush mb-4">02</div>
+        <h3 class="font-serif text-2xl mb-2">We arrange</h3>
+        <p class="text-ivory/70 text-sm leading-relaxed">Cut at dawn and hand-tied that same morning in our studio.</p>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-5xl text-blush mb-4">03</div>
+        <h3 class="font-serif text-2xl mb-2">Delivered</h3>
+        <p class="text-ivory/70 text-sm leading-relaxed">Carefully wrapped, water-sourced, dispatched same-day across the city.</p>
+      </div>
+      <div data-fade>
+        <div class="font-serif text-5xl text-blush mb-4">04</div>
+        <h3 class="font-serif text-2xl mb-2">They bloom</h3>
+        <p class="text-ivory/70 text-sm leading-relaxed">Care notes included &mdash; seven days of life, guaranteed, or it's on us.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 lg:py-32 bg-cream">
+  <div class="max-w-5xl mx-auto px-6 lg:px-10 text-center">
+    <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-8">Kind words</p>
+    <div class="grid md:grid-cols-3 gap-8 text-left">
+      <figure class="bg-ivory rounded-3xl p-8 border border-blush/40" data-fade>
+        <div class="text-rose mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-xl italic text-ink/85 leading-snug mb-6">"The wedding florals were beyond anything I pictured &mdash; guests are still talking about the arch."</blockquote>
+        <figcaption class="text-sm tracking-[.1em] uppercase text-stone">Priya &amp; Tom &middot; Bride</figcaption>
+      </figure>
+      <figure class="bg-ivory rounded-3xl p-8 border border-blush/40 md:translate-y-6" data-fade>
+        <div class="text-rose mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-xl italic text-ink/85 leading-snug mb-6">"My weekly subscription is the small luxury I never knew I needed. Always fresh, always beautiful."</blockquote>
+        <figcaption class="text-sm tracking-[.1em] uppercase text-stone">Hana M. &middot; Subscriber</figcaption>
+      </figure>
+      <figure class="bg-ivory rounded-3xl p-8 border border-blush/40" data-fade>
+        <div class="text-rose mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <blockquote class="font-serif text-xl italic text-ink/85 leading-snug mb-6">"They transformed our launch event into a garden. Effortless to work with, impeccable taste."</blockquote>
+        <figcaption class="text-sm tracking-[.1em] uppercase text-stone">Studio Lune &middot; Events</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SUBSCRIPTION / PRICING ============ -->
+<section id="subscribe" class="py-24 lg:py-32 bg-ivory">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-4">Flower subscriptions</p>
+      <h2 class="font-serif text-[clamp(2.4rem,5vw,4rem)] leading-[1.05] text-ink reveal-line"><span>A little bloom, on repeat</span></h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Petite -->
+      <div class="rounded-[1.75rem] border border-blush/50 bg-cream p-9 flex flex-col" data-fade>
+        <h3 class="font-serif text-3xl text-ink mb-1">Petite</h3>
+        <p class="text-sm text-stone mb-6">A modest jar for the kitchen table.</p>
+        <div class="font-serif text-5xl text-ink mb-1">&pound;28<span class="text-base text-stone font-sans">/delivery</span></div>
+        <ul class="text-sm text-ink/70 space-y-3 my-8">
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> 15&ndash;20 seasonal stems</li>
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> Florist's choice palette</li>
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> Pause or skip anytime</li>
+        </ul>
+        <button class="mt-auto w-full py-3.5 rounded-full border border-ink text-ink text-xs tracking-[.16em] uppercase hover:bg-ink hover:text-ivory transition-colors" data-cursor="hover">Choose Petite</button>
+      </div>
+      <!-- Atelier (featured) -->
+      <div class="rounded-[1.75rem] bg-ink text-ivory p-9 flex flex-col relative md:-translate-y-4 shadow-2xl shadow-ink/30" data-fade>
+        <span class="absolute top-6 right-6 text-[10px] tracking-[.2em] uppercase bg-rose text-ivory px-3 py-1 rounded-full">Most loved</span>
+        <h3 class="font-serif text-3xl mb-1">Atelier</h3>
+        <p class="text-sm text-ivory/60 mb-6">Our signature, generously gathered.</p>
+        <div class="font-serif text-5xl mb-1">&pound;48<span class="text-base text-ivory/60 font-sans">/delivery</span></div>
+        <ul class="text-sm text-ivory/80 space-y-3 my-8">
+          <li class="flex gap-3"><span class="text-blush">&#10022;</span> 30&ndash;35 premium stems</li>
+          <li class="flex gap-3"><span class="text-blush">&#10022;</span> Designer wrap &amp; care kit</li>
+          <li class="flex gap-3"><span class="text-blush">&#10022;</span> Priority same-day delivery</li>
+          <li class="flex gap-3"><span class="text-blush">&#10022;</span> Member-only seasonal stems</li>
+        </ul>
+        <button class="mt-auto w-full py-3.5 rounded-full bg-rose text-ivory text-xs tracking-[.16em] uppercase hover:bg-blush hover:text-ink transition-colors" data-cursor="hover">Choose Atelier</button>
+      </div>
+      <!-- Grand -->
+      <div class="rounded-[1.75rem] border border-blush/50 bg-cream p-9 flex flex-col" data-fade>
+        <h3 class="font-serif text-3xl text-ink mb-1">Grand</h3>
+        <p class="text-sm text-stone mb-6">A statement for the whole room.</p>
+        <div class="font-serif text-5xl text-ink mb-1">&pound;82<span class="text-base text-stone font-sans">/delivery</span></div>
+        <ul class="text-sm text-ink/70 space-y-3 my-8">
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> 50+ luxe stems &amp; foliage</li>
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> Hand-delivered by a florist</li>
+          <li class="flex gap-3"><span class="text-rose">&#10022;</span> Vase styling on request</li>
+        </ul>
+        <button class="mt-auto w-full py-3.5 rounded-full border border-ink text-ink text-xs tracking-[.16em] uppercase hover:bg-ink hover:text-ivory transition-colors" data-cursor="hover">Choose Grand</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GALLERY BAND ============ -->
+<section class="py-6 bg-cream overflow-hidden">
+  <div class="flex gap-4 marquee-track" style="animation-duration:55s">
+    <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+    <img src="https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=1600&q=80" alt="Floral gallery" loading="lazy" onerror="this.style.display='none'" class="h-64 w-80 object-cover rounded-2xl img-frame flex-none" />
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 lg:py-32 bg-ivory">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10">
+    <div class="text-center mb-16">
+      <p class="text-[12px] tracking-[.3em] uppercase text-rose mb-4">Good to know</p>
+      <h2 class="font-serif text-[clamp(2.4rem,5vw,4rem)] leading-[1.05] text-ink reveal-line"><span>Frequently asked</span></h2>
+    </div>
+    <div class="divide-y divide-blush/50 border-y border-blush/50">
+      <div class="faq-item py-6 cursor-pointer" data-cursor="hover">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-2xl text-ink">Which areas do you deliver to?</h3>
+          <span class="faq-plus text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="faq-body"><p class="text-ink/70 leading-relaxed pt-4 max-w-2xl">We offer same-day hand delivery across the city centre and surrounding boroughs, and next-day courier delivery nationwide. Enter your postcode at checkout to confirm.</p></div>
+      </div>
+      <div class="faq-item py-6 cursor-pointer" data-cursor="hover">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-2xl text-ink">How long will my flowers last?</h3>
+          <span class="faq-plus text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="faq-body"><p class="text-ink/70 leading-relaxed pt-4 max-w-2xl">Every bouquet comes with a freshness guarantee of at least seven days. Each delivery includes care notes &mdash; trim, refresh the water, and they'll thank you for it.</p></div>
+      </div>
+      <div class="faq-item py-6 cursor-pointer" data-cursor="hover">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-2xl text-ink">Can I pause or cancel a subscription?</h3>
+          <span class="faq-plus text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="faq-body"><p class="text-ink/70 leading-relaxed pt-4 max-w-2xl">Anytime, no questions asked. Manage, skip, pause or cancel from your account up to 48 hours before your next dispatch.</p></div>
+      </div>
+      <div class="faq-item py-6 cursor-pointer" data-cursor="hover">
+        <div class="flex items-center justify-between gap-6">
+          <h3 class="font-serif text-2xl text-ink">Do you take on wedding florals?</h3>
+          <span class="faq-plus text-rose text-2xl font-light">+</span>
+        </div>
+        <div class="faq-body"><p class="text-ink/70 leading-relaxed pt-4 max-w-2xl">We do &mdash; a limited number each season. Send us your date and vision via the enquiry form and our lead florist will arrange a consultation.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 lg:py-40 overflow-hidden">
+  <div class="absolute inset-0 img-frame"></div>
+  <img src="https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=1600&q=80" alt="Lush floral arrangement" loading="lazy" onerror="this.style.display='none'" class="absolute inset-0 w-full h-full object-cover opacity-40" />
+  <div class="absolute inset-0 bg-gradient-to-b from-cream/70 via-ivory/60 to-cream/90"></div>
+  <div class="relative max-w-3xl mx-auto px-6 text-center">
+    <svg class="petal w-12 h-12 text-rose mx-auto mb-6 !static !opacity-80" viewBox="0 0 40 40" fill="currentColor"><path d="M20 2C26 12 38 14 38 22s-12 8-18 16C14 30 2 30 2 22s12-10 18-20Z"/></svg>
+    <h2 class="font-serif text-[clamp(2.6rem,6vw,5rem)] leading-[1] text-ink mb-7 reveal-line"><span>Send a little</span></h2>
+    <h2 class="font-serif italic text-[clamp(2.6rem,6vw,5rem)] leading-[1] text-rose -mt-3 mb-9 reveal-line"><span>beauty today.</span></h2>
+    <p class="text-ink/70 text-lg max-w-xl mx-auto mb-10">Whether it's a celebration, an apology, or just because &mdash; let the flowers say it for you.</p>
+    <a href="#shop" data-cursor="hover" class="magnetic inline-flex items-center gap-3 bg-ink text-ivory px-10 py-5 rounded-full text-sm tracking-[.14em] uppercase hover:bg-rose transition-colors duration-500">Order a bouquet <span>&rarr;</span></a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink text-ivory pt-20 pb-10">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="grid md:grid-cols-12 gap-12 pb-16 border-b border-ivory/15">
+      <div class="md:col-span-5">
+        <div class="flex items-center gap-2 mb-5">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" class="text-blush">
+            <path d="M12 12c0-3 2-5 5-5-1 3-3 5-5 5Zm0 0c0-3-2-5-5-5 1 3 3 5 5 5Zm0 0c3 0 5 2 5 5-3-1-5-3-5-5Zm0 0c-3 0-5 2-5 5 3-1 5-3 5-5Z" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1.6" fill="#8FA088"/>
+          </svg>
+          <span class="font-serif text-2xl">Fleuriste</span>
+        </div>
+        <p class="text-ivory/60 max-w-sm leading-relaxed mb-6">A boutique botanical atelier. Seasonal, hand-tied, and grown with care &mdash; flowers worth the wait.</p>
+        <form class="flex max-w-sm" onsubmit="return false">
+          <input type="email" placeholder="Your email" class="flex-1 bg-ivory/10 border border-ivory/20 rounded-l-full px-5 py-3 text-sm placeholder:text-ivory/40 focus:outline-none focus:border-blush" />
+          <button class="bg-blush text-ink px-6 rounded-r-full text-xs tracking-[.14em] uppercase hover:bg-rose hover:text-ivory transition-colors" data-cursor="hover">Join</button>
+        </form>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="text-[11px] tracking-[.2em] uppercase text-blush mb-5">Shop</h4>
+        <ul class="space-y-3 text-sm text-ivory/70">
+          <li><a href="#shop" class="link-underline" data-cursor="hover">Bouquets</a></li>
+          <li><a href="#subscribe" class="link-underline" data-cursor="hover">Subscriptions</a></li>
+          <li><a href="#" class="link-underline" data-cursor="hover">Gift cards</a></li>
+          <li><a href="#" class="link-underline" data-cursor="hover">Vases</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-2">
+        <h4 class="text-[11px] tracking-[.2em] uppercase text-blush mb-5">Atelier</h4>
+        <ul class="space-y-3 text-sm text-ivory/70">
+          <li><a href="#story" class="link-underline" data-cursor="hover">Our story</a></li>
+          <li><a href="#occasions" class="link-underline" data-cursor="hover">Weddings</a></li>
+          <li><a href="#" class="link-underline" data-cursor="hover">Events</a></li>
+          <li><a href="#" class="link-underline" data-cursor="hover">Journal</a></li>
+        </ul>
+      </div>
+      <div class="md:col-span-3">
+        <h4 class="text-[11px] tracking-[.2em] uppercase text-blush mb-5">Visit</h4>
+        <p class="text-sm text-ivory/70 leading-relaxed">14 Marigold Lane<br/>Greenhill, London<br/>Open Tue&ndash;Sun, 9&ndash;6</p>
+        <p class="text-sm text-ivory/70 mt-4">hello@fleuriste.studio</p>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 text-xs tracking-[.1em] uppercase text-ivory/45">
+      <p>&copy; 2026 Fleuriste Botanical Atelier</p>
+      <div class="flex gap-6">
+        <a href="#" class="link-underline" data-cursor="hover">Instagram</a>
+        <a href="#" class="link-underline" data-cursor="hover">Pinterest</a>
+        <a href="#" class="link-underline" data-cursor="hover">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav background on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 40) nav.classList.add('bg-ivory/85','backdrop-blur-md','shadow-sm','shadow-ink/5');
+    else nav.classList.remove('bg-ivory/85','backdrop-blur-md','shadow-sm','shadow-ink/5');
+  };
+  onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Cart ---------- */
+  let count = 3;
+  const cartCount = document.getElementById('cartCount');
+  document.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      count++; cartCount.textContent = count;
+      if (!reduce && window.gsap) gsap.fromTo(cartCount, { scale: 1.6 }, { scale: 1, duration: .5, ease: 'elastic.out(1,.4)' });
+    });
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const open = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!open) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Custom cursor + magnetic ---------- */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  if (!reduce && window.matchMedia('(hover: hover)').matches) {
+    let mx = innerWidth/2, my = innerHeight/2, rx = mx, ry = my;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    });
+    const loop = () => { rx += (mx-rx)*.16; ry += (my-ry)*.16;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(loop); };
+    loop();
+    document.querySelectorAll('[data-cursor="hover"]').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('is-hover'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('is-hover'));
+    });
+    document.querySelectorAll('.magnetic').forEach(el => {
+      el.addEventListener('mousemove', e => {
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - (r.left + r.width/2);
+        const y = e.clientY - (r.top + r.height/2);
+        el.style.transform = `translate(${x*.28}px, ${y*.4}px)`;
+      });
+      el.addEventListener('mouseleave', () => { el.style.transform = 'translate(0,0)'; });
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    if (!reduce) {
+      // Hero masked text reveal
+      gsap.to('.reveal-line > span', {
+        y: 0, duration: 1.1, ease: 'power4.out', stagger: .08, delay: .2,
+        scrollTrigger: false
+      });
+      // Re-trigger reveal-lines that are further down on scroll
+      gsap.utils.toArray('.reveal-line').forEach(line => {
+        const span = line.querySelector('span');
+        ScrollTrigger.create({
+          trigger: line, start: 'top 88%',
+          onEnter: () => gsap.to(span, { y: 0, duration: 1.05, ease: 'power4.out' })
+        });
+      });
+
+      // Clip-path image reveals
+      gsap.utils.toArray('[data-reveal]').forEach(img => {
+        gsap.to(img, {
+          clipPath: 'inset(0 0 0% 0)', duration: 1.4, ease: 'power3.inOut',
+          scrollTrigger: { trigger: img, start: 'top 85%' }
+        });
+      });
+
+      // Fade-up generic
+      gsap.utils.toArray('[data-fade]').forEach(el => {
+        gsap.from(el, {
+          y: 48, opacity: 0, duration: 1, ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        });
+      });
+
+      // Parallax on framed imagery
+      gsap.utils.toArray('.parallax-img').forEach(img => {
+        gsap.fromTo(img, { yPercent: -8 }, {
+          yPercent: 8, ease: 'none',
+          scrollTrigger: { trigger: img.closest('.parallax-wrap'), start: 'top bottom', end: 'bottom top', scrub: true }
+        });
+      });
+
+      // Floating petals
+      gsap.utils.toArray('.petal').forEach((p, i) => {
+        gsap.to(p, {
+          y: '+=22', x: (i % 2 ? '+=14' : '-=14'), rotation: (i % 2 ? 18 : -18),
+          duration: 5 + i, repeat: -1, yoyo: true, ease: 'sine.inOut'
+        });
+      });
+    }
+
+    // Count-ups (run regardless of reduced motion, but instant if reduced)
+    gsap.utils.toArray('.count').forEach(el => {
+      const to = +el.dataset.to;
+      ScrollTrigger.create({
+        trigger: el, start: 'top 92%', once: true,
+        onEnter: () => {
+          if (reduce) { el.textContent = to.toLocaleString(); return; }
+          const obj = { v: 0 };
+          gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out',
+            onUpdate: () => { el.textContent = Math.round(obj.v).toLocaleString(); } });
+        }
+      });
+    });
+  } else {
+    // Fallback: ensure text visible if GSAP fails
+    document.querySelectorAll('.reveal-line > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('[data-reveal]').forEach(i => i.style.clipPath = 'none');
+    document.querySelectorAll('.count').forEach(el => el.textContent = (+el.dataset.to).toLocaleString());
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "radon-ide",
+      "request": "launch",
+      "name": "Radon IDE — DeskDev Studio Mobile",
+      "appRoot": "mobile",
+      "isExpo": true,
+      "customBuild": {
+        "android": {
+          "buildCommand": "scripts\\radon-android-build.bat"
+        }
+      }
+    }
+  ]
+}

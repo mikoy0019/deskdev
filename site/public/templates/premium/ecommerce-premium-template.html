@@ -1,0 +1,359 @@
+﻿<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LUXE â€” Premium Shopping</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        brand: '#e2c799',
+        'brand-dim': '#c8a97e',
+        surface: '#0c0c0c',
+        'surface-high': '#161616',
+        'surface-higher': '#1e1e1e',
+        'on-surface': '#f5f0e8',
+        muted: '#7a7268',
+        border: 'rgba(226,199,153,0.1)',
+      },
+      fontFamily: {
+        display: ['Space Grotesk','system-ui','sans-serif'],
+        body: ['Inter','system-ui','sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.reveal{opacity:0;transform:translateY(40px);transition:all .9s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.st1{transition-delay:.1s}.st2{transition-delay:.2s}.st3{transition-delay:.3s}.st4{transition-delay:.4s}
+.product-card{transition:all .5s cubic-bezier(.16,1,.3,1)}
+.product-card:hover{transform:translateY(-12px)}
+.product-card:hover .product-img{transform:scale(1.05)}
+.product-card:hover .add-btn{opacity:1;transform:translateY(0)}
+.product-img{transition:transform .6s cubic-bezier(.16,1,.3,1)}
+.add-btn{opacity:0;transform:translateY(8px);transition:all .3s}
+.marquee-strip{display:flex;gap:48px;animation:marquee 25s linear infinite;width:max-content}
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased overflow-x-hidden">
+
+<!-- â•â•â• ANNOUNCEMENT BAR â•â•â• -->
+<div class="bg-brand text-surface text-center py-2.5 text-xs font-semibold tracking-widest uppercase">
+  Free shipping on orders over $150 Â· Code: <span class="underline">LUXE2026</span>
+</div>
+
+<!-- â•â•â• NAV â•â•â• -->
+<nav class="sticky top-0 z-50 bg-surface/80 backdrop-blur-2xl border-b border-border transition-all" id="nav">
+  <div class="max-w-[1400px] mx-auto px-8 py-4 flex items-center justify-between">
+    <a href="#" class="font-display text-2xl font-bold tracking-tight text-brand">LUXE<span class="text-on-surface">.</span></a>
+    <div class="hidden md:flex gap-8 text-sm font-medium">
+      <a href="#new" class="text-muted hover:text-on-surface transition-colors">New Arrivals</a>
+      <a href="#collections" class="text-muted hover:text-on-surface transition-colors">Collections</a>
+      <a href="#bestsellers" class="text-muted hover:text-on-surface transition-colors">Best Sellers</a>
+      <a href="#about" class="text-muted hover:text-on-surface transition-colors">Our Story</a>
+    </div>
+    <div class="flex items-center gap-6">
+      <button class="text-muted hover:text-on-surface transition-colors text-sm hidden md:block">Search</button>
+      <button class="relative text-muted hover:text-on-surface transition-colors">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-brand text-surface text-[10px] font-bold rounded-full flex items-center justify-center">3</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- â•â•â• HERO â€” Split, editorial product showcase â•â•â• -->
+<section class="min-h-screen flex items-center relative overflow-hidden">
+  <!-- Background grain -->
+  <div class="absolute inset-0 opacity-[0.015]" style="background-image:url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence baseFrequency=%22.8%22 numOctaves=%223%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')"></div>
+
+  <div class="max-w-[1400px] mx-auto px-8 w-full grid lg:grid-cols-2 gap-16 items-center py-32 relative z-10">
+    <!-- Left: Content -->
+    <div>
+      <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-brand/5 border border-brand/15 mb-8" style="animation:fadeUp .8s .2s both">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
+        <span class="text-brand text-xs font-semibold tracking-widest uppercase">New Collection â€” Spring 2026</span>
+      </div>
+
+      <h1 class="font-display text-6xl md:text-7xl lg:text-[5.5rem] font-bold leading-[0.92] tracking-tight mb-6" style="animation:fadeUp 1s .3s both">
+        Curated<br>
+        <span class="text-brand italic font-light">Luxury</span><br>
+        Essentials
+      </h1>
+
+      <p class="text-muted text-lg leading-relaxed max-w-md mb-10 font-light" style="animation:fadeUp 1s .5s both">
+        Handpicked premium pieces from the world's most sought-after designers. Timeless elegance meets modern sensibility.
+      </p>
+
+      <div class="flex gap-4 flex-wrap" style="animation:fadeUp 1s .7s both">
+        <button class="bg-brand text-surface px-8 py-4 font-display font-bold text-sm tracking-wide hover:bg-brand-dim transition-all hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(226,199,153,0.2)]">
+          SHOP NEW ARRIVALS â†’
+        </button>
+        <button class="border border-border text-on-surface px-8 py-4 font-display font-medium text-sm tracking-wide hover:border-brand hover:text-brand transition-all">
+          VIEW LOOKBOOK
+        </button>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="flex gap-8 mt-12 text-xs text-muted" style="animation:fadeUp 1s .9s both">
+        <div class="flex items-center gap-2"><span class="text-brand">âœ¦</span> Free Returns</div>
+        <div class="flex items-center gap-2"><span class="text-brand">âœ¦</span> Authentic Guarantee</div>
+        <div class="flex items-center gap-2"><span class="text-brand">âœ¦</span> Carbon Neutral</div>
+      </div>
+    </div>
+
+    <!-- Right: Featured Product -->
+    <div class="relative" style="animation:fadeUp 1.2s .4s both">
+      <div class="aspect-[3/4] rounded-2xl bg-surface-high border border-border overflow-hidden relative group">
+        <!-- Product image placeholder -->
+        <div class="absolute inset-0 bg-gradient-to-b from-brand/5 via-transparent to-brand/3 flex items-center justify-center">
+          <div class="text-center">
+            <div class="w-24 h-24 rounded-2xl bg-brand/10 border border-brand/20 mx-auto mb-6 flex items-center justify-center">
+              <span class="text-brand text-4xl font-display font-bold">L</span>
+            </div>
+            <div class="text-muted text-sm tracking-widest uppercase">Featured Product</div>
+            <div class="text-on-surface text-xl font-display font-bold mt-2">Cashmere Overcoat</div>
+            <div class="text-brand font-display font-bold text-2xl mt-1">$1,290</div>
+          </div>
+        </div>
+        <!-- Shimmer overlay -->
+        <div class="absolute inset-0 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity">
+          <div class="absolute inset-0 w-1/2 bg-gradient-to-r from-transparent via-white/[0.02] to-transparent" style="animation:shimmer 3s infinite"></div>
+        </div>
+      </div>
+      <!-- Floating badge -->
+      <div class="absolute -bottom-4 -left-4 px-5 py-3 bg-surface border border-brand/20 rounded-xl shadow-2xl shadow-black/40" style="animation:float 5s ease-in-out infinite">
+        <div class="flex items-center gap-3">
+          <span class="text-brand text-lg">â˜…â˜…â˜…â˜…â˜…</span>
+          <div>
+            <div class="text-xs font-semibold">4.9 Rating</div>
+            <div class="text-[10px] text-muted">2,847 reviews</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• MARQUEE â•â•â• -->
+<div class="py-6 border-y border-border overflow-hidden">
+  <div class="marquee-strip text-sm font-medium tracking-[0.2em] uppercase text-muted/50">
+    <span>Valentino</span><span class="text-brand/30">Â·</span>
+    <span>Bottega Veneta</span><span class="text-brand/30">Â·</span>
+    <span>The Row</span><span class="text-brand/30">Â·</span>
+    <span>Loro Piana</span><span class="text-brand/30">Â·</span>
+    <span>Brunello Cucinelli</span><span class="text-brand/30">Â·</span>
+    <span>HermÃ¨s</span><span class="text-brand/30">Â·</span>
+    <span>Valentino</span><span class="text-brand/30">Â·</span>
+    <span>Bottega Veneta</span><span class="text-brand/30">Â·</span>
+    <span>The Row</span><span class="text-brand/30">Â·</span>
+    <span>Loro Piana</span><span class="text-brand/30">Â·</span>
+    <span>Brunello Cucinelli</span><span class="text-brand/30">Â·</span>
+    <span>HermÃ¨s</span><span class="text-brand/30">Â·</span>
+  </div>
+</div>
+
+<!-- â•â•â• PRODUCT GRID â•â•â• -->
+<section id="new" class="py-32 px-8">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="flex justify-between items-end mb-16">
+      <div>
+        <div class="reveal text-brand text-xs font-semibold tracking-[0.3em] uppercase mb-3">Curated Selection</div>
+        <h2 class="reveal st1 font-display text-4xl md:text-5xl font-bold tracking-tight">New Arrivals</h2>
+      </div>
+      <button class="reveal st2 text-muted hover:text-brand text-sm font-medium transition-colors hidden md:block">View All â†’</button>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Product 1 -->
+      <div class="reveal product-card cursor-pointer group">
+        <div class="aspect-[3/4] rounded-xl bg-surface-high border border-border mb-4 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand/5 flex items-end justify-center pb-8">
+            <button class="add-btn bg-brand text-surface px-6 py-2.5 text-xs font-bold tracking-wider uppercase">Add to Bag</button>
+          </div>
+          <div class="absolute top-3 left-3 px-2.5 py-1 bg-brand text-surface text-[10px] font-bold tracking-wider uppercase">New</div>
+        </div>
+        <div class="text-muted text-xs tracking-wider uppercase mb-1">Cashmere</div>
+        <div class="font-display font-semibold text-sm mb-1 group-hover:text-brand transition-colors">Oversized Knit Sweater</div>
+        <div class="text-brand font-display font-bold">$485</div>
+      </div>
+
+      <!-- Product 2 -->
+      <div class="reveal st1 product-card cursor-pointer group">
+        <div class="aspect-[3/4] rounded-xl bg-surface-high border border-border mb-4 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand/5 flex items-end justify-center pb-8">
+            <button class="add-btn bg-brand text-surface px-6 py-2.5 text-xs font-bold tracking-wider uppercase">Add to Bag</button>
+          </div>
+          <div class="absolute top-3 left-3 px-2.5 py-1 bg-red-600 text-white text-[10px] font-bold tracking-wider uppercase">-30%</div>
+        </div>
+        <div class="text-muted text-xs tracking-wider uppercase mb-1">Leather</div>
+        <div class="font-display font-semibold text-sm mb-1 group-hover:text-brand transition-colors">Italian Leather Tote</div>
+        <div class="flex items-center gap-2">
+          <span class="text-brand font-display font-bold">$890</span>
+          <span class="text-muted line-through text-sm">$1,270</span>
+        </div>
+      </div>
+
+      <!-- Product 3 -->
+      <div class="reveal st2 product-card cursor-pointer group">
+        <div class="aspect-[3/4] rounded-xl bg-surface-high border border-border mb-4 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand/5 flex items-end justify-center pb-8">
+            <button class="add-btn bg-brand text-surface px-6 py-2.5 text-xs font-bold tracking-wider uppercase">Add to Bag</button>
+          </div>
+        </div>
+        <div class="text-muted text-xs tracking-wider uppercase mb-1">Silk</div>
+        <div class="font-display font-semibold text-sm mb-1 group-hover:text-brand transition-colors">Draped Silk Blouse</div>
+        <div class="text-brand font-display font-bold">$345</div>
+      </div>
+
+      <!-- Product 4 -->
+      <div class="reveal st3 product-card cursor-pointer group">
+        <div class="aspect-[3/4] rounded-xl bg-surface-high border border-border mb-4 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent to-brand/5 flex items-end justify-center pb-8">
+            <button class="add-btn bg-brand text-surface px-6 py-2.5 text-xs font-bold tracking-wider uppercase">Add to Bag</button>
+          </div>
+          <div class="absolute top-3 left-3 px-2.5 py-1 bg-brand text-surface text-[10px] font-bold tracking-wider uppercase">Exclusive</div>
+        </div>
+        <div class="text-muted text-xs tracking-wider uppercase mb-1">Tailoring</div>
+        <div class="font-display font-semibold text-sm mb-1 group-hover:text-brand transition-colors">Wool Blazer</div>
+        <div class="text-brand font-display font-bold">$1,650</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• EDITORIAL BANNER â•â•â• -->
+<section class="py-32 px-8">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="reveal rounded-3xl bg-surface-high border border-border overflow-hidden relative min-h-[500px] flex items-center">
+      <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/80 to-transparent z-10"></div>
+      <div class="absolute inset-0 bg-gradient-to-br from-brand/5 to-transparent"></div>
+      <div class="relative z-20 p-16 max-w-lg">
+        <div class="text-brand text-xs font-semibold tracking-[0.3em] uppercase mb-4">The Edit</div>
+        <h2 class="font-display text-4xl md:text-5xl font-bold tracking-tight mb-4 leading-tight">The Art of<br><span class="text-brand italic font-light">Quiet Luxury</span></h2>
+        <p class="text-muted text-base leading-relaxed mb-8">Discover the power of understated elegance. Our Spring collection embraces minimal design, premium materials, and effortless sophistication.</p>
+        <button class="bg-brand text-surface px-8 py-4 font-display font-bold text-sm tracking-wide hover:bg-brand-dim transition-all">
+          EXPLORE THE EDIT â†’
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• FEATURES â•â•â• -->
+<section class="py-20 px-8 border-y border-border">
+  <div class="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-12">
+    <div class="reveal text-center">
+      <div class="text-3xl mb-4">ðŸšš</div>
+      <div class="font-display font-bold text-sm mb-1">Free Shipping</div>
+      <div class="text-muted text-xs leading-relaxed">Complimentary worldwide delivery on all orders over $150</div>
+    </div>
+    <div class="reveal st1 text-center">
+      <div class="text-3xl mb-4">â†©ï¸</div>
+      <div class="font-display font-bold text-sm mb-1">Easy Returns</div>
+      <div class="text-muted text-xs leading-relaxed">30-day hassle-free returns and exchanges</div>
+    </div>
+    <div class="reveal st2 text-center">
+      <div class="text-3xl mb-4">âœ“</div>
+      <div class="font-display font-bold text-sm mb-1">Authenticity</div>
+      <div class="text-muted text-xs leading-relaxed">Every piece verified and authenticated by experts</div>
+    </div>
+    <div class="reveal st3 text-center">
+      <div class="text-3xl mb-4">ðŸŒ¿</div>
+      <div class="font-display font-bold text-sm mb-1">Sustainable</div>
+      <div class="text-muted text-xs leading-relaxed">Carbon neutral shipping and eco-conscious packaging</div>
+    </div>
+  </div>
+</section>
+
+<!-- â•â•â• NEWSLETTER â•â•â• -->
+<section class="py-32 px-8 text-center">
+  <div class="max-w-lg mx-auto">
+    <div class="reveal text-brand text-xs font-semibold tracking-[0.3em] uppercase mb-4">Stay in the Loop</div>
+    <h2 class="reveal st1 font-display text-3xl font-bold tracking-tight mb-4">Join the LUXE Circle</h2>
+    <p class="reveal st2 text-muted text-sm mb-8 leading-relaxed">Be the first to know about new arrivals, exclusive offers, and behind-the-scenes looks at the world of luxury fashion.</p>
+    <div class="reveal st3 flex gap-3">
+      <input type="email" placeholder="Your email address" class="flex-1 bg-surface-high border border-border rounded-none px-5 py-4 text-sm text-on-surface placeholder-muted focus:outline-none focus:border-brand transition-colors font-body">
+      <button class="bg-brand text-surface px-8 py-4 font-display font-bold text-sm tracking-wide hover:bg-brand-dim transition-all whitespace-nowrap">SUBSCRIBE</button>
+    </div>
+    <div class="reveal st4 text-muted text-xs mt-4">No spam, ever. Unsubscribe anytime.</div>
+  </div>
+</section>
+
+<!-- â•â•â• FOOTER â•â•â• -->
+<footer class="border-t border-border py-16 px-8">
+  <div class="max-w-[1400px] mx-auto">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-12 mb-16">
+      <div class="col-span-2 md:col-span-1">
+        <div class="font-display text-2xl font-bold text-brand mb-4">LUXE<span class="text-on-surface">.</span></div>
+        <p class="text-muted text-sm leading-relaxed">Curated luxury fashion for the modern individual.</p>
+      </div>
+      <div>
+        <div class="text-xs font-semibold tracking-[0.2em] uppercase text-muted mb-4">Shop</div>
+        <div class="flex flex-col gap-2.5 text-sm text-muted">
+          <a href="#" class="hover:text-brand transition-colors">New Arrivals</a>
+          <a href="#" class="hover:text-brand transition-colors">Best Sellers</a>
+          <a href="#" class="hover:text-brand transition-colors">Collections</a>
+          <a href="#" class="hover:text-brand transition-colors">Sale</a>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs font-semibold tracking-[0.2em] uppercase text-muted mb-4">Help</div>
+        <div class="flex flex-col gap-2.5 text-sm text-muted">
+          <a href="#" class="hover:text-brand transition-colors">Size Guide</a>
+          <a href="#" class="hover:text-brand transition-colors">Shipping</a>
+          <a href="#" class="hover:text-brand transition-colors">Returns</a>
+          <a href="#" class="hover:text-brand transition-colors">FAQ</a>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs font-semibold tracking-[0.2em] uppercase text-muted mb-4">Company</div>
+        <div class="flex flex-col gap-2.5 text-sm text-muted">
+          <a href="#" class="hover:text-brand transition-colors">Our Story</a>
+          <a href="#" class="hover:text-brand transition-colors">Sustainability</a>
+          <a href="#" class="hover:text-brand transition-colors">Careers</a>
+          <a href="#" class="hover:text-brand transition-colors">Press</a>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs font-semibold tracking-[0.2em] uppercase text-muted mb-4">Follow</div>
+        <div class="flex flex-col gap-2.5 text-sm text-muted">
+          <a href="#" class="hover:text-brand transition-colors">Instagram</a>
+          <a href="#" class="hover:text-brand transition-colors">Pinterest</a>
+          <a href="#" class="hover:text-brand transition-colors">TikTok</a>
+          <a href="#" class="hover:text-brand transition-colors">YouTube</a>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-border pt-8 flex justify-between items-center text-xs text-muted">
+      <span>Â© 2026 LUXE. All rights reserved.</span>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-brand transition-colors">Privacy</a>
+        <a href="#" class="hover:text-brand transition-colors">Terms</a>
+        <a href="#" class="hover:text-brand transition-colors">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+document.body.style.opacity='0';document.body.style.transition='opacity .5s';
+requestAnimationFrame(()=>document.body.style.opacity='1');
+</script>
+</body>
+</html>
+

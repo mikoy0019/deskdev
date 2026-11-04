@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SparkleNest — Premium Home Cleaning, Done Brilliantly</title>
+<meta name="description" content="SparkleNest is a trusted local residential cleaning company. Insured, eco-friendly, background-checked cleaners. Book a sparkling clean in 60 seconds." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sky: {
+            50:  '#eefaff',
+            100: '#d7f2ff',
+            200: '#b3e8ff',
+            300: '#78d8ff',
+            400: '#34c2ff',
+            500: '#0aa6f0',
+            600: '#0085ce',
+            700: '#0269a6',
+            800: '#085988',
+            900: '#0d4a70',
+          },
+          mint: {
+            50:  '#edfdf6',
+            100: '#d3f9e8',
+            200: '#aaf1d3',
+            300: '#71e3b8',
+            400: '#36cd99',
+            500: '#12b380',
+            600: '#069069',
+            700: '#057357',
+            800: '#085b46',
+            900: '#084b3b',
+          },
+          ink: '#0c2733',
+          cloud: '#f4fbff',
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          soft: '0 18px 50px -20px rgba(10,108,160,0.35)',
+          glow: '0 10px 40px -8px rgba(54,205,153,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f4fbff; color: #0c2733; overflow-x: hidden; }
+  .font-display { font-family: 'Fraunces', serif; }
+
+  /* Aurora / soft gradient background */
+  .aurora {
+    background:
+      radial-gradient(60% 55% at 18% 12%, rgba(120,216,255,0.55), transparent 60%),
+      radial-gradient(55% 50% at 85% 8%, rgba(113,227,184,0.45), transparent 60%),
+      radial-gradient(50% 60% at 50% 100%, rgba(215,242,255,0.9), transparent 70%);
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.7);
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #0aa6f0 0%, #12b380 60%, #0269a6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Sparkle / shine sweep */
+  .shine { position: relative; overflow: hidden; }
+  .shine::after {
+    content: '';
+    position: absolute;
+    top: -120%;
+    left: -60%;
+    width: 50%;
+    height: 320%;
+    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.55), transparent);
+    transform: rotate(18deg);
+    animation: sweep 4.5s ease-in-out infinite;
+  }
+  @keyframes sweep {
+    0%   { left: -60%; }
+    55%  { left: 130%; }
+    100% { left: 130%; }
+  }
+
+  .sparkle {
+    position: absolute;
+    pointer-events: none;
+    color: #fff;
+    filter: drop-shadow(0 0 6px rgba(120,216,255,0.9));
+    animation: twinkle 2.8s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+    50%      { opacity: 1; transform: scale(1) rotate(90deg); }
+  }
+
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  .card-tilt { transition: transform 0.25s ease, box-shadow 0.25s ease; transform-style: preserve-3d; will-change: transform; }
+
+  .magnetic { transition: transform 0.18s ease; }
+
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.45s cubic-bezier(0.4,0,0.2,1); }
+
+  .bubble { position: absolute; border-radius: 999px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(120,216,255,0.25)); border: 1px solid rgba(255,255,255,0.5); }
+
+  .room-chip.active { background: linear-gradient(100deg,#0aa6f0,#12b380); color: #fff; border-color: transparent; box-shadow: 0 8px 22px -8px rgba(18,179,128,0.6); }
+
+  .nav-link { position: relative; }
+  .nav-link::after { content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0; background:linear-gradient(90deg,#0aa6f0,#12b380); transition:width .3s ease; }
+  .nav-link:hover::after { width:100%; }
+
+  ::selection { background: #aaf1d3; color: #084b3b; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shine::after, .sparkle, .bubble { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="antialiased selection:bg-mint-200">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="mx-auto max-w-7xl px-5 sm:px-8 mt-3">
+    <div class="glass rounded-2xl shadow-soft flex items-center justify-between px-5 py-3">
+      <a href="#hero" class="flex items-center gap-2.5 group">
+        <span class="relative grid place-items-center w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-mint-400 shadow-glow shine">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M12 2l1.9 4.6L18.5 8l-3.4 3.1.9 4.9L12 13.8 8 16l.9-4.9L5.5 8l4.6-1.4L12 2z"/></svg>
+        </span>
+        <span class="font-display text-xl font-600 tracking-tight">Sparkle<span class="gradient-text">Nest</span></span>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-sm font-500 text-ink/80">
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#how" class="nav-link">How it works</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#areas" class="nav-link">Service Areas</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="tel:+18005550199" class="hidden sm:inline text-sm font-600 text-sky-700 hover:text-sky-900 transition">(800) 555‑0199</a>
+        <a href="#booking" id="bookBtn" class="magnetic relative inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-mint-500 px-5 py-2.5 text-sm font-700 text-white shadow-glow shine">
+          Book Now
+          <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="hero" class="relative pt-32 pb-20 sm:pt-40 sm:pb-28 aurora overflow-hidden">
+  <!-- floating bubbles -->
+  <div class="bubble w-24 h-24 top-24 left-[8%] opacity-60" data-float="1"></div>
+  <div class="bubble w-12 h-12 top-44 left-[22%] opacity-50" data-float="2"></div>
+  <div class="bubble w-16 h-16 bottom-20 left-[12%] opacity-40" data-float="1"></div>
+  <div class="bubble w-20 h-20 top-32 right-[10%] opacity-50" data-float="2"></div>
+  <svg class="sparkle w-6 h-6 top-28 right-[28%]" style="animation-delay:.4s" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 8.5L23 11l-8.5 2.5L12 22l-2.5-8.5L1 11l8.5-2.5L12 0z"/></svg>
+  <svg class="sparkle w-4 h-4 bottom-32 right-[40%]" style="animation-delay:1.2s" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 8.5L23 11l-8.5 2.5L12 22l-2.5-8.5L1 11l8.5-2.5L12 0z"/></svg>
+
+  <div class="relative mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <!-- copy -->
+    <div>
+      <span class="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-700 text-mint-700 tracking-wide uppercase reveal" data-reveal>
+        <span class="w-2 h-2 rounded-full bg-mint-400 animate-pulse"></span>
+        Insured • Eco‑Friendly • 5‑Star Rated
+      </span>
+
+      <h1 class="mt-6 font-display text-5xl sm:text-6xl lg:text-7xl font-600 leading-[1.02] tracking-tight">
+        <span class="block reveal" data-reveal>A home that</span>
+        <span class="block gradient-text reveal" data-reveal>feels brand new</span>
+        <span class="block reveal" data-reveal>every single week.</span>
+      </h1>
+
+      <p class="mt-6 max-w-lg text-lg text-ink/70 reveal" data-reveal>
+        SparkleNest pairs you with vetted, friendly cleaners who treat your space like their own. Booked in 60 seconds, guaranteed spotless — or we re‑clean free.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4 reveal" data-reveal>
+        <a href="#booking" class="magnetic inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-mint-500 px-7 py-4 font-700 text-white shadow-glow shine">
+          Get my instant quote
+        </a>
+        <a href="#services" class="inline-flex items-center gap-2 rounded-2xl glass px-6 py-4 font-600 text-sky-800 hover:scale-[1.03] transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-mint-500" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          See how it works
+        </a>
+      </div>
+
+      <div class="mt-9 flex items-center gap-5 reveal" data-reveal>
+        <div class="flex -space-x-3">
+          <span class="w-10 h-10 rounded-full ring-2 ring-white bg-gradient-to-br from-sky-300 to-sky-500"></span>
+          <span class="w-10 h-10 rounded-full ring-2 ring-white bg-gradient-to-br from-mint-300 to-mint-500"></span>
+          <span class="w-10 h-10 rounded-full ring-2 ring-white bg-gradient-to-br from-sky-400 to-mint-400"></span>
+          <span class="w-10 h-10 rounded-full ring-2 ring-white grid place-items-center bg-ink text-white text-xs font-700">+9k</span>
+        </div>
+        <div class="text-sm">
+          <div class="flex items-center gap-1 text-amber-400">
+            ★★★★★ <span class="text-ink font-700 ml-1" data-count="4.9" data-decimals="1">0</span>
+          </div>
+          <p class="text-ink/60">from 2,300+ verified reviews</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- instant quote card -->
+    <div id="booking" class="relative reveal" data-reveal>
+      <div class="absolute -inset-4 bg-gradient-to-tr from-sky-200/60 to-mint-200/60 blur-2xl rounded-[2.5rem]"></div>
+      <div class="relative glass rounded-[2rem] p-7 sm:p-8 shadow-soft">
+        <div class="flex items-center justify-between">
+          <h3 class="font-display text-2xl font-600">Instant quote</h3>
+          <span class="text-xs font-700 text-mint-700 bg-mint-100 rounded-full px-3 py-1">60‑sec booking</span>
+        </div>
+        <p class="mt-1.5 text-sm text-ink/60">Tap your rooms — see your price update live.</p>
+
+        <div class="mt-5">
+          <label class="text-xs font-700 uppercase tracking-wide text-ink/50">Bedrooms</label>
+          <div class="mt-2 flex flex-wrap gap-2" data-group="beds">
+            <button class="room-chip active rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="1">1</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="2">2</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="3">3</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="4">4+</button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <label class="text-xs font-700 uppercase tracking-wide text-ink/50">Bathrooms</label>
+          <div class="mt-2 flex flex-wrap gap-2" data-group="baths">
+            <button class="room-chip active rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="1">1</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="2">2</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="3">3+</button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <label class="text-xs font-700 uppercase tracking-wide text-ink/50">Clean type</label>
+          <div class="mt-2 flex flex-wrap gap-2" data-group="type">
+            <button class="room-chip active rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="1" data-label="Standard">Standard</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="1.6" data-label="Deep">Deep Clean</button>
+            <button class="room-chip rounded-xl border border-sky-200 px-4 py-2 text-sm font-600 transition" data-val="1.35" data-label="Move‑out">Move‑out</button>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-end justify-between rounded-2xl bg-gradient-to-r from-sky-50 to-mint-50 px-5 py-4 border border-sky-100">
+          <div>
+            <p class="text-xs font-700 uppercase tracking-wide text-ink/50">Your estimate</p>
+            <p class="text-3xl font-800 text-ink">$<span id="quotePrice">89</span></p>
+            <p class="text-xs text-ink/50">per visit • <span id="quoteSummary">1 bed · 1 bath · Standard</span></p>
+          </div>
+          <a href="#" class="magnetic shrink-0 rounded-xl bg-ink px-5 py-3 text-sm font-700 text-white shine">Book this →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TRUST / STATS STRIP ============ -->
+<section class="relative -mt-8 z-10">
+  <div class="mx-auto max-w-6xl px-5 sm:px-8">
+    <div class="glass rounded-3xl shadow-soft grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-sky-100 overflow-hidden reveal" data-reveal>
+      <div class="p-6 text-center">
+        <p class="font-display text-4xl font-700 gradient-text"><span data-count="48000" data-suffix="+">0</span></p>
+        <p class="mt-1 text-sm text-ink/60">Homes cleaned</p>
+      </div>
+      <div class="p-6 text-center">
+        <p class="font-display text-4xl font-700 gradient-text"><span data-count="4.9" data-decimals="1">0</span>★</p>
+        <p class="mt-1 text-sm text-ink/60">Average rating</p>
+      </div>
+      <div class="p-6 text-center">
+        <p class="font-display text-4xl font-700 gradient-text"><span data-count="120" data-suffix="+">0</span></p>
+        <p class="mt-1 text-sm text-ink/60">Vetted cleaners</p>
+      </div>
+      <div class="p-6 text-center">
+        <p class="font-display text-4xl font-700 gradient-text"><span data-count="100" data-suffix="%">0</span></p>
+        <p class="mt-1 text-sm text-ink/60">Re‑clean guarantee</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="py-24 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="max-w-2xl reveal" data-reveal>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600">What we clean</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight">Spotless from every angle</h2>
+      <p class="mt-4 text-lg text-ink/70">Pick a one‑time refresh or a recurring plan. Same trusted team, same sparkling result every time.</p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- card -->
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-9h14l2 9M3 12h18M3 12v7a2 2 0 002 2h14a2 2 0 002-2v-7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Standard Clean</h3>
+        <p class="mt-2 text-ink/65">Dusting, vacuuming, mopping, kitchen & bath sanitizing. Your weekly reset button.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-sky-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-mint-400 to-mint-600 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 6 6 .9-4.5 4.2L18 20l-6-3.2L6 20l1.5-6.9L3 8.9 9 8l3-6z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Deep Clean</h3>
+        <p class="mt-2 text-ink/65">Baseboards, inside appliances, grout, vents — the top‑to‑bottom detail clean.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-mint-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-mint-500 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V8l8-5 8 5v13M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Move In / Out</h3>
+        <p class="mt-2 text-ink/65">Empty‑home deep clean so you get your deposit back and start fresh.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-sky-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-400 to-sky-600 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Eco Green Clean</h3>
+        <p class="mt-2 text-ink/65">Plant‑based, non‑toxic products that are safe for kids, pets, and the planet.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-sky-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-mint-400 to-mint-600 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-9-9c2.5 0 4.5 1 6 2.5M21 4v5h-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Recurring Plans</h3>
+        <p class="mt-2 text-ink/65">Weekly, bi‑weekly, or monthly — set it once and your home stays effortlessly clean.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-mint-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+
+      <article class="card-tilt group glass rounded-3xl p-7 shadow-soft reveal" data-reveal data-tilt>
+        <div class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-mint-500 text-white shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="mt-5 font-display text-xl font-600">Add‑Ons</h3>
+        <p class="mt-2 text-ink/65">Fridge, oven, windows, laundry, organizing — customize any visit your way.</p>
+        <span class="mt-4 inline-flex items-center gap-1 text-sm font-700 text-sky-700 group-hover:gap-2 transition-all">Learn more →</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY US ============ -->
+<section class="py-24 sm:py-28 bg-gradient-to-b from-cloud to-sky-50/40">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="relative reveal" data-reveal data-parallax>
+      <div class="absolute -inset-3 bg-gradient-to-tr from-sky-200/50 to-mint-200/50 blur-2xl rounded-[2.5rem]"></div>
+      <div class="relative rounded-[2rem] overflow-hidden shadow-soft bg-gradient-to-br from-sky-200 to-mint-200 aspect-[4/5]">
+        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1600&q=80" alt="Bright clean home interior" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 glass rounded-2xl shadow-soft p-4 w-44">
+        <p class="text-xs text-ink/55">Background checked</p>
+        <p class="font-display text-2xl font-700 gradient-text">100%</p>
+        <p class="text-xs text-ink/55">of our team</p>
+      </div>
+    </div>
+
+    <div>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600 reveal" data-reveal>Why SparkleNest</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight reveal" data-reveal>Trust you can feel the moment you walk in.</h2>
+
+      <div class="mt-8 space-y-5">
+        <div class="flex gap-4 reveal" data-reveal>
+          <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-sky-100 text-sky-600">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-4z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-600 text-lg">Fully insured & bonded</h3>
+            <p class="text-ink/65">Every visit is covered. If anything ever goes wrong, you're protected — no questions asked.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 reveal" data-reveal>
+          <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-mint-100 text-mint-600">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 00-7 7c0 3 2 5 2 8h10c0-3 2-5 2-8a7 7 0 00-7-7z" stroke-linejoin="round"/><path d="M9 22h6" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-600 text-lg">Eco‑friendly products</h3>
+            <p class="text-ink/65">Non‑toxic, biodegradable supplies that leave your home fresh and safe for the whole family.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 reveal" data-reveal>
+          <span class="shrink-0 grid place-items-center w-12 h-12 rounded-2xl bg-sky-100 text-sky-600">
+            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h3 class="font-600 text-lg">Vetted, friendly cleaners</h3>
+            <p class="text-ink/65">Background‑checked, trained, and rated by you. The same trusted face, visit after visit.</p>
+          </div>
+        </div>
+      </div>
+
+      <a href="#booking" class="magnetic mt-9 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-sky-500 to-mint-500 px-7 py-4 font-700 text-white shadow-glow shine reveal" data-reveal>
+        Book a trusted clean
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how" class="py-24 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto reveal" data-reveal>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600">Simple as 1‑2‑3</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600">Booked in a minute, clean by tonight</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6 relative">
+      <div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-sky-200 via-mint-300 to-sky-200"></div>
+
+      <div class="relative glass rounded-3xl p-8 text-center shadow-soft reveal" data-reveal>
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-full bg-gradient-to-br from-sky-400 to-mint-400 text-white font-display text-2xl font-700 shadow-glow">1</div>
+        <h3 class="mt-5 font-display text-xl font-600">Get your quote</h3>
+        <p class="mt-2 text-ink/65">Pick your rooms and clean type. See your transparent price instantly — no calls, no surprises.</p>
+      </div>
+
+      <div class="relative glass rounded-3xl p-8 text-center shadow-soft reveal" data-reveal>
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-full bg-gradient-to-br from-mint-400 to-sky-400 text-white font-display text-2xl font-700 shadow-glow">2</div>
+        <h3 class="mt-5 font-display text-xl font-600">Pick your time</h3>
+        <p class="mt-2 text-ink/65">Choose a day that works. We match you with a top‑rated cleaner in your neighborhood.</p>
+      </div>
+
+      <div class="relative glass rounded-3xl p-8 text-center shadow-soft reveal" data-reveal>
+        <div class="mx-auto grid place-items-center w-16 h-16 rounded-full bg-gradient-to-br from-sky-500 to-mint-500 text-white font-display text-2xl font-700 shadow-glow">3</div>
+        <h3 class="mt-5 font-display text-xl font-600">Relax & enjoy</h3>
+        <p class="mt-2 text-ink/65">Come home to a sparkling space. Love it or we re‑clean free — that's the SparkleNest promise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pricing" class="py-24 sm:py-28 bg-gradient-to-b from-sky-50/40 to-cloud">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto reveal" data-reveal>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600">Honest pricing</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600">Plans that fit your home</h2>
+      <p class="mt-4 text-lg text-ink/70">No contracts. No hidden fees. Cancel or reschedule anytime.</p>
+    </div>
+
+    <div class="mt-14 grid lg:grid-cols-3 gap-6 items-stretch">
+      <div class="glass rounded-3xl p-8 shadow-soft flex flex-col reveal" data-reveal>
+        <h3 class="font-display text-xl font-600">Refresh</h3>
+        <p class="mt-1 text-ink/60 text-sm">One‑time standard clean</p>
+        <p class="mt-5 font-display text-5xl font-700">$89<span class="text-base font-500 text-ink/50">/visit</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> All living areas + 1 bath</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Kitchen sanitize</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Dust, vacuum & mop</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Eco products included</li>
+        </ul>
+        <a href="#booking" class="magnetic mt-7 rounded-2xl border-2 border-sky-300 text-sky-700 font-700 py-3.5 text-center hover:bg-sky-50 transition">Choose Refresh</a>
+      </div>
+
+      <div class="relative rounded-3xl p-8 shadow-soft flex flex-col bg-gradient-to-br from-sky-600 to-mint-600 text-white scale-[1.03] reveal shine" data-reveal>
+        <span class="absolute top-5 right-5 text-xs font-700 bg-white/20 rounded-full px-3 py-1">Most popular</span>
+        <h3 class="font-display text-xl font-600">Sparkle Plan</h3>
+        <p class="mt-1 text-white/70 text-sm">Bi‑weekly recurring</p>
+        <p class="mt-5 font-display text-5xl font-700">$72<span class="text-base font-500 text-white/60">/visit</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-white/90 flex-1">
+          <li class="flex gap-2"><span class="text-mint-200 font-700">✓</span> Everything in Refresh</li>
+          <li class="flex gap-2"><span class="text-mint-200 font-700">✓</span> Priority scheduling</li>
+          <li class="flex gap-2"><span class="text-mint-200 font-700">✓</span> Same trusted cleaner</li>
+          <li class="flex gap-2"><span class="text-mint-200 font-700">✓</span> 1 free add‑on monthly</li>
+          <li class="flex gap-2"><span class="text-mint-200 font-700">✓</span> Re‑clean guarantee</li>
+        </ul>
+        <a href="#booking" class="magnetic mt-7 rounded-2xl bg-white text-sky-700 font-700 py-3.5 text-center hover:scale-[1.02] transition">Start saving</a>
+      </div>
+
+      <div class="glass rounded-3xl p-8 shadow-soft flex flex-col reveal" data-reveal>
+        <h3 class="font-display text-xl font-600">Deep Reset</h3>
+        <p class="mt-1 text-ink/60 text-sm">Full top‑to‑bottom detail</p>
+        <p class="mt-5 font-display text-5xl font-700">$159<span class="text-base font-500 text-ink/50">/visit</span></p>
+        <ul class="mt-6 space-y-3 text-sm text-ink/70 flex-1">
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Baseboards & vents</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Inside oven & fridge</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Grout & tile detail</li>
+          <li class="flex gap-2"><span class="text-mint-500 font-700">✓</span> Window interiors</li>
+        </ul>
+        <a href="#booking" class="magnetic mt-7 rounded-2xl border-2 border-mint-300 text-mint-700 font-700 py-3.5 text-center hover:bg-mint-50 transition">Choose Deep Reset</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="py-24 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600 reveal" data-reveal>Our story</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight reveal" data-reveal">Started by neighbors, for neighbors.</h2>
+      <p class="mt-5 text-lg text-ink/70 reveal" data-reveal>
+        SparkleNest began in 2016 with one mop, a hatchback, and a simple belief: cleaning should give people their weekends back. Today we're a tight‑knit team of 120+ local cleaners serving thousands of homes — but we still treat every house like our own grandmother's.
+      </p>
+      <p class="mt-4 text-lg text-ink/70 reveal" data-reveal>
+        We pay our cleaners fairly, train them thoroughly, and back every visit with our re‑clean guarantee. That's how we've earned a 4.9‑star reputation one happy home at a time.
+      </p>
+      <div class="mt-8 grid grid-cols-3 gap-4 reveal" data-reveal>
+        <div><p class="font-display text-3xl font-700 gradient-text">2016</p><p class="text-sm text-ink/55">Founded</p></div>
+        <div><p class="font-display text-3xl font-700 gradient-text"><span data-count="9" data-suffix=" yrs">0</span></p><p class="text-sm text-ink/55">Serving locally</p></div>
+        <div><p class="font-display text-3xl font-700 gradient-text"><span data-count="98" data-suffix="%">0</span></p><p class="text-sm text-ink/55">Rebook rate</p></div>
+      </div>
+    </div>
+
+    <div class="relative reveal" data-reveal data-parallax>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="rounded-2xl overflow-hidden shadow-soft bg-gradient-to-br from-sky-200 to-mint-200 aspect-[3/4]">
+          <img src="https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?auto=format&fit=crop&w=1600&q=80" alt="Cleaner tidying a bright kitchen" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+        </div>
+        <div class="rounded-2xl overflow-hidden shadow-soft bg-gradient-to-br from-mint-200 to-sky-200 aspect-[3/4] mt-8">
+          <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1600&q=80" alt="Sparkling clean living room" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-24 sm:py-28 bg-gradient-to-b from-cloud to-sky-50/50">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8">
+    <div class="text-center max-w-2xl mx-auto reveal" data-reveal>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600">Loved locally</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600">Neighbors can't stop raving</h2>
+    </div>
+
+    <div class="mt-14 grid md:grid-cols-3 gap-6">
+      <figure class="glass rounded-3xl p-7 shadow-soft reveal" data-reveal>
+        <div class="text-amber-400 text-lg">★★★★★</div>
+        <blockquote class="mt-4 text-ink/75">“I came home and actually gasped. The kitchen sparkled, the whole place smelled fresh. My cleaner Maya is now basically family.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-300 to-sky-500"></span>
+          <div><p class="font-700 text-sm">Priya R.</p><p class="text-xs text-ink/55">Bi‑weekly · Maple Heights</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="glass rounded-3xl p-7 shadow-soft reveal" data-reveal>
+        <div class="text-amber-400 text-lg">★★★★★</div>
+        <blockquote class="mt-4 text-ink/75">“Booked in under a minute and got my full deposit back after the move‑out clean. Honestly the best money I spent moving.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-gradient-to-br from-mint-300 to-mint-500"></span>
+          <div><p class="font-700 text-sm">Marcus T.</p><p class="text-xs text-ink/55">Move‑out · Riverside</p></div>
+        </figcaption>
+      </figure>
+
+      <figure class="glass rounded-3xl p-7 shadow-soft reveal" data-reveal>
+        <div class="text-amber-400 text-lg">★★★★★</div>
+        <blockquote class="mt-4 text-ink/75">“As a parent of two toddlers, the eco products give me peace of mind. Reliable, friendly, and never a surprise charge.”</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400 to-mint-400"></span>
+          <div><p class="font-700 text-sm">Hannah & Lee</p><p class="text-xs text-ink/55">Weekly · Oak Park</p></div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICE AREAS ============ -->
+<section id="areas" class="py-24 sm:py-28">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 grid lg:grid-cols-2 gap-14 items-center">
+    <div>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600 reveal" data-reveal>Where we clean</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600 leading-tight reveal" data-reveal>Proudly serving your neighborhood</h2>
+      <p class="mt-4 text-lg text-ink/70 reveal" data-reveal>From downtown lofts to suburban family homes, our local teams cover the whole metro area. Don't see your area? Drop your zip — we're expanding fast.</p>
+
+      <div class="mt-7 flex flex-wrap gap-3 reveal" data-reveal>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Maple Heights</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Riverside</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Oak Park</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Downtown Core</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Harbor View</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Greenfield</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Lakeshore</span>
+        <span class="rounded-full glass px-4 py-2 text-sm font-600">Westbrook</span>
+      </div>
+
+      <form class="mt-8 flex gap-3 max-w-md reveal" data-reveal onsubmit="return false">
+        <input type="text" placeholder="Enter your ZIP code" class="flex-1 rounded-2xl border border-sky-200 bg-white/70 px-5 py-3.5 outline-none focus:ring-2 focus:ring-mint-300 transition" />
+        <button class="magnetic rounded-2xl bg-gradient-to-r from-sky-500 to-mint-500 px-6 py-3.5 font-700 text-white shine">Check</button>
+      </form>
+    </div>
+
+    <div class="relative reveal" data-reveal data-parallax>
+      <div class="absolute -inset-3 bg-gradient-to-tr from-sky-200/50 to-mint-200/50 blur-2xl rounded-[2.5rem]"></div>
+      <div class="relative rounded-[2rem] overflow-hidden shadow-soft bg-gradient-to-br from-sky-200 to-mint-200 aspect-[5/4]">
+        <img src="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=80" alt="Tidy modern home" class="w-full h-full object-cover" onerror="this.style.display='none'" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-24 sm:py-28 bg-gradient-to-b from-sky-50/50 to-cloud">
+  <div class="mx-auto max-w-3xl px-5 sm:px-8">
+    <div class="text-center reveal" data-reveal>
+      <span class="text-sm font-700 uppercase tracking-widest text-mint-600">Good to know</span>
+      <h2 class="mt-3 font-display text-4xl sm:text-5xl font-600">Questions, answered</h2>
+    </div>
+
+    <div class="mt-12 space-y-4" id="faqList">
+      <div class="glass rounded-2xl shadow-soft overflow-hidden reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-600">
+          Do I need to be home during the clean?
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-sky-100 text-sky-600 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-ink/65">Nope! Many clients give us secure entry instructions and come home to a spotless space. You're always welcome to be there if you prefer.</p></div>
+      </div>
+
+      <div class="glass rounded-2xl shadow-soft overflow-hidden reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-600">
+          What if I'm not happy with the clean?
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-sky-100 text-sky-600 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-ink/65">Just let us know within 24 hours and we'll re‑clean the area free of charge. Your satisfaction is fully guaranteed — that's our promise.</p></div>
+      </div>
+
+      <div class="glass rounded-2xl shadow-soft overflow-hidden reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-600">
+          Do you bring your own supplies?
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-sky-100 text-sky-600 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-ink/65">Yes — our cleaners arrive with eco‑friendly, non‑toxic products and all the equipment. If you have a preferred product, just let us know and we'll happily use it.</p></div>
+      </div>
+
+      <div class="glass rounded-2xl shadow-soft overflow-hidden reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-600">
+          Can I reschedule or cancel?
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-sky-100 text-sky-600 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-ink/65">Absolutely. Reschedule or cancel free up to 24 hours before your visit, right from your account. No contracts, ever.</p></div>
+      </div>
+
+      <div class="glass rounded-2xl shadow-soft overflow-hidden reveal" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 px-6 py-5 text-left font-600">
+          Are your cleaners background checked?
+          <span class="faq-icon shrink-0 grid place-items-center w-8 h-8 rounded-full bg-sky-100 text-sky-600 transition-transform">+</span>
+        </button>
+        <div class="accordion-body"><p class="px-6 pb-5 text-ink/65">Every SparkleNest cleaner passes a thorough background check, in‑person interview, and hands‑on training before stepping into a home. We're fully insured and bonded too.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-20 sm:py-28">
+  <div class="mx-auto max-w-6xl px-5 sm:px-8">
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-sky-600 via-sky-500 to-mint-600 px-8 py-16 sm:px-16 sm:py-20 text-center text-white shadow-soft shine reveal" data-reveal>
+      <svg class="sparkle w-8 h-8 top-8 left-[12%]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 8.5L23 11l-8.5 2.5L12 22l-2.5-8.5L1 11l8.5-2.5L12 0z"/></svg>
+      <svg class="sparkle w-5 h-5 bottom-10 right-[16%]" style="animation-delay:1s" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.5 8.5L23 11l-8.5 2.5L12 22l-2.5-8.5L1 11l8.5-2.5L12 0z"/></svg>
+
+      <h2 class="font-display text-4xl sm:text-6xl font-600 leading-[1.05]">Your sparkling home<br/>is one tap away.</h2>
+      <p class="mt-5 text-lg text-white/85 max-w-xl mx-auto">Join 9,000+ neighbors who got their weekends back. Book in 60 seconds — love it or we re‑clean free.</p>
+      <div class="mt-9 flex flex-wrap justify-center gap-4">
+        <a href="#booking" class="magnetic rounded-2xl bg-white text-sky-700 px-8 py-4 font-700 hover:scale-[1.03] transition shadow-lg">Book my clean now</a>
+        <a href="tel:+18005550199" class="rounded-2xl border-2 border-white/60 px-8 py-4 font-700 hover:bg-white/10 transition">Call (800) 555‑0199</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-sky-100 bg-cloud">
+  <div class="mx-auto max-w-7xl px-5 sm:px-8 py-16 grid gap-10 md:grid-cols-4">
+    <div class="md:col-span-1">
+      <a href="#hero" class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-mint-400 shadow-glow">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor"><path d="M12 2l1.9 4.6L18.5 8l-3.4 3.1.9 4.9L12 13.8 8 16l.9-4.9L5.5 8l4.6-1.4L12 2z"/></svg>
+        </span>
+        <span class="font-display text-xl font-600">Sparkle<span class="gradient-text">Nest</span></span>
+      </a>
+      <p class="mt-4 text-sm text-ink/60 max-w-xs">Premium home cleaning, done brilliantly. Insured, eco‑friendly, and loved by neighbors since 2016.</p>
+    </div>
+
+    <div>
+      <h4 class="font-700 text-sm uppercase tracking-wide text-ink/70">Services</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-ink/60">
+        <li><a href="#services" class="hover:text-sky-600 transition">Standard Clean</a></li>
+        <li><a href="#services" class="hover:text-sky-600 transition">Deep Clean</a></li>
+        <li><a href="#services" class="hover:text-sky-600 transition">Move In / Out</a></li>
+        <li><a href="#services" class="hover:text-sky-600 transition">Recurring Plans</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-700 text-sm uppercase tracking-wide text-ink/70">Company</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-ink/60">
+        <li><a href="#about" class="hover:text-sky-600 transition">Our Story</a></li>
+        <li><a href="#areas" class="hover:text-sky-600 transition">Service Areas</a></li>
+        <li><a href="#faq" class="hover:text-sky-600 transition">FAQ</a></li>
+        <li><a href="#pricing" class="hover:text-sky-600 transition">Pricing</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4 class="font-700 text-sm uppercase tracking-wide text-ink/70">Get in touch</h4>
+      <ul class="mt-4 space-y-2.5 text-sm text-ink/60">
+        <li><a href="tel:+18005550199" class="hover:text-sky-600 transition">(800) 555‑0199</a></li>
+        <li><a href="mailto:hello@sparklenest.co" class="hover:text-sky-600 transition">hello@sparklenest.co</a></li>
+        <li class="pt-2 flex gap-3">
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-full glass hover:scale-110 transition" aria-label="Instagram">◎</a>
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-full glass hover:scale-110 transition" aria-label="Facebook">f</a>
+          <a href="#" class="grid place-items-center w-9 h-9 rounded-full glass hover:scale-110 transition" aria-label="X">✕</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-sky-100">
+    <div class="mx-auto max-w-7xl px-5 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/50">
+      <p>© 2026 SparkleNest Cleaning Co. All rights reserved.</p>
+      <div class="flex gap-5">
+        <a href="#" class="hover:text-sky-600 transition">Privacy</a>
+        <a href="#" class="hover:text-sky-600 transition">Terms</a>
+        <a href="#" class="hover:text-sky-600 transition">Guarantee</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ SCRIPTS ============ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- NAV scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 20) nav.querySelector('nav > div').classList.add('shadow-lg');
+    else nav.querySelector('nav > div').classList.remove('shadow-lg');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- Instant quote micro-interaction ---------- */
+  const groups = { beds: 1, baths: 1, type: 1 };
+  const labels = { beds: 1, baths: 1, typeLabel: 'Standard' };
+  const BASE = 49, PER_BED = 22, PER_BATH = 18;
+
+  function recalc() {
+    let price = (BASE + groups.beds * PER_BED + groups.baths * PER_BATH) * groups.type;
+    price = Math.round(price);
+    const el = document.getElementById('quotePrice');
+    const start = parseInt(el.textContent, 10) || 0;
+    if (reduce) { el.textContent = price; }
+    else {
+      const obj = { v: start };
+      gsap.to(obj, { v: price, duration: 0.5, ease: 'power2.out', onUpdate: () => { el.textContent = Math.round(obj.v); } });
+    }
+    const bedTxt = labels.beds >= 4 ? '4+ bed' : labels.beds + ' bed';
+    const bathTxt = labels.baths >= 3 ? '3+ bath' : labels.baths + ' bath';
+    document.getElementById('quoteSummary').textContent = bedTxt + ' · ' + bathTxt + ' · ' + labels.typeLabel;
+  }
+
+  document.querySelectorAll('[data-group]').forEach(group => {
+    const key = group.dataset.group;
+    group.querySelectorAll('.room-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        group.querySelectorAll('.room-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        groups[key] = parseFloat(chip.dataset.val);
+        if (key === 'beds') labels.beds = parseInt(chip.dataset.val, 10);
+        if (key === 'baths') labels.baths = parseInt(chip.dataset.val, 10);
+        if (key === 'type') labels.typeLabel = chip.dataset.label;
+        recalc();
+      });
+    });
+  });
+  recalc();
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const open = body.style.maxHeight && body.style.maxHeight !== '0px';
+      document.querySelectorAll('.accordion-body').forEach(b => { b.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach(i => { i.style.transform = 'rotate(0deg)'; i.classList.remove('bg-mint-100','text-mint-600'); i.classList.add('bg-sky-100','text-sky-600'); });
+      if (!open) {
+        body.style.maxHeight = body.scrollHeight + 'px';
+        icon.style.transform = 'rotate(45deg)';
+        icon.classList.remove('bg-sky-100','text-sky-600');
+        icon.classList.add('bg-mint-100','text-mint-600');
+      }
+    });
+  });
+
+  /* ---------- Count-ups ---------- */
+  function runCount(el) {
+    const target = parseFloat(el.dataset.count);
+    const decimals = parseInt(el.dataset.decimals || '0', 10);
+    const suffix = el.dataset.suffix || '';
+    if (reduce) { el.textContent = target.toFixed(decimals) + suffix; return; }
+    const obj = { v: 0 };
+    gsap.to(obj, {
+      v: target, duration: 1.8, ease: 'power2.out',
+      onUpdate: () => {
+        let val = obj.v;
+        let out = decimals ? val.toFixed(decimals) : Math.round(val).toLocaleString();
+        el.textContent = out + suffix;
+      }
+    });
+  }
+
+  /* ---------- Magnetic buttons ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.magnetic').forEach(btn => {
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = 'translate(' + x * 0.25 + 'px,' + y * 0.3 + 'px)';
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = 'translate(0,0)'; });
+    });
+
+    /* ---------- Card tilt ---------- */
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = 'perspective(900px) rotateY(' + px * 8 + 'deg) rotateX(' + (-py * 8) + 'deg) translateY(-4px)';
+        card.style.boxShadow = '0 28px 60px -24px rgba(10,108,160,0.45)';
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; card.style.boxShadow = ''; });
+    });
+  }
+
+  /* ---------- GSAP reveals + parallax + float ---------- */
+  if (!reduce && window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    document.querySelectorAll('[data-reveal]').forEach(el => {
+      gsap.fromTo(el, { autoAlpha: 0, y: 34 }, {
+        autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+      });
+    });
+
+    // count-ups trigger on view
+    document.querySelectorAll('[data-count]').forEach(el => {
+      ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => runCount(el) });
+    });
+
+    // container parallax on imagery
+    document.querySelectorAll('[data-parallax]').forEach(el => {
+      gsap.to(el, { yPercent: -8, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true } });
+    });
+
+    // floating bubbles
+    document.querySelectorAll('[data-float]').forEach((el, i) => {
+      gsap.to(el, { y: (i % 2 ? 26 : -26), x: (i % 2 ? -14 : 14), duration: 4 + i, ease: 'sine.inOut', repeat: -1, yoyo: true });
+    });
+
+    // hero headline stagger
+    gsap.from('#hero h1 span', { y: 40, autoAlpha: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12, delay: 0.15 });
+  } else {
+    document.querySelectorAll('[data-count]').forEach(runCount);
+  }
+})();
+</script>
+</body>
+</html>

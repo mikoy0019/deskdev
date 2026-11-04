@@ -1,0 +1,235 @@
+{
+  "name": "[deskdev] task-assigned-email",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deskdev-task-assigned",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "deskdev-task-assigned",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "__DESKDEV_WEBHOOK_CRED__",
+          "name": "DeskDev Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/profiles?select=id,full_name,email&id=eq.{{ $json.body?.record?.assignee_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "assignee",
+      "name": "Lookup assignee",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://rgasjotvqwkjbeivlhvn.supabase.co/rest/v1/clients?select=id,name&id=eq.{{ $('Trigger').first().json.body?.record?.client_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "client",
+      "name": "Lookup client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput",
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "__SUPABASE_CRED__",
+          "name": "Supabase — DeskDev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Compose the assignment email from the task row + looked-up assignee/client.\nconst rec = ($('Trigger').first().json.body || {}).record || {};\nconst assignee = (Array.isArray($('Lookup assignee').first().json) ? $('Lookup assignee').first().json[0] : $('Lookup assignee').first().json) || {};\nconst client = (Array.isArray($json) ? $json[0] : $json) || {};\n\nconst email = assignee.email || '';\nconst name = assignee.full_name || 'there';\nconst clientName = client.name || '';\nconst title = rec.title || 'a task';\nconst priority = (rec.priority || '').toUpperCase();\nconst due = rec.due_date || '';\nconst appUrl = 'https://workspace.nixgensolutions.com/tasks';\n\n// Task title, names and client come from DB rows that members edit: escape them\n// for the HTML body only (subject and sheet columns stay raw text).\nconst esc = (s) => String(s ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\n\nconst MNL = 'Asia/Manila';\nconst ts = rec.created_at || new Date().toISOString();\nconst d = new Date(ts);\nconst date = new Intl.DateTimeFormat('en-CA', { timeZone: MNL, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);\nconst time = new Intl.DateTimeFormat('en-GB', { timeZone: MNL, hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(d);\n\nconst meta = [clientName && ('Client: ' + esc(clientName)), priority && ('Priority: ' + esc(priority)), due && ('Due: ' + esc(due))].filter(Boolean).join(' &nbsp;·&nbsp; ');\nconst html = `<div style=\"font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111\">\n  <h2 style=\"margin:0 0 4px\">New task assigned to you</h2>\n  <p style=\"margin:0 0 16px;color:#666\">Hi ${esc(name)}, you've been assigned a task in DeskDev Studio.</p>\n  <div style=\"padding:14px 16px;border:1px solid #eee;border-radius:10px\">\n    <div style=\"font-size:16px;font-weight:600\">${esc(title)}</div>\n    ${meta ? `<div style=\\\"margin-top:6px;color:#666;font-size:13px\\\">${meta}</div>` : ''}\n  </div>\n  <p style=\"margin-top:18px\"><a href=\"${appUrl}\" style=\"background:#2563eb;color:#fff;text-decoration:none;padding:9px 14px;border-radius:8px;font-size:14px\">Open the board</a></p>\n  <p style=\"margin-top:20px;color:#999;font-size:12px\">Sent by n8n</p></div>`;\n\n// Skip cleanly if the assignee has no email on file.\nif (!email) return [];\nreturn [{ json: {\n  to: email,\n  subject: 'New task assigned: ' + title,\n  html,\n  // Row for the Assignments/Emails sheet tab:\n  Timestamp: ts, Date: date, Time: time,\n  Task: title, TaskId: rec.id || '',\n  Assignee: name, Email: email, Client: clientName,\n  Status: 'sent',\n} }];\n"
+      },
+      "id": "build",
+      "name": "Build email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "email",
+      "name": "Send email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "__GMAIL_CRED__",
+          "name": "Gmail account"
+        }
+      },
+      "webhookId": "deskdev-assign-email"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gmail's send step outputs the Gmail API response ({id, threadId, labelIds}), not\n// its input, so the sheet row is rebuilt from Build email: exactly the tab's columns.\nreturn $('Build email').all().map((i) => ({ json: {\n  Timestamp: i.json.Timestamp, Date: i.json.Date, Time: i.json.Time,\n  Task: i.json.Task, TaskId: i.json.TaskId,\n  Assignee: i.json.Assignee, Email: i.json.Email, Client: i.json.Client,\n  Status: 'sent',\n} }));\n"
+      },
+      "id": "row",
+      "name": "Assignment row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P_mAgFG6ZllXGCwhg7RuImESI-sfV9-lKLrFyD0uhNg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Assignments",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": []
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "id": "log",
+      "name": "Append: Assignments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1320,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "__GOOGLE_SHEETS_CRED__",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Lookup assignee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup assignee": {
+      "main": [
+        [
+          {
+            "node": "Lookup client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup client": {
+      "main": [
+        [
+          {
+            "node": "Build email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build email": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Assignment row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assignment row": {
+      "main": [
+        [
+          {
+            "node": "Append: Assignments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Manila",
+    "errorWorkflow": "__DESKDEV_ERROR_WORKFLOW__"
+  }
+}

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HYPERDRIVE 2099 — Y2K Festival of Sound & Light</title>
+<meta name="description" content="HYPERDRIVE 2099 — a chrome-soaked Y2K music festival. Three nights of bass, lasers, and retro-future euphoria at the Aurora Dome. Get your tickets now." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          void: '#05010f',
+          ink: '#0b0420',
+          chrome: '#e8ecff',
+          hyper: '#ff2bd6',   // hot magenta
+          cyber: '#22e0ff',   // electric cyan
+          acid: '#c6ff2e',    // acid lime
+          gold: '#ffd24c',    // chrome gold
+          plasma: '#7a3bff',  // ultraviolet
+        },
+        fontFamily: {
+          display: ['"Orbitron"', 'sans-serif'],
+          slab: ['"Bungee"', 'sans-serif'],
+          body: ['"Space Grotesk"', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Bungee&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --grid: rgba(34,224,255,0.18); }
+
+  html, body { overflow-x: hidden; background: #05010f; }
+  body { font-family: 'Space Grotesk', sans-serif; color: #e8ecff; }
+
+  ::selection { background: #ff2bd6; color: #05010f; }
+
+  /* ---------- Chrome / metallic text ---------- */
+  .chrome-text {
+    background: linear-gradient(180deg, #ffffff 0%, #cfe2ff 18%, #8ea7ff 38%, #5b6bdd 50%, #b6c6ff 62%, #ffffff 82%, #9aa7ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255,255,255,0.18);
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,0.5)) drop-shadow(0 0 22px rgba(122,59,255,0.45));
+  }
+  .chrome-pink {
+    background: linear-gradient(180deg, #fff 0%, #ffd6f6 22%, #ff7ee4 44%, #ff2bd6 56%, #ffa6ee 74%, #fff 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 24px rgba(255,43,214,0.55));
+  }
+
+  /* ---------- Animated gradient mesh ---------- */
+  .mesh {
+    background:
+      radial-gradient(40% 50% at 18% 22%, rgba(255,43,214,0.55), transparent 60%),
+      radial-gradient(45% 55% at 82% 18%, rgba(34,224,255,0.50), transparent 62%),
+      radial-gradient(50% 60% at 50% 88%, rgba(122,59,255,0.55), transparent 60%),
+      radial-gradient(40% 45% at 88% 78%, rgba(198,255,46,0.30), transparent 60%);
+    background-color: #05010f;
+    background-size: 180% 180%;
+    animation: meshShift 18s ease-in-out infinite;
+    filter: blur(8px) saturate(1.2);
+  }
+  @keyframes meshShift {
+    0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 100% 100%; }
+    50%  { background-position: 100% 50%, 0% 60%, 30% 0%, 0% 30%; }
+    100% { background-position: 0% 0%, 100% 0%, 50% 100%, 100% 100%; }
+  }
+
+  /* ---------- Retro perspective grid ---------- */
+  .retro-grid {
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    transform: perspective(420px) rotateX(62deg) scale(2.2);
+    transform-origin: 50% 100%;
+    animation: gridMove 6s linear infinite;
+    mask-image: linear-gradient(to top, #000 0%, #000 30%, transparent 85%);
+    -webkit-mask-image: linear-gradient(to top, #000 0%, #000 30%, transparent 85%);
+  }
+  @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 48px; } }
+
+  /* ---------- Scanlines overlay ---------- */
+  .scanlines::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(180deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 2px, transparent 4px);
+    mix-blend-mode: overlay;
+  }
+
+  /* ---------- Marquee ---------- */
+  .marquee { display: flex; width: max-content; animation: scrollX 26s linear infinite; }
+  .marquee.rev { animation-direction: reverse; animation-duration: 32s; }
+  @keyframes scrollX { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee-wrap:hover .marquee { animation-play-state: paused; }
+
+  /* ---------- Sticker spin / float ---------- */
+  .spin-slow { animation: spin 14s linear infinite; }
+  .spin-rev  { animation: spin 18s linear infinite reverse; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .floaty { animation: floaty 5s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-14px) rotate(6deg); } }
+
+  /* ---------- Glow pulse ---------- */
+  .glow-pulse { animation: glowPulse 2.6s ease-in-out infinite; }
+  @keyframes glowPulse {
+    0%,100% { box-shadow: 0 0 0 rgba(255,43,214,0.0), 0 0 26px rgba(255,43,214,0.45); }
+    50% { box-shadow: 0 0 0 rgba(255,43,214,0.0), 0 0 52px rgba(34,224,255,0.7); }
+  }
+
+  /* ---------- Odometer / flip countdown ---------- */
+  .flip-unit {
+    position: relative; overflow: hidden; height: 5.5rem;
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, #1a0b3a, #0a0420);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.08), inset 0 -10px 24px rgba(0,0,0,0.6), 0 0 28px rgba(122,59,255,0.35);
+    border: 1px solid rgba(122,59,255,0.5);
+  }
+  .flip-unit::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+    background: rgba(0,0,0,0.6); z-index: 5;
+  }
+  .odo-track { display: flex; flex-direction: column; transition: transform 0.6s cubic-bezier(.2,.9,.2,1); }
+  .odo-cell { height: 5.5rem; display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 3rem; line-height: 1; }
+  @media (max-width: 640px) {
+    .flip-unit { height: 4rem; }
+    .odo-cell { height: 4rem; font-size: 2rem; }
+  }
+
+  /* ---------- Holo border ---------- */
+  .holo {
+    position: relative; border: 1px solid transparent;
+    background:
+      linear-gradient(#0b0420, #0b0420) padding-box,
+      linear-gradient(135deg, #ff2bd6, #22e0ff, #c6ff2e, #7a3bff) border-box;
+  }
+
+  /* ---------- Reveal base ---------- */
+  .reveal { opacity: 0; transform: translateY(34px); }
+
+  /* ---------- Noise grain ---------- */
+  .grain::before {
+    content:''; position: fixed; inset: 0; pointer-events:none; z-index: 60; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .star-burst {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mesh, .retro-grid, .marquee, .spin-slow, .spin-rev, .floaty, .glow-pulse { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; }
+    .odo-track { transition: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="bg-void text-chrome font-body antialiased grain selection:bg-hyper">
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-300">
+  <nav class="mx-auto max-w-7xl px-5 sm:px-8 py-4 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-2 group">
+      <span class="inline-grid place-items-center w-9 h-9 rounded-lg holo glow-pulse">
+        <span class="font-slab text-cyber text-lg">H</span>
+      </span>
+      <span class="font-display font-black tracking-[0.18em] text-sm sm:text-base chrome-text">HYPERDRIVE</span>
+      <span class="hidden sm:inline font-display text-acid text-xs tracking-[0.3em]">2099</span>
+    </a>
+    <ul class="hidden md:flex items-center gap-7 text-sm font-medium text-chrome/70">
+      <li><a href="#lineup" class="hover:text-cyber transition">Lineup</a></li>
+      <li><a href="#about" class="hover:text-cyber transition">About</a></li>
+      <li><a href="#schedule" class="hover:text-cyber transition">Schedule</a></li>
+      <li><a href="#venue" class="hover:text-cyber transition">Venue</a></li>
+      <li><a href="#tickets" class="hover:text-cyber transition">Tickets</a></li>
+      <li><a href="#faq" class="hover:text-cyber transition">FAQ</a></li>
+    </ul>
+    <a href="#tickets" class="relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold text-void bg-acid hover:bg-cyber transition-colors glow-pulse">
+      Get Tickets
+      <span aria-hidden="true">→</span>
+    </a>
+  </nav>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative min-h-screen flex items-center overflow-hidden scanlines">
+  <div class="absolute inset-0 mesh"></div>
+  <div class="absolute inset-x-0 bottom-0 h-2/3 retro-grid opacity-70"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-void/40 via-transparent to-void"></div>
+
+  <!-- floating stickers -->
+  <div class="absolute top-28 left-6 sm:left-16 w-24 h-24 floaty hidden sm:block">
+    <div class="w-full h-full star-burst bg-hyper grid place-items-center text-void font-slab text-xs text-center leading-tight rotate-6">NEW<br>YEARS</div>
+  </div>
+  <div class="absolute top-40 right-8 sm:right-24 w-28 h-28 spin-slow hidden sm:block">
+    <div class="w-full h-full rounded-full border-2 border-dashed border-cyber/70 grid place-items-center text-cyber font-display text-[10px] tracking-widest">★ LIVE · LOUD · 2099 ★</div>
+  </div>
+
+  <div class="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 pt-28 pb-16 w-full">
+    <div class="flex flex-wrap items-center gap-3 mb-6 reveal">
+      <span class="rounded-full holo px-4 py-1.5 text-xs font-bold tracking-widest text-cyber">DEC 31 — JAN 2 · 2099</span>
+      <span class="rounded-full bg-hyper/15 border border-hyper/40 px-4 py-1.5 text-xs font-bold tracking-widest text-hyper">3 NIGHTS · 40+ ACTS</span>
+    </div>
+
+    <h1 class="font-display font-black leading-[0.82] reveal">
+      <span class="block text-[15vw] sm:text-[11vw] lg:text-[9rem] chrome-text">HYPER</span>
+      <span class="block text-[15vw] sm:text-[11vw] lg:text-[9rem] chrome-pink">DRIVE</span>
+    </h1>
+
+    <p class="mt-6 max-w-xl text-lg sm:text-xl text-chrome/80 reveal">
+      A chrome-soaked festival of sound &amp; light. Bass that rewires you, lasers that bend time, and a crowd built for the year 2099. <span class="text-acid font-semibold">Welcome to the future you remember.</span>
+    </p>
+
+    <!-- COUNTDOWN -->
+    <div class="mt-10 reveal">
+      <p class="text-xs tracking-[0.4em] text-cyber/80 mb-3 font-display">⟁ DOORS OPEN IN ⟁</p>
+      <div id="countdown" class="grid grid-cols-4 gap-2 sm:gap-4 max-w-2xl">
+        <div class="text-center">
+          <div class="flip-unit"><div class="odo-track" data-unit="days"></div></div>
+          <div class="mt-2 text-[10px] sm:text-xs tracking-[0.3em] text-chrome/60 font-display">DAYS</div>
+        </div>
+        <div class="text-center">
+          <div class="flip-unit"><div class="odo-track" data-unit="hours"></div></div>
+          <div class="mt-2 text-[10px] sm:text-xs tracking-[0.3em] text-chrome/60 font-display">HRS</div>
+        </div>
+        <div class="text-center">
+          <div class="flip-unit"><div class="odo-track" data-unit="minutes"></div></div>
+          <div class="mt-2 text-[10px] sm:text-xs tracking-[0.3em] text-chrome/60 font-display">MIN</div>
+        </div>
+        <div class="text-center">
+          <div class="flip-unit"><div class="odo-track" data-unit="seconds"></div></div>
+          <div class="mt-2 text-[10px] sm:text-xs tracking-[0.3em] text-chrome/60 font-display">SEC</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-wrap items-center gap-4 reveal">
+      <a href="#tickets" class="rounded-full bg-gradient-to-r from-hyper to-plasma px-8 py-4 font-slab text-sm text-white shadow-lg shadow-hyper/40 hover:scale-105 transition-transform">GET TICKETS</a>
+      <a href="#lineup" class="rounded-full border border-cyber/50 px-8 py-4 font-display font-bold text-sm text-cyber hover:bg-cyber/10 transition">SEE THE LINEUP</a>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 text-chrome/40 text-xs tracking-[0.4em] font-display animate-bounce">SCROLL ↓</div>
+</section>
+
+<!-- ============ LINEUP MARQUEE ============ -->
+<section class="relative py-10 bg-ink border-y border-plasma/30 overflow-hidden">
+  <div class="marquee-wrap overflow-hidden">
+    <div class="marquee text-5xl sm:text-7xl font-slab whitespace-nowrap">
+      <span class="px-6 chrome-pink">NOVA RAVE</span><span class="px-6 text-cyber">✦</span>
+      <span class="px-6 chrome-text">DJ CHROMAKEY</span><span class="px-6 text-acid">✦</span>
+      <span class="px-6 chrome-pink">LASER MILK</span><span class="px-6 text-hyper">✦</span>
+      <span class="px-6 chrome-text">VELVET STATIC</span><span class="px-6 text-cyber">✦</span>
+      <span class="px-6 chrome-pink">NOVA RAVE</span><span class="px-6 text-cyber">✦</span>
+      <span class="px-6 chrome-text">DJ CHROMAKEY</span><span class="px-6 text-acid">✦</span>
+      <span class="px-6 chrome-pink">LASER MILK</span><span class="px-6 text-hyper">✦</span>
+      <span class="px-6 chrome-text">VELVET STATIC</span><span class="px-6 text-cyber">✦</span>
+    </div>
+  </div>
+  <div class="marquee-wrap overflow-hidden mt-3">
+    <div class="marquee rev text-4xl sm:text-6xl font-slab whitespace-nowrap text-chrome/40">
+      <span class="px-6">GHOST MODEM ✦ PIXEL PRIEST ✦ AQUA 9 ✦ SYNTH WIDOW ✦ TURBO SAINT ✦ NEON HALO ✦</span>
+      <span class="px-6">GHOST MODEM ✦ PIXEL PRIEST ✦ AQUA 9 ✦ SYNTH WIDOW ✦ TURBO SAINT ✦ NEON HALO ✦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LINEUP GRID ============ -->
+<section id="lineup" class="relative py-24 px-5 sm:px-8">
+  <div class="mx-auto max-w-7xl">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-12 reveal">
+      <div>
+        <p class="font-display text-acid tracking-[0.4em] text-xs mb-2">⟁ THE 2099 ROSTER ⟁</p>
+        <h2 class="font-display font-black text-5xl sm:text-7xl chrome-text">HEADLINERS</h2>
+      </div>
+      <p class="max-w-sm text-chrome/60">Forty-plus acts across three stages. These are the gravity wells everyone orbits.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- card -->
+      <article class="reveal holo rounded-3xl p-1 hover:-translate-y-2 transition-transform">
+        <div class="rounded-[1.35rem] overflow-hidden h-full">
+          <div class="relative h-56 mesh grid place-items-center">
+            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80" alt="" class="absolute inset-0 w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
+            <span class="relative font-slab text-3xl chrome-pink">NOVA RAVE</span>
+          </div>
+          <div class="p-6 bg-ink">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-cyber">FRI · MAIN STAGE</h3>
+              <span class="text-acid text-xs font-bold">23:30</span>
+            </div>
+            <p class="text-sm text-chrome/60">Trance-core titan. Three Aurora encores running. Headlines night one.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal holo rounded-3xl p-1 hover:-translate-y-2 transition-transform">
+        <div class="rounded-[1.35rem] overflow-hidden h-full">
+          <div class="relative h-56 mesh grid place-items-center">
+            <img src="https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=1600&q=80" alt="" class="absolute inset-0 w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
+            <span class="relative font-slab text-3xl chrome-text">DJ CHROMAKEY</span>
+          </div>
+          <div class="p-6 bg-ink">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-cyber">SAT · MAIN STAGE</h3>
+              <span class="text-acid text-xs font-bold">00:00</span>
+            </div>
+            <p class="text-sm text-chrome/60">The mirror-ball oracle. Liquid breakbeat for the chrome generation.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="reveal holo rounded-3xl p-1 hover:-translate-y-2 transition-transform">
+        <div class="rounded-[1.35rem] overflow-hidden h-full">
+          <div class="relative h-56 mesh grid place-items-center">
+            <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80" alt="" class="absolute inset-0 w-full h-full object-cover opacity-70" onerror="this.style.display='none'">
+            <span class="relative font-slab text-3xl chrome-pink">LASER MILK</span>
+          </div>
+          <div class="p-6 bg-ink">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="font-display font-bold text-cyber">SUN · DOME STAGE</h3>
+              <span class="text-acid text-xs font-bold">22:00</span>
+            </div>
+            <p class="text-sm text-chrome/60">Glitch-pop duo with a 9-tonne laser rig. Closes the whole festival.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="relative py-24 px-5 sm:px-8 bg-ink border-y border-cyber/20 scanlines overflow-hidden">
+  <div class="absolute -top-24 -left-24 w-96 h-96 mesh rounded-full blur-3xl opacity-40"></div>
+  <div class="mx-auto max-w-7xl grid lg:grid-cols-2 gap-16 items-center relative z-10">
+    <div class="reveal">
+      <p class="font-display text-hyper tracking-[0.4em] text-xs mb-3">⟁ THE STORY ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-6xl chrome-text leading-[0.9] mb-6">A FUTURE<br>BUILT FROM<br>NOSTALGIA</h2>
+      <p class="text-chrome/70 text-lg leading-relaxed mb-5">HYPERDRIVE 2099 is what the millennium dreamed it would become. We took the optimism of the year 2000 — the chrome, the gel, the impossible blue — and cranked it through forty subwoofers.</p>
+      <p class="text-chrome/60 leading-relaxed">Three nights inside the Aurora Dome. Holographic stages, a zero-gravity chillout pod, and a crowd of 12,000 dressed like the cover of a CD-ROM. This isn't a throwback. It's a rerun of the future.</p>
+    </div>
+    <div class="grid grid-cols-2 gap-4 reveal">
+      <div class="holo rounded-2xl p-6 text-center bg-void/60">
+        <div class="font-display font-black text-4xl chrome-pink">12K</div>
+        <p class="text-xs tracking-widest text-chrome/60 mt-2 font-display">RAVERS / NIGHT</p>
+      </div>
+      <div class="holo rounded-2xl p-6 text-center bg-void/60">
+        <div class="font-display font-black text-4xl text-cyber">40+</div>
+        <p class="text-xs tracking-widest text-chrome/60 mt-2 font-display">LIVE ACTS</p>
+      </div>
+      <div class="holo rounded-2xl p-6 text-center bg-void/60">
+        <div class="font-display font-black text-4xl text-acid">3</div>
+        <p class="text-xs tracking-widest text-chrome/60 mt-2 font-display">HOLO STAGES</p>
+      </div>
+      <div class="holo rounded-2xl p-6 text-center bg-void/60">
+        <div class="font-display font-black text-4xl text-gold">72</div>
+        <p class="text-xs tracking-widest text-chrome/60 mt-2 font-display">HOURS NON-STOP</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCHEDULE ============ -->
+<section id="schedule" class="relative py-24 px-5 sm:px-8">
+  <div class="mx-auto max-w-6xl">
+    <div class="text-center mb-14 reveal">
+      <p class="font-display text-cyber tracking-[0.4em] text-xs mb-2">⟁ THREE NIGHTS ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-7xl chrome-text">THE AGENDA</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <!-- Day -->
+      <div class="reveal holo rounded-3xl p-7 bg-ink">
+        <div class="flex items-baseline justify-between mb-5">
+          <h3 class="font-slab text-2xl chrome-pink">NIGHT 1</h3>
+          <span class="font-display text-xs text-acid tracking-widest">DEC 31</span>
+        </div>
+        <ul class="space-y-4 text-sm">
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">20:00</span><span class="text-chrome/70">Gates &amp; Welcome Drone Show</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">21:30</span><span class="text-chrome/70">Neon Halo — opening set</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">23:30</span><span class="text-chrome/70"><span class="text-hyper font-semibold">NOVA RAVE</span> — midnight countdown</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">02:00</span><span class="text-chrome/70">Afterglow in the Gravity Pod</span></li>
+        </ul>
+      </div>
+      <div class="reveal holo rounded-3xl p-7 bg-ink">
+        <div class="flex items-baseline justify-between mb-5">
+          <h3 class="font-slab text-2xl text-cyber">NIGHT 2</h3>
+          <span class="font-display text-xs text-acid tracking-widest">JAN 1</span>
+        </div>
+        <ul class="space-y-4 text-sm">
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">19:00</span><span class="text-chrome/70">Pixel Priest — sundown ambient</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">21:00</span><span class="text-chrome/70">Velvet Static b2b Aqua 9</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">00:00</span><span class="text-chrome/70"><span class="text-hyper font-semibold">DJ CHROMAKEY</span> — main stage</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">03:00</span><span class="text-chrome/70">Ghost Modem — sunrise techno</span></li>
+        </ul>
+      </div>
+      <div class="reveal holo rounded-3xl p-7 bg-ink">
+        <div class="flex items-baseline justify-between mb-5">
+          <h3 class="font-slab text-2xl text-acid">NIGHT 3</h3>
+          <span class="font-display text-xs text-acid tracking-widest">JAN 2</span>
+        </div>
+        <ul class="space-y-4 text-sm">
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">18:00</span><span class="text-chrome/70">Synth Widow — golden hour</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">20:00</span><span class="text-chrome/70">Turbo Saint — high-bpm set</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">22:00</span><span class="text-chrome/70"><span class="text-hyper font-semibold">LASER MILK</span> — festival finale</span></li>
+          <li class="flex gap-3"><span class="text-cyber font-bold w-14 shrink-0">01:00</span><span class="text-chrome/70">Chrome Confetti Sendoff</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VENUE ============ -->
+<section id="venue" class="relative py-24 px-5 sm:px-8 bg-ink border-y border-plasma/30 overflow-hidden scanlines">
+  <div class="absolute inset-x-0 bottom-0 h-1/2 retro-grid opacity-50"></div>
+  <div class="mx-auto max-w-7xl grid lg:grid-cols-2 gap-12 items-center relative z-10">
+    <div class="reveal order-2 lg:order-1">
+      <p class="font-display text-acid tracking-[0.4em] text-xs mb-3">⟁ THE LOCATION ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-6xl chrome-pink leading-[0.9] mb-6">THE AURORA<br>DOME</h2>
+      <p class="text-chrome/70 text-lg leading-relaxed mb-6">A 14,000-capacity geodesic dome on the old Saltflat Spaceport, 40 minutes north of Meridian City. Wraparound LED ceiling, a 360° laser canopy, and acoustics tuned by people who clearly never wanted to hear silence again.</p>
+      <ul class="space-y-3 text-chrome/70">
+        <li class="flex items-center gap-3"><span class="text-cyber">◈</span> Saltflat Spaceport, Bay 7, Meridian Province</li>
+        <li class="flex items-center gap-3"><span class="text-cyber">◈</span> Free shuttle loop from Meridian Central every 15 min</li>
+        <li class="flex items-center gap-3"><span class="text-cyber">◈</span> On-site camping pods &amp; the Gravity Chillout Lounge</li>
+      </ul>
+      <a href="#tickets" class="inline-block mt-8 rounded-full bg-cyber px-7 py-3.5 font-slab text-sm text-void hover:bg-acid transition">PLAN YOUR TRIP</a>
+    </div>
+    <div class="reveal order-1 lg:order-2 holo rounded-3xl p-1">
+      <div class="relative rounded-[1.35rem] overflow-hidden h-80 mesh grid place-items-center">
+        <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=1600&q=80" alt="The Aurora Dome venue" class="absolute inset-0 w-full h-full object-cover opacity-65" onerror="this.style.display='none'">
+        <div class="relative text-center">
+          <div class="font-slab text-2xl chrome-text">AURORA DOME</div>
+          <div class="font-display text-xs tracking-[0.3em] text-cyber mt-2">52.4°N · 13.1°E</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TICKETS ============ -->
+<section id="tickets" class="relative py-24 px-5 sm:px-8">
+  <div class="mx-auto max-w-7xl">
+    <div class="text-center mb-14 reveal">
+      <p class="font-display text-hyper tracking-[0.4em] text-xs mb-2">⟁ SECURE YOUR PLACE ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-7xl chrome-text">PICK A PASS</h2>
+      <p class="text-chrome/60 mt-3">Phase 1 pricing live now — prices climb at each tier sellout.</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6 items-stretch">
+      <!-- tier -->
+      <div class="reveal holo rounded-3xl p-1">
+        <div class="rounded-[1.35rem] bg-ink p-8 h-full flex flex-col">
+          <h3 class="font-display font-bold text-cyber tracking-widest text-sm">SINGLE NIGHT</h3>
+          <div class="mt-4 font-slab text-5xl chrome-text">$89</div>
+          <p class="text-chrome/50 text-sm mt-1">Pick any one of the three nights</p>
+          <ul class="mt-6 space-y-3 text-sm text-chrome/70 flex-1">
+            <li class="flex gap-2"><span class="text-acid">✓</span> Full access to all 3 stages</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Gravity Chillout Lounge</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Digital chrome wristband</li>
+            <li class="flex gap-2 text-chrome/30"><span>✕</span> Re-entry across nights</li>
+          </ul>
+          <a href="#" class="mt-7 block text-center rounded-full border border-cyber/50 px-6 py-3 font-bold text-sm text-cyber hover:bg-cyber/10 transition">CHOOSE NIGHT</a>
+        </div>
+      </div>
+
+      <!-- featured -->
+      <div class="reveal holo rounded-3xl p-1 glow-pulse md:-translate-y-3">
+        <div class="rounded-[1.35rem] bg-gradient-to-b from-plasma/30 to-ink p-8 h-full flex flex-col relative">
+          <span class="absolute -top-3 right-6 rounded-full bg-acid text-void text-[10px] font-black tracking-widest px-3 py-1">MOST POPULAR</span>
+          <h3 class="font-display font-bold text-hyper tracking-widest text-sm">3-NIGHT PASS</h3>
+          <div class="mt-4 font-slab text-5xl chrome-pink">$219</div>
+          <p class="text-chrome/50 text-sm mt-1">All three nights, all stages</p>
+          <ul class="mt-6 space-y-3 text-sm text-chrome/80 flex-1">
+            <li class="flex gap-2"><span class="text-acid">✓</span> Everything in Single Night</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Unlimited re-entry, all 3 nights</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Fast-lane chrome gate</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Limited-edition holo lanyard</li>
+          </ul>
+          <a href="#" class="mt-7 block text-center rounded-full bg-gradient-to-r from-hyper to-plasma px-6 py-3 font-slab text-sm text-white hover:scale-[1.03] transition-transform">GET THE PASS</a>
+        </div>
+      </div>
+
+      <!-- vip -->
+      <div class="reveal holo rounded-3xl p-1">
+        <div class="rounded-[1.35rem] bg-ink p-8 h-full flex flex-col">
+          <h3 class="font-display font-bold text-gold tracking-widest text-sm">HYPER VIP</h3>
+          <div class="mt-4 font-slab text-5xl text-gold">$499</div>
+          <p class="text-chrome/50 text-sm mt-1">The full chrome-tier experience</p>
+          <ul class="mt-6 space-y-3 text-sm text-chrome/70 flex-1">
+            <li class="flex gap-2"><span class="text-acid">✓</span> Everything in 3-Night Pass</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Elevated stage-side viewing decks</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Private bar + zero-gravity pod</li>
+            <li class="flex gap-2"><span class="text-acid">✓</span> Artist meet-up &amp; merch crate</li>
+          </ul>
+          <a href="#" class="mt-7 block text-center rounded-full border border-gold/50 px-6 py-3 font-bold text-sm text-gold hover:bg-gold/10 transition">GO VIP</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="relative py-24 px-5 sm:px-8 bg-ink border-y border-cyber/20 overflow-hidden">
+  <div class="absolute -bottom-24 -right-24 w-96 h-96 mesh rounded-full blur-3xl opacity-40"></div>
+  <div class="mx-auto max-w-7xl relative z-10">
+    <div class="text-center mb-14 reveal">
+      <p class="font-display text-acid tracking-[0.4em] text-xs mb-2">⟁ FROM THE CROWD ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-7xl chrome-text">RAVE REVIEWS</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="reveal holo rounded-3xl p-7 bg-void/60">
+        <div class="text-cyber text-3xl mb-3">★★★★★</div>
+        <blockquote class="text-chrome/80 leading-relaxed">"I went in for the lasers and left with a new personality. The midnight NOVA RAVE set literally rearranged my molecules. Best three nights of the decade."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-hyper grid place-items-center font-slab text-void text-sm">RJ</span>
+          <span><span class="block font-bold text-chrome">Rey Juno</span><span class="text-xs text-chrome/50">Hyperdrive '98</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal holo rounded-3xl p-7 bg-void/60">
+        <div class="text-cyber text-3xl mb-3">★★★★★</div>
+        <blockquote class="text-chrome/80 leading-relaxed">"The Aurora Dome at 3am with Ghost Modem playing while the LED ceiling does a sunrise — I have never felt more like a character in a video game. Unreal."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-cyber grid place-items-center font-slab text-void text-sm">MV</span>
+          <span><span class="block font-bold text-chrome">Mira Vox</span><span class="text-xs text-chrome/50">VIP attendee</span></span>
+        </figcaption>
+      </figure>
+      <figure class="reveal holo rounded-3xl p-7 bg-void/60">
+        <div class="text-cyber text-3xl mb-3">★★★★★</div>
+        <blockquote class="text-chrome/80 leading-relaxed">"Camping pods were way nicer than my actual apartment, the shuttle was flawless, and LASER MILK closing it out had 12,000 people crying in unison. Already rebooked."</blockquote>
+        <figcaption class="mt-5 flex items-center gap-3">
+          <span class="w-10 h-10 rounded-full bg-acid grid place-items-center font-slab text-void text-sm">DK</span>
+          <span><span class="block font-bold text-chrome">Dex Karo</span><span class="text-xs text-chrome/50">3-night veteran</span></span>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="relative py-24 px-5 sm:px-8">
+  <div class="mx-auto max-w-3xl">
+    <div class="text-center mb-12 reveal">
+      <p class="font-display text-hyper tracking-[0.4em] text-xs mb-2">⟁ NEED-TO-KNOWS ⟁</p>
+      <h2 class="font-display font-black text-5xl sm:text-7xl chrome-text">THE FAQ</h2>
+    </div>
+
+    <div id="faqList" class="space-y-4">
+      <div class="faq holo rounded-2xl bg-ink overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-bold text-chrome">What's the minimum age?</span>
+          <span class="faq-icon text-cyber text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-a max-h-0 overflow-hidden transition-all duration-300 px-6 text-chrome/60">
+          <p class="pb-5">HYPERDRIVE 2099 is strictly 18+. Bring a valid government photo ID — the chrome gate scanners will check it and there are no exceptions.</p>
+        </div>
+      </div>
+      <div class="faq holo rounded-2xl bg-ink overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-bold text-chrome">Can I upgrade a single-night ticket later?</span>
+          <span class="faq-icon text-cyber text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-a max-h-0 overflow-hidden transition-all duration-300 px-6 text-chrome/60">
+          <p class="pb-5">Yes. Single-night holders can upgrade to a 3-Night Pass anytime before the gates open, paying only the current price difference. Upgrades happen in your account portal.</p>
+        </div>
+      </div>
+      <div class="faq holo rounded-2xl bg-ink overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-bold text-chrome">Is there parking and camping?</span>
+          <span class="faq-icon text-cyber text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-a max-h-0 overflow-hidden transition-all duration-300 px-6 text-chrome/60">
+          <p class="pb-5">On-site camping pods are available as an add-on at checkout. We strongly recommend the free Meridian Central shuttle loop — parking at the Saltflat is limited and fills fast.</p>
+        </div>
+      </div>
+      <div class="faq holo rounded-2xl bg-ink overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-bold text-chrome">What's your refund policy?</span>
+          <span class="faq-icon text-cyber text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-a max-h-0 overflow-hidden transition-all duration-300 px-6 text-chrome/60">
+          <p class="pb-5">All tickets are transferable but non-refundable. If the festival is cancelled outright, every pass is refunded in full automatically within 14 days.</p>
+        </div>
+      </div>
+      <div class="faq holo rounded-2xl bg-ink overflow-hidden">
+        <button class="faq-q w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+          <span class="font-display font-bold text-chrome">Will the full set times be released?</span>
+          <span class="faq-icon text-cyber text-2xl transition-transform">+</span>
+        </button>
+        <div class="faq-a max-h-0 overflow-hidden transition-all duration-300 px-6 text-chrome/60">
+          <p class="pb-5">The complete stage-by-stage schedule drops two weeks before doors, viewable in the HYPERDRIVE app with clash-finder and a build-your-own-night planner.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="relative py-28 px-5 sm:px-8 overflow-hidden scanlines">
+  <div class="absolute inset-0 mesh"></div>
+  <div class="absolute inset-x-0 bottom-0 h-2/3 retro-grid opacity-60"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-void/30 via-transparent to-void"></div>
+  <div class="relative z-10 mx-auto max-w-4xl text-center">
+    <div class="floaty inline-block mb-6">
+      <div class="w-20 h-20 star-burst bg-acid grid place-items-center font-slab text-void text-[10px] mx-auto rotate-6">LAST<br>CALL</div>
+    </div>
+    <h2 class="font-display font-black text-5xl sm:text-8xl leading-[0.85] reveal">
+      <span class="chrome-text">DON'T MISS</span><br>
+      <span class="chrome-pink">THE FUTURE</span>
+    </h2>
+    <p class="mt-6 text-lg text-chrome/80 max-w-xl mx-auto reveal">Phase 1 passes are vanishing fast. Lock yours in before the chrome gates close on the year 2099.</p>
+    <a href="#tickets" class="inline-block mt-9 rounded-full bg-gradient-to-r from-cyber via-hyper to-plasma px-10 py-5 font-slab text-base text-white shadow-2xl shadow-hyper/40 hover:scale-105 transition-transform glow-pulse reveal">GET TICKETS NOW →</a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-ink border-t border-plasma/30 py-16 px-5 sm:px-8">
+  <div class="mx-auto max-w-7xl grid md:grid-cols-4 gap-10">
+    <div class="md:col-span-2">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="inline-grid place-items-center w-9 h-9 rounded-lg holo"><span class="font-slab text-cyber text-lg">H</span></span>
+        <span class="font-display font-black tracking-[0.18em] chrome-text">HYPERDRIVE 2099</span>
+      </div>
+      <p class="text-chrome/50 max-w-sm leading-relaxed">A chrome-soaked festival of sound &amp; light. Three nights at the Aurora Dome. Welcome to the future you remember.</p>
+      <div class="flex gap-3 mt-6">
+        <a href="#" aria-label="Instagram" class="w-10 h-10 rounded-full holo grid place-items-center text-cyber hover:text-acid transition">◎</a>
+        <a href="#" aria-label="TikTok" class="w-10 h-10 rounded-full holo grid place-items-center text-cyber hover:text-acid transition">♫</a>
+        <a href="#" aria-label="X" class="w-10 h-10 rounded-full holo grid place-items-center text-cyber hover:text-acid transition">✕</a>
+        <a href="#" aria-label="Discord" class="w-10 h-10 rounded-full holo grid place-items-center text-cyber hover:text-acid transition">◇</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="font-display text-hyper tracking-widest text-xs mb-4">FESTIVAL</h4>
+      <ul class="space-y-2 text-chrome/60 text-sm">
+        <li><a href="#lineup" class="hover:text-cyber transition">Lineup</a></li>
+        <li><a href="#schedule" class="hover:text-cyber transition">Schedule</a></li>
+        <li><a href="#venue" class="hover:text-cyber transition">Venue</a></li>
+        <li><a href="#tickets" class="hover:text-cyber transition">Tickets</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-display text-hyper tracking-widest text-xs mb-4">SUPPORT</h4>
+      <ul class="space-y-2 text-chrome/60 text-sm">
+        <li><a href="#faq" class="hover:text-cyber transition">FAQ</a></li>
+        <li><a href="#" class="hover:text-cyber transition">Accessibility</a></li>
+        <li><a href="#" class="hover:text-cyber transition">Terms</a></li>
+        <li><a href="#" class="hover:text-cyber transition">Privacy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="mx-auto max-w-7xl mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-chrome/40 text-xs">
+    <p>© 2099 HYPERDRIVE Festival. All frequencies reserved.</p>
+    <p class="font-display tracking-widest">DEC 31 — JAN 2 · AURORA DOME</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Nav scroll state ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 30) {
+      nav.classList.add('bg-void/80', 'backdrop-blur-md', 'border-b', 'border-plasma/30');
+    } else {
+      nav.classList.remove('bg-void/80', 'backdrop-blur-md', 'border-b', 'border-plasma/30');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Odometer countdown ---------- */
+  const TARGET = new Date('2099-12-31T20:00:00').getTime();
+  const tracks = {};
+  document.querySelectorAll('.odo-track').forEach((t) => {
+    const unit = t.dataset.unit;
+    const max = unit === 'days' ? 999 : 60; // build a strip 0..max
+    // Build two-digit-ish strip: we render the numeric value as digits via single cell swap
+    tracks[unit] = t;
+    // Pre-fill with a single cell that we update
+    t.innerHTML = '<div class="odo-cell">00</div>';
+  });
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  const lastVals = {};
+  function setUnit(unit, val) {
+    const t = tracks[unit];
+    if (!t) return;
+    const str = unit === 'days' ? String(val).padStart(2, '0') : pad(val);
+    if (lastVals[unit] === str) return;
+    lastVals[unit] = str;
+
+    if (reduce) {
+      t.innerHTML = '<div class="odo-cell">' + str + '</div>';
+      return;
+    }
+    // Flip: stack old + new and slide up
+    const oldCell = t.querySelector('.odo-cell:last-child');
+    const oldText = oldCell ? oldCell.textContent : '00';
+    t.style.transition = 'none';
+    t.innerHTML = '<div class="odo-cell">' + oldText + '</div><div class="odo-cell">' + str + '</div>';
+    // force reflow then slide
+    void t.offsetHeight;
+    t.style.transition = 'transform 0.55s cubic-bezier(.2,.9,.2,1)';
+    t.style.transform = 'translateY(-50%)';
+    // after animation, settle to just the new value
+    setTimeout(() => {
+      t.style.transition = 'none';
+      t.style.transform = 'translateY(0)';
+      t.innerHTML = '<div class="odo-cell">' + str + '</div>';
+    }, 580);
+  }
+
+  function tick() {
+    const now = Date.now();
+    let diff = Math.max(0, TARGET - now);
+    const days = Math.floor(diff / 86400000); diff -= days * 86400000;
+    const hours = Math.floor(diff / 3600000); diff -= hours * 3600000;
+    const minutes = Math.floor(diff / 60000); diff -= minutes * 60000;
+    const seconds = Math.floor(diff / 1000);
+    setUnit('days', days);
+    setUnit('hours', hours);
+    setUnit('minutes', minutes);
+    setUnit('seconds', seconds);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq').forEach((item) => {
+    const btn = item.querySelector('.faq-q');
+    const ans = item.querySelector('.faq-a');
+    const icon = item.querySelector('.faq-icon');
+    btn.addEventListener('click', () => {
+      const open = ans.style.maxHeight && ans.style.maxHeight !== '0px';
+      // close all
+      document.querySelectorAll('.faq-a').forEach((a) => { a.style.maxHeight = '0px'; });
+      document.querySelectorAll('.faq-icon').forEach((i) => { i.style.transform = 'rotate(0deg)'; i.textContent = '+'; });
+      if (!open) {
+        ans.style.maxHeight = ans.scrollHeight + 'px';
+        icon.style.transform = 'rotate(135deg)';
+      }
+    });
+  });
+
+  /* ---------- GSAP scroll reveals + parallax ---------- */
+  if (window.gsap && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.reveal').forEach((el) => {
+      gsap.to(el, {
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+    });
+
+    // parallax retro grids
+    gsap.utils.toArray('.retro-grid').forEach((g) => {
+      gsap.to(g, {
+        backgroundPositionY: '+=160',
+        ease: 'none',
+        scrollTrigger: { trigger: g.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+  } else {
+    // ensure visible when motion reduced
+    document.querySelectorAll('.reveal').forEach((el) => { el.style.opacity = 1; el.style.transform = 'none'; });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lume Sable — Photographer & Visual Storyteller</title>
+<meta name="description" content="Lume Sable is a fine-art and editorial photographer crafting cinematic stories in light and shadow. Portrait, editorial, and travel commissions worldwide." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:    '#0b0b0d',
+          coal:   '#121215',
+          smoke:  '#1c1c20',
+          ash:    '#3a3a42',
+          fog:    '#9a9aa6',
+          mist:   '#cfcfd6',
+          amber:  '#c9a36a',   // accent
+          amberlo:'#e0c595',
+        },
+        fontFamily: {
+          serif: ['Fraunces', 'serif'],
+          sans:  ['Inter', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<!-- Lenis smooth scroll -->
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis/dist/lenis.min.js"></script>
+
+<style>
+  :root { --accent: #c9a36a; }
+  * { -webkit-font-smoothing: antialiased; }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #0b0b0d;
+    color: #cfcfd6;
+    cursor: none;
+  }
+  ::selection { background: var(--accent); color: #0b0b0d; }
+
+  /* Custom cursor */
+  .cursor-dot, .cursor-ring {
+    position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%); border-radius: 9999px;
+    mix-blend-mode: difference;
+  }
+  .cursor-dot  { width: 7px; height: 7px; background: #fff; }
+  .cursor-ring {
+    width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.6);
+    transition: width .3s ease, height .3s ease, background .3s ease, border-color .3s ease;
+  }
+  .cursor-ring.grow { width: 78px; height: 78px; background: rgba(201,163,106,0.12); border-color: rgba(201,163,106,0.8); }
+
+  /* Masked text reveal */
+  .mask-line { display: block; overflow: hidden; }
+  .mask-line > span { display: block; transform: translateY(110%); will-change: transform; }
+
+  /* Clip wipe */
+  .clip-wipe { clip-path: inset(0 0 100% 0); }
+
+  /* Image zoom on hover */
+  .zoom-img { transition: transform 1.1s cubic-bezier(.16,1,.3,1); }
+  .group:hover .zoom-img { transform: scale(1.06); }
+
+  /* Caption reveal */
+  .cap { transform: translateY(14px); opacity: 0; transition: all .5s cubic-bezier(.16,1,.3,1); }
+  .group:hover .cap { transform: translateY(0); opacity: 1; }
+
+  /* Marquee */
+  @keyframes scroll-x { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee { animation: scroll-x 32s linear infinite; }
+
+  /* Nav blur */
+  .nav-blur { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+
+  /* FAQ */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .5s cubic-bezier(.16,1,.3,1); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+
+  .grain::before {
+    content:""; position: fixed; inset: 0; pointer-events: none; z-index: 9000; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  @media (max-width: 768px) { body { cursor: auto; } .cursor-dot, .cursor-ring { display: none; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .mask-line > span { transform: none !important; }
+    .clip-wipe { clip-path: none !important; }
+    body { cursor: auto; }
+    .cursor-dot, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+
+<body class="font-sans antialiased grain selection:bg-amber">
+
+<!-- Custom cursor -->
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- ============ NAV ============ -->
+<header class="fixed top-0 inset-x-0 z-[100] nav-blur border-b border-white/5">
+  <nav class="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
+    <a href="#top" class="font-serif text-xl tracking-tight text-mist hover:text-amber transition" data-hover>
+      Lume<span class="text-amber">.</span>Sable
+    </a>
+    <ul class="hidden md:flex items-center gap-9 text-sm text-fog">
+      <li><a href="#series" class="hover:text-mist transition" data-hover>Series</a></li>
+      <li><a href="#about" class="hover:text-mist transition" data-hover>About</a></li>
+      <li><a href="#services" class="hover:text-mist transition" data-hover>Services</a></li>
+      <li><a href="#pricing" class="hover:text-mist transition" data-hover>Pricing</a></li>
+      <li><a href="#faq" class="hover:text-mist transition" data-hover>FAQ</a></li>
+    </ul>
+    <a href="#book" data-hover class="text-sm px-5 py-2.5 rounded-full border border-amber/50 text-amberlo hover:bg-amber hover:text-ink transition-all duration-300">
+      Book a shoot
+    </a>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative min-h-screen flex items-end overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-ink via-coal to-ink">
+    <img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1600&q=80"
+         onerror="this.style.display='none'" alt="Signature frame — mountains at dusk"
+         class="w-full h-full object-cover opacity-70 parallax" data-speed="0.18" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/30 to-ink/60"></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 w-full pb-20 lg:pb-28">
+    <p class="mask-line text-amberlo text-xs tracking-[0.4em] uppercase mb-6"><span>Fine-art · Editorial · Travel</span></p>
+    <h1 class="font-serif font-light text-mist leading-[0.92] text-[15vw] md:text-[11rem]">
+      <span class="mask-line"><span>Lume</span></span>
+      <span class="mask-line"><span class="italic text-amber">Sable</span></span>
+    </h1>
+    <div class="mt-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+      <p class="mask-line max-w-md text-fog text-base md:text-lg leading-relaxed">
+        <span>Photographer chasing the hour between light and shadow — cinematic stories told in grain, silence, and stillness.</span>
+      </p>
+      <a href="#series" data-hover class="group inline-flex items-center gap-3 text-mist text-sm tracking-wide shrink-0">
+        <span class="border-b border-amber/40 group-hover:border-amber pb-1 transition">View selected work</span>
+        <span class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-amber group-hover:text-ink group-hover:border-amber transition">↓</span>
+      </a>
+    </div>
+  </div>
+  <div class="absolute bottom-6 right-6 lg:right-10 z-10 text-[11px] tracking-[0.3em] text-fog/60 uppercase rotate-90 origin-right hidden lg:block">Scroll</div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<section class="py-8 border-y border-white/5 bg-coal overflow-hidden">
+  <div class="flex marquee w-max whitespace-nowrap text-fog/50 font-serif italic text-3xl md:text-5xl gap-12">
+    <span>Light&nbsp;·&nbsp;Shadow&nbsp;·&nbsp;Silence&nbsp;·&nbsp;Grain&nbsp;·&nbsp;Stillness&nbsp;·&nbsp;Frame&nbsp;·</span>
+    <span>Light&nbsp;·&nbsp;Shadow&nbsp;·&nbsp;Silence&nbsp;·&nbsp;Grain&nbsp;·&nbsp;Stillness&nbsp;·&nbsp;Frame&nbsp;·</span>
+  </div>
+</section>
+
+<!-- ============ FEATURED SERIES (MASONRY) ============ -->
+<section id="series" class="max-w-7xl mx-auto px-6 lg:px-10 py-28 md:py-40">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+    <div>
+      <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-4 reveal">Selected Series</p>
+      <h2 class="font-serif font-light text-4xl md:text-6xl text-mist leading-tight reveal">
+        Frames that<br><span class="italic text-amber">linger</span> after.
+      </h2>
+    </div>
+    <p class="max-w-sm text-fog leading-relaxed reveal">A curated selection across editorial commissions, personal travel work, and intimate portrait sessions from the last seven years.</p>
+  </div>
+
+  <div class="columns-1 sm:columns-2 lg:columns-3 gap-5 [&>*]:mb-5">
+    <!-- card -->
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1454942901704-3c44c11b2ad1?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dunes at first light" class="zoom-img w-full object-cover aspect-[3/4]" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Ochre Expanse</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Travel · Namibia '23</p>
+      </figcaption>
+    </figure>
+
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lone figure on coastline" class="zoom-img w-full object-cover aspect-square" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Tidal Quiet</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Editorial · Vogue ME</p>
+      </figcaption>
+    </figure>
+
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Forest light beams" class="zoom-img w-full object-cover aspect-[4/5]" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Cathedral of Pines</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Personal · Patagonia</p>
+      </figcaption>
+    </figure>
+
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Misty valley road" class="zoom-img w-full object-cover aspect-[3/4]" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Vanishing Road</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Travel · Faroe Isles</p>
+      </figcaption>
+    </figure>
+
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dusk over the ridge" class="zoom-img w-full object-cover aspect-square" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Last Ember</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Personal · Dolomites</p>
+      </figcaption>
+    </figure>
+
+    <figure class="group relative overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+      <img src="https://images.unsplash.com/photo-1454942901704-3c44c11b2ad1?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Wind-carved dune" class="zoom-img w-full object-cover aspect-[4/5]" />
+      <figcaption class="cap absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-ink/90 to-transparent">
+        <p class="font-serif text-mist text-lg">Carved by Wind</p>
+        <p class="text-xs text-amberlo tracking-widest uppercase">Editorial · Kinfolk</p>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ FULL-BLEED PARALLAX BREAK ============ -->
+<section class="relative h-[70vh] md:h-screen overflow-hidden flex items-center justify-center">
+  <div class="absolute inset-0 bg-ink">
+    <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Open horizon" class="w-full h-[130%] object-cover opacity-55 parallax" data-speed="0.25" />
+    <div class="absolute inset-0 bg-ink/40"></div>
+  </div>
+  <blockquote class="relative z-10 text-center px-6 max-w-3xl">
+    <p class="font-serif italic font-light text-3xl md:text-5xl text-mist leading-snug reveal">
+      "I don't take photographs. I wait for the light to confess."
+    </p>
+  </blockquote>
+</section>
+
+<!-- ============ ABOUT ============ -->
+<section id="about" class="max-w-7xl mx-auto px-6 lg:px-10 py-28 md:py-40">
+  <div class="grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-5 relative">
+      <div class="overflow-hidden rounded-sm bg-gradient-to-br from-smoke to-ink reveal">
+        <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lume Sable, photographer" class="w-full object-cover aspect-[4/5]" />
+      </div>
+      <div class="absolute -bottom-6 -right-4 md:right-8 bg-amber text-ink px-6 py-4 rounded-sm shadow-2xl reveal">
+        <p class="font-serif text-2xl leading-none">07 yrs</p>
+        <p class="text-[11px] tracking-widest uppercase mt-1">behind the lens</p>
+      </div>
+    </div>
+    <div class="lg:col-span-6 lg:col-start-7">
+      <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-5 reveal">About</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl text-mist leading-tight mb-8 reveal">
+        I'm Lume — a maker of quiet, <span class="italic text-amber">cinematic</span> images.
+      </h2>
+      <div class="space-y-5 text-fog leading-relaxed reveal">
+        <p>Based between Lisbon and wherever the next assignment lands, I work in available light and patient composition. My background in film photography taught me restraint — to wait, to underexpose, to let mood do the talking.</p>
+        <p>From editorial spreads to private portrait commissions, every frame is treated as a single, deliberate sentence in a longer story. No noise. No filler. Only what the moment offered.</p>
+      </div>
+      <!-- count-up stats -->
+      <div class="grid grid-cols-3 gap-6 mt-12 reveal">
+        <div>
+          <p class="font-serif text-4xl text-mist"><span class="count" data-to="420">0</span>+</p>
+          <p class="text-xs text-fog tracking-widest uppercase mt-1">Shoots</p>
+        </div>
+        <div>
+          <p class="font-serif text-4xl text-mist"><span class="count" data-to="68">0</span></p>
+          <p class="text-xs text-fog tracking-widest uppercase mt-1">Clients</p>
+        </div>
+        <div>
+          <p class="font-serif text-4xl text-mist"><span class="count" data-to="23">0</span></p>
+          <p class="text-xs text-fog tracking-widest uppercase mt-1">Countries</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICES ============ -->
+<section id="services" class="bg-coal border-y border-white/5 py-28 md:py-40">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <div class="mb-16 reveal">
+      <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-4">What I shoot</p>
+      <h2 class="font-serif font-light text-4xl md:text-6xl text-mist">Commissions</h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5">
+      <div class="group bg-coal p-8 hover:bg-smoke transition-colors duration-500 reveal">
+        <p class="text-amber font-serif text-3xl mb-6">01</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Portrait</h3>
+        <p class="text-fog text-sm leading-relaxed">Intimate, character-led sessions for individuals, founders, and families — natural light only.</p>
+      </div>
+      <div class="group bg-coal p-8 hover:bg-smoke transition-colors duration-500 reveal">
+        <p class="text-amber font-serif text-3xl mb-6">02</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Editorial</h3>
+        <p class="text-fog text-sm leading-relaxed">Narrative-driven shoots for magazines, brands, and lookbooks with full art direction.</p>
+      </div>
+      <div class="group bg-coal p-8 hover:bg-smoke transition-colors duration-500 reveal">
+        <p class="text-amber font-serif text-3xl mb-6">03</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Travel & Landscape</h3>
+        <p class="text-fog text-sm leading-relaxed">Assignment and stock work capturing place, atmosphere, and the texture of distance.</p>
+      </div>
+      <div class="group bg-coal p-8 hover:bg-smoke transition-colors duration-500 reveal">
+        <p class="text-amber font-serif text-3xl mb-6">04</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Fine-Art Prints</h3>
+        <p class="text-fog text-sm leading-relaxed">Limited-edition archival prints from the personal collection, signed and numbered.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS / CLIENTS ============ -->
+<section class="max-w-7xl mx-auto px-6 lg:px-10 py-28 md:py-40">
+  <div class="grid lg:grid-cols-2 gap-16">
+    <div>
+      <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-4 reveal">Kind words</p>
+      <h2 class="font-serif font-light text-4xl md:text-5xl text-mist mb-12 reveal">Trusted by people who care about the image.</h2>
+      <div class="flex flex-wrap gap-x-10 gap-y-6 text-fog/70 font-serif italic text-xl reveal">
+        <span>Kinfolk</span><span>Vogue ME</span><span>Aēsop</span><span>Cereal</span><span>Monocle</span><span>Wallpaper*</span>
+      </div>
+    </div>
+    <div class="space-y-6">
+      <figure class="border border-white/10 rounded-sm p-8 hover:border-amber/30 transition reveal">
+        <p class="font-serif text-xl text-mist leading-relaxed mb-6">"Lume sees what the rest of us walk past. The portrait series for our launch did more storytelling than any campaign copy could."</p>
+        <figcaption class="text-sm text-fog">— Mara Eltz · Creative Director, <span class="text-amberlo">Aēsop</span></figcaption>
+      </figure>
+      <figure class="border border-white/10 rounded-sm p-8 hover:border-amber/30 transition reveal">
+        <p class="font-serif text-xl text-mist leading-relaxed mb-6">"Calm on set, surgical in the edit. Every frame felt inevitable, like it had always existed."</p>
+        <figcaption class="text-sm text-fog">— Joon Park · Photo Editor, <span class="text-amberlo">Monocle</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section class="bg-coal border-y border-white/5 py-28 md:py-40">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10">
+    <h2 class="font-serif font-light text-4xl md:text-6xl text-mist mb-16 reveal">How a shoot <span class="italic text-amber">unfolds</span></h2>
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="reveal">
+        <div class="h-px w-full bg-amber/30 mb-6"></div>
+        <p class="text-amberlo text-sm tracking-widest mb-3">STEP 01</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Conversation</h3>
+        <p class="text-fog text-sm leading-relaxed">We talk mood, references, and intent before a single shutter clicks.</p>
+      </div>
+      <div class="reveal">
+        <div class="h-px w-full bg-amber/30 mb-6"></div>
+        <p class="text-amberlo text-sm tracking-widest mb-3">STEP 02</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Treatment</h3>
+        <p class="text-fog text-sm leading-relaxed">A short visual treatment — palette, locations, and shot list — for sign-off.</p>
+      </div>
+      <div class="reveal">
+        <div class="h-px w-full bg-amber/30 mb-6"></div>
+        <p class="text-amberlo text-sm tracking-widest mb-3">STEP 03</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">The Shoot</h3>
+        <p class="text-fog text-sm leading-relaxed">Unhurried, light-led, and collaborative. We chase the hour, not the clock.</p>
+      </div>
+      <div class="reveal">
+        <div class="h-px w-full bg-amber/30 mb-6"></div>
+        <p class="text-amberlo text-sm tracking-widest mb-3">STEP 04</p>
+        <h3 class="font-serif text-2xl text-mist mb-3">Delivery</h3>
+        <p class="text-fog text-sm leading-relaxed">Hand-graded selects in a private gallery within ten working days.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING / BOOKING ============ -->
+<section id="pricing" class="max-w-7xl mx-auto px-6 lg:px-10 py-28 md:py-40">
+  <div class="text-center mb-16 reveal">
+    <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-4">Investment</p>
+    <h2 class="font-serif font-light text-4xl md:text-6xl text-mist">Choose your frame</h2>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="border border-white/10 rounded-sm p-8 hover:border-amber/40 transition reveal">
+      <h3 class="font-serif text-2xl text-mist mb-2">Session</h3>
+      <p class="font-serif text-4xl text-amber mb-1">€480</p>
+      <p class="text-xs text-fog tracking-widest uppercase mb-8">half-day portrait</p>
+      <ul class="space-y-3 text-sm text-fog">
+        <li>· Up to 2 hours on location</li>
+        <li>· 15 hand-graded selects</li>
+        <li>· Private online gallery</li>
+        <li>· Personal usage license</li>
+      </ul>
+    </div>
+    <div class="relative bg-smoke border border-amber/50 rounded-sm p-8 scale-[1.03] shadow-2xl reveal">
+      <span class="absolute top-5 right-5 text-[10px] tracking-widest uppercase bg-amber text-ink px-3 py-1 rounded-full">Popular</span>
+      <h3 class="font-serif text-2xl text-mist mb-2">Editorial</h3>
+      <p class="font-serif text-4xl text-amber mb-1">€1,650</p>
+      <p class="text-xs text-fog tracking-widest uppercase mb-8">full-day commission</p>
+      <ul class="space-y-3 text-sm text-mist">
+        <li>· Full-day shoot + treatment</li>
+        <li>· 40 graded selects</li>
+        <li>· Art direction included</li>
+        <li>· Commercial license</li>
+        <li>· Priority 7-day delivery</li>
+      </ul>
+    </div>
+    <div class="border border-white/10 rounded-sm p-8 hover:border-amber/40 transition reveal">
+      <h3 class="font-serif text-2xl text-mist mb-2">Campaign</h3>
+      <p class="font-serif text-4xl text-amber mb-1">Custom</p>
+      <p class="text-xs text-fog tracking-widest uppercase mb-8">multi-day production</p>
+      <ul class="space-y-3 text-sm text-fog">
+        <li>· Multi-location production</li>
+        <li>· Crew + retouch managed</li>
+        <li>· Unlimited selects</li>
+        <li>· Worldwide usage rights</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="bg-coal border-y border-white/5 py-28 md:py-40">
+  <div class="max-w-4xl mx-auto px-6 lg:px-10">
+    <h2 class="font-serif font-light text-4xl md:text-6xl text-mist mb-14 reveal">Questions</h2>
+    <div class="divide-y divide-white/10">
+      <div class="faq-item reveal">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-xl text-mist">Do you travel for shoots?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-fog pb-6 leading-relaxed">Always. Roughly half my work happens on assignment abroad. Travel and accommodation are quoted transparently on top of the session fee.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-xl text-mist">How soon will I see the photos?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-fog pb-6 leading-relaxed">Standard delivery is ten working days. Editorial and campaign clients receive a priority seven-day turnaround on graded selects.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-xl text-mist">Do you shoot film or digital?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-fog pb-6 leading-relaxed">Both. Most commercial work is digital for flexibility; personal and fine-art series often live on medium-format film. We'll decide together based on the mood you're after.</p></div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left" data-hover>
+          <span class="font-serif text-xl text-mist">Can I license a print from the collection?</span>
+          <span class="faq-plus text-amber text-2xl transition-transform duration-300 shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="text-fog pb-6 leading-relaxed">Yes — selected works are available as signed, numbered archival prints in limited editions of fifteen. Reach out for the current print list and sizing.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section id="book" class="relative overflow-hidden py-32 md:py-48">
+  <div class="absolute inset-0 bg-ink">
+    <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Misty horizon" class="w-full h-[130%] object-cover opacity-30 parallax" data-speed="0.2" />
+    <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/40"></div>
+  </div>
+  <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+    <p class="text-amberlo text-xs tracking-[0.4em] uppercase mb-6 reveal">Let's make something</p>
+    <h2 class="font-serif font-light text-5xl md:text-7xl text-mist leading-[1.02] mb-10 reveal">
+      Book a shoot<br><span class="italic text-amber">that lingers.</span>
+    </h2>
+    <a href="mailto:studio@lumesable.co" data-hover class="inline-flex items-center gap-3 bg-amber text-ink px-9 py-4 rounded-full text-sm tracking-wide hover:bg-amberlo transition-all duration-300">
+      Start a conversation
+      <span>→</span>
+    </a>
+    <p class="text-fog text-sm mt-6 reveal">Or email <span class="text-mist">studio@lumesable.co</span></p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-ink border-t border-white/5 py-16">
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 grid md:grid-cols-3 gap-10 items-start">
+    <div>
+      <p class="font-serif text-2xl text-mist mb-3">Lume<span class="text-amber">.</span>Sable</p>
+      <p class="text-fog text-sm leading-relaxed max-w-xs">Photographer & visual storyteller. Lisbon · everywhere the light goes.</p>
+    </div>
+    <div class="flex gap-8 text-sm text-fog md:justify-center">
+      <a href="#series" class="hover:text-mist transition" data-hover>Series</a>
+      <a href="#services" class="hover:text-mist transition" data-hover>Services</a>
+      <a href="#pricing" class="hover:text-mist transition" data-hover>Pricing</a>
+      <a href="#book" class="hover:text-mist transition" data-hover>Book</a>
+    </div>
+    <div class="flex gap-6 text-sm text-fog md:justify-end">
+      <a href="#" class="hover:text-amber transition" data-hover>Instagram</a>
+      <a href="#" class="hover:text-amber transition" data-hover>Behance</a>
+      <a href="#" class="hover:text-amber transition" data-hover>Email</a>
+    </div>
+  </div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-10 mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between gap-4 text-xs text-fog/60">
+    <p>© 2026 Lume Sable Studio. All frames reserved.</p>
+    <p>Crafted in light & shadow.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Custom cursor ---------- */
+  if (!reduce && window.matchMedia('(pointer:fine)').matches) {
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    window.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    function loop() {
+      rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(loop);
+    }
+    loop();
+    document.querySelectorAll('[data-hover], a, button, .group').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('grow'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('grow'));
+    });
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.faq-item');
+      document.querySelectorAll('.faq-item').forEach(i => { if (i !== item) i.classList.remove('open'); });
+      item.classList.toggle('open');
+    });
+  });
+
+  if (reduce) {
+    document.querySelectorAll('.mask-line > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('.count').forEach(c => c.textContent = c.dataset.to);
+    return;
+  }
+
+  /* ---------- Lenis smooth scroll ---------- */
+  let lenis;
+  if (window.Lenis) {
+    lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9 });
+    function raf(t) { lenis.raf(t); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+  }
+
+  gsap.registerPlugin(ScrollTrigger);
+  if (lenis) { lenis.on('scroll', ScrollTrigger.update); }
+
+  /* ---------- Hero masked title reveal ---------- */
+  gsap.to('.mask-line > span', {
+    yPercent: 0, duration: 1.2, ease: 'expo.out', stagger: 0.08, delay: 0.2,
+  });
+
+  /* ---------- Reveal-on-scroll (staggered + clip wipe) ---------- */
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.fromTo(el,
+      { y: 40, opacity: 0, clipPath: 'inset(0 0 12% 0)' },
+      {
+        y: 0, opacity: 1, clipPath: 'inset(0 0 0% 0)', duration: 1, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%' }
+      });
+  });
+
+  /* ---------- Parallax on full-bleed images ---------- */
+  gsap.utils.toArray('.parallax').forEach(img => {
+    const speed = parseFloat(img.dataset.speed) || 0.2;
+    gsap.fromTo(img, { yPercent: -speed * 50 }, {
+      yPercent: speed * 50, ease: 'none',
+      scrollTrigger: { trigger: img, start: 'top bottom', end: 'bottom top', scrub: true }
+    });
+  });
+
+  /* ---------- Count-up stats ---------- */
+  document.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to;
+    ScrollTrigger.create({
+      trigger: el, start: 'top 90%', once: true,
+      onEnter: () => {
+        const obj = { v: 0 };
+        gsap.to(obj, { v: to, duration: 1.8, ease: 'power2.out',
+          onUpdate: () => { el.textContent = Math.round(obj.v); } });
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

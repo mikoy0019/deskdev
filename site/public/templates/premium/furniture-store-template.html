@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Marrow &amp; Oak — Designer Furniture for Considered Living</title>
+<meta name="description" content="Marrow &amp; Oak crafts timeless, sustainably-made furniture and homeware. Solid hardwoods, honest joinery, and warm minimal design for the considered home." />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          sand:    "#F5F0E8",
+          shell:   "#EBE3D7",
+          linen:   "#FBF8F3",
+          clay:    "#B98E6E",
+          terra:   "#9C6A45",
+          umber:   "#5A4633",
+          bark:    "#2E2620",
+          moss:    "#6E7359",
+          stone:   "#A9A296",
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['Manrope', 'system-ui', 'sans-serif'],
+        },
+        letterSpacing: {
+          tightest: '-0.045em',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- GSAP -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<style>
+  :root { --ease: cubic-bezier(.22,1,.36,1); }
+  html, body { overflow-x: hidden; }
+  body {
+    background: #FBF8F3;
+    color: #2E2620;
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: #B98E6E; color: #FBF8F3; }
+
+  /* Custom cursor follower */
+  .cursor-dot {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    width: 64px; height: 64px; margin: -32px 0 0 -32px;
+    border-radius: 9999px; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    background: #2E2620; color: #FBF8F3;
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    opacity: 0; transform: scale(.4);
+    transition: opacity .35s var(--ease), transform .35s var(--ease), background .3s var(--ease);
+    mix-blend-mode: normal;
+  }
+  @media (hover: none) { .cursor-dot { display: none; } }
+
+  /* Masked text reveal */
+  .reveal-line { display: block; overflow: hidden; }
+  .reveal-line > span { display: block; transform: translateY(110%); }
+
+  /* Product card */
+  .pcard .img-base { transition: opacity .6s var(--ease); }
+  .pcard .img-hover { opacity: 0; transition: opacity .6s var(--ease), transform 1.2s var(--ease); transform: scale(1.06); }
+  .pcard:hover .img-base { opacity: 0; }
+  .pcard:hover .img-hover { opacity: 1; transform: scale(1); }
+  .pcard:hover .quick-add { transform: translateY(0); opacity: 1; }
+  .quick-add { transform: translateY(120%); opacity: 0; transition: transform .5s var(--ease), opacity .4s var(--ease); }
+
+  /* Category rail */
+  .rail::-webkit-scrollbar { height: 0; }
+  .rail { scrollbar-width: none; }
+
+  /* Accordion */
+  .faq-body { max-height: 0; overflow: hidden; transition: max-height .55s var(--ease); }
+  .faq-item.open .faq-body { max-height: 320px; }
+  .faq-item.open .faq-plus { transform: rotate(45deg); }
+  .faq-plus { transition: transform .4s var(--ease); }
+
+  .underline-grow { position: relative; }
+  .underline-grow::after {
+    content: ''; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%;
+    background: currentColor; transform: scaleX(0); transform-origin: right;
+    transition: transform .5s var(--ease);
+  }
+  .underline-grow:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  .parallax-wrap { overflow: hidden; }
+
+  .marquee-track { animation: marquee 32s linear infinite; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-line > span { transform: none !important; }
+    .marquee-track { animation: none; }
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+
+<body class="antialiased">
+
+<!-- Cursor follower -->
+<div class="cursor-dot" id="cursor">View</div>
+
+<!-- ============ NAV ============ -->
+<header id="nav" class="fixed top-0 inset-x-0 z-50 transition-all duration-500">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex items-center justify-between h-[72px] border-b border-bark/10">
+      <a href="#top" class="flex items-center gap-2 group">
+        <span class="w-8 h-8 rounded-full bg-bark text-linen grid place-items-center font-display text-sm">M</span>
+        <span class="font-display text-xl tracking-tightest text-bark">Marrow<span class="text-clay">&amp;</span>Oak</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-9 text-[13px] font-medium tracking-wide text-umber">
+        <a href="#shop" class="underline-grow">Shop</a>
+        <a href="#collections" class="underline-grow">Collections</a>
+        <a href="#craft" class="underline-grow">Our Craft</a>
+        <a href="#lookbook" class="underline-grow">Lookbook</a>
+        <a href="#faq" class="underline-grow">Help</a>
+      </nav>
+
+      <div class="flex items-center gap-5">
+        <button class="hidden sm:block text-umber hover:text-bark transition-colors" aria-label="Search">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+        <button id="cartBtn" class="relative flex items-center gap-2 text-umber hover:text-bark transition-colors" aria-label="Cart">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span class="text-[13px] font-medium">Cart</span>
+          <span id="cartCount" class="absolute -top-2 -right-3 w-[18px] h-[18px] rounded-full bg-clay text-linen text-[10px] grid place-items-center font-semibold">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ============ HERO ============ -->
+<section class="relative pt-[72px]">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-12">
+    <div class="grid lg:grid-cols-12 gap-10 items-end">
+      <div class="lg:col-span-6">
+        <p class="reveal-line text-[12px] tracking-[0.28em] uppercase text-clay font-semibold mb-6"><span>Considered furniture · Est. 2014</span></p>
+        <h1 class="font-display font-light text-bark leading-[0.95] tracking-tightest text-[clamp(2.6rem,7vw,5.4rem)]">
+          <span class="reveal-line"><span>Honest pieces</span></span>
+          <span class="reveal-line"><span>for the <em class="italic text-terra font-normal">considered</em></span></span>
+          <span class="reveal-line"><span>home.</span></span>
+        </h1>
+        <p class="reveal-line mt-7 max-w-md text-umber/80 text-[15px] leading-relaxed"><span>Solid hardwoods, slow joinery, and forms that quiet a room. Furniture made to be lived with — and handed on.</span></p>
+        <div class="mt-9 flex flex-wrap items-center gap-4" data-hero-cta>
+          <a href="#shop" class="group inline-flex items-center gap-3 rounded-full bg-bark text-linen px-7 py-3.5 text-[13px] font-semibold tracking-wide hover:bg-terra transition-colors duration-400">
+            Shop the collection
+            <span class="transition-transform duration-300 group-hover:translate-x-1">→</span>
+          </a>
+          <a href="#craft" class="inline-flex items-center gap-2 text-[13px] font-semibold text-umber underline-grow">Our craft</a>
+        </div>
+      </div>
+
+      <div class="lg:col-span-6">
+        <div class="parallax-wrap rounded-[28px] bg-gradient-to-br from-shell to-clay/40 aspect-[4/5] sm:aspect-[5/5]">
+          <img data-parallax src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Living room with a warm linen sofa" class="w-full h-[118%] object-cover -mt-[9%]" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat ribbon -->
+  <div class="border-y border-bark/10 bg-sand/60">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 grid grid-cols-2 md:grid-cols-4 divide-x divide-bark/10">
+      <div class="py-7 px-4 text-center md:text-left">
+        <div class="font-display text-3xl text-bark"><span class="countup" data-to="42">0</span>k+</div>
+        <p class="text-[12px] tracking-wide text-umber/70 mt-1">Homes furnished</p>
+      </div>
+      <div class="py-7 px-4 text-center md:text-left">
+        <div class="font-display text-3xl text-bark"><span class="countup" data-to="100">0</span>%</div>
+        <p class="text-[12px] tracking-wide text-umber/70 mt-1">FSC-certified timber</p>
+      </div>
+      <div class="py-7 px-4 text-center md:text-left">
+        <div class="font-display text-3xl text-bark"><span class="countup" data-to="25">0</span>yr</div>
+        <p class="text-[12px] tracking-wide text-umber/70 mt-1">Structural warranty</p>
+      </div>
+      <div class="py-7 px-4 text-center md:text-left">
+        <div class="font-display text-3xl text-bark"><span class="countup" data-to="9">0</span>.6</div>
+        <p class="text-[12px] tracking-wide text-umber/70 mt-1">Avg. review score</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CATEGORY RAIL ============ -->
+<section id="collections" class="py-16 sm:py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 flex items-end justify-between mb-9">
+    <div>
+      <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-3" data-reveal>Browse by room</p>
+      <h2 class="font-display text-[clamp(1.8rem,4vw,3rem)] tracking-tightest text-bark leading-none" data-reveal>Shop every corner</h2>
+    </div>
+    <div class="hidden sm:flex gap-2">
+      <button class="rail-prev w-11 h-11 rounded-full border border-bark/15 grid place-items-center hover:bg-bark hover:text-linen transition-colors">←</button>
+      <button class="rail-next w-11 h-11 rounded-full border border-bark/15 grid place-items-center hover:bg-bark hover:text-linen transition-colors">→</button>
+    </div>
+  </div>
+
+  <div class="rail flex gap-5 overflow-x-auto px-5 sm:px-8 pb-4 snap-x snap-mandatory" id="catRail">
+    <!-- cards injected by script for brevity? No — inline -->
+    <article class="rail-card snap-start shrink-0 w-[260px] sm:w-[300px]" data-cursor="Explore">
+      <div class="parallax-wrap rounded-[22px] aspect-[3/4] bg-gradient-to-br from-shell to-stone/40">
+        <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Living room seating" class="w-full h-full object-cover" />
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <h3 class="font-display text-xl text-bark">Living</h3>
+        <span class="text-[12px] text-umber/60">38 pieces</span>
+      </div>
+    </article>
+    <article class="rail-card snap-start shrink-0 w-[260px] sm:w-[300px]" data-cursor="Explore">
+      <div class="parallax-wrap rounded-[22px] aspect-[3/4] bg-gradient-to-br from-clay/30 to-terra/30">
+        <img src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Dining furniture" class="w-full h-full object-cover" />
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <h3 class="font-display text-xl text-bark">Dining</h3>
+        <span class="text-[12px] text-umber/60">24 pieces</span>
+      </div>
+    </article>
+    <article class="rail-card snap-start shrink-0 w-[260px] sm:w-[300px]" data-cursor="Explore">
+      <div class="parallax-wrap rounded-[22px] aspect-[3/4] bg-gradient-to-br from-sand to-clay/40">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Bedroom" class="w-full h-full object-cover" />
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <h3 class="font-display text-xl text-bark">Bedroom</h3>
+        <span class="text-[12px] text-umber/60">31 pieces</span>
+      </div>
+    </article>
+    <article class="rail-card snap-start shrink-0 w-[260px] sm:w-[300px]" data-cursor="Explore">
+      <div class="parallax-wrap rounded-[22px] aspect-[3/4] bg-gradient-to-br from-moss/25 to-stone/40">
+        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Workspace" class="w-full h-full object-cover" />
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <h3 class="font-display text-xl text-bark">Workspace</h3>
+        <span class="text-[12px] text-umber/60">18 pieces</span>
+      </div>
+    </article>
+    <article class="rail-card snap-start shrink-0 w-[260px] sm:w-[300px]" data-cursor="Explore">
+      <div class="parallax-wrap rounded-[22px] aspect-[3/4] bg-gradient-to-br from-shell to-clay/30">
+        <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lighting and decor" class="w-full h-full object-cover" />
+      </div>
+      <div class="flex items-center justify-between mt-4">
+        <h3 class="font-display text-xl text-bark">Lighting &amp; Decor</h3>
+        <span class="text-[12px] text-umber/60">52 pieces</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ FEATURED PRODUCTS ============ -->
+<section id="shop" class="py-12 sm:py-20 bg-linen">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-6 mb-12">
+      <div>
+        <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-3" data-reveal>This season</p>
+        <h2 class="font-display text-[clamp(1.8rem,4.5vw,3.4rem)] tracking-tightest text-bark leading-none" data-reveal>Featured pieces</h2>
+      </div>
+      <div class="flex gap-2 text-[12px] font-medium" data-reveal>
+        <button class="px-4 py-2 rounded-full bg-bark text-linen">All</button>
+        <button class="px-4 py-2 rounded-full border border-bark/15 text-umber hover:border-bark/40 transition-colors">Seating</button>
+        <button class="px-4 py-2 rounded-full border border-bark/15 text-umber hover:border-bark/40 transition-colors">Tables</button>
+        <button class="px-4 py-2 rounded-full border border-bark/15 text-umber hover:border-bark/40 transition-colors">Storage</button>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12" id="productGrid">
+      <!-- Product 1 -->
+      <article class="pcard group" data-reveal data-price="1480" data-name="Hartley Lounge Chair">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-shell to-stone/40">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Hartley lounge chair" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Hartley lounge chair alt view" />
+          <span class="absolute top-3 left-3 text-[11px] font-semibold tracking-wide bg-linen/90 text-umber px-3 py-1 rounded-full">New</span>
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $1,480</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Hartley Lounge Chair</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">Oiled white oak · Wool bouclé</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$1,480</span>
+        </div>
+      </article>
+
+      <!-- Product 2 -->
+      <article class="pcard group" data-reveal data-price="2240" data-name="Norden Dining Table">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-clay/30 to-terra/25">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Norden dining table" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Norden dining table alt" />
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $2,240</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Norden Dining Table</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">Solid walnut · Seats 6</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$2,240</span>
+        </div>
+      </article>
+
+      <!-- Product 3 -->
+      <article class="pcard group" data-reveal data-price="3180" data-name="Lowell Sofa">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-sand to-clay/30">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lowell sofa" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lowell sofa alt" />
+          <span class="absolute top-3 left-3 text-[11px] font-semibold tracking-wide bg-moss/90 text-linen px-3 py-1 rounded-full">Bestseller</span>
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $3,180</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Lowell Sofa</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">3-seat · Stone linen weave</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$3,180</span>
+        </div>
+      </article>
+
+      <!-- Product 4 -->
+      <article class="pcard group" data-reveal data-price="640" data-name="Pell Side Table">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-shell to-moss/20">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Pell side table" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Pell side table alt" />
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $640</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Pell Side Table</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">Turned ash · Hand-waxed</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$640</span>
+        </div>
+      </article>
+
+      <!-- Product 5 -->
+      <article class="pcard group" data-reveal data-price="1920" data-name="Brae Shelving">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-clay/25 to-stone/40">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Brae shelving" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Brae shelving alt" />
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $1,920</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Brae Open Shelving</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">Modular · Oak &amp; blackened steel</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$1,920</span>
+        </div>
+      </article>
+
+      <!-- Product 6 -->
+      <article class="pcard group" data-reveal data-price="380" data-name="Cove Floor Lamp">
+        <div class="relative parallax-wrap rounded-[20px] aspect-[4/5] bg-gradient-to-br from-sand to-terra/20">
+          <img class="img-base w-full h-full object-cover" src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cove floor lamp" />
+          <img class="img-hover absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Cove floor lamp alt" />
+          <span class="absolute top-3 left-3 text-[11px] font-semibold tracking-wide bg-linen/90 text-umber px-3 py-1 rounded-full">Last few</span>
+          <div class="quick-add absolute inset-x-3 bottom-3">
+            <button class="add-btn w-full rounded-full bg-bark/95 backdrop-blur text-linen text-[13px] font-semibold py-3 hover:bg-terra transition-colors">Quick add — $380</button>
+          </div>
+        </div>
+        <div class="flex items-start justify-between mt-4">
+          <div>
+            <h3 class="font-display text-lg text-bark leading-tight">Cove Floor Lamp</h3>
+            <p class="text-[12px] text-umber/60 mt-0.5">Linen shade · Brass stem</p>
+          </div>
+          <span class="font-medium text-bark text-[15px]">$380</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COLLECTION STORY ============ -->
+<section class="py-20 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+    <div class="parallax-wrap rounded-[28px] aspect-[5/6] bg-gradient-to-br from-shell to-clay/40 order-2 lg:order-1">
+      <img data-parallax src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Marrow & Oak collection styling" class="w-full h-[116%] object-cover -mt-[8%]" />
+    </div>
+    <div class="order-1 lg:order-2">
+      <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-5" data-reveal>The Sennen Collection</p>
+      <h2 class="font-display font-light text-[clamp(2rem,4.6vw,3.6rem)] tracking-tightest text-bark leading-[1.02]" data-reveal>
+        A quieter way to fill a room.
+      </h2>
+      <p class="mt-6 text-umber/80 leading-relaxed text-[15px] max-w-lg" data-reveal>
+        Sennen began as a single bench, planed by hand in a Cornish workshop. Today it is a full language of soft edges and visible grain — pieces designed to age gracefully, gather marks, and earn their place over decades rather than seasons.
+      </p>
+      <ul class="mt-8 space-y-4" data-reveal>
+        <li class="flex items-start gap-3 text-[14px] text-umber"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-terra"></span> Made to order in batches of twelve, never warehoused</li>
+        <li class="flex items-start gap-3 text-[14px] text-umber"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-terra"></span> Mortise-and-tenon joinery, zero visible fasteners</li>
+        <li class="flex items-start gap-3 text-[14px] text-umber"><span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-terra"></span> Finished only with plant oils and natural wax</li>
+      </ul>
+      <a href="#shop" class="mt-9 inline-flex items-center gap-3 text-[13px] font-semibold text-bark underline-grow" data-reveal>Browse the collection →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MATERIALS / CRAFT ============ -->
+<section id="craft" class="py-20 sm:py-28 bg-bark text-linen">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="max-w-2xl">
+      <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-5" data-reveal>Materials &amp; craft</p>
+      <h2 class="font-display font-light text-[clamp(2rem,4.6vw,3.6rem)] tracking-tightest leading-[1.04]" data-reveal>
+        We choose materials that get better with touch.
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-x-8 gap-y-12 mt-16">
+      <div data-reveal>
+        <span class="block font-display text-5xl text-clay/60 mb-4">01</span>
+        <h3 class="font-display text-2xl mb-3">Slow-grown hardwood</h3>
+        <p class="text-linen/60 text-[14px] leading-relaxed">European oak, walnut and ash from FSC-certified forests, air-dried for stability before a single cut is made.</p>
+      </div>
+      <div data-reveal>
+        <span class="block font-display text-5xl text-clay/60 mb-4">02</span>
+        <h3 class="font-display text-2xl mb-3">Honest joinery</h3>
+        <p class="text-linen/60 text-[14px] leading-relaxed">Dovetails, dowels and floating tenons cut by makers, not machines alone — joints meant to outlive their owners.</p>
+      </div>
+      <div data-reveal>
+        <span class="block font-display text-5xl text-clay/60 mb-4">03</span>
+        <h3 class="font-display text-2xl mb-3">Natural finishes</h3>
+        <p class="text-linen/60 text-[14px] leading-relaxed">Hard-wax oils that let the wood breathe, develop patina, and be refreshed at home with a soft cloth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOOKBOOK BAND (marquee + parallax) ============ -->
+<section id="lookbook" class="py-20 sm:py-28 overflow-hidden">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 mb-12">
+    <div class="flex items-end justify-between">
+      <div>
+        <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-3" data-reveal>In real homes</p>
+        <h2 class="font-display text-[clamp(1.8rem,4.5vw,3.4rem)] tracking-tightest text-bark leading-none" data-reveal>Spring Lookbook</h2>
+      </div>
+      <a href="#shop" class="hidden sm:inline-flex text-[13px] font-semibold text-bark underline-grow" data-reveal>Shop the looks →</a>
+    </div>
+  </div>
+
+  <div class="flex gap-6 w-max marquee-track">
+    <!-- duplicate set for seamless loop -->
+    <div class="flex gap-6">
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-shell to-clay/30"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lookbook 1" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-clay/30 to-terra/25"><img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lookbook 2" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-sand to-moss/25"><img src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lookbook 3" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-shell to-stone/40"><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="Lookbook 4" class="w-full h-full object-cover"/></div>
+    </div>
+    <div class="flex gap-6" aria-hidden="true">
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-shell to-clay/30"><img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-clay/30 to-terra/25"><img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-sand to-moss/25"><img src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="w-full h-full object-cover"/></div>
+      <div class="parallax-wrap rounded-[20px] w-[320px] sm:w-[420px] aspect-[4/3] bg-gradient-to-br from-shell to-stone/40"><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="w-full h-full object-cover"/></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIALS ============ -->
+<section class="py-20 sm:py-28 bg-sand/60">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-12 text-center" data-reveal>Loved by those who live with it</p>
+    <div class="grid md:grid-cols-3 gap-6">
+      <figure class="bg-linen rounded-[20px] p-8 border border-bark/5" data-reveal>
+        <div class="flex gap-1 text-clay mb-5 text-sm">★★★★★</div>
+        <blockquote class="font-display text-xl text-bark leading-snug">"The Lowell sofa has been the centre of our home for two years. It only looks better with time."</blockquote>
+        <figcaption class="mt-6 text-[13px] text-umber/70">Imani &amp; Theo · London</figcaption>
+      </figure>
+      <figure class="bg-linen rounded-[20px] p-8 border border-bark/5 md:mt-8" data-reveal>
+        <div class="flex gap-1 text-clay mb-5 text-sm">★★★★★</div>
+        <blockquote class="font-display text-xl text-bark leading-snug">"You can feel the difference the moment you sit down. Real joinery, real wood, no shortcuts."</blockquote>
+        <figcaption class="mt-6 text-[13px] text-umber/70">Sofia Reyes · Lisbon</figcaption>
+      </figure>
+      <figure class="bg-linen rounded-[20px] p-8 border border-bark/5" data-reveal>
+        <div class="flex gap-1 text-clay mb-5 text-sm">★★★★★</div>
+        <blockquote class="font-display text-xl text-bark leading-snug">"Delivery was white-glove and unhurried. They assembled, levelled, and took every scrap of packaging."</blockquote>
+        <figcaption class="mt-6 text-[13px] text-umber/70">Daniel Okafor · Berlin</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SHIPPING / RETURNS INFO ============ -->
+<section class="py-16 sm:py-24">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div data-reveal>
+      <div class="w-11 h-11 rounded-full bg-shell grid place-items-center text-terra mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 4v4h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <h3 class="font-display text-lg text-bark mb-2">White-glove delivery</h3>
+      <p class="text-[13px] text-umber/70 leading-relaxed">Free across the UK &amp; EU on orders over $600. We assemble and place every piece.</p>
+    </div>
+    <div data-reveal>
+      <div class="w-11 h-11 rounded-full bg-shell grid place-items-center text-terra mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      </div>
+      <h3 class="font-display text-lg text-bark mb-2">100-night trial</h3>
+      <p class="text-[13px] text-umber/70 leading-relaxed">Live with it. If a piece doesn't settle in, return it within 100 nights, fully refunded.</p>
+    </div>
+    <div data-reveal>
+      <div class="w-11 h-11 rounded-full bg-shell grid place-items-center text-terra mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3 class="font-display text-lg text-bark mb-2">25-year warranty</h3>
+      <p class="text-[13px] text-umber/70 leading-relaxed">Structural cover on every frame, plus lifetime access to repair and refinishing.</p>
+    </div>
+    <div data-reveal>
+      <div class="w-11 h-11 rounded-full bg-shell grid place-items-center text-terra mb-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M11 3 4 14h7l-1 7 7-11h-7z"/></svg>
+      </div>
+      <h3 class="font-display text-lg text-bark mb-2">Carbon-neutral</h3>
+      <p class="text-[13px] text-umber/70 leading-relaxed">Every order plants three trees. Our workshop runs on 100% renewable power.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="py-16 sm:py-24 bg-linen">
+  <div class="max-w-3xl mx-auto px-5 sm:px-8">
+    <div class="text-center mb-12">
+      <p class="text-[12px] tracking-[0.24em] uppercase text-clay font-semibold mb-3" data-reveal>Good to know</p>
+      <h2 class="font-display text-[clamp(1.8rem,4.5vw,3.2rem)] tracking-tightest text-bark leading-none" data-reveal>Questions, answered</h2>
+    </div>
+
+    <div class="divide-y divide-bark/10 border-y border-bark/10">
+      <div class="faq-item open" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-display text-lg sm:text-xl text-bark">How long until my furniture arrives?</span>
+          <span class="faq-plus text-2xl text-terra shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-[14px] text-umber/75 leading-relaxed">Made-to-order pieces ship in 4–6 weeks. In-stock items leave our workshop within 5 working days. You'll receive a scheduled delivery window once your piece is ready.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-display text-lg sm:text-xl text-bark">Can I see the materials before I buy?</span>
+          <span class="faq-plus text-2xl text-terra shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-[14px] text-umber/75 leading-relaxed">Yes — we send free wood and fabric swatch boxes anywhere in the UK and EU. Order one from any product page so you can feel the grain and weave in your own light.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-display text-lg sm:text-xl text-bark">Do you offer custom sizes?</span>
+          <span class="faq-plus text-2xl text-terra shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-[14px] text-umber/75 leading-relaxed">Most tables, shelving and beds can be made to bespoke dimensions. Reach our studio team and we'll quote a tailored piece within two working days.</p></div>
+      </div>
+      <div class="faq-item" data-reveal>
+        <button class="faq-trigger w-full flex items-center justify-between gap-4 py-6 text-left">
+          <span class="font-display text-lg sm:text-xl text-bark">How do I care for the finish?</span>
+          <span class="faq-plus text-2xl text-terra shrink-0">+</span>
+        </button>
+        <div class="faq-body"><p class="pb-6 text-[14px] text-umber/75 leading-relaxed">A soft, dry cloth is all daily care needs. Twice a year, refresh with the hard-wax oil we include in every order — it takes minutes and restores the surface beautifully.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="py-20 sm:py-32">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="relative rounded-[32px] overflow-hidden bg-bark text-linen px-6 sm:px-16 py-16 sm:py-24">
+      <div class="parallax-wrap absolute inset-0 opacity-30">
+        <img data-parallax src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=1600&q=80" onerror="this.style.display='none'" alt="" class="w-full h-[120%] object-cover -mt-[8%]" />
+      </div>
+      <div class="relative max-w-2xl">
+        <h2 class="font-display font-light text-[clamp(2rem,5vw,4rem)] tracking-tightest leading-[1.02]" data-reveal>
+          Furnish a home you'll never want to leave.
+        </h2>
+        <p class="mt-6 text-linen/70 max-w-md text-[15px]" data-reveal>Start with a single piece or design a whole room with a studio stylist — free, and at your pace.</p>
+        <div class="mt-9 flex flex-wrap gap-4" data-reveal>
+          <a href="#shop" class="inline-flex items-center gap-3 rounded-full bg-linen text-bark px-7 py-3.5 text-[13px] font-semibold hover:bg-clay hover:text-linen transition-colors">Shop now →</a>
+          <a href="#craft" class="inline-flex items-center gap-3 rounded-full border border-linen/30 text-linen px-7 py-3.5 text-[13px] font-semibold hover:bg-linen/10 transition-colors">Book a stylist</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-bark/10 pt-16 pb-10">
+  <div class="max-w-7xl mx-auto px-5 sm:px-8">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
+      <div class="lg:col-span-2">
+        <a href="#top" class="flex items-center gap-2 mb-4">
+          <span class="w-8 h-8 rounded-full bg-bark text-linen grid place-items-center font-display text-sm">M</span>
+          <span class="font-display text-xl tracking-tightest text-bark">Marrow<span class="text-clay">&amp;</span>Oak</span>
+        </a>
+        <p class="text-[14px] text-umber/70 max-w-xs leading-relaxed">Considered furniture, made slowly in our Cornish workshop. Built for the long, lived-in life of a home.</p>
+        <form class="mt-6 flex max-w-sm" onsubmit="return false">
+          <input type="email" placeholder="Your email" class="flex-1 rounded-l-full border border-bark/15 bg-linen px-5 py-3 text-[13px] outline-none focus:border-clay" />
+          <button class="rounded-r-full bg-bark text-linen px-5 text-[13px] font-semibold hover:bg-terra transition-colors">Join</button>
+        </form>
+      </div>
+      <div>
+        <h4 class="text-[12px] tracking-[0.18em] uppercase text-umber/50 font-semibold mb-4">Shop</h4>
+        <ul class="space-y-2.5 text-[14px] text-umber/80">
+          <li><a href="#shop" class="hover:text-bark">Living</a></li>
+          <li><a href="#shop" class="hover:text-bark">Dining</a></li>
+          <li><a href="#shop" class="hover:text-bark">Bedroom</a></li>
+          <li><a href="#shop" class="hover:text-bark">Lighting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[12px] tracking-[0.18em] uppercase text-umber/50 font-semibold mb-4">Studio</h4>
+        <ul class="space-y-2.5 text-[14px] text-umber/80">
+          <li><a href="#craft" class="hover:text-bark">Our craft</a></li>
+          <li><a href="#collections" class="hover:text-bark">Collections</a></li>
+          <li><a href="#lookbook" class="hover:text-bark">Lookbook</a></li>
+          <li><a href="#" class="hover:text-bark">Sustainability</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-[12px] tracking-[0.18em] uppercase text-umber/50 font-semibold mb-4">Help</h4>
+        <ul class="space-y-2.5 text-[14px] text-umber/80">
+          <li><a href="#faq" class="hover:text-bark">Delivery &amp; returns</a></li>
+          <li><a href="#faq" class="hover:text-bark">Care guide</a></li>
+          <li><a href="#" class="hover:text-bark">Trade enquiries</a></li>
+          <li><a href="#" class="hover:text-bark">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-bark/10 text-[12px] text-umber/55">
+      <p>© 2026 Marrow &amp; Oak Furniture Co. All rights reserved.</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-bark">Privacy</a>
+        <a href="#" class="hover:text-bark">Terms</a>
+        <a href="#" class="hover:text-bark">Instagram</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Cart micro-interaction ---------- */
+  let cart = 0;
+  const cartCountEl = document.getElementById('cartCount');
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      cart++;
+      cartCountEl.textContent = cart;
+      const card = btn.closest('.pcard');
+      if (!reduce && card && window.gsap) {
+        gsap.fromTo(card, { scale: 1 }, { scale: 0.97, duration: 0.12, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+        gsap.fromTo(cartCountEl, { scale: 1.6 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+      } else {
+        cartCountEl.style.transform = 'scale(1)';
+      }
+      const old = btn.textContent;
+      btn.textContent = 'Added ✓';
+      setTimeout(() => { btn.textContent = old; }, 1100);
+    });
+  });
+
+  /* ---------- FAQ accordion ---------- */
+  document.querySelectorAll('.faq-trigger').forEach(t => {
+    t.addEventListener('click', () => {
+      const item = t.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ---------- Category rail arrows ---------- */
+  const rail = document.getElementById('catRail');
+  const step = 320;
+  document.querySelector('.rail-next')?.addEventListener('click', () => rail.scrollBy({ left: step, behavior: 'smooth' }));
+  document.querySelector('.rail-prev')?.addEventListener('click', () => rail.scrollBy({ left: -step, behavior: 'smooth' }));
+
+  /* ---------- Nav background on scroll ---------- */
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 24) {
+      nav.classList.add('backdrop-blur-md', 'bg-linen/85', 'shadow-[0_1px_0_rgba(46,38,32,0.06)]');
+    } else {
+      nav.classList.remove('backdrop-blur-md', 'bg-linen/85', 'shadow-[0_1px_0_rgba(46,38,32,0.06)]');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Cursor follower ---------- */
+  const cursor = document.getElementById('cursor');
+  if (cursor && window.matchMedia('(hover: hover)').matches && !reduce) {
+    let x = 0, y = 0, cx = 0, cy = 0;
+    window.addEventListener('mousemove', e => { x = e.clientX; y = e.clientY; });
+    const loop = () => { cx += (x - cx) * 0.18; cy += (y - cy) * 0.18; cursor.style.transform = `translate(${cx}px, ${cy}px) scale(${cursor.dataset.on === '1' ? 1 : 0.4})`; requestAnimationFrame(loop); };
+    loop();
+    document.querySelectorAll('[data-cursor]').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.dataset.on = '1'; cursor.style.opacity = '1'; cursor.textContent = el.dataset.cursor; });
+      el.addEventListener('mouseleave', () => { cursor.dataset.on = '0'; cursor.style.opacity = '0'; });
+    });
+  }
+
+  /* ---------- GSAP animations ---------- */
+  if (window.gsap && window.ScrollTrigger && !reduce) {
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Hero masked text reveal
+    gsap.to('.reveal-line > span', {
+      y: '0%', duration: 1.05, ease: 'power4.out', stagger: 0.09, delay: 0.15
+    });
+
+    // Generic section reveals
+    gsap.utils.toArray('[data-reveal]').forEach(el => {
+      gsap.from(el, {
+        y: 36, opacity: 0, duration: 0.95, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 86%' }
+      });
+    });
+
+    // Product cards stagger within grid
+    ScrollTrigger.batch('#productGrid .pcard', {
+      start: 'top 90%',
+      onEnter: batch => gsap.from(batch, { y: 44, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.1, overwrite: true })
+    });
+
+    // Container parallax on imagery
+    gsap.utils.toArray('[data-parallax]').forEach(img => {
+      gsap.to(img, {
+        yPercent: -10, ease: 'none',
+        scrollTrigger: { trigger: img.closest('.parallax-wrap'), start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+
+    // Count-ups
+    gsap.utils.toArray('.countup').forEach(el => {
+      const to = parseFloat(el.dataset.to);
+      const decimals = (to % 1 !== 0) ? 1 : 0;
+      const obj = { v: 0 };
+      ScrollTrigger.create({
+        trigger: el, start: 'top 90%', once: true,
+        onEnter: () => gsap.to(obj, { v: to, duration: 1.6, ease: 'power2.out', onUpdate: () => { el.textContent = obj.v.toFixed(decimals); } })
+      });
+    });
+  } else {
+    // Reduced motion: ensure everything is visible
+    document.querySelectorAll('.reveal-line > span').forEach(s => s.style.transform = 'none');
+    document.querySelectorAll('.countup').forEach(el => el.textContent = el.dataset.to);
+  }
+})();
+</script>
+</body>
+</html>
